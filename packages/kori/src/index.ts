@@ -108,4 +108,4 @@ export {
   type NormalizeBodyType,
   type SchemaProvidersMatch,
 } from './schema/index.js';
-export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './utils/index.js';
+export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';

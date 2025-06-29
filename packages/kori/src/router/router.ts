@@ -4,7 +4,7 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../context/index.js';
-import { type MaybePromise } from '../utils/index.js';
+import { type MaybePromise } from '../util/index.js';
 
 import { type WithPathParams } from './path-param-types.js';
 
