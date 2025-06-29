@@ -1,0 +1,199 @@
+import { createKori } from 'kori';
+import { zodRequest } from 'kori-zod-schema';
+import { createKoriZodRequestValidator } from 'kori-zod-validator';
+import { z } from 'zod';
+
+const app = createKori({
+  requestValidator: createKoriZodRequestValidator(),
+});
+
+const UserSchema = z.object({
+  id: z.number().int().positive().describe('User ID'),
+  name: z.string().min(1).max(100).describe('User full name'),
+  email: z.string().email().describe('User email address'),
+  role: z.enum(['admin', 'user', 'guest']).describe('User role'),
+  createdAt: z.string().datetime().describe('User creation timestamp'),
+});
+
+const CreateUserSchema = UserSchema.omit({ id: true, createdAt: true });
+
+app.addRoute({
+  method: 'GET',
+  path: '/users',
+  requestSchema: zodRequest({
+    queries: z.object({
+      page: z.string().regex(/^\d+$/).transform(Number).default('1').describe('Page number'),
+      pageSize: z.string().regex(/^\d+$/).transform(Number).default('10').describe('Items per page'),
+      role: z.enum(['admin', 'user', 'guest']).optional().describe('Filter by role'),
+    }),
+  }),
+  handler: (ctx) => {
+    const query = ctx.req.validated.queries;
+    const users = [
+      {
+        id: 1,
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        role: 'admin' as const,
+        createdAt: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        name: 'Bob Smith',
+        email: 'bob@example.com',
+        role: 'user' as const,
+        createdAt: '2024-01-02T00:00:00Z',
+      },
+    ];
+
+    const filteredUsers = query.role ? users.filter((u) => u.role === query.role) : users;
+
+    return ctx.res.json({
+      users: filteredUsers.slice((query.page - 1) * query.pageSize, query.page * query.pageSize),
+      total: filteredUsers.length,
+      page: query.page,
+      pageSize: query.pageSize,
+    });
+  },
+});
+
+app.addRoute({
+  method: 'GET',
+  path: '/users/:id',
+  requestSchema: zodRequest({
+    params: z.object({
+      id: z.string().regex(/^\d+$/).describe('User ID'),
+    }),
+  }),
+  handler: (ctx) => {
+    const { id } = ctx.req.validated.params;
+
+    if (id === '1') {
+      return ctx.res.json({
+        id: 1,
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        role: 'admin' as const,
+        createdAt: '2024-01-01T00:00:00Z',
+      });
+    }
+
+    return ctx.res.notFound({
+      message: `User with ID ${id} not found`,
+    });
+  },
+});
+
+app.addRoute({
+  method: 'POST',
+  path: '/users',
+  requestSchema: zodRequest({
+    body: CreateUserSchema,
+  }),
+  handler: (ctx) => {
+    const body = ctx.req.validated.body;
+    const newUser = {
+      id: Math.floor(Math.random() * 1000),
+      ...body,
+      createdAt: new Date().toISOString(),
+    };
+    return ctx.res.status(201).json(newUser);
+  },
+});
+
+app.addRoute({
+  method: 'DELETE',
+  path: '/users/:id',
+  requestSchema: zodRequest({
+    params: z.object({
+      id: z.string().regex(/^\d+$/).describe('User ID'),
+    }),
+  }),
+  handler: (ctx) => {
+    const { id } = ctx.req.validated.params;
+
+    if (id === '999') {
+      return ctx.res.notFound({
+        message: `User with ID ${id} not found`,
+      });
+    }
+
+    return ctx.res.empty(204);
+  },
+});
+
+app.addRoute({
+  method: 'GET',
+  path: '/openapi.json',
+  handler: (ctx) => {
+    // This would normally use a converter to generate OpenAPI spec
+    // For now, return a basic spec structure
+    const openapi = {
+      openapi: '3.0.0',
+      info: {
+        title: 'Kori Example API',
+        version: '1.0.0',
+        description: 'Example API demonstrating Kori framework with OpenAPI support',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3000',
+          description: 'Development server',
+        },
+      ],
+      paths: {
+        '/users': {
+          get: {
+            summary: 'List all users',
+            description: 'Retrieve a paginated list of all users in the system',
+            tags: ['Users'],
+          },
+          post: {
+            summary: 'Create a new user',
+            description: 'Create a new user in the system',
+            tags: ['Users'],
+          },
+        },
+      },
+    };
+
+    return ctx.res.json(openapi);
+  },
+});
+
+app.addRoute({
+  method: 'GET',
+  path: '/docs',
+  handler: (ctx) => {
+    return ctx.res.html(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>API Documentation</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" rel="stylesheet">
+      </head>
+      <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+        <script>
+          window.onload = () => {
+            window.ui = SwaggerUIBundle({
+              url: '/openapi.json',
+              dom_id: '#swagger-ui',
+              deepLinking: true,
+              presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIBundle.SwaggerUIStandalonePreset
+              ],
+            });
+          };
+        </script>
+      </body>
+      </html>
+    `);
+  },
+});
+
+export default app;

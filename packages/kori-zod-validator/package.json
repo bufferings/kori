@@ -1,0 +1,32 @@
+{
+  "name": "kori-zod-validator",
+  "version": "0.0.1",
+  "description": "Zod validator for Kori framework",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "kori": "workspace:*"
+  },
+  "peerDependencies": {
+    "kori-zod-schema": "workspace:*",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "kori-zod-schema": "workspace:*",
+    "typescript": "catalog:",
+    "zod": "3.24.1"
+  }
+}

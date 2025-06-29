@@ -1,0 +1,31 @@
+{
+  "name": "kori-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:example": "pnpm --filter kori-example dev",
+    "build": "pnpm -r build",
+    "clean": "pnpm -r exec -- sh -c 'rm -rf dist node_modules/.cache *.tsbuildinfo'",
+    "test": "vitest run",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import-x": "^4.15.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "lefthook": "^1.10.1",
+    "prettier": "3.4.2",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  }
+}

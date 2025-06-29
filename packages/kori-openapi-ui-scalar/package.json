@@ -1,0 +1,27 @@
+{
+  "name": "kori-openapi-ui-scalar",
+  "version": "0.0.1",
+  "description": "Scalar UI plugin for Kori OpenAPI documentation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "kori": "workspace:*",
+    "kori-openapi-plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "kori-example",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "kori": "workspace:*",
+    "kori-nodejs-adapter": "workspace:*",
+    "kori-zod-openapi-converter": "workspace:*",
+    "kori-zod-schema": "workspace:*",
+    "kori-zod-validator": "workspace:*",
+    "kori-openapi-plugin": "workspace:*",
+    "kori-openapi-ui-scalar": "workspace:*",
+    "kori-pino-adapter": "workspace:*",
+    "pino": "^9.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "pino-pretty": "^10.0.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

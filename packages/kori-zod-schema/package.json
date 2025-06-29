@@ -1,0 +1,30 @@
+{
+  "name": "kori-zod-schema",
+  "version": "0.0.1",
+  "description": "Zod schema helpers for Kori framework",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "kori": "workspace:*"
+  },
+  "peerDependencies": {
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "zod": "3.24.1"
+  }
+}

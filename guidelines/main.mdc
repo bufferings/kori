@@ -1,0 +1,64 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Coding Rules
+
+## Imports
+- Always use `type` modifier for type imports
+- Always include `.js` extension in import paths for ESM compatibility
+
+## Function Declarations
+- Use function declarations for framework public APIs
+- Avoid arrow functions for public APIs
+
+## Type Definitions
+- Prefer `type` over `interface`
+- Use `never` as default type parameter instead of `{}`
+
+## File Organization
+- Keep related types together
+- Export public APIs at the end of the file
+- Folder names and file names should use the singular form.
+
+## Terminology
+- Use "Plugin" instead of "Middleware"
+- Avoid "use" for adding plugins
+- Avoid middleware-related terms in APIs and documentation
+
+## Module System
+- Use ESM (ECMAScript Modules) format
+- Include file extensions in import paths
+
+## Architecture
+- Prefer functions over classes
+- Use composition over inheritance
+- Avoid using 'this' keyword
+
+## Character Encoding
+- Source code files (.ts, .js, .tsx, .jsx) must contain only ASCII characters
+- Non-ASCII characters (emojis, Japanese, etc.) are prohibited in source code
+- Documentation files (.md, .mdc, README) may use non-ASCII characters freely
+- This ensures encoding compatibility and tool interoperability
+
+## Commit Messages
+
+- For commit messages, keep them super short and concise. Just a couple of sentences max.
+- Use only ASCII characters in commit messages (no emojis, Japanese, etc.)
+- Write commit messages in English for international collaboration
+
+# Guidelines for AI Assistant
+
+1.  **Strict Separation of Proposal and Execution**:
+    *   Always present code changes as a "proposal" first. Do not execute any file modifications until I give explicit approval (e.g., "yes," "please proceed"). This is the most important rule.
+
+2.  **Prioritize Developer Experience (DX)**:
+    *   When proposing API designs or code changes, always consider "How will a developer using this feel?" Prioritize ease of use, simplicity, and intuitiveness.
+
+3.  **Pursue Readable Code**:
+    *   If logic becomes complex or nesting gets deep, proactively suggest refactoring, such as extracting functions or applying the early return pattern.
+
+4.  **Allow Breaking Changes for Better Design**:
+    *   Prioritize cleaner code, better architecture, and improved DX over maintaining backward compatibility. Do not hesitate to propose breaking changes if they lead to a better design.
+

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    // Need this for project references
+    "composite": true,
+    // Composite projects require declaration options
+    "declaration": true,
+    "declarationMap": true,
+    // Don't emit anything from the root
+    "noEmit": true
+  },
+  "references": [
+    { "path": "./packages/kori" },
+    { "path": "./packages/kori-nodejs-adapter" },
+    { "path": "./packages/kori-pino-adapter" },
+    { "path": "./packages/kori-eslint-rules" },
+    { "path": "./packages/kori-openapi-plugin" },
+    { "path": "./packages/kori-openapi-ui-scalar" },
+    { "path": "./packages/kori-zod-schema" },
+    { "path": "./packages/kori-zod-validator" },
+    { "path": "./packages/kori-zod-openapi-converter" },
+    { "path": "./packages/kori-example" }
+  ],
+  "include": []
+}

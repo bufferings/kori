@@ -1,0 +1,35 @@
+{
+  "name": "kori-zod-openapi-converter",
+  "version": "0.0.1",
+  "description": "OpenAPI converter for Zod schemas in Kori framework",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "kori": "workspace:*",
+    "kori-zod-schema": "workspace:*",
+    "kori-openapi-plugin": "workspace:*",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "peerDependencies": {
+    "openapi3-ts": "^4.4.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "openapi3-ts": "^4.4.0",
+    "typescript": "catalog:",
+    "zod": "3.24.1"
+  }
+}

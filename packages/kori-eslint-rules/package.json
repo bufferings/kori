@@ -1,0 +1,33 @@
+{
+  "name": "kori-eslint-rules",
+  "version": "0.0.1",
+  "description": "ESLint rules for Kori framework",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/eslint": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "@typescript-eslint/rule-tester": "catalog:",
+    "@typescript-eslint/types": "catalog:",
+    "@typescript-eslint/utils": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  }
+}
