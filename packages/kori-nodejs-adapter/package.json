@@ -2,13 +2,23 @@
   "name": "kori-nodejs-adapter",
   "version": "0.0.1",
   "private": true,
+  "description": "Node.js adapter for Kori framework",
   "type": "module",
+  "author": "mitz (@bufferings)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bufferings/kori"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
