@@ -168,8 +168,8 @@ importers:
         version: 3.24.1
     devDependencies:
       '@types/node':
-        specifier: ^20.14.12
-        version: 20.19.1
+        specifier: 'catalog:'
+        version: 20.11.17
       pino-pretty:
         specifier: ^10.0.0
         version: 10.3.1
@@ -203,10 +203,10 @@ importers:
         version: 4.4.0
     devDependencies:
       '@types/node':
-        specifier: ^22.5.0
-        version: 22.15.31
+        specifier: 'catalog:'
+        version: 20.11.17
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.8.3
 
   packages/kori-openapi-ui-scalar:
@@ -219,10 +219,10 @@ importers:
         version: link:../kori-openapi-plugin
     devDependencies:
       '@types/node':
-        specifier: ^22.5.0
-        version: 22.15.31
+        specifier: 'catalog:'
+        version: 20.11.17
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.8.3
 
   packages/kori-pino-adapter:
@@ -781,12 +781,6 @@ packages:
 
   '@types/node@20.11.17':
     resolution: {integrity: sha512-QmgQZGWu1Yw9TDyAP9ZzpFJKynYNeOvwMJmaxABfieQoVoiVOS6MN1WSpqpRcbeA5+RW82kraAVxCCJg+780Qw==}
-
-  '@types/node@20.19.1':
-    resolution: {integrity: sha512-jJD50LtlD2dodAEO653i3YF04NWak6jN3ky+Ri3Em3mGR39/glWiboM/IePaRbgwSfqM1TpGXfAg8ohn/4dTgA==}
-
-  '@types/node@22.15.31':
-    resolution: {integrity: sha512-jnVe5ULKl6tijxUhvQeNbQG/84fHfg+yMak02cT8QVhBx/F05rAVxCGBYYTh2EKz22D6JF5ktXuNwdx7b9iEGw==}
 
   '@typescript-eslint/eslint-plugin@8.33.1':
     resolution: {integrity: sha512-TDCXj+YxLgtvxvFlAvpoRv9MAncDLBV2oT9Bd7YBGC/b/sEURoOYuIwLI99rjWOfY3QtDzO+mk0n4AmdFExW8A==}
@@ -1725,9 +1719,6 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   unrs-resolver@1.7.8:
     resolution: {integrity: sha512-2zsXwyOXmCX9nGz4vhtZRYhe30V78heAv+KDc21A/KMdovGHbZcixeD5JHEF0DrFXzdytwuzYclcPbvp8A3Jlw==}
 
@@ -2140,14 +2131,6 @@ snapshots:
   '@types/node@20.11.17':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/node@20.19.1':
-    dependencies:
-      undici-types: 6.21.0
-
-  '@types/node@22.15.31':
-    dependencies:
-      undici-types: 6.21.0
 
   '@typescript-eslint/eslint-plugin@8.33.1(@typescript-eslint/parser@8.33.1(eslint@9.27.0)(typescript@5.8.3))(eslint@9.27.0)(typescript@5.8.3)':
     dependencies:
@@ -3124,8 +3107,6 @@ snapshots:
   typescript@5.8.3: {}
 
   undici-types@5.26.5: {}
-
-  undici-types@6.21.0: {}
 
   unrs-resolver@1.7.8:
     dependencies:
