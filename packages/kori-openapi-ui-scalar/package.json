@@ -18,9 +18,7 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*",
-    "README.md",
-    "LICENSE"
+    "dist/**/*"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
