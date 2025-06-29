@@ -1,11 +1,11 @@
 export {
   type InferRequestSchemaProvider,
   type KoriRequestSchema,
-  type KoriRequestSchemaDefault,
   type KoriRequestSchemaBody,
   type KoriRequestSchemaBodyDefault,
   type KoriRequestSchemaContent,
   type KoriRequestSchemaContentDefault,
+  type KoriRequestSchemaDefault,
   type KoriRequestSchemaMediaType,
   type KoriRequestSchemaMediaTypeDefault,
   type KoriRequestSchemaStructure,
@@ -14,9 +14,9 @@ export {
 export {
   type InferResponseSchemaProvider,
   type KoriResponseSchema,
-  type KoriResponseSchemaDefault,
   type KoriResponseSchemaContent,
   type KoriResponseSchemaContentDefault,
+  type KoriResponseSchemaDefault,
   type KoriResponseSchemaMediaType,
   type KoriResponseSchemaMediaTypeDefault,
   type KoriResponseSchemaSpec,
@@ -32,4 +32,8 @@ export {
   type KoriSchema,
   type KoriSchemaDefault,
 } from './schema.js';
-export { type KoriSchemaProvider, type KoriSchemaProviderDefault, type SchemaProvidersMatch } from './schema-provider.js';
+export {
+  type KoriSchemaProvider,
+  type KoriSchemaProviderDefault,
+  type SchemaProvidersMatch,
+} from './schema-provider.js';
