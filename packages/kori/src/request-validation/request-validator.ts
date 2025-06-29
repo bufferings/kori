@@ -1,5 +1,5 @@
 import { type InferSchemaOutput, type KoriSchemaDefault, type KoriSchemaProviderDefault } from '../schema/index.js';
-import { type KoriResult, type MaybePromise } from '../utils/index.js';
+import { type KoriResult, type MaybePromise } from '../util/index.js';
 
 const ProviderProp = Symbol('schema-provider-prop');
 
@@ -22,7 +22,11 @@ export type KoriRequestValidatorMethods<Schema extends KoriSchemaDefault, ErrorT
   }): MaybePromise<KoriResult<InferSchemaOutput<S>, ErrorType>>;
 };
 
-export type KoriRequestValidator<Provider extends KoriSchemaProviderDefault, Schema extends KoriSchemaDefault, ErrorType> = {
+export type KoriRequestValidator<
+  Provider extends KoriSchemaProviderDefault,
+  Schema extends KoriSchemaDefault,
+  ErrorType,
+> = {
   readonly [ProviderProp]?: Provider;
 } & KoriRequestValidatorMethods<Schema, ErrorType>;
 

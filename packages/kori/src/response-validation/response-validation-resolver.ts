@@ -5,7 +5,7 @@ import {
   type KoriResponseSchemaValueDefault,
   isKoriSchema,
 } from '../schema/index.js';
-import { err, type KoriResult } from '../utils/index.js';
+import { err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseValidatorDefault } from './response-validator.js';
 
@@ -51,7 +51,7 @@ async function validateResponseBody({
   if (isKoriSchema(schema)) {
     // TODO: Consider Content-Types only allows JSON
     const body = res.getBody();
-    return validator.validateBody({schema, body});
+    return validator.validateBody({ schema, body });
   }
 
   const content = (schema.content ?? schema) as KoriResponseSchemaContentDefault;
@@ -67,7 +67,7 @@ async function validateResponseBody({
   const schemaForContentType = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
 
   const body = res.getBody();
-  return validator.validateBody({schema: schemaForContentType, body});
+  return validator.validateBody({ schema: schemaForContentType, body });
 }
 
 export function resolveResponseValidationFunction({
@@ -82,7 +82,7 @@ export function resolveResponseValidationFunction({
   }
 
   return async (res) => {
-    const schema = resolveSchemaForStatusCode({responseSchema, statusCode: res.getStatus()});
-    return validateResponseBody({validator: responseValidator, schema, res});
+    const schema = resolveSchemaForStatusCode({ responseSchema, statusCode: res.getStatus() });
+    return validateResponseBody({ validator: responseValidator, schema, res });
   };
 }

@@ -1,5 +1,5 @@
 import { type KoriEnvironment, type KoriInstanceContext } from '../context/index.js';
-import { type MaybePromise } from '../utils/index.js';
+import { type MaybePromise } from '../util/index.js';
 
 export type KoriOnInitHook<Env extends KoriEnvironment, EnvExt = unknown> = (
   ctx: KoriInstanceContext<Env>,

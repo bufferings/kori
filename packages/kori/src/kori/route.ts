@@ -12,7 +12,7 @@ import {
 import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validation/index.js';
 import { type WithPathParams } from '../router/index.js';
 import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';
-import { type MaybePromise } from '../utils/index.js';
+import { type MaybePromise } from '../util/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
