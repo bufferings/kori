@@ -3,7 +3,16 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": "./src",
+    "paths": {
+      "kori": ["../../kori/src/index.ts"],
+      "kori/*": ["../../kori/src/*"],
+      "kori-zod-schema": ["../../kori-zod-schema/src/index.ts"],
+      "kori-zod-schema/*": ["../../kori-zod-schema/src/*"],
+      "kori-zod-validator": ["../../kori-zod-validator/src/index.ts"],
+      "kori-zod-validator/*": ["../../kori-zod-validator/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"],
