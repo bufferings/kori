@@ -1,5 +1,5 @@
 import { createKori } from 'kori';
-import { openApiPlugin } from 'kori-openapi-plugin';
+import { openApiPlugin, openApiRoute } from 'kori-openapi-plugin';
 import { createZodSchemaConverter } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
@@ -44,6 +44,11 @@ app.addRoute({
       role: z.enum(['admin', 'user', 'guest']).optional().describe('Filter by role'),
     }),
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'List all users',
+    description: 'Retrieve a paginated list of all users in the system',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const query = ctx.req.validated.queries;
     const users = [
@@ -82,6 +87,11 @@ app.addRoute({
       id: z.string().regex(/^\d+$/).describe('User ID'),
     }),
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'Get user by ID',
+    description: 'Retrieve a specific user by their ID',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const { id } = ctx.req.validated.params;
 
@@ -107,6 +117,11 @@ app.addRoute({
   requestSchema: zodRequest({
     body: CreateUserSchema,
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'Create a new user',
+    description: 'Create a new user in the system',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const body = ctx.req.validated.body;
     const newUser = {
@@ -125,6 +140,11 @@ app.addRoute({
     params: z.object({
       id: z.string().regex(/^\d+$/).describe('User ID'),
     }),
+  }),
+  pluginMetadata: openApiRoute({
+    summary: 'Delete user by ID',
+    description: 'Delete a specific user by their ID',
+    tags: ['Users'],
   }),
   handler: (ctx) => {
     const { id } = ctx.req.validated.params;
