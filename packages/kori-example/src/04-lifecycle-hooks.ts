@@ -1,15 +1,19 @@
 import { createKori, getMethodString } from 'kori';
+import type { KoriEnvironment, KoriHandlerContext, KoriRequest, KoriResponse } from 'kori';
+
+type KoriApp = ReturnType<typeof createKori>;
+type Ctx = KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>;
 
 let requestCount = 0;
 const activeRequests = new Map<string, number>();
 
-const app = createKori()
-  .onInit(() => {
+export function configure(app: KoriApp): KoriApp {
+  app.onInit(() => {
     app.log.info('Application is initializing...');
     app.log.info('Environment:' + (process.env.NODE_ENV ?? 'development'));
     app.log.info('Starting request counter...');
   })
-  .onRequest((ctx) => {
+  .onRequest((ctx: Ctx) => {
     requestCount++;
     const requestId = `req-${requestCount}`;
     const startTime = Date.now();
@@ -25,7 +29,7 @@ const app = createKori()
 
     return ctx.withReq({ requestId, startTime });
   })
-  .onResponse((ctx) => {
+  .onResponse((ctx: Ctx) => {
     const requestId = ctx.req.requestId;
     const startTime = ctx.req.startTime;
     const duration = Date.now() - startTime;
@@ -39,7 +43,7 @@ const app = createKori()
       activeRequests: activeRequests.size,
     });
   })
-  .onError((ctx, error) => {
+  .onError((ctx: Ctx, error: unknown) => {
     const requestId = ctx.req.requestId;
 
     ctx.req.log.error('Request error occurred', {
@@ -49,7 +53,7 @@ const app = createKori()
       url: ctx.req.url.href,
     });
   })
-  .onFinally((ctx) => {
+  .onFinally((ctx: Ctx) => {
     const requestId = ctx.req.requestId;
     const startTime = ctx.req.startTime;
     const totalDuration = Date.now() - startTime;
@@ -78,7 +82,7 @@ const app = createKori()
       });
     }
   })
-  .get('/health', (ctx) =>
+  .get('/health', (ctx: Ctx) =>
     ctx.res.json({
       status: 'healthy',
       requestCount,
@@ -87,7 +91,7 @@ const app = createKori()
       requestId: ctx.req.requestId,
     }),
   )
-  .get('/slow', async (ctx) => {
+  .get('/slow', async (ctx: Ctx) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return ctx.res.json({
       message: 'This was a slow request',
@@ -97,7 +101,7 @@ const app = createKori()
   .get('/error', () => {
     throw new Error('This is an intentional error');
   })
-  .get('/data/:id', (ctx) => {
+  .get('/data/:id', (ctx: Ctx) => {
     const id = ctx.req.pathParams.id;
 
     if (id === '0') {
@@ -114,7 +118,7 @@ const app = createKori()
 // Example of nested app with hooks
 const authApp = app
   .createChild()
-  .onRequest<{ user: { id: string; token: string } | null }, unknown>((ctx) => {
+  .onRequest<{ user: { id: string; token: string } | null }, unknown>((ctx: Ctx) => {
     const authHeader = ctx.req.headers.authorization;
 
     if (!authHeader) {
@@ -126,14 +130,14 @@ const authApp = app
       return ctx.withReq({ user: { id: 'user123', token } });
     }
   })
-  .onResponse((ctx) => {
+  .onResponse((ctx: Ctx) => {
     if (ctx.req.user) {
       ctx.res.setHeader('X-User-Id', ctx.req.user.id);
       ctx.req.log.info('Added user ID to response headers');
     }
   });
 
-authApp.get('/profile', (ctx) => {
+authApp.get('/profile', (ctx: Ctx) => {
   const user = ctx.req.user;
 
   if (!user) {
@@ -148,13 +152,13 @@ authApp.get('/profile', (ctx) => {
 
 app.createChild({
   prefix: '/api',
-  configure: (kori) => {
+  configure: (kori: KoriApp) => {
     // Apply auth hooks to API routes
     authApp.routeDefinitions().forEach((route) => {
       kori.addRoute({
         method: route.method,
         path: route.path,
-        handler: (ctx) => {
+        handler: (ctx: Ctx) => {
           // Simplified demonstration of child instance
           return ctx.res.json({
             message: `API route: ${getMethodString(route.method)} ${route.path}`,
@@ -167,4 +171,4 @@ app.createChild({
   },
 });
 
-export default app;
+return app;

@@ -25,7 +25,7 @@ export function configure(app: KoriApp): KoriApp {
     requestSchema: zodRequest({
       body: UserSchema,
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       return ctx.res.status(201).json({
         message: 'User created successfully',
@@ -41,7 +41,7 @@ export function configure(app: KoriApp): KoriApp {
         id: z.string().regex(/^\d+$/),
       }),
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       const params = ctx.req.validated.params;
       return ctx.res.json({
@@ -55,7 +55,7 @@ export function configure(app: KoriApp): KoriApp {
     requestSchema: zodRequest({
       queries: QuerySchema,
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const query = ctx.req.validated.queries;
       const users = [
         { id: 1, name: 'Alice', email: 'alice@example.com', age: 25 },
@@ -98,7 +98,7 @@ export function configure(app: KoriApp): KoriApp {
         'x-api-key': z.string().min(32),
       }),
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       const headers = ctx.req.validated.headers;
       return ctx.res.json({
@@ -119,7 +119,7 @@ export function configure(app: KoriApp): KoriApp {
     requestSchema: zodRequest({
       body: ProductSchema,
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       const product = {
         id: Math.floor(Math.random() * 1000),
@@ -138,7 +138,7 @@ export function configure(app: KoriApp): KoriApp {
         numberField: z.number().positive(),
       }),
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       return ctx.res.json({
         message: 'Validation passed!',
@@ -156,7 +156,7 @@ export function configure(app: KoriApp): KoriApp {
         priority: z.enum(['low', 'medium', 'high']),
       }),
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const body = ctx.req.validated.body;
       return ctx.res.json({
         message: 'Legacy validation passed using addRoute!',
@@ -166,7 +166,7 @@ export function configure(app: KoriApp): KoriApp {
     },
   });
 
-  app.onError((ctx, err) => {
+  app.onError((ctx: Ctx, err: unknown) => {
     if (!ctx.res.isSet()) {
       ctx.res.badRequest({
         message: 'Validation or processing error occurred',
@@ -177,5 +177,3 @@ export function configure(app: KoriApp): KoriApp {
 
   return app;
 }
-
-export default configure(createKori());
