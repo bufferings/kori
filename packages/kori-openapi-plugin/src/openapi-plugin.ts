@@ -19,6 +19,8 @@ import { createRouteCollector, type ConversionContext, type SchemaConverter } fr
 
 export const OpenApiMetaSymbol = Symbol('openapi-meta');
 
+type AtLeastOneConverter = [SchemaConverter, ...SchemaConverter[]];
+
 export type OpenApiEnvironmentExtension = {
   openapi: {
     documentPath: string;
@@ -37,7 +39,7 @@ export type OpenApiOptions = {
   servers?: ServerObject[];
   documentPath?: string;
   excludePaths?: string[];
-  converters: SchemaConverter[];
+  converters: AtLeastOneConverter;
 };
 
 export function openApiRoute(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
