@@ -1,6 +1,5 @@
 import { createKori } from 'kori';
-import { openApiPlugin, openApiRoute } from 'kori-openapi-plugin';
-import { createZodSchemaConverter } from 'kori-zod-openapi-plugin';
+import { zodOpenApiPlugin, openApiRoute } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
 import { z } from 'zod';
@@ -8,7 +7,7 @@ import { z } from 'zod';
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
 }).applyPlugin(
-  openApiPlugin({
+  zodOpenApiPlugin({
     info: {
       title: 'Kori Example API',
       version: '1.0.0',
@@ -20,7 +19,6 @@ const app = createKori({
         description: 'Development server',
       },
     ],
-    converters: [createZodSchemaConverter()],
   }),
 );
 
@@ -160,8 +158,3 @@ app.addRoute({
 });
 
 export default app;
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const { startNodeServer } = await import('kori-nodejs-adapter');
-  await startNodeServer(app, { port: 3000 });
-}

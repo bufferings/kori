@@ -1,7 +1,7 @@
 import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
-import { openApiPlugin } from 'kori-openapi-plugin';
 import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
+import { zodOpenApiPlugin } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
 })
   .applyPlugin(
-    openApiPlugin({
+    zodOpenApiPlugin({
       info: {
         title: 'Kori Framework Examples',
         version: '1.0.0',

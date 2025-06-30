@@ -1,15 +1,15 @@
-import { defineKoriPlugin } from 'kori';
+import { openApiPlugin, type OpenApiOptions } from 'kori-openapi-plugin';
 
-export function zodOpenApiPlugin(): ReturnType<typeof defineKoriPlugin> {
-  return defineKoriPlugin({
-    name: 'zod-openapi',
-    version: '0.0.1',
-    apply: (kori) => {
-      return kori.onInit((ctx) => {
-        return ctx;
-      });
-    },
+import { createZodSchemaConverter } from './converter.js';
+
+export type ZodOpenApiOptions = Omit<OpenApiOptions, 'converters'>;
+
+export function zodOpenApiPlugin(options: ZodOpenApiOptions): ReturnType<typeof openApiPlugin> {
+  return openApiPlugin({
+    ...options,
+    converters: [createZodSchemaConverter()],
   });
 }
 
 export { createZodSchemaConverter } from './converter.js';
+export { openApiRoute } from 'kori-openapi-plugin';
