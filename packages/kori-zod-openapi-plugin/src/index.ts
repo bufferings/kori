@@ -3,7 +3,7 @@ import { defineKoriPlugin } from 'kori';
 export function zodOpenApiPlugin(): ReturnType<typeof defineKoriPlugin> {
   return defineKoriPlugin({
     name: 'zod-openapi',
-    version: '1.0.0',
+    version: '0.0.1',
     apply: (kori) => {
       return kori.onInit((ctx) => {
         return ctx;
