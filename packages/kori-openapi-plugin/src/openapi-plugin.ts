@@ -37,7 +37,7 @@ export type OpenApiOptions = {
   servers?: ServerObject[];
   documentPath?: string;
   excludePaths?: string[];
-  converters?: SchemaConverter[];
+  converters: SchemaConverter[];
 };
 
 export function openApiRoute(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
@@ -54,10 +54,8 @@ export function openApiPlugin(
 
   const collector = createRouteCollector();
 
-  if (options.converters) {
-    for (const converter of options.converters) {
-      collector.addConverter(converter);
-    }
+  for (const converter of options.converters) {
+    collector.addConverter(converter);
   }
 
   let cachedDocument: OpenAPIObject | null = null;
