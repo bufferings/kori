@@ -1,26 +1,12 @@
 import { createKori } from 'kori';
-import { zodOpenApiPlugin, openApiRoute } from 'kori-zod-openapi-plugin';
+import { openApiRoute } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
 import { z } from 'zod';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
-}).applyPlugin(
-  zodOpenApiPlugin({
-    info: {
-      title: 'Kori Example API',
-      version: '1.0.0',
-      description: 'Example API demonstrating Kori framework with OpenAPI support',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
-    ],
-  }),
-);
+});
 
 const UserSchema = z.object({
   id: z.number().int().positive().describe('User ID'),
