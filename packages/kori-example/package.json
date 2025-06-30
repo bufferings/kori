@@ -21,7 +21,7 @@
   "dependencies": {
     "kori": "workspace:*",
     "kori-nodejs-adapter": "workspace:*",
-    "kori-zod-openapi-converter": "workspace:*",
+    "kori-zod-openapi-plugin": "workspace:*",
     "kori-zod-schema": "workspace:*",
     "kori-zod-validator": "workspace:*",
     "kori-openapi-plugin": "workspace:*",

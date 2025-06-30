@@ -15,7 +15,7 @@ import {
   type PathItemObject,
 } from 'openapi3-ts/oas31';
 
-import { createRouteCollector, type ConversionContext } from './route-collector.js';
+import { createRouteCollector, type ConversionContext, type SchemaConverter } from './route-collector.js';
 
 export const OpenApiMetaSymbol = Symbol('openapi-meta');
 
@@ -37,6 +37,7 @@ export type OpenApiOptions = {
   servers?: ServerObject[];
   documentPath?: string;
   excludePaths?: string[];
+  converters?: SchemaConverter[];
 };
 
 export function openApiRoute(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
@@ -52,6 +53,13 @@ export function openApiPlugin(
   const documentPath = options.documentPath ?? '/openapi.json';
 
   const collector = createRouteCollector();
+
+  if (options.converters) {
+    for (const converter of options.converters) {
+      collector.addConverter(converter);
+    }
+  }
+
   let cachedDocument: OpenAPIObject | null = null;
 
   function generateDocument(): OpenAPIObject {
