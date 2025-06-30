@@ -1,4 +1,9 @@
-import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault, type KoriSchemaDefault, isKoriSchema } from 'kori';
+import {
+  type KoriRequestSchemaDefault,
+  type KoriResponseSchemaDefault,
+  type KoriSchemaDefault,
+  isKoriSchema,
+} from 'kori';
 import {
   type OperationObject,
   type ParameterObject,
@@ -190,7 +195,10 @@ export function createRouteCollector(): RouteCollector {
     };
   }
 
-  function generateResponses(schema: KoriResponseSchemaDefault | undefined, context: ConversionContext): ResponsesObject {
+  function generateResponses(
+    schema: KoriResponseSchemaDefault | undefined,
+    context: ConversionContext,
+  ): ResponsesObject {
     if (!schema) {
       return {
         '200': {

@@ -115,23 +115,14 @@ export function openApiPlugin(
         // Collect route metadata from the kori instance (after all routes are registered)
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {
-          if (routeDef.pluginMetadata?.[OpenApiMetaSymbol]) {
-            const openApiMeta = routeDef.pluginMetadata[OpenApiMetaSymbol] as OpenApiRouteMeta;
-            collector.addRoute({
-              method: getMethodString(routeDef.method),
-              path: routeDef.path,
-              requestSchema: routeDef.requestSchema,
-              responseSchema: routeDef.responseSchema,
-              metadata: {
-                summary: openApiMeta.summary,
-                description: openApiMeta.description,
-                tags: openApiMeta.tags,
-                operationId: openApiMeta.operationId,
-              },
-            });
-          }
+          collector.addRoute({
+            method: getMethodString(routeDef.method),
+            path: routeDef.path,
+            requestSchema: routeDef.requestSchema,
+            responseSchema: routeDef.responseSchema,
+            metadata: routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiRouteMeta,
+          });
         }
-
         return ctx.withEnv({
           openapi: {
             documentPath,
