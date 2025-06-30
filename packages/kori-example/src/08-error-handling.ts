@@ -1,4 +1,8 @@
 import { createKori } from 'kori';
+import type { KoriEnvironment, KoriHandlerContext, KoriRequest, KoriResponse } from 'kori';
+
+type KoriApp = ReturnType<typeof createKori>;
+type Ctx = KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>;
 
 class CustomError extends Error {
   statusCode: number;
@@ -22,9 +26,9 @@ class ValidationError extends CustomError {
   }
 }
 
-const app = createKori();
+export function configure(app: KoriApp): KoriApp {
 
-app.onError((ctx, err) => {
+app.onError((ctx: Ctx, err: unknown) => {
   const error = err instanceof Error ? err : new Error(String(err));
 
   ctx.req.log.error('Error occurred', {
@@ -165,4 +169,5 @@ gracefulApp.addRoute({
   },
 });
 
-export { app, gracefulApp };
+return app;
+}
