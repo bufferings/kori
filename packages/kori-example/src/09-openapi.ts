@@ -1,4 +1,5 @@
 import { createKori } from 'kori';
+import { openApiRoute } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
 import { z } from 'zod';
@@ -26,6 +27,11 @@ app.addRoute({
       pageSize: z.string().regex(/^\d+$/).transform(Number).default('10').describe('Items per page'),
       role: z.enum(['admin', 'user', 'guest']).optional().describe('Filter by role'),
     }),
+  }),
+  pluginMetadata: openApiRoute({
+    summary: 'List all users',
+    description: 'Retrieve a paginated list of all users in the system',
+    tags: ['Users'],
   }),
   handler: (ctx) => {
     const query = ctx.req.validated.queries;
@@ -65,6 +71,11 @@ app.addRoute({
       id: z.string().regex(/^\d+$/).describe('User ID'),
     }),
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'Get user by ID',
+    description: 'Retrieve a specific user by their ID',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const { id } = ctx.req.validated.params;
 
@@ -90,6 +101,11 @@ app.addRoute({
   requestSchema: zodRequest({
     body: CreateUserSchema,
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'Create a new user',
+    description: 'Create a new user in the system',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const body = ctx.req.validated.body;
     const newUser = {
@@ -109,6 +125,11 @@ app.addRoute({
       id: z.string().regex(/^\d+$/).describe('User ID'),
     }),
   }),
+  pluginMetadata: openApiRoute({
+    summary: 'Delete user by ID',
+    description: 'Delete a specific user by their ID',
+    tags: ['Users'],
+  }),
   handler: (ctx) => {
     const { id } = ctx.req.validated.params;
 
@@ -119,80 +140,6 @@ app.addRoute({
     }
 
     return ctx.res.empty(204);
-  },
-});
-
-app.addRoute({
-  method: 'GET',
-  path: '/openapi.json',
-  handler: (ctx) => {
-    // This would normally use a converter to generate OpenAPI spec
-    // For now, return a basic spec structure
-    const openapi = {
-      openapi: '3.0.0',
-      info: {
-        title: 'Kori Example API',
-        version: '1.0.0',
-        description: 'Example API demonstrating Kori framework with OpenAPI support',
-      },
-      servers: [
-        {
-          url: 'http://localhost:3000',
-          description: 'Development server',
-        },
-      ],
-      paths: {
-        '/users': {
-          get: {
-            summary: 'List all users',
-            description: 'Retrieve a paginated list of all users in the system',
-            tags: ['Users'],
-          },
-          post: {
-            summary: 'Create a new user',
-            description: 'Create a new user in the system',
-            tags: ['Users'],
-          },
-        },
-      },
-    };
-
-    return ctx.res.json(openapi);
-  },
-});
-
-app.addRoute({
-  method: 'GET',
-  path: '/docs',
-  handler: (ctx) => {
-    return ctx.res.html(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>API Documentation</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" rel="stylesheet">
-      </head>
-      <body>
-        <div id="swagger-ui"></div>
-        <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
-        <script>
-          window.onload = () => {
-            window.ui = SwaggerUIBundle({
-              url: '/openapi.json',
-              dom_id: '#swagger-ui',
-              deepLinking: true,
-              presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.SwaggerUIStandalonePreset
-              ],
-            });
-          };
-        </script>
-      </body>
-      </html>
-    `);
   },
 });
 

@@ -1,7 +1,7 @@
 {
-  "name": "kori-zod-openapi-converter",
+  "name": "kori-zod-openapi-plugin",
   "version": "0.0.1",
-  "description": "OpenAPI converter for Zod schemas in Kori framework",
+  "description": "OpenAPI plugin for Zod schemas in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
   "license": "MIT",

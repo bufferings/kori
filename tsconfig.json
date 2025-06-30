@@ -26,7 +26,7 @@
     { "path": "./packages/kori-openapi-ui-scalar" },
     { "path": "./packages/kori-zod-schema" },
     { "path": "./packages/kori-zod-validator" },
-    { "path": "./packages/kori-zod-openapi-converter" },
+    { "path": "./packages/kori-zod-openapi-plugin" },
     { "path": "./packages/kori-example" }
   ],
   "include": []
