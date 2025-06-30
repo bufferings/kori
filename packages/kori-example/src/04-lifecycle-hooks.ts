@@ -171,4 +171,5 @@ app.createChild({
   },
 });
 
-return app;
+  return app;
+}
