@@ -140,3 +140,8 @@ app.addRoute({
 });
 
 export default app;
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const { startNodeServer } = await import('kori-nodejs-adapter');
+  await startNodeServer(app, { port: 3000 });
+}
