@@ -6,10 +6,12 @@
  */
 
 import { createKori } from 'kori';
+import type { KoriEnvironment, KoriHandlerContext, KoriRequest, KoriResponse } from 'kori';
 import { zodRequest } from 'kori-zod-schema';
 import { z } from 'zod';
 
 type KoriApp = ReturnType<typeof createKori>;
+type Ctx = KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>;
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -32,7 +34,7 @@ const CreateUserSchema = z.object({
 
 export function configure(app: KoriApp): KoriApp {
   // 1. Hello-world route
-  app.get('/', (ctx) =>
+  app.get('/', (ctx: Ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori!',
       timestamp: new Date().toISOString(),
@@ -40,7 +42,7 @@ export function configure(app: KoriApp): KoriApp {
   );
 
   // 2. Path-parameter demo
-  app.get('/hello/:name', (ctx) => {
+  app.get('/hello/:name', (ctx: Ctx) => {
     const { name } = ctx.req.pathParams;
     ctx.req.log.info('Greeting request received', { name });
 
@@ -51,7 +53,7 @@ export function configure(app: KoriApp): KoriApp {
   });
 
   // 3. Query-parameter demo
-  app.get('/search', (ctx) => {
+  app.get('/search', (ctx: Ctx) => {
     const { q, limit = '10' } = ctx.req.queryParams;
     const queryString = Array.isArray(q) ? q[0] : q;
 
@@ -77,7 +79,7 @@ export function configure(app: KoriApp): KoriApp {
     requestSchema: zodRequest({
       body: CreateUserSchema,
     }),
-    handler: (ctx) => {
+    handler: (ctx: Ctx) => {
       const userData = ctx.req.validated.body;
       const newUser = {
         id: Math.floor(Math.random() * 10000),
@@ -102,7 +104,7 @@ export function configure(app: KoriApp): KoriApp {
   app.addRoute({
     method: 'GET',
     path: '/about',
-    handler: (ctx) =>
+    handler: (ctx: Ctx) =>
       ctx.res.json({
         message: 'This route uses addRoute instead of method aliases',
         note: 'Both app.get() and app.addRoute() are valid approaches',
@@ -110,7 +112,7 @@ export function configure(app: KoriApp): KoriApp {
   });
 
   // 6. Global error handler (kept minimal for demo purposes)
-  app.onError((ctx, err) => {
+  app.onError((ctx: Ctx, err: unknown) => {
     ctx.req.log.error('Request failed', {
       error: (err as Error).message,
       path: ctx.req.url.pathname,
