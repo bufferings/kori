@@ -1,4 +1,4 @@
-import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
+import { defineKoriPlugin, type Kori, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 
 // Type definitions for plugin extensions
 export type TimingEnvironmentExtension = {
@@ -231,51 +231,7 @@ function createAuthPlugin(options: { secretKey: string }) {
   });
 }
 
-// Create app with plugins applied individually for proper type inference
-const app = createKori()
-  .applyPlugin(timingPlugin)
-  .applyPlugin(createCorsPlugin())
-  .applyPlugin(createRateLimitPlugin())
-  .applyPlugin(requestIdPlugin)
-  .applyPlugin(createAuthPlugin({ secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production' }))
-  .get('/public', (ctx) =>
-    // Type inference should work properly with individual plugin application
-    ctx.res.json({
-      message: 'This is a public endpoint',
-      requestId: ctx.req.requestId,
-    }),
-  )
-  .get('/protected', (ctx) => {
-    // Type inference should work properly with individual plugin application
-    const { authenticated, user, requestId } = ctx.req;
-
-    if (!authenticated || !user) {
-      return ctx.res.status(401).json({ message: 'Authentication required' });
-    }
-
-    return ctx.res.json({
-      message: 'This is a protected endpoint',
-      user,
-      requestId,
-    });
-  })
-  .get('/rate-limit-test', (ctx) => {
-    // Type inference should work properly with individual plugin application
-    const { rateLimit } = ctx.req;
-
-    return ctx.res.json({
-      message: 'Rate limit test',
-      rateLimit: rateLimit
-        ? {
-            limit: rateLimit.limit,
-            remaining: rateLimit.remaining,
-            resetTime: new Date(rateLimit.reset).toISOString(),
-          }
-        : null,
-    });
-  });
-
-// Example of a custom plugin with proper types
+// Custom plugin with proper types
 const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, CustomDataRequestExtension>({
   name: 'customPlugin',
   apply: (kori) => {
@@ -291,14 +247,64 @@ const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse
   },
 });
 
-const pluginApp = createKori()
-  .applyPlugin(customPlugin)
-  .get('/custom', (ctx) =>
-    // Type inference should work properly with individual plugin application
-    ctx.res.json({
-      message: 'Custom plugin example',
-      customData: ctx.req.customData,
-    }),
-  );
+export function configure(app: Kori<any, any, any, any, any>) {
+  // Apply plugins to the app
+  app
+    .applyPlugin(timingPlugin)
+    .applyPlugin(createCorsPlugin())
+    .applyPlugin(createRateLimitPlugin())
+    .applyPlugin(requestIdPlugin)
+    .applyPlugin(createAuthPlugin({ secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production' }))
+    .get('/public', (ctx) =>
+      // Type inference should work properly with individual plugin application
+      ctx.res.json({
+        message: 'This is a public endpoint',
+        requestId: ctx.req.requestId,
+      }),
+    )
+    .get('/protected', (ctx) => {
+      // Type inference should work properly with individual plugin application
+      const { authenticated, user, requestId } = ctx.req;
 
-export { app, pluginApp };
+      if (!authenticated || !user) {
+        return ctx.res.status(401).json({ message: 'Authentication required' });
+      }
+
+      return ctx.res.json({
+        message: 'This is a protected endpoint',
+        user,
+        requestId,
+      });
+    })
+    .get('/rate-limit-test', (ctx) => {
+      // Type inference should work properly with individual plugin application
+      const { rateLimit } = ctx.req;
+
+      return ctx.res.json({
+        message: 'Rate limit test',
+        rateLimit: rateLimit
+          ? {
+              limit: rateLimit.limit,
+              remaining: rateLimit.remaining,
+              resetTime: new Date(rateLimit.reset).toISOString(),
+            }
+          : null,
+      });
+    });
+
+  return app;
+}
+
+export function configureCustom(app: Kori<any, any, any, any, any>) {
+  app
+    .applyPlugin(customPlugin)
+    .get('/custom', (ctx) =>
+      // Type inference should work properly with individual plugin application
+      ctx.res.json({
+        message: 'Custom plugin example',
+        customData: ctx.req.customData,
+      }),
+    );
+
+  return app;
+}

@@ -2,9 +2,17 @@ import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
 import { zodOpenApiPlugin } from 'kori-zod-openapi-plugin';
-import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator } from 'kori-zod-validator';
-import { z } from 'zod';
+
+import { configure as configureGettingStarted } from './01-getting-started.js';
+import { configure as configureBasicRouting } from './02-basic-routing.js';
+import { configure as configureValidation } from './03-validation.js';
+import { configure as configureLifecycleHooks } from './04-lifecycle-hooks.js';
+import { configure as configurePluginSystem, configureCustom as configureCustomPlugin } from './05-plugin-system.js';
+import { configure as configureChildInstances } from './06-child-instances.js';
+import { configure as configureLogging } from './07-logging.js';
+import { configure as configureErrorHandling, configureGraceful as configureGracefulErrors } from './08-error-handling.js';
+import { configure as configureOpenApi } from './09-openapi.js';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
@@ -83,50 +91,74 @@ app.get('/', (ctx) => {
         
         <div class="grid">
           <div class="card">
-            <h3>Basic Routing</h3>
-            <p>HTTP methods, path parameters, query strings, different response types</p>
-            <a href="/basic/hello/World">GET /basic/hello/:name</a><br>
-            <a href="/basic/users">GET /basic/users</a><br>
-            <a href="/basic/text">GET /basic/text</a>
+            <h3>01 - Getting Started</h3>
+            <p>Basic Kori usage, hello world, path parameters, query parameters, validation</p>
+            <a href="/01-getting-started/">Welcome message</a><br>
+            <a href="/01-getting-started/hello/World">Greeting</a><br>
+            <a href="/01-getting-started/search?q=kori">Search</a>
           </div>
           
           <div class="card">
-            <h3>Validation</h3>
+            <h3>02 - Basic Routing</h3>
+            <p>HTTP methods, path parameters, different response types</p>
+            <a href="/02-basic-routing/hello/World">GET /hello/:name</a><br>
+            <a href="/02-basic-routing/users">GET /users</a><br>
+            <a href="/02-basic-routing/text">Plain text response</a>
+          </div>
+          
+          <div class="card">
+            <h3>03 - Validation</h3>
             <p>Request validation with Zod schemas</p>
-            <a href="/validation/users?page=1&limit=5">GET /validation/users</a><br>
-            <p>POST /validation/users (with body validation)</p>
+            <a href="/03-validation/users?page=1&limit=5">GET /users (with query validation)</a><br>
+            <p>POST /users (with body validation)</p>
           </div>
           
           <div class="card">
-            <h3>Lifecycle Hooks</h3>
+            <h3>04 - Lifecycle Hooks</h3>
             <p>Request lifecycle management and hooks</p>
-            <a href="/lifecycle/health">GET /lifecycle/health</a><br>
-            <a href="/lifecycle/slow">GET /lifecycle/slow</a><br>
-            <a href="/lifecycle/data/123">GET /lifecycle/data/:id</a>
+            <a href="/04-lifecycle-hooks/health">GET /health</a><br>
+            <a href="/04-lifecycle-hooks/slow">GET /slow (2s delay)</a><br>
+            <a href="/04-lifecycle-hooks/data/123">GET /data/:id</a>
           </div>
           
           <div class="card">
-            <h3>Plugin System</h3>
+            <h3>05 - Plugin System</h3>
             <p>Timing, CORS, rate limiting, authentication plugins</p>
-            <a href="/plugins/public">GET /plugins/public</a><br>
-            <a href="/plugins/protected">GET /plugins/protected</a><br>
-            <a href="/plugins/rate-limit-test">GET /plugins/rate-limit-test</a>
+            <a href="/05-plugin-system/public">GET /public</a><br>
+            <a href="/05-plugin-system/protected">GET /protected (needs auth)</a><br>
+            <a href="/05-plugin-system/rate-limit-test">GET /rate-limit-test</a>
           </div>
           
           <div class="card">
-            <h3>Child Instances</h3>
+            <h3>06 - Child Instances</h3>
             <p>API versioning and nested routing</p>
-            <a href="/api/v1/users">GET /api/v1/users</a><br>
-            <a href="/api/v2/users">GET /api/v2/users</a><br>
-            <a href="/admin/stats">GET /admin/stats</a>
+            <a href="/06-child-instances/api/v1/users">GET /api/v1/users</a><br>
+            <a href="/06-child-instances/api/v2/users">GET /api/v2/users</a><br>
+            <a href="/06-child-instances/admin/stats">GET /admin/stats (needs header)</a>
           </div>
           
           <div class="card">
-            <h3>Error Handling</h3>
+            <h3>07 - Logging</h3>
+            <p>Different logging strategies and performance tracking</p>
+            <a href="/07-logging/simple/hello">GET /simple/hello</a><br>
+            <a href="/07-logging/contextual/user/123">GET /contextual/user/:id</a><br>
+            <a href="/07-logging/performance/metrics">GET /performance/metrics</a>
+          </div>
+          
+          <div class="card">
+            <h3>08 - Error Handling</h3>
             <p>Custom error types and error handling strategies</p>
-            <a href="/errors/basic">GET /errors/basic</a><br>
-            <a href="/errors/custom">GET /errors/custom</a><br>
-            <a href="/errors/validation">GET /errors/validation</a>
+            <a href="/08-error-handling/error/basic">GET /error/basic</a><br>
+            <a href="/08-error-handling/error/custom">GET /error/custom</a><br>
+            <a href="/08-error-handling/safe/divide">GET /safe/divide</a>
+          </div>
+          
+          <div class="card">
+            <h3>09 - OpenAPI</h3>
+            <p>OpenAPI documentation and Zod schema integration</p>
+            <a href="/09-openapi/users">GET /users (with OpenAPI docs)</a><br>
+            <a href="/09-openapi/users/1">GET /users/:id</a><br>
+            <p>POST /users (with request validation)</p>
           </div>
         </div>
       </body>
@@ -134,377 +166,60 @@ app.get('/', (ctx) => {
     `);
 });
 
-const basicRoutes = app.createChild({
-  prefix: '/basic',
-  configure: (kori) => kori,
+// Mount each example with its own prefix
+app.createChild({
+  prefix: '/01-getting-started',
+  configure: configureGettingStarted,
 });
 
-basicRoutes.get('/hello/:name', (ctx) => {
-  const name = ctx.req.pathParams.name;
-  return ctx.res.json({ message: `Hello, ${name}!` });
+app.createChild({
+  prefix: '/02-basic-routing',
+  configure: configureBasicRouting,
 });
 
-basicRoutes.get('/users', (ctx) => {
-  const users = [
-    { id: 1, name: 'Alice' },
-    { id: 2, name: 'Bob' },
-    { id: 3, name: 'Charlie' },
-  ];
-  return ctx.res.json(users);
+app.createChild({
+  prefix: '/03-validation',
+  configure: configureValidation,
 });
 
-basicRoutes.get('/text', (ctx) => ctx.res.text('This is a plain text response'));
-
-basicRoutes.get('/html', (ctx) => ctx.res.html('<h1>Hello from Kori!</h1>'));
-
-const UserSchema = z.object({
-  name: z.string().min(1).max(100).describe('User full name'),
-  email: z.string().email().describe('User email address'),
-  age: z.number().int().min(0).max(150).describe('User age'),
+app.createChild({
+  prefix: '/04-lifecycle-hooks',
+  configure: configureLifecycleHooks,
 });
 
-const QuerySchema = z.object({
-  page: z.string().regex(/^\d+$/).transform(Number).default('1').describe('Page number'),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('10').describe('Items per page'),
-  sort: z.enum(['asc', 'desc']).optional().describe('Sort order'),
+app.createChild({
+  prefix: '/05-plugin-system',
+  configure: configurePluginSystem,
 });
 
-const validationRoutes = app.createChild({
-  prefix: '/validation',
-  configure: (kori) => kori,
+app.createChild({
+  prefix: '/05-plugin-custom',
+  configure: configureCustomPlugin,
 });
 
-validationRoutes.post('/users', {
-  requestSchema: zodRequest({
-    body: UserSchema,
-  }),
-  handler: (ctx) => {
-    const body = ctx.req.validated.body;
-    return ctx.res.status(201).json({
-      message: 'User created successfully',
-      user: { id: Math.floor(Math.random() * 1000), ...body },
-    });
-  },
+app.createChild({
+  prefix: '/06-child-instances',
+  configure: configureChildInstances,
 });
 
-validationRoutes.get('/users', {
-  requestSchema: zodRequest({
-    queries: QuerySchema,
-  }),
-  handler: (ctx) => {
-    const query = ctx.req.validated.queries;
-    const users = [
-      { id: 1, name: 'Alice', email: 'alice@example.com', age: 25 },
-      { id: 2, name: 'Bob', email: 'bob@example.com', age: 30 },
-      { id: 3, name: 'Charlie', email: 'charlie@example.com', age: 35 },
-    ];
-
-    const start = (query.page - 1) * query.limit;
-    const end = start + query.limit;
-    const paginatedUsers = users.slice(start, end);
-
-    if (query.sort === 'desc') {
-      paginatedUsers.reverse();
-    }
-
-    return ctx.res.json({
-      users: paginatedUsers,
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        total: users.length,
-      },
-    });
-  },
+app.createChild({
+  prefix: '/07-logging',
+  configure: configureLogging,
 });
 
-let requestCount = 0;
-const activeRequests = new Map<string, number>();
-
-const lifecycleRoutes = app
-  .createChild({
-    prefix: '/lifecycle',
-    configure: (kori) => kori,
-  })
-  .onRequest((ctx) => {
-    requestCount++;
-    const requestId = `req-${requestCount}`;
-    const startTime = Date.now();
-    activeRequests.set(requestId, startTime);
-
-    ctx.req.log.info('Lifecycle request started', {
-      requestId,
-      method: ctx.req.method,
-      url: ctx.req.url.href,
-    });
-
-    return ctx.withReq({ requestId, startTime });
-  })
-  .onResponse((ctx) => {
-    const requestId = ctx.req.requestId;
-    const startTime = ctx.req.startTime;
-    const duration = Date.now() - startTime;
-    activeRequests.delete(requestId);
-
-    ctx.req.log.info('Lifecycle request completed', {
-      requestId,
-      duration,
-      status: ctx.res.getStatus(),
-    });
-  });
-
-lifecycleRoutes.get('/health', (ctx) =>
-  ctx.res.json({
-    status: 'healthy',
-    requestCount,
-    activeRequests: activeRequests.size,
-    uptime: process.uptime(),
-    requestId: ctx.req.requestId,
-  }),
-);
-
-lifecycleRoutes.get('/slow', async (ctx) => {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  return ctx.res.json({
-    message: 'This was a slow request',
-    requestId: ctx.req.requestId,
-  });
+app.createChild({
+  prefix: '/08-error-handling',
+  configure: configureErrorHandling,
 });
 
-lifecycleRoutes.get('/data/:id', (ctx) => {
-  const id = ctx.req.pathParams.id;
-
-  if (id === '0') {
-    throw new Error('Invalid ID: 0');
-  }
-
-  return ctx.res.json({
-    id,
-    data: `Data for ID ${id}`,
-    requestId: ctx.req.requestId,
-  });
+app.createChild({
+  prefix: '/08-graceful-errors',
+  configure: configureGracefulErrors,
 });
 
-const store = new Map<string, { count: number; resetTime: number }>();
-
-const pluginRoutes = app.createChild({
-  prefix: '/plugins',
-  configure: (kori) => kori,
-});
-
-pluginRoutes.get('/public', (ctx) => {
-  const start = Date.now();
-
-  const clientIp = ctx.req.headers['x-forwarded-for'] ?? 'localhost';
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const max = 100;
-
-  let clientData = store.get(clientIp);
-
-  if (!clientData || now > clientData.resetTime) {
-    clientData = { count: 0, resetTime: now + windowMs };
-    store.set(clientIp, clientData);
-  }
-
-  clientData.count++;
-
-  const rateLimit = {
-    limit: max,
-    remaining: Math.max(0, max - clientData.count),
-    reset: clientData.resetTime,
-  };
-
-  ctx.res.setHeader('X-RateLimit-Limit', rateLimit.limit.toString());
-  ctx.res.setHeader('X-RateLimit-Remaining', rateLimit.remaining.toString());
-  ctx.res.setHeader('X-RateLimit-Reset', rateLimit.reset.toString());
-  ctx.res.setHeader('X-Response-Time', `${Date.now() - start}ms`);
-
-  return ctx.res.json({
-    message: 'This is a public endpoint',
-    rateLimit,
-  });
-});
-
-pluginRoutes.get('/protected', (ctx) => {
-  const authHeader = ctx.req.headers.authorization;
-  const token = authHeader?.replace('Bearer ', '');
-
-  const authenticated = !!token && token.length > 0;
-  const user = authenticated ? { id: 'demo-user', role: 'admin' } : undefined;
-
-  if (!authenticated || !user) {
-    return ctx.res.status(401).json({ message: 'Authentication required' });
-  }
-
-  return ctx.res.json({
-    message: 'This is a protected endpoint',
-    user,
-  });
-});
-
-pluginRoutes.get('/rate-limit-test', (ctx) => {
-  const clientIp = ctx.req.headers['x-forwarded-for'] ?? 'localhost';
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const max = 100;
-
-  let clientData = store.get(clientIp);
-
-  if (!clientData || now > clientData.resetTime) {
-    clientData = { count: 0, resetTime: now + windowMs };
-    store.set(clientIp, clientData);
-  }
-
-  clientData.count++;
-
-  const rateLimit = {
-    limit: max,
-    remaining: Math.max(0, max - clientData.count),
-    reset: clientData.resetTime,
-  };
-
-  ctx.res.setHeader('X-RateLimit-Limit', rateLimit.limit.toString());
-  ctx.res.setHeader('X-RateLimit-Remaining', rateLimit.remaining.toString());
-  ctx.res.setHeader('X-RateLimit-Reset', rateLimit.reset.toString());
-
-  return ctx.res.json({
-    message: 'Rate limit test',
-    rateLimit,
-  });
-});
-
-const v1Routes = app.createChild({
-  prefix: '/api/v1',
-  configure: (kori) => kori,
-});
-
-v1Routes.get('/users', (ctx) =>
-  ctx.res.json({
-    apiVersion: 'v1',
-    users: [
-      { id: 1, name: 'Alice', version: 'v1' },
-      { id: 2, name: 'Bob', version: 'v1' },
-    ],
-  }),
-);
-
-const v2Routes = app.createChild({
-  prefix: '/api/v2',
-  configure: (kori) => kori,
-});
-
-v2Routes.get('/users', (ctx) =>
-  ctx.res.json({
-    apiVersion: 'v2',
-    features: ['pagination', 'filtering', 'sorting'],
-    users: [
-      {
-        id: 1,
-        name: 'Alice',
-        email: 'alice@example.com',
-        createdAt: '2024-01-01T00:00:00Z',
-        version: 'v2',
-      },
-      {
-        id: 2,
-        name: 'Bob',
-        email: 'bob@example.com',
-        createdAt: '2024-01-02T00:00:00Z',
-        version: 'v2',
-      },
-    ],
-  }),
-);
-
-const adminRoutes = app.createChild({
-  prefix: '/admin',
-  configure: (kori) => kori,
-});
-
-adminRoutes.get('/stats', (ctx) => {
-  const authHeader = ctx.req.headers['x-admin-token'];
-
-  if (!authHeader || authHeader.length === 0) {
-    return ctx.res.status(401).json({ message: 'Admin access required' });
-  }
-
-  return ctx.res.json({
-    isAdmin: true,
-    stats: {
-      totalUsers: 100,
-      totalPosts: 500,
-      activeUsers: 85,
-    },
-  });
-});
-
-class CustomError extends Error {
-  statusCode: number;
-  code: string;
-
-  constructor(message: string, statusCode: number, code: string) {
-    super(message);
-    this.name = 'CustomError';
-    this.statusCode = statusCode;
-    this.code = code;
-  }
-}
-
-const errorRoutes = app.createChild({
-  prefix: '/errors',
-  configure: (kori) => kori,
-});
-
-errorRoutes.get('/basic', () => {
-  throw new Error('This is a basic error');
-});
-
-errorRoutes.get('/custom', () => {
-  throw new CustomError('Custom error occurred', 418, 'TEAPOT');
-});
-
-errorRoutes.get('/validation', (ctx) => {
-  return ctx.res.badRequest({
-    message: 'Validation failed',
-    details: {
-      fields: {
-        email: 'Invalid email format',
-        age: 'Must be a positive number',
-      },
-    },
-  });
-});
-
-app.onError((ctx, err) => {
-  const error = err instanceof Error ? err : new Error(String(err));
-
-  ctx.req.log.error('Error occurred', {
-    error: {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    },
-    request: {
-      method: ctx.req.method,
-      path: ctx.req.url.pathname,
-    },
-  });
-
-  if (!ctx.res.isSet()) {
-    if (err instanceof CustomError) {
-      ctx.res.status(err.statusCode).json({
-        error: {
-          code: err.code,
-          message: err.message,
-        },
-      });
-    } else {
-      ctx.res.internalError({
-        message: 'An unexpected error occurred',
-      });
-    }
-  }
+app.createChild({
+  prefix: '/09-openapi',
+  configure: configureOpenApi,
 });
 
 app.onInit(() => {
@@ -512,12 +227,17 @@ app.onInit(() => {
   app.log.info('Main page available at: http://localhost:3000');
   app.log.info('');
   app.log.info('Available example categories:');
-  app.log.info('  * Basic routing: /basic/*');
-  app.log.info('  * Validation: /validation/*');
-  app.log.info('  * Lifecycle hooks: /lifecycle/*');
-  app.log.info('  * Plugin system: /plugins/*');
-  app.log.info('  * Child instances: /api/v1/*, /api/v2/*, /admin/*');
-  app.log.info('  * Error handling: /errors/*');
+  app.log.info('  * 01 - Getting Started: /01-getting-started/*');
+  app.log.info('  * 02 - Basic Routing: /02-basic-routing/*');
+  app.log.info('  * 03 - Validation: /03-validation/*');
+  app.log.info('  * 04 - Lifecycle Hooks: /04-lifecycle-hooks/*');
+  app.log.info('  * 05 - Plugin System: /05-plugin-system/*');
+  app.log.info('  * 06 - Child Instances: /06-child-instances/*');
+  app.log.info('  * 07 - Logging: /07-logging/*');
+  app.log.info('  * 08 - Error Handling: /08-error-handling/*');
+  app.log.info('  * 09 - OpenAPI: /09-openapi/*');
+  app.log.info('');
+  app.log.info('All individual examples are now properly integrated and accessible!');
 });
 
 await startNodeServer(app, { port: 3000, host: 'localhost' });
