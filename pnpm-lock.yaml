@@ -46,6 +46,19 @@ catalogs:
 importers:
 
   .:
+    dependencies:
+      kori-nodejs-adapter:
+        specifier: workspace:^0.0.1
+        version: link:packages/kori-nodejs-adapter
+      kori-openapi-ui-scalar:
+        specifier: workspace:^0.0.1
+        version: link:packages/kori-openapi-ui-scalar
+      kori-zod-openapi-plugin:
+        specifier: workspace:^0.0.1
+        version: link:packages/kori-zod-openapi-plugin
+      zod:
+        specifier: ^3.25.67
+        version: 3.25.67
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -1826,6 +1839,9 @@ packages:
   zod@3.24.1:
     resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
 
+  zod@3.25.67:
+    resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
+
 snapshots:
 
   '@emnapi/core@1.4.3':
@@ -3292,3 +3308,5 @@ snapshots:
       zod: 3.24.1
 
   zod@3.24.1: {}
+
+  zod@3.25.67: {}
