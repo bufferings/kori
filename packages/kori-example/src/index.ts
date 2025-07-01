@@ -9,6 +9,8 @@ import { z } from 'zod';
 // Import individual example configurations
 import { configure as configureGettingStarted } from './01-getting-started.js';
 import { configure as configureBasicRouting } from './02-basic-routing.js';
+import { configure as configureValidation } from './03-validation.js';
+import { configure as configureLifecycleHooks } from './04-lifecycle-hooks.js';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
@@ -107,18 +109,21 @@ app.get('/', (ctx) => {
           </div>
           
           <div class="card">
-            <h3>Validation</h3>
-            <p>Request validation with Zod schemas</p>
-            <a href="/validation/users?page=1&limit=5">GET /validation/users</a><br>
-            <p>POST /validation/users (with body validation)</p>
+            <h3>03 - Validation</h3>
+            <p>Request validation with Zod schemas - body, params, query, headers</p>
+            <a href="/03-validation">GET /03-validation</a><br>
+            <a href="/03-validation/users?page=1&limit=5">GET /03-validation/users</a><br>
+            <p>POST /03-validation/users (with body validation)</p>
+            <p>POST /03-validation/complex (with headers validation)</p>
           </div>
           
           <div class="card">
-            <h3>Lifecycle Hooks</h3>
-            <p>Request lifecycle management and hooks</p>
-            <a href="/lifecycle/health">GET /lifecycle/health</a><br>
-            <a href="/lifecycle/slow">GET /lifecycle/slow</a><br>
-            <a href="/lifecycle/data/123">GET /lifecycle/data/:id</a>
+            <h3>04 - Lifecycle Hooks</h3>
+            <p>Request lifecycle management and monitoring hooks</p>
+            <a href="/04-lifecycle-hooks">GET /04-lifecycle-hooks</a><br>
+            <a href="/04-lifecycle-hooks/health">GET /04-lifecycle-hooks/health</a><br>
+            <a href="/04-lifecycle-hooks/slow">GET /04-lifecycle-hooks/slow</a><br>
+            <a href="/04-lifecycle-hooks/auth/profile">GET /04-lifecycle-hooks/auth/profile</a>
           </div>
           
           <div class="card">
@@ -159,6 +164,16 @@ app.createChild({
 app.createChild({
   prefix: '/02-basic-routing',
   configure: configureBasicRouting,
+});
+
+app.createChild({
+  prefix: '/03-validation',
+  configure: configureValidation,
+});
+
+app.createChild({
+  prefix: '/04-lifecycle-hooks',
+  configure: configureLifecycleHooks,
 });
 
 const basicRoutes = app.createChild({
