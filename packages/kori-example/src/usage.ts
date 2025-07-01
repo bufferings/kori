@@ -1,0 +1,341 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
+import { startNodeServer } from 'kori-nodejs-adapter';
+import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
+import { zodOpenApiPlugin, openApiRoute } from 'kori-zod-openapi-plugin';
+import { zodRequest } from 'kori-zod-schema';
+import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
+import { z } from 'zod';
+
+// Custom plugins
+type RequestIdExtension = { requestId: string };
+type TimingExtension = { startTime: number };
+
+const requestIdPlugin = defineKoriPlugin<
+  KoriEnvironment,
+  KoriRequest,
+  KoriResponse,
+  unknown,
+  RequestIdExtension,
+  unknown,
+  any,
+  any
+>({
+  name: 'requestId',
+  apply: (k) =>
+    k
+      .onRequest((ctx) => {
+        const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        return ctx.withReq({ requestId });
+      })
+      .onResponse((ctx) => {
+        ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
+      }),
+});
+
+const timingPlugin = defineKoriPlugin<
+  KoriEnvironment,
+  KoriRequest,
+  KoriResponse,
+  unknown,
+  TimingExtension,
+  unknown,
+  any,
+  any
+>({
+  name: 'timing',
+  apply: (k) =>
+    k
+      .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
+      .onResponse((ctx) => {
+        const duration = Date.now() - ctx.req.startTime;
+        ctx.res.setHeader('X-Response-Time', `${duration}ms`);
+      }),
+});
+
+// Complex validation schemas
+const ProductSchema = z.object({
+  name: z.string().min(1).max(200).describe('Product name'),
+  description: z.string().max(1000).optional().describe('Product description'),
+  price: z.number().positive().describe('Product price'),
+  category: z.enum(['electronics', 'books', 'clothing']).describe('Product category'),
+  tags: z.array(z.string()).max(10).describe('Product tags'),
+  metadata: z
+    .object({
+      weight: z.number().positive().optional(),
+      dimensions: z
+        .object({
+          width: z.number().positive(),
+          height: z.number().positive(),
+          depth: z.number().positive(),
+        })
+        .optional(),
+    })
+    .optional(),
+});
+
+// Create app with plugins
+const app = createKori({
+  requestValidator: createKoriZodRequestValidator(),
+  responseValidator: createKoriZodResponseValidator(),
+})
+  .applyPlugin(requestIdPlugin)
+  .applyPlugin(timingPlugin)
+  .applyPlugin(
+    zodOpenApiPlugin({
+      info: {
+        title: 'Kori Advanced Examples',
+        version: '1.0.0',
+        description: 'Advanced Kori features: plugins, hooks, complex validation, auth',
+      },
+      servers: [{ url: 'http://localhost:3001', description: 'Development server' }],
+    }),
+  )
+  .applyPlugin(
+    scalarUIPlugin({
+      path: '/',
+      title: 'Kori Advanced API',
+      theme: 'auto',
+    }),
+  )
+  .onRequest((ctx) => {
+    ctx.req.log.info('Request started', {
+      requestId: ctx.req.requestId,
+      method: ctx.req.method,
+      path: ctx.req.url.pathname,
+    });
+  })
+  .onResponse((ctx) => {
+    ctx.req.log.info('Request completed', {
+      requestId: ctx.req.requestId,
+      status: ctx.res.getStatus(),
+    });
+  })
+  .onError((ctx, err) => {
+    const error = err instanceof Error ? err : new Error(String(err));
+    ctx.req.log.error('Request failed', {
+      requestId: ctx.req.requestId,
+      error: error.message,
+    });
+
+    if (!ctx.res.isSet()) {
+      ctx.res.internalError({ message: 'Internal server error' });
+    }
+  });
+
+// Complex validation example
+app.post('/products', {
+  requestSchema: zodRequest({
+    body: ProductSchema,
+    headers: z.object({
+      'x-api-version': z.enum(['1.0', '2.0']).optional(),
+      'x-client-id': z.string().min(1).describe('Client identifier'),
+    }),
+  }),
+  pluginMetadata: openApiRoute({
+    summary: 'Create product',
+    description: 'Create a product with complex validation',
+    tags: ['Products'],
+  }),
+  handler: (ctx) => {
+    const product = ctx.req.validated.body;
+    const headers = ctx.req.validated.headers;
+
+    const newProduct = {
+      id: Math.floor(Math.random() * 10000),
+      ...product,
+      createdAt: new Date().toISOString(),
+      clientId: headers['x-client-id'],
+      apiVersion: headers['x-api-version'] ?? '1.0',
+    };
+
+    ctx.req.log.info('Product created', {
+      productId: newProduct.id,
+      requestId: ctx.req.requestId,
+    });
+
+    return ctx.res.status(201).json(newProduct);
+  },
+});
+
+// Search with complex query validation
+app.get('/products/search', {
+  requestSchema: zodRequest({
+    queries: z.object({
+      q: z.string().min(1).describe('Search query'),
+      category: z.enum(['electronics', 'books', 'clothing']).optional(),
+      minPrice: z
+        .string()
+        .regex(/^\d+(\.\d{2})?$/)
+        .transform(Number)
+        .optional(),
+      maxPrice: z
+        .string()
+        .regex(/^\d+(\.\d{2})?$/)
+        .transform(Number)
+        .optional(),
+      tags: z.string().optional().describe('Comma-separated tags'),
+      sort: z.enum(['name', 'price', 'created']).default('name'),
+      order: z.enum(['asc', 'desc']).default('asc'),
+    }),
+  }),
+  pluginMetadata: openApiRoute({
+    summary: 'Search products',
+    description: 'Advanced product search with filtering',
+    tags: ['Products'],
+  }),
+  handler: (ctx) => {
+    const query = ctx.req.validated.queries;
+
+    // Mock search results
+    const results = [
+      { id: 1, name: 'Laptop', category: 'electronics', price: 999.99 },
+      { id: 2, name: 'TypeScript Book', category: 'books', price: 29.99 },
+    ].filter((product) => {
+      if (query.category && product.category !== query.category) return false;
+      if (query.minPrice && product.price < query.minPrice) return false;
+      if (query.maxPrice && product.price > query.maxPrice) return false;
+      return product.name.toLowerCase().includes(query.q.toLowerCase());
+    });
+
+    return ctx.res.json({
+      query: query.q,
+      filters: { category: query.category, minPrice: query.minPrice, maxPrice: query.maxPrice },
+      results,
+      total: results.length,
+      requestId: ctx.req.requestId,
+    });
+  },
+});
+
+// Admin area with authentication middleware
+app.createChild({
+  prefix: '/admin',
+  configure: (k) =>
+    k
+      .onRequest((ctx) => {
+        const token = ctx.req.headers.authorization?.replace('Bearer ', '');
+        if (!token || token !== 'admin-secret-token') {
+          ctx.req.log.warn('Unauthorized admin access', { requestId: ctx.req.requestId });
+          throw new Error('Unauthorized');
+        }
+        return ctx.withReq({ isAdmin: true });
+      })
+      .onError((ctx, err) => {
+        const error = err instanceof Error ? err : new Error(String(err));
+        if (error.message === 'Unauthorized' && !ctx.res.isSet()) {
+          ctx.res.status(401).json({
+            error: 'Unauthorized',
+            message: 'Admin access required. Use Authorization: Bearer admin-secret-token',
+          });
+        }
+      })
+      .get('/dashboard', {
+        pluginMetadata: openApiRoute({
+          summary: 'Admin dashboard',
+          description: 'Get admin dashboard data (requires auth)',
+          tags: ['Admin'],
+        }),
+        handler: (ctx) =>
+          ctx.res.json({
+            message: 'Admin dashboard',
+            stats: {
+              totalProducts: 1250,
+              totalUsers: 500,
+              revenue: 125000.5,
+            },
+            requestId: ctx.req.requestId,
+          }),
+      })
+      .post('/maintenance', {
+        requestSchema: zodRequest({
+          body: z.object({
+            mode: z.enum(['enable', 'disable']),
+            reason: z.string().optional(),
+          }),
+        }),
+        pluginMetadata: openApiRoute({
+          summary: 'Toggle maintenance mode',
+          description: 'Enable or disable maintenance mode',
+          tags: ['Admin'],
+        }),
+        handler: (ctx) => {
+          const { mode, reason } = ctx.req.validated.body;
+
+          ctx.req.log.info('Maintenance mode changed', {
+            mode,
+            reason,
+            requestId: ctx.req.requestId,
+          });
+
+          return ctx.res.json({
+            message: `Maintenance mode ${mode}d`,
+            mode,
+            reason,
+            timestamp: new Date().toISOString(),
+          });
+        },
+      }),
+});
+
+// Health check with detailed info
+app.get('/health', {
+  pluginMetadata: openApiRoute({
+    summary: 'Health check',
+    description: 'Detailed health information',
+    tags: ['System'],
+  }),
+  handler: (ctx) =>
+    ctx.res.json({
+      status: 'healthy',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString(),
+      requestId: ctx.req.requestId,
+    }),
+});
+
+// Error demonstration
+app.get('/error/:type', {
+  pluginMetadata: openApiRoute({
+    summary: 'Error demo',
+    description: 'Demonstrate different error types',
+    tags: ['Demo'],
+  }),
+  handler: (ctx) => {
+    const { type } = ctx.req.pathParams;
+
+    switch (type) {
+      case 'validation':
+        return ctx.res.badRequest({ message: 'Validation failed' });
+      case 'timeout':
+        throw new Error('Operation timeout');
+      case 'server':
+        throw new Error('Internal server error');
+      default:
+        throw new Error(`Unknown error type: ${type}`);
+    }
+  },
+});
+
+// Initialize server
+app.onInit(() => {
+  app.log.info('Kori Advanced Examples Server');
+  app.log.info('API Documentation: http://localhost:3001');
+  app.log.info('Advanced features:');
+  app.log.info('  - Custom plugins (timing, request ID)');
+  app.log.info('  - Lifecycle hooks (request/response/error)');
+  app.log.info('  - Complex validation (nested schemas, headers)');
+  app.log.info('  - Authentication middleware (/admin/*)');
+  app.log.info('  - Error handling and logging');
+  app.log.info('');
+  app.log.info('Try these endpoints:');
+  app.log.info('  POST /products (with complex JSON body and headers)');
+  app.log.info('  GET  /products/search?q=laptop&category=electronics');
+  app.log.info('  GET  /admin/dashboard (with Authorization: Bearer admin-secret-token)');
+  app.log.info('  GET  /health');
+  app.log.info('  GET  /error/timeout');
+});
+
+await startNodeServer(app, { port: 3001, host: 'localhost' });
+app.log.info('Advanced server running at http://localhost:3001');

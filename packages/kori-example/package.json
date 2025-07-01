@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsx src/index.ts",
+    "start:getting-started": "tsx src/getting-started.ts",
+    "start:usage": "tsx src/usage.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

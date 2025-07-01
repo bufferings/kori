@@ -13,6 +13,7 @@ import {
   type KoriRequest,
   type KoriResponse,
   type KoriRequestValidatorDefault,
+  type KoriResponseValidatorDefault,
 } from 'kori';
 
 /**
@@ -90,8 +91,12 @@ export async function startNodeServer<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  InstanceRequestValidator extends KoriRequestValidatorDefault | undefined,
->(kori: Kori<Env, Req, Res, InstanceRequestValidator>, options: { port?: number; host?: string } = {}): Promise<void> {
+  RequestValidator extends KoriRequestValidatorDefault | undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+>(
+  kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
+  options: { port?: number; host?: string } = {},
+): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
 
@@ -144,8 +149,9 @@ export function createNodeApp<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  InstanceRequestValidator extends KoriRequestValidatorDefault | undefined,
->(kori: Kori<Env, Req, Res, InstanceRequestValidator>) {
+  RequestValidator extends KoriRequestValidatorDefault | undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+>(kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>) {
   return {
     listen(port = 3000, host = 'localhost', callback?: () => void) {
       startNodeServer(kori, { port, host });

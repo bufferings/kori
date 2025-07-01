@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:example": "pnpm --filter kori-example dev",
+    "example:getting-started": "pnpm --filter kori-example start:getting-started",
+    "example:usage": "pnpm --filter kori-example start:usage",
     "build": "pnpm -r build",
     "clean": "pnpm -r exec -- sh -c 'rm -rf dist node_modules/.cache *.tsbuildinfo'",
     "test": "vitest run",
