@@ -1,11 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
-import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
+import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
+import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
+
+// Logger configuration - pino-pretty only in development
+const isDev = process.env.NODE_ENV !== 'production';
+const loggerFactory = createPinoKoriLoggerFactory({
+  level: 'info',
+  ...(isDev && {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        ignore: 'pid,hostname',
+      },
+    },
+  }),
+});
 
 // Custom plugins
 type RequestIdExtension = { requestId: string };
@@ -35,7 +50,7 @@ const requestIdPlugin = defineKoriPlugin<
 
 const timingPlugin = defineKoriPlugin<
   KoriEnvironment,
-  KoriRequest,
+  KoriRequest & RequestIdExtension,
   KoriResponse,
   unknown,
   TimingExtension,
@@ -78,6 +93,7 @@ const ProductSchema = z.object({
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
+  loggerFactory,
 })
   .applyPlugin(requestIdPlugin)
   .applyPlugin(timingPlugin)
@@ -92,7 +108,7 @@ const app = createKori({
     }),
   )
   .applyPlugin(
-    scalarUIPlugin({
+    scalarUiPlugin({
       path: '/',
       title: 'Kori Advanced API',
       theme: 'auto',

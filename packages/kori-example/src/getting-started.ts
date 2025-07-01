@@ -1,18 +1,16 @@
 import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
-import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
+import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
 
-// User schema for validation
 const UserSchema = z.object({
   name: z.string().min(1).max(100).describe('User name'),
   email: z.string().email().describe('Email address'),
 });
 
-// Create app with OpenAPI documentation
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
@@ -28,14 +26,13 @@ const app = createKori({
     }),
   )
   .applyPlugin(
-    scalarUIPlugin({
+    scalarUiPlugin({
       path: '/',
       title: 'Kori Getting Started API',
       theme: 'auto',
     }),
   );
 
-// Basic route
 app.get('/hello/:name', {
   pluginMetadata: openApiMeta({
     summary: 'Say hello',
@@ -51,7 +48,6 @@ app.get('/hello/:name', {
   },
 });
 
-// CRUD operations with validation
 app.post('/users', {
   pluginMetadata: openApiMeta({
     summary: 'Create user',
@@ -88,7 +84,6 @@ app.get('/users', {
   },
 });
 
-// Child instances for API versioning
 app.createChild({
   prefix: '/api/v1',
   configure: (k) =>
@@ -126,17 +121,4 @@ app.createChild({
     }),
 });
 
-// Initialize server
-app.onInit(() => {
-  app.log.info('Kori Getting Started Server');
-  app.log.info('API Documentation: http://localhost:3000');
-  app.log.info('Try these endpoints:');
-  app.log.info('  GET  /hello/World');
-  app.log.info('  POST /users (with JSON: {"name": "Alice", "email": "alice@example.com"})');
-  app.log.info('  GET  /users');
-  app.log.info('  GET  /api/v1/status');
-  app.log.info('  GET  /api/v2/status');
-});
-
 await startNodeServer(app, { port: 3000, host: 'localhost' });
-app.log.info('Server running at http://localhost:3000');

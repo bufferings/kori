@@ -1,1 +1,1 @@
-export { type ScalarUIOptions, scalarUIPlugin } from './scalar-ui-plugin.js';
+export { type ScalarUiOptions, scalarUiPlugin } from './scalar-ui-plugin.js';

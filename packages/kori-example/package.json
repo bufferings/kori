@@ -15,8 +15,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "start:getting-started": "tsx src/getting-started.ts",
-    "start:usage": "tsx src/usage.ts",
+    "start:getting-started": "NODE_ENV=development tsx src/getting-started.ts",
+    "start:usage": "NODE_ENV=development tsx src/usage.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

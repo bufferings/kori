@@ -27,6 +27,16 @@ alwaysApply: false
 - Avoid "use" for adding plugins
 - Avoid middleware-related terms in APIs and documentation
 
+## Naming Conventions
+- Use camelCase for function names, variable names, and property names
+- For abbreviations in camelCase, treat them as regular words:
+  - `API` → `Api` (e.g., `openApiPlugin`, `zodOpenApiPlugin`)
+  - `UI` → `Ui` (e.g., `scalarUiPlugin`)
+  - `URL` → `Url` (e.g., `parseUrl`)
+  - `HTTP` → `Http` (e.g., `httpClient`)
+- Plugin function names should follow the pattern `<name>Plugin` in camelCase
+- Avoid inconsistent casing like `scalarUIPlugin` or `openAPIPlugin`
+
 ## Module System
 - Use ESM (ECMAScript Modules) format
 - Include file extensions in import paths
