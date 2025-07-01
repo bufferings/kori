@@ -12,4 +12,4 @@ export function zodOpenApiPlugin(options: ZodOpenApiOptions): ReturnType<typeof 
 }
 
 export { createZodSchemaConverter } from './converter.js';
-export { openApiRoute } from 'kori-openapi-plugin';
+export { openApiMeta } from 'kori-openapi-plugin';

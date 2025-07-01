@@ -1,7 +1,7 @@
 import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
-import { zodOpenApiPlugin, openApiRoute } from 'kori-zod-openapi-plugin';
+import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
@@ -37,7 +37,7 @@ const app = createKori({
 
 // Basic route
 app.get('/hello/:name', {
-  pluginMetadata: openApiRoute({
+  pluginMetadata: openApiMeta({
     summary: 'Say hello',
     description: 'Returns a personalized greeting',
     tags: ['Basic'],
@@ -53,7 +53,7 @@ app.get('/hello/:name', {
 
 // CRUD operations with validation
 app.post('/users', {
-  pluginMetadata: openApiRoute({
+  pluginMetadata: openApiMeta({
     summary: 'Create user',
     description: 'Create a new user with validation',
     tags: ['Users'],
@@ -74,7 +74,7 @@ app.post('/users', {
 });
 
 app.get('/users', {
-  pluginMetadata: openApiRoute({
+  pluginMetadata: openApiMeta({
     summary: 'List users',
     description: 'Get all users',
     tags: ['Users'],
@@ -93,7 +93,7 @@ app.createChild({
   prefix: '/api/v1',
   configure: (k) =>
     k.get('/status', {
-      pluginMetadata: openApiRoute({
+      pluginMetadata: openApiMeta({
         summary: 'API v1 Status',
         description: 'Get API version 1 status',
         tags: ['API v1'],
@@ -111,7 +111,7 @@ app.createChild({
   prefix: '/api/v2',
   configure: (k) =>
     k.get('/status', {
-      pluginMetadata: openApiRoute({
+      pluginMetadata: openApiMeta({
         summary: 'API v2 Status',
         description: 'Get API version 2 status',
         tags: ['API v2'],

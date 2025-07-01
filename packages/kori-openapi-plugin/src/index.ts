@@ -1,9 +1,9 @@
 export {
   type OpenApiEnvironmentExtension,
+  openApiMeta,
   OpenApiMetaSymbol,
   type OpenApiOptions,
   openApiPlugin,
-  openApiRoute,
   type OpenApiRouteMeta,
 } from './openapi-plugin.js';
 export {

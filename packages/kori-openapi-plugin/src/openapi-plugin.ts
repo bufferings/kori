@@ -42,7 +42,7 @@ export type OpenApiOptions = {
   converters: AtLeastOneConverter;
 };
 
-export function openApiRoute(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
+export function openApiMeta(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
   return {
     [OpenApiMetaSymbol]: meta,
   };
