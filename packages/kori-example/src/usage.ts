@@ -2,7 +2,7 @@
 import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
-import { zodOpenApiPlugin, openApiRoute } from 'kori-zod-openapi-plugin';
+import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
@@ -125,17 +125,17 @@ const app = createKori({
 
 // Complex validation example
 app.post('/products', {
+  pluginMetadata: openApiMeta({
+    summary: 'Create product',
+    description: 'Create a product with complex validation',
+    tags: ['Products'],
+  }),
   requestSchema: zodRequest({
     body: ProductSchema,
     headers: z.object({
       'x-api-version': z.enum(['1.0', '2.0']).optional(),
       'x-client-id': z.string().min(1).describe('Client identifier'),
     }),
-  }),
-  pluginMetadata: openApiRoute({
-    summary: 'Create product',
-    description: 'Create a product with complex validation',
-    tags: ['Products'],
   }),
   handler: (ctx) => {
     const product = ctx.req.validated.body;
@@ -160,6 +160,11 @@ app.post('/products', {
 
 // Search with complex query validation
 app.get('/products/search', {
+  pluginMetadata: openApiMeta({
+    summary: 'Search products',
+    description: 'Advanced product search with filtering',
+    tags: ['Products'],
+  }),
   requestSchema: zodRequest({
     queries: z.object({
       q: z.string().min(1).describe('Search query'),
@@ -178,11 +183,6 @@ app.get('/products/search', {
       sort: z.enum(['name', 'price', 'created']).default('name'),
       order: z.enum(['asc', 'desc']).default('asc'),
     }),
-  }),
-  pluginMetadata: openApiRoute({
-    summary: 'Search products',
-    description: 'Advanced product search with filtering',
-    tags: ['Products'],
   }),
   handler: (ctx) => {
     const query = ctx.req.validated.queries;
@@ -231,7 +231,7 @@ app.createChild({
         }
       })
       .get('/dashboard', {
-        pluginMetadata: openApiRoute({
+        pluginMetadata: openApiMeta({
           summary: 'Admin dashboard',
           description: 'Get admin dashboard data (requires auth)',
           tags: ['Admin'],
@@ -248,16 +248,16 @@ app.createChild({
           }),
       })
       .post('/maintenance', {
+        pluginMetadata: openApiMeta({
+          summary: 'Toggle maintenance mode',
+          description: 'Enable or disable maintenance mode',
+          tags: ['Admin'],
+        }),
         requestSchema: zodRequest({
           body: z.object({
             mode: z.enum(['enable', 'disable']),
             reason: z.string().optional(),
           }),
-        }),
-        pluginMetadata: openApiRoute({
-          summary: 'Toggle maintenance mode',
-          description: 'Enable or disable maintenance mode',
-          tags: ['Admin'],
         }),
         handler: (ctx) => {
           const { mode, reason } = ctx.req.validated.body;
@@ -280,7 +280,7 @@ app.createChild({
 
 // Health check with detailed info
 app.get('/health', {
-  pluginMetadata: openApiRoute({
+  pluginMetadata: openApiMeta({
     summary: 'Health check',
     description: 'Detailed health information',
     tags: ['System'],
@@ -297,7 +297,7 @@ app.get('/health', {
 
 // Error demonstration
 app.get('/error/:type', {
-  pluginMetadata: openApiRoute({
+  pluginMetadata: openApiMeta({
     summary: 'Error demo',
     description: 'Demonstrate different error types',
     tags: ['Demo'],
