@@ -11,6 +11,12 @@ import { configure as configureGettingStarted } from './01-getting-started.js';
 import { configure as configureBasicRouting } from './02-basic-routing.js';
 import { configure as configureValidation } from './03-validation.js';
 import { configure as configureLifecycleHooks } from './04-lifecycle-hooks.js';
+// Import new configure functions
+import { configure as configure05PluginSystem } from './05-plugin-system.js';
+import { configure as configure06ChildInstances } from './06-child-instances.js';
+import { configure as configure07Logging } from './07-logging.js';
+import { configure as configure08ErrorHandling } from './08-error-handling.js';
+import { configure as configure09OpenApi } from './09-openapi.js';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
@@ -127,27 +133,46 @@ app.get('/', (ctx) => {
           </div>
           
           <div class="card">
-            <h3>Plugin System</h3>
+            <h3>05 - Plugin System</h3>
             <p>Timing, CORS, rate limiting, authentication plugins</p>
-            <a href="/plugins/public">GET /plugins/public</a><br>
-            <a href="/plugins/protected">GET /plugins/protected</a><br>
-            <a href="/plugins/rate-limit-test">GET /plugins/rate-limit-test</a>
+            <a href="/05-plugin-system">GET /05-plugin-system</a><br>
+            <a href="/05-plugin-system/public">GET /05-plugin-system/public</a><br>
+            <a href="/05-plugin-system/protected">GET /05-plugin-system/protected</a><br>
+            <a href="/05-plugin-system/rate-limit-test">GET /05-plugin-system/rate-limit-test</a>
           </div>
           
           <div class="card">
-            <h3>Child Instances</h3>
+            <h3>06 - Child Instances</h3>
             <p>API versioning and nested routing</p>
-            <a href="/api/v1/users">GET /api/v1/users</a><br>
-            <a href="/api/v2/users">GET /api/v2/users</a><br>
-            <a href="/admin/stats">GET /admin/stats</a>
+            <a href="/06-child-instances">GET /06-child-instances</a><br>
+            <a href="/06-child-instances/api/v1/users">GET /06-child-instances/api/v1/users</a><br>
+            <a href="/06-child-instances/api/v2/users">GET /06-child-instances/api/v2/users</a><br>
+            <a href="/06-child-instances/admin/stats">GET /06-child-instances/admin/stats</a>
           </div>
           
           <div class="card">
-            <h3>Error Handling</h3>
+            <h3>07 - Logging</h3>
+            <p>Request logging and monitoring</p>
+            <a href="/07-logging">GET /07-logging</a><br>
+            <a href="/07-logging/hello">GET /07-logging/hello</a><br>
+            <a href="/07-logging/metrics">GET /07-logging/metrics</a>
+          </div>
+          
+          <div class="card">
+            <h3>08 - Error Handling</h3>
             <p>Custom error types and error handling strategies</p>
-            <a href="/errors/basic">GET /errors/basic</a><br>
-            <a href="/errors/custom">GET /errors/custom</a><br>
-            <a href="/errors/validation">GET /errors/validation</a>
+            <a href="/08-error-handling">GET /08-error-handling</a><br>
+            <a href="/08-error-handling/error/basic">GET /08-error-handling/error/basic</a><br>
+            <a href="/08-error-handling/error/custom">GET /08-error-handling/error/custom</a><br>
+            <a href="/08-error-handling/error/validation">GET /08-error-handling/error/validation</a>
+          </div>
+          
+          <div class="card">
+            <h3>09 - OpenAPI</h3>
+            <p>OpenAPI documentation generation</p>
+            <a href="/09-openapi">GET /09-openapi</a><br>
+            <a href="/09-openapi/users">GET /09-openapi/users</a><br>
+            <a href="/09-openapi/users/1">GET /09-openapi/users/:id</a>
           </div>
         </div>
       </body>
@@ -175,6 +200,13 @@ app.createChild({
   prefix: '/04-lifecycle-hooks',
   configure: configureLifecycleHooks,
 });
+
+// Mount individual examples as child routes
+app.createChild({ prefix: '/05-plugin-system', configure: configure05PluginSystem });
+app.createChild({ prefix: '/06-child-instances', configure: configure06ChildInstances });
+app.createChild({ prefix: '/07-logging', configure: configure07Logging });
+app.createChild({ prefix: '/08-error-handling', configure: configure08ErrorHandling });
+app.createChild({ prefix: '/09-openapi', configure: configure09OpenApi });
 
 const basicRoutes = app.createChild({
   prefix: '/basic',

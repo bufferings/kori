@@ -1,4 +1,20 @@
-import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
+/**
+ * Kori Plugin System Guide
+ *
+ * This file demonstrates plugin system capabilities including:
+ * - Custom plugin creation with defineKoriPlugin
+ * - Timing, CORS, rate limiting, authentication plugins
+ * - Type-safe plugin extensions
+ * - Plugin composition and application
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
+import { type Kori, type KoriEnvironment, type KoriRequest, type KoriResponse, defineKoriPlugin } from 'kori';
+import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kori-zod-validator';
 
 // Type definitions for plugin extensions
 export type TimingEnvironmentExtension = {
@@ -27,7 +43,7 @@ export type RequestIdRequestExtension = {
 
 export type AuthRequestExtension = {
   authenticated: boolean;
-  user?: { id: string; role: string }; // Optional, only present when authenticated is true
+  user?: { id: string; role: string };
 };
 
 export type CustomDataRequestExtension = {
@@ -86,7 +102,6 @@ function createCorsPlugin(
     ...options,
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, unknown, unknown, any, any>({
     name: 'cors',
     apply: (kori) => {
@@ -232,51 +247,7 @@ function createAuthPlugin(options: { secretKey: string }) {
   });
 }
 
-// Create app with plugins applied individually for proper type inference
-const app = createKori()
-  .applyPlugin(timingPlugin)
-  .applyPlugin(createCorsPlugin())
-  .applyPlugin(createRateLimitPlugin())
-  .applyPlugin(requestIdPlugin)
-  .applyPlugin(createAuthPlugin({ secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production' }))
-  .get('/public', (ctx) =>
-    // Type inference should work properly with individual plugin application
-    ctx.res.json({
-      message: 'This is a public endpoint',
-      requestId: ctx.req.requestId,
-    }),
-  )
-  .get('/protected', (ctx) => {
-    // Type inference should work properly with individual plugin application
-    const { authenticated, user, requestId } = ctx.req;
-
-    if (!authenticated || !user) {
-      return ctx.res.status(401).json({ message: 'Authentication required' });
-    }
-
-    return ctx.res.json({
-      message: 'This is a protected endpoint',
-      user,
-      requestId,
-    });
-  })
-  .get('/rate-limit-test', (ctx) => {
-    // Type inference should work properly with individual plugin application
-    const { rateLimit } = ctx.req;
-
-    return ctx.res.json({
-      message: 'Rate limit test',
-      rateLimit: rateLimit
-        ? {
-            limit: rateLimit.limit,
-            remaining: rateLimit.remaining,
-            resetTime: new Date(rateLimit.reset).toISOString(),
-          }
-        : null,
-    });
-  });
-
-// Example of a custom plugin with proper types
+// Custom plugin with proper types
 const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, CustomDataRequestExtension>({
   name: 'customPlugin',
   apply: (kori) => {
@@ -292,14 +263,149 @@ const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse
   },
 });
 
-const pluginApp = createKori()
-  .applyPlugin(customPlugin)
-  .get('/custom', (ctx) =>
-    // Type inference should work properly with individual plugin application
+/**
+ * Configure Plugin System example routes
+ * This demonstrates comprehensive plugin usage and creation
+ */
+export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
+  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
+  // Welcome route
+  app.get('/', (ctx) =>
     ctx.res.json({
-      message: 'Custom plugin example',
-      customData: ctx.req.customData,
+      message: 'Welcome to Kori Plugin System Examples!',
+      description: 'This example demonstrates plugin creation and usage',
+      availablePlugins: [
+        'timing - Response time tracking',
+        'cors - Cross-origin resource sharing',
+        'rateLimit - Request rate limiting',
+        'requestId - Request ID generation',
+        'auth - Authentication',
+        'custom - Custom plugin example',
+      ],
     }),
   );
 
-export { app, pluginApp };
+  // Apply plugins and create routes demonstrating plugin functionality
+  // Note: In a real application, you would apply plugins to the main app
+  // For demonstration, we'll create child instances with different plugin combinations
+
+  // Basic plugin demonstration
+  const basicPluginChild = app
+    .createChild({
+      prefix: '/basic',
+      configure: (kori) => kori,
+    })
+    .applyPlugin(timingPlugin)
+    .applyPlugin(createCorsPlugin())
+    .applyPlugin(requestIdPlugin);
+
+  basicPluginChild.get('/public', (ctx) =>
+    ctx.res.json({
+      message: 'This endpoint uses basic plugins',
+
+      requestId: (ctx.req as any).requestId,
+      note: 'Check response headers for timing and CORS headers',
+    }),
+  );
+
+  // Auth plugin demonstration
+  const authPluginChild = app
+    .createChild({
+      prefix: '/auth',
+      configure: (kori) => kori,
+    })
+    .applyPlugin(createAuthPlugin({ secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production' }));
+
+  authPluginChild.get('/protected', (ctx) => {
+    const { authenticated, user } = ctx.req as any;
+
+    if (!authenticated || !user) {
+      return ctx.res.status(401).json({ message: 'Authentication required' });
+    }
+
+    return ctx.res.json({
+      message: 'This is a protected endpoint',
+      user,
+      note: 'Send Authorization: Bearer demo-token-replace-in-production',
+    });
+  });
+
+  // Rate limit plugin demonstration
+  const rateLimitChild = app
+    .createChild({
+      prefix: '/rate-limited',
+      configure: (kori) => kori,
+    })
+    .applyPlugin(createRateLimitPlugin({ windowMs: 60 * 1000, max: 5 })); // 5 requests per minute
+
+  rateLimitChild.get('/test', (ctx) => {
+    const { rateLimit } = ctx.req as any;
+
+    return ctx.res.json({
+      message: 'Rate limit test endpoint',
+      rateLimit: rateLimit
+        ? {
+            limit: rateLimit.limit,
+            remaining: rateLimit.remaining,
+            resetTime: new Date(rateLimit.reset).toISOString(),
+          }
+        : null,
+      note: 'Try calling this endpoint multiple times quickly',
+    });
+  });
+
+  // Custom plugin demonstration
+  const customPluginChild = app
+    .createChild({
+      prefix: '/custom',
+      configure: (kori) => kori,
+    })
+    .applyPlugin(customPlugin);
+
+  customPluginChild.get('/demo', (ctx) =>
+    ctx.res.json({
+      message: 'Custom plugin demonstration',
+
+      customData: (ctx.req as any).customData,
+      note: 'This uses a custom plugin that adds timestamp data',
+    }),
+  );
+
+  // Combined plugins demonstration
+  const combinedPluginsChild = app
+    .createChild({
+      prefix: '/combined',
+      configure: (kori) => kori,
+    })
+    .applyPlugin(timingPlugin)
+    .applyPlugin(requestIdPlugin)
+    .applyPlugin(createCorsPlugin())
+    .applyPlugin(createRateLimitPlugin({ max: 10 }));
+
+  combinedPluginsChild.get('/all-features', (ctx) =>
+    ctx.res.json({
+      message: 'This endpoint uses multiple plugins combined',
+
+      requestId: (ctx.req as any).requestId,
+      note: 'Check headers for timing, CORS, rate limit, and request ID',
+      features: ['timing', 'requestId', 'cors', 'rateLimit'],
+    }),
+  );
+
+  // Initialization hook
+  app.onInit(() => {
+    app.log.info('Plugin System example initialized!');
+    app.log.info('Available endpoints:');
+    app.log.info('   GET  /              - Welcome message');
+    app.log.info('   GET  /basic/public  - Basic plugins demo');
+    app.log.info('   GET  /auth/protected - Auth plugin demo');
+    app.log.info('   GET  /rate-limited/test - Rate limit demo');
+    app.log.info('   GET  /custom/demo   - Custom plugin demo');
+    app.log.info('   GET  /combined/all-features - Combined plugins demo');
+    app.log.info('');
+    app.log.info('Plugin System example ready!');
+  });
+
+  return app;
+}
