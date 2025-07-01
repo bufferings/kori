@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 // Import individual example configurations
 import { configure as configureGettingStarted } from './01-getting-started.js';
+import { configure as configureBasicRouting } from './02-basic-routing.js';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
@@ -96,11 +97,13 @@ app.get('/', (ctx) => {
           </div>
           
           <div class="card">
-            <h3>Basic Routing</h3>
+            <h3>02 - Basic Routing</h3>
             <p>HTTP methods, path parameters, query strings, different response types</p>
-            <a href="/basic/hello/World">GET /basic/hello/:name</a><br>
-            <a href="/basic/users">GET /basic/users</a><br>
-            <a href="/basic/text">GET /basic/text</a>
+            <a href="/02-basic-routing">GET /02-basic-routing</a><br>
+            <a href="/02-basic-routing/hello/World">GET /02-basic-routing/hello/:name</a><br>
+            <a href="/02-basic-routing/users">GET /02-basic-routing/users</a><br>
+            <a href="/02-basic-routing/query?name=Alice&age=25">GET /02-basic-routing/query</a><br>
+            <a href="/02-basic-routing/text">GET /02-basic-routing/text</a>
           </div>
           
           <div class="card">
@@ -151,6 +154,11 @@ app.get('/', (ctx) => {
 app.createChild({
   prefix: '/01-getting-started',
   configure: configureGettingStarted,
+});
+
+app.createChild({
+  prefix: '/02-basic-routing',
+  configure: configureBasicRouting,
 });
 
 const basicRoutes = app.createChild({
