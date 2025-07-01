@@ -86,7 +86,8 @@ function createCorsPlugin(
     ...options,
   };
 
-  return defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, unknown>({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, unknown, unknown, any, any>({
     name: 'cors',
     apply: (kori) => {
       return kori.onResponse((ctx) => {
