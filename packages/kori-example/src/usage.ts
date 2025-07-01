@@ -8,7 +8,6 @@ import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
 
-// Logger configuration - pino-pretty only in development
 const isDev = process.env.NODE_ENV !== 'production';
 const loggerFactory = createPinoKoriLoggerFactory({
   level: 'info',
@@ -22,53 +21,36 @@ const loggerFactory = createPinoKoriLoggerFactory({
   }),
 });
 
-// Custom plugins
 type RequestIdExtension = { requestId: string };
+
+const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
+  defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown, any, any>({
+    name: 'requestId',
+    apply: (k) =>
+      k
+        .onRequest((ctx) => {
+          const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+          return ctx.withReq({ requestId });
+        })
+        .onResponse((ctx) => {
+          ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
+        }),
+  });
+
 type TimingExtension = { startTime: number };
 
-const requestIdPlugin = defineKoriPlugin<
-  KoriEnvironment,
-  KoriRequest,
-  KoriResponse,
-  unknown,
-  RequestIdExtension,
-  unknown,
-  any,
-  any
->({
-  name: 'requestId',
-  apply: (k) =>
-    k
-      .onRequest((ctx) => {
-        const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-        return ctx.withReq({ requestId });
-      })
-      .onResponse((ctx) => {
-        ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
-      }),
-});
+const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
+  defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown, any, any>({
+    name: 'timing',
+    apply: (k) =>
+      k
+        .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
+        .onResponse((ctx) => {
+          const duration = Date.now() - ctx.req.startTime;
+          ctx.res.setHeader('X-Response-Time', `${duration}ms`);
+        }),
+  });
 
-const timingPlugin = defineKoriPlugin<
-  KoriEnvironment,
-  KoriRequest & RequestIdExtension,
-  KoriResponse,
-  unknown,
-  TimingExtension,
-  unknown,
-  any,
-  any
->({
-  name: 'timing',
-  apply: (k) =>
-    k
-      .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
-      .onResponse((ctx) => {
-        const duration = Date.now() - ctx.req.startTime;
-        ctx.res.setHeader('X-Response-Time', `${duration}ms`);
-      }),
-});
-
-// Complex validation schemas
 const ProductSchema = z.object({
   name: z.string().min(1).max(200).describe('Product name'),
   description: z.string().max(1000).optional().describe('Product description'),
@@ -89,14 +71,13 @@ const ProductSchema = z.object({
     .optional(),
 });
 
-// Create app with plugins
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
   loggerFactory,
 })
-  .applyPlugin(requestIdPlugin)
-  .applyPlugin(timingPlugin)
+  .applyPlugin(requestIdPlugin())
+  .applyPlugin(timingPlugin())
   .applyPlugin(
     zodOpenApiPlugin({
       info: {
@@ -139,7 +120,6 @@ const app = createKori({
     }
   });
 
-// Complex validation example
 app.post('/products', {
   pluginMetadata: openApiMeta({
     summary: 'Create product',
@@ -174,7 +154,6 @@ app.post('/products', {
   },
 });
 
-// Search with complex query validation
 app.get('/products/search', {
   pluginMetadata: openApiMeta({
     summary: 'Search products',
@@ -224,7 +203,6 @@ app.get('/products/search', {
   },
 });
 
-// Admin area with authentication middleware
 app.createChild({
   prefix: '/admin',
   configure: (k) =>
@@ -294,7 +272,6 @@ app.createChild({
       }),
 });
 
-// Health check with detailed info
 app.get('/health', {
   pluginMetadata: openApiMeta({
     summary: 'Health check',
@@ -311,7 +288,6 @@ app.get('/health', {
     }),
 });
 
-// Error demonstration
 app.get('/error/:type', {
   pluginMetadata: openApiMeta({
     summary: 'Error demo',
@@ -334,24 +310,4 @@ app.get('/error/:type', {
   },
 });
 
-// Initialize server
-app.onInit(() => {
-  app.log.info('Kori Advanced Examples Server');
-  app.log.info('API Documentation: http://localhost:3001');
-  app.log.info('Advanced features:');
-  app.log.info('  - Custom plugins (timing, request ID)');
-  app.log.info('  - Lifecycle hooks (request/response/error)');
-  app.log.info('  - Complex validation (nested schemas, headers)');
-  app.log.info('  - Authentication middleware (/admin/*)');
-  app.log.info('  - Error handling and logging');
-  app.log.info('');
-  app.log.info('Try these endpoints:');
-  app.log.info('  POST /products (with complex JSON body and headers)');
-  app.log.info('  GET  /products/search?q=laptop&category=electronics');
-  app.log.info('  GET  /admin/dashboard (with Authorization: Bearer admin-secret-token)');
-  app.log.info('  GET  /health');
-  app.log.info('  GET  /error/timeout');
-});
-
 await startNodeServer(app, { port: 3001, host: 'localhost' });
-app.log.info('Advanced server running at http://localhost:3001');
