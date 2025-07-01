@@ -3,11 +3,15 @@ import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUIPlugin } from 'kori-openapi-ui-scalar';
 import { zodOpenApiPlugin } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
-import { createKoriZodRequestValidator } from 'kori-zod-validator';
+import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod';
+
+// Import individual example configurations
+import { configure as configureGettingStarted } from './01-getting-started.js';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
+  responseValidator: createKoriZodResponseValidator(),
 })
   .applyPlugin(
     zodOpenApiPlugin({
@@ -83,6 +87,15 @@ app.get('/', (ctx) => {
         
         <div class="grid">
           <div class="card">
+            <h3>01 - Getting Started</h3>
+            <p>Basic Kori framework usage, routing, and request validation</p>
+            <a href="/01-getting-started">GET /01-getting-started</a><br>
+            <a href="/01-getting-started/hello/World">GET /01-getting-started/hello/:name</a><br>
+            <a href="/01-getting-started/search?q=kori">GET /01-getting-started/search</a><br>
+            <a href="/01-getting-started/about">GET /01-getting-started/about</a>
+          </div>
+          
+          <div class="card">
             <h3>Basic Routing</h3>
             <p>HTTP methods, path parameters, query strings, different response types</p>
             <a href="/basic/hello/World">GET /basic/hello/:name</a><br>
@@ -132,6 +145,12 @@ app.get('/', (ctx) => {
       </body>
       </html>
     `);
+});
+
+// Mount individual examples using configure functions
+app.createChild({
+  prefix: '/01-getting-started',
+  configure: configureGettingStarted,
 });
 
 const basicRoutes = app.createChild({
