@@ -1,10 +1,10 @@
 export {
   type OpenApiEnvironmentExtension,
+  type OpenApiMeta,
   openApiMeta,
   OpenApiMetaSymbol,
   type OpenApiOptions,
   openApiPlugin,
-  type OpenApiRouteMeta,
 } from './openapi-plugin.js';
 export {
   type ConversionContext,

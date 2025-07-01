@@ -27,7 +27,7 @@ export type OpenApiEnvironmentExtension = {
   };
 };
 
-export type OpenApiRouteMeta = {
+export type OpenApiMeta = {
   summary?: string;
   description?: string;
   tags?: string[];
@@ -42,16 +42,20 @@ export type OpenApiOptions = {
   converters: AtLeastOneConverter;
 };
 
-export function openApiMeta(meta: OpenApiRouteMeta): KoriRoutePluginMetadata {
+export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
   return {
     [OpenApiMetaSymbol]: meta,
   };
 }
 
-export function openApiPlugin(
+export function openApiPlugin<
+  Env extends KoriEnvironment = KoriEnvironment,
+  Req extends KoriRequest = KoriRequest,
+  Res extends KoriResponse = KoriResponse,
+>(
   options: OpenApiOptions,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): KoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, OpenApiEnvironmentExtension, unknown, unknown, any, any> {
+): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown, any, any> {
   const documentPath = options.documentPath ?? '/openapi.json';
 
   const collector = createRouteCollector();
@@ -120,7 +124,7 @@ export function openApiPlugin(
             path: routeDef.path,
             requestSchema: routeDef.requestSchema,
             responseSchema: routeDef.responseSchema,
-            metadata: routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiRouteMeta,
+            metadata: routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta,
           });
         }
         return ctx.withEnv({

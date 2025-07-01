@@ -1,7 +1,7 @@
 import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
 import { type OpenApiEnvironmentExtension } from 'kori-openapi-plugin';
 
-export type ScalarUIOptions = {
+export type ScalarUiOptions = {
   path?: string;
   title?: string;
   theme?: 'light' | 'dark' | 'auto';
@@ -9,7 +9,7 @@ export type ScalarUIOptions = {
   proxyUrl?: string;
 };
 
-export function scalarUIPlugin(options: ScalarUIOptions = {}): KoriPlugin<
+export function scalarUiPlugin(options: ScalarUiOptions = {}): KoriPlugin<
   KoriEnvironment & OpenApiEnvironmentExtension,
   KoriRequest,
   KoriResponse,
@@ -33,7 +33,7 @@ export function scalarUIPlugin(options: ScalarUIOptions = {}): KoriPlugin<
         handler: (ctx) => {
           const documentPath = ctx.env.openapi?.documentPath;
           if (!documentPath) {
-            throw new Error('openApiPlugin must be registered before scalarUIPlugin');
+            throw new Error('openApiPlugin must be registered before scalarUiPlugin');
           }
 
           const html = generateScalarHTML({
