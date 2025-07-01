@@ -9,11 +9,6 @@
  * - Multi-level nesting
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import { type Kori, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kori-zod-validator';
 
@@ -22,10 +17,10 @@ import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kor
  * This demonstrates comprehensive child instance and nesting patterns
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Root application setup
-  app
+  const app = k
     .get('/', (ctx) =>
       ctx.res.json({
         message: 'Welcome to Child Instances Examples!',
@@ -58,8 +53,8 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
 
   v1.get('/users', (ctx) =>
     ctx.res.json({
-      apiVersion: (ctx.req as any).apiVersion,
-      appVersion: (ctx.req as any).appVersion,
+      apiVersion: ctx.req.apiVersion,
+      appVersion: ctx.req.appVersion,
       users: [
         { id: 1, name: 'Alice', version: 'v1' },
         { id: 2, name: 'Bob', version: 'v1' },
@@ -69,7 +64,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
 
   v1.get('/posts', (ctx) =>
     ctx.res.json({
-      apiVersion: (ctx.req as any).apiVersion,
+      apiVersion: ctx.req.apiVersion,
       posts: [
         { id: 1, title: 'Hello World', version: 'v1' },
         { id: 2, title: 'Kori Framework', version: 'v1' },
@@ -92,9 +87,9 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
     })
     .get('/users', (ctx) =>
       ctx.res.json({
-        apiVersion: (ctx.req as any).apiVersion,
-        appVersion: (ctx.req as any).appVersion,
-        features: (ctx.req as any).features,
+        apiVersion: ctx.req.apiVersion,
+        appVersion: ctx.req.appVersion,
+        features: ctx.req.features,
         users: [
           {
             id: 1,
@@ -140,7 +135,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
 
   admin.get('/stats', (ctx) =>
     ctx.res.json({
-      isAdmin: (ctx.req as any).isAdmin,
+      isAdmin: ctx.req.isAdmin,
       stats: {
         totalUsers: 100,
         totalPosts: 500,
@@ -151,7 +146,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
 
   admin.get('/config', (ctx) =>
     ctx.res.json({
-      isAdmin: (ctx.req as any).isAdmin,
+      isAdmin: ctx.req.isAdmin,
       config: {
         maintenanceMode: false,
         apiRateLimit: 1000,
@@ -195,7 +190,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   privateApi.get('/data', (ctx) =>
     ctx.res.json({
       data: 'sensitive information',
-      apiKey: (ctx.req as any).apiKey.substring(0, 8) + '...',
+      apiKey: ctx.req.apiKey.substring(0, 8) + '...',
     }),
   );
 

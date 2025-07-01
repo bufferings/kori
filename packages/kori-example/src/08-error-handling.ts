@@ -44,10 +44,10 @@ class ValidationError extends CustomError {
  * This demonstrates comprehensive error handling patterns
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Global error handler
-  app.onError((ctx, err) => {
+  k.onError((ctx, err) => {
     const error = err instanceof Error ? err : new Error(String(err));
 
     ctx.req.log.error('Error occurred', {
@@ -81,7 +81,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Welcome route
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori Error Handling Examples!',
       description: 'This demonstrates various error handling patterns',
@@ -103,17 +103,17 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // Basic error example
-  app.get('/error/basic', () => {
+  k.get('/error/basic', () => {
     throw new Error('This is a basic error');
   });
 
   // Custom error example
-  app.get('/error/custom', () => {
+  k.get('/error/custom', () => {
     throw new CustomError('Custom error occurred', 418, 'TEAPOT');
   });
 
   // Validation error example
-  app.get('/error/validation', () => {
+  k.get('/error/validation', () => {
     throw new ValidationError('Invalid input data', {
       fields: {
         email: 'Invalid email format',
@@ -123,13 +123,13 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Async error example
-  app.get('/error/async', async () => {
+  k.get('/error/async', async () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
     throw new Error('Async error occurred');
   });
 
   // Safe operation with error handling
-  app.get('/safe/:operation', (ctx) => {
+  k.get('/safe/:operation', (ctx) => {
     const operation = ctx.req.pathParams.operation;
 
     try {
@@ -169,7 +169,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Handled error demonstration (won't trigger global handler)
-  app.get('/handled-error', (ctx) => {
+  k.get('/handled-error', (ctx) => {
     try {
       throw new Error('This error will be handled locally');
     } catch (error) {
@@ -186,7 +186,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Timeout simulation
-  app.get('/timeout-demo', async (ctx) => {
+  k.get('/timeout-demo', async (ctx) => {
     const timeoutMs = parseInt((ctx.req as any).queries?.timeout ?? '5000');
 
     ctx.req.log.info('Starting timeout demo', { timeoutMs });
@@ -211,7 +211,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Database simulation with errors
-  app.get('/database/:action', (ctx) => {
+  k.get('/database/:action', (ctx) => {
     const action = ctx.req.pathParams.action;
 
     switch (action) {
@@ -237,64 +237,63 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Graceful error handling child
-  const gracefulChild = app.createChild({
+  k.createChild({
     prefix: '/graceful',
-    configure: (kori) => {
-      return kori.onError((ctx, err) => {
-        const errorId = `err_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        const error = err instanceof Error ? err : new Error(String(err));
+    configure: (kc) => {
+      return kc
+        .onError((ctx, err) => {
+          const errorId = `err_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+          const error = err instanceof Error ? err : new Error(String(err));
 
-        ctx.req.log.error('Graceful error handler', {
-          errorId,
-          error,
-          context: {
-            url: ctx.req.url.href,
-            method: ctx.req.method,
-            headers: ctx.req.headers,
-            timestamp: new Date().toISOString(),
-          },
-        });
-
-        if (!ctx.res.isSet()) {
-          ctx.res.internalError({
-            message: 'Something went wrong, but we handled it gracefully',
-            details: { errorId, timestamp: new Date().toISOString() },
+          ctx.req.log.error('Graceful error handler', {
+            errorId,
+            error,
+            context: {
+              url: ctx.req.url.href,
+              method: ctx.req.method,
+              headers: ctx.req.headers,
+              timestamp: new Date().toISOString(),
+            },
           });
-        }
-      });
+
+          if (!ctx.res.isSet()) {
+            ctx.res.internalError({
+              message: 'Something went wrong, but we handled it gracefully',
+              details: { errorId, timestamp: new Date().toISOString() },
+            });
+          }
+        })
+        .get('/test', (ctx) => {
+          return ctx.res.json({
+            message: 'This endpoint has graceful error handling',
+            timestamp: new Date().toISOString(),
+          });
+        })
+        .get('/error', () => {
+          throw new Error('This will be handled by the graceful handler');
+        });
     },
   });
 
-  gracefulChild.get('/test', (ctx) => {
-    return ctx.res.json({
-      message: 'This endpoint has graceful error handling',
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  gracefulChild.get('/error', () => {
-    throw new Error('This will be handled by the graceful handler');
-  });
-
   // Initialization hook
-  app.onInit(() => {
-    app.log.info('Error Handling example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET  /              - Welcome message');
-    app.log.info('   GET  /error/basic   - Basic error (500)');
-    app.log.info('   GET  /error/custom  - Custom error (418)');
-    app.log.info('   GET  /error/validation - Validation error (400)');
-    app.log.info('   GET  /error/async   - Async error (500)');
-    app.log.info('   GET  /safe/:operation - Safe operations (divide, parse, network, permission)');
-    app.log.info('   GET  /handled-error - Locally handled error');
-    app.log.info('   GET  /timeout-demo  - Timeout simulation');
-    app.log.info('   GET  /database/:action - Database error simulation');
-    app.log.info('   GET  /graceful/test - Graceful error handling');
-    app.log.info('   GET  /graceful/error - Graceful error handling demo');
-    app.log.info('');
-    app.log.info('Global error handler configured');
-    app.log.info('Error Handling example ready!');
+  k.onInit(() => {
+    k.log.info('Error Handling example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET  /              - Welcome message');
+    k.log.info('   GET  /error/basic   - Basic error (500)');
+    k.log.info('   GET  /error/custom  - Custom error (418)');
+    k.log.info('   GET  /error/validation - Validation error (400)');
+    k.log.info('   GET  /error/async   - Async error (500)');
+    k.log.info('   GET  /safe/:operation - Safe operations (divide, parse, network, permission)');
+    k.log.info('   GET  /handled-error - Locally handled error');
+    k.log.info('   GET  /timeout-demo  - Timeout simulation');
+    k.log.info('   GET  /database/:action - Database error simulation');
+    k.log.info('   GET  /graceful/test - Graceful error handling');
+    k.log.info('   GET  /graceful/error - Graceful error handling demo');
+    k.log.info('');
+    k.log.info('Global error handler configured');
+    k.log.info('Error Handling example ready!');
   });
 
-  return app;
+  return k;
 }

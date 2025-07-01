@@ -16,10 +16,10 @@ import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kor
  * This demonstrates core routing functionality
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Simple route
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Hello, Kori Basic Routing!',
       description: 'This example demonstrates basic routing functionality',
@@ -27,7 +27,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // Path parameters
-  app.get('/hello/:name', (ctx) => {
+  k.get('/hello/:name', (ctx) => {
     const name = ctx.req.pathParams.name;
     return ctx.res.json({
       message: `Hello, ${name}!`,
@@ -36,7 +36,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // GET with JSON response
-  app.get('/users', (ctx) => {
+  k.get('/users', (ctx) => {
     const users = [
       { id: 1, name: 'Alice', role: 'admin' },
       { id: 2, name: 'Bob', role: 'user' },
@@ -46,7 +46,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // POST with JSON body
-  app.post('/users', async (ctx) => {
+  k.post('/users', async (ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     const body = (await ctx.req.json()) as any;
     return ctx.res.status(201).json({
@@ -57,7 +57,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // PUT with path parameters and body
-  app.put('/users/:id', async (ctx) => {
+  k.put('/users/:id', async (ctx) => {
     const id = ctx.req.pathParams.id;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     const body = (await ctx.req.json()) as any;
@@ -69,7 +69,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // DELETE with path parameters
-  app.delete('/users/:id', (ctx) => {
+  k.delete('/users/:id', (ctx) => {
     const id = ctx.req.pathParams.id;
     return ctx.res.json({
       message: `User ${id} deleted`,
@@ -78,7 +78,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Query parameters
-  app.get('/query', (ctx) => {
+  k.get('/query', (ctx) => {
     const query = ctx.req.queryParams;
     return ctx.res.json({
       query,
@@ -87,7 +87,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Request headers
-  app.get('/headers', (ctx) => {
+  k.get('/headers', (ctx) => {
     const userAgent = ctx.req.headers['user-agent'];
     const customHeader = ctx.req.headers['x-custom-header'];
     return ctx.res.json({
@@ -98,13 +98,13 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Different response types
-  app.get('/text', (ctx) => ctx.res.text('This is a plain text response from Basic Routing'));
+  k.get('/text', (ctx) => ctx.res.text('This is a plain text response from Basic Routing'));
 
-  app.get('/html', (ctx) => ctx.res.html('<h1>Hello from Kori Basic Routing!</h1><p>This is an HTML response.</p>'));
+  k.get('/html', (ctx) => ctx.res.html('<h1>Hello from Kori Basic Routing!</h1><p>This is an HTML response.</p>'));
 
-  app.get('/empty', (ctx) => ctx.res.empty(204));
+  k.get('/empty', (ctx) => ctx.res.empty(204));
 
-  app.get('/status', (ctx) =>
+  k.get('/status', (ctx) =>
     ctx.res.status(418).json({
       message: "I'm a teapot",
       code: 418,
@@ -113,20 +113,19 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // Using addRoute API
-  app.addRoute({
+  k.addRoute({
     method: 'GET',
     path: '/alternative',
-    handler: (ctx) => {
-      return ctx.res.json({
+    handler: (ctx) =>
+      ctx.res.json({
         message: 'This route uses addRoute API',
         note: 'Both app.get() and app.addRoute() are valid approaches',
         example: 'Alternative routing syntax',
-      });
-    },
+      }),
   });
 
   // Error handling
-  app.onError((ctx, _err) => {
+  k.onError((ctx, _err) => {
     if (!ctx.res.isSet()) {
       ctx.res.notFound({
         message: 'Route not found in Basic Routing example',
@@ -135,25 +134,25 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Initialization hook
-  app.onInit(() => {
-    app.log.info('Basic Routing example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET    /           - Welcome message');
-    app.log.info('   GET    /hello/:name - Path parameters');
-    app.log.info('   GET    /users      - List users');
-    app.log.info('   POST   /users      - Create user');
-    app.log.info('   PUT    /users/:id  - Update user');
-    app.log.info('   DELETE /users/:id  - Delete user');
-    app.log.info('   GET    /query      - Query parameters');
-    app.log.info('   GET    /headers    - Request headers');
-    app.log.info('   GET    /text       - Text response');
-    app.log.info('   GET    /html       - HTML response');
-    app.log.info('   GET    /empty      - Empty response');
-    app.log.info('   GET    /status     - Custom status');
-    app.log.info('   GET    /alternative - addRoute API');
-    app.log.info('');
-    app.log.info('Basic Routing example ready!');
+  k.onInit(() => {
+    k.log.info('Basic Routing example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET    /           - Welcome message');
+    k.log.info('   GET    /hello/:name - Path parameters');
+    k.log.info('   GET    /users      - List users');
+    k.log.info('   POST   /users      - Create user');
+    k.log.info('   PUT    /users/:id  - Update user');
+    k.log.info('   DELETE /users/:id  - Delete user');
+    k.log.info('   GET    /query      - Query parameters');
+    k.log.info('   GET    /headers    - Request headers');
+    k.log.info('   GET    /text       - Text response');
+    k.log.info('   GET    /html       - HTML response');
+    k.log.info('   GET    /empty      - Empty response');
+    k.log.info('   GET    /status     - Custom status');
+    k.log.info('   GET    /alternative - addRoute API');
+    k.log.info('');
+    k.log.info('Basic Routing example ready!');
   });
 
-  return app;
+  return k;
 }

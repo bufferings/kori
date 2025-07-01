@@ -8,11 +8,6 @@
  * - Plugin composition and application
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
 import { type Kori, type KoriEnvironment, type KoriRequest, type KoriResponse, defineKoriPlugin } from 'kori';
 import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kori-zod-validator';
 
@@ -59,8 +54,8 @@ const timingPlugin = defineKoriPlugin<
   TimingRequestExtension
 >({
   name: 'timing',
-  apply: (kori) => {
-    return kori
+  apply: (k) => {
+    return k
       .onInit((ctx) => {
         return ctx.withEnv({ timings: new Map<string, number>() });
       })
@@ -102,16 +97,16 @@ function createCorsPlugin(
     ...options,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, unknown, unknown, any, any>({
     name: 'cors',
-    apply: (kori) => {
-      return kori.onResponse((ctx) => {
+    apply: (k) =>
+      k.onResponse((ctx) => {
         ctx.res.setHeader('Access-Control-Allow-Origin', config.origin);
         ctx.res.setHeader('Access-Control-Allow-Methods', config.methods.join(', '));
         ctx.res.setHeader('Access-Control-Allow-Headers', config.headers.join(', '));
         ctx.res.setHeader('Access-Control-Allow-Credentials', config.credentials.toString());
-      });
-    },
+      }),
   });
 }
 
@@ -136,8 +131,8 @@ function createRateLimitPlugin(
     RateLimitRequestExtension
   >({
     name: 'rateLimit',
-    apply: (kori) => {
-      return kori
+    apply: (k) =>
+      k
         .onInit((ctx) => {
           return ctx.withEnv({ rateLimitStore: new Map<string, { count: number; resetTime: number }>() });
         })
@@ -191,8 +186,7 @@ function createRateLimitPlugin(
                 .json({ error: 'Too Many Requests' });
             }
           }
-        });
-    },
+        }),
   });
 }
 
@@ -205,8 +199,8 @@ const requestIdPlugin = defineKoriPlugin<
   RequestIdRequestExtension
 >({
   name: 'requestId',
-  apply: (kori) => {
-    return kori
+  apply: (k) =>
+    k
       .onRequest((ctx) => {
         const requestId =
           ctx.req.headers['x-request-id'] ?? `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
@@ -217,16 +211,15 @@ const requestIdPlugin = defineKoriPlugin<
         if (requestId) {
           ctx.res.setHeader('X-Request-Id', requestId);
         }
-      });
-  },
+      }),
 });
 
 // Auth plugin factory with proper types
 function createAuthPlugin(options: { secretKey: string }) {
   return defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, AuthRequestExtension>({
     name: 'auth',
-    apply: (kori) => {
-      return kori.onRequest((ctx) => {
+    apply: (k) =>
+      k.onRequest((ctx) => {
         const authHeader = ctx.req.headers.authorization;
         const token = authHeader?.replace('Bearer ', '');
 
@@ -242,16 +235,15 @@ function createAuthPlugin(options: { secretKey: string }) {
               };
 
         return ctx.withReq(authResult);
-      });
-    },
+      }),
   });
 }
 
 // Custom plugin with proper types
 const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse, unknown, CustomDataRequestExtension>({
   name: 'customPlugin',
-  apply: (kori) => {
-    return kori
+  apply: (k) =>
+    k
       .onInit((ctx) => {
         // Custom plugin initialized
         return ctx;
@@ -259,8 +251,7 @@ const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse
       .onRequest((ctx) => {
         // Custom plugin processing request
         return ctx.withReq({ customData: { timestamp: Date.now() } });
-      });
-  },
+      }),
 });
 
 /**
@@ -268,10 +259,10 @@ const customPlugin = defineKoriPlugin<KoriEnvironment, KoriRequest, KoriResponse
  * This demonstrates comprehensive plugin usage and creation
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Welcome route
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori Plugin System Examples!',
       description: 'This example demonstrates plugin creation and usage',
@@ -291,121 +282,124 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   // For demonstration, we'll create child instances with different plugin combinations
 
   // Basic plugin demonstration
-  const basicPluginChild = app
-    .createChild({
-      prefix: '/basic',
-      configure: (kori) => kori,
-    })
-    .applyPlugin(timingPlugin)
-    .applyPlugin(createCorsPlugin())
-    .applyPlugin(requestIdPlugin);
-
-  basicPluginChild.get('/public', (ctx) =>
-    ctx.res.json({
-      message: 'This endpoint uses basic plugins',
-
-      requestId: (ctx.req as any).requestId,
-      note: 'Check response headers for timing and CORS headers',
-    }),
-  );
+  k.createChild({
+    prefix: '/basic',
+    configure: (kc) =>
+      kc
+        .applyPlugin(timingPlugin)
+        .applyPlugin(createCorsPlugin())
+        .applyPlugin(requestIdPlugin)
+        .get('/public', (ctx) =>
+          ctx.res.json({
+            message: 'This endpoint uses basic plugins',
+            requestId: ctx.req.requestId,
+            note: 'Check response headers for timing and CORS headers',
+          }),
+        ),
+  });
 
   // Auth plugin demonstration
-  const authPluginChild = app
-    .createChild({
-      prefix: '/auth',
-      configure: (kori) => kori,
-    })
-    .applyPlugin(createAuthPlugin({ secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production' }));
+  k.createChild({
+    prefix: '/auth',
+    configure: (kc) =>
+      kc
+        .applyPlugin(
+          createAuthPlugin({
+            secretKey: process.env.DEMO_AUTH_TOKEN ?? 'demo-token-replace-in-production',
+          }),
+        )
 
-  authPluginChild.get('/protected', (ctx) => {
-    const { authenticated, user } = ctx.req as any;
+        .get('/protected', (ctx) => {
+          const { authenticated, user } = ctx.req;
 
-    if (!authenticated || !user) {
-      return ctx.res.status(401).json({ message: 'Authentication required' });
-    }
+          if (!authenticated || !user) {
+            return ctx.res.status(401).json({ message: 'Authentication required' });
+          }
 
-    return ctx.res.json({
-      message: 'This is a protected endpoint',
-      user,
-      note: 'Send Authorization: Bearer demo-token-replace-in-production',
-    });
+          return ctx.res.json({
+            message: 'This is a protected endpoint',
+            user,
+            note: 'Send Authorization: Bearer demo-token-replace-in-production',
+          });
+        }),
   });
 
   // Rate limit plugin demonstration
-  const rateLimitChild = app
-    .createChild({
-      prefix: '/rate-limited',
-      configure: (kori) => kori,
-    })
-    .applyPlugin(createRateLimitPlugin({ windowMs: 60 * 1000, max: 5 })); // 5 requests per minute
+  k.createChild({
+    prefix: '/rate-limited',
+    configure: (kc) =>
+      kc
+        // 5 requests per minute
+        .applyPlugin(
+          createRateLimitPlugin({
+            windowMs: 60 * 1000,
+            max: 5,
+          }),
+        )
+        .get('/test', (ctx) => {
+          const { rateLimit } = ctx.req;
 
-  rateLimitChild.get('/test', (ctx) => {
-    const { rateLimit } = ctx.req as any;
-
-    return ctx.res.json({
-      message: 'Rate limit test endpoint',
-      rateLimit: rateLimit
-        ? {
-            limit: rateLimit.limit,
-            remaining: rateLimit.remaining,
-            resetTime: new Date(rateLimit.reset).toISOString(),
-          }
-        : null,
-      note: 'Try calling this endpoint multiple times quickly',
-    });
+          return ctx.res.json({
+            message: 'Rate limit test endpoint',
+            rateLimit: rateLimit
+              ? {
+                  limit: rateLimit.limit,
+                  remaining: rateLimit.remaining,
+                  resetTime: new Date(rateLimit.reset).toISOString(),
+                }
+              : null,
+            note: 'Try calling this endpoint multiple times quickly',
+          });
+        }),
   });
 
   // Custom plugin demonstration
-  const customPluginChild = app
-    .createChild({
-      prefix: '/custom',
-      configure: (kori) => kori,
-    })
-    .applyPlugin(customPlugin);
+  k.createChild({
+    prefix: '/custom',
+    configure: (kc) =>
+      kc.applyPlugin(customPlugin).get('/demo', (ctx) =>
+        ctx.res.json({
+          message: 'Custom plugin demonstration',
 
-  customPluginChild.get('/demo', (ctx) =>
-    ctx.res.json({
-      message: 'Custom plugin demonstration',
-
-      customData: (ctx.req as any).customData,
-      note: 'This uses a custom plugin that adds timestamp data',
-    }),
-  );
-
-  // Combined plugins demonstration
-  const combinedPluginsChild = app
-    .createChild({
-      prefix: '/combined',
-      configure: (kori) => kori,
-    })
-    .applyPlugin(timingPlugin)
-    .applyPlugin(requestIdPlugin)
-    .applyPlugin(createCorsPlugin())
-    .applyPlugin(createRateLimitPlugin({ max: 10 }));
-
-  combinedPluginsChild.get('/all-features', (ctx) =>
-    ctx.res.json({
-      message: 'This endpoint uses multiple plugins combined',
-
-      requestId: (ctx.req as any).requestId,
-      note: 'Check headers for timing, CORS, rate limit, and request ID',
-      features: ['timing', 'requestId', 'cors', 'rateLimit'],
-    }),
-  );
-
-  // Initialization hook
-  app.onInit(() => {
-    app.log.info('Plugin System example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET  /              - Welcome message');
-    app.log.info('   GET  /basic/public  - Basic plugins demo');
-    app.log.info('   GET  /auth/protected - Auth plugin demo');
-    app.log.info('   GET  /rate-limited/test - Rate limit demo');
-    app.log.info('   GET  /custom/demo   - Custom plugin demo');
-    app.log.info('   GET  /combined/all-features - Combined plugins demo');
-    app.log.info('');
-    app.log.info('Plugin System example ready!');
+          customData: ctx.req.customData,
+          note: 'This uses a custom plugin that adds timestamp data',
+        }),
+      ),
   });
 
-  return app;
+  // Combined plugins demonstration
+  k.createChild({
+    prefix: '/combined',
+    configure: (kc) =>
+      kc
+        .applyPlugin(timingPlugin)
+        .applyPlugin(requestIdPlugin)
+        .applyPlugin(createCorsPlugin())
+        .applyPlugin(createRateLimitPlugin({ max: 10 }))
+        .get('/all-features', (ctx) =>
+          ctx.res.json({
+            message: 'This endpoint uses multiple plugins combined',
+
+            requestId: ctx.req.requestId,
+            note: 'Check headers for timing, CORS, rate limit, and request ID',
+            features: ['timing', 'requestId', 'cors', 'rateLimit'],
+          }),
+        ),
+  });
+
+  // Initialization hook
+  k.onInit(() => {
+    k.log.info('Plugin System example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET  /              - Welcome message');
+    k.log.info('   GET  /basic/public  - Basic plugins demo');
+    k.log.info('   GET  /auth/protected - Auth plugin demo');
+    k.log.info('   GET  /rate-limited/test - Rate limit demo');
+    k.log.info('   GET  /custom/demo   - Custom plugin demo');
+    k.log.info('   GET  /combined/all-features - Combined plugins demo');
+    k.log.info('');
+    k.log.info('Plugin System example ready!');
+  });
+
+  return k;
 }

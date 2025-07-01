@@ -27,10 +27,10 @@ const CreateUserSchema = z.object({
  * This demonstrates basic Kori framework usage patterns
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Simple route - Hello World
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori Getting Started!',
       timestamp: new Date().toISOString(),
@@ -39,7 +39,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // Path parameters
-  app.get('/hello/:name', (ctx) => {
+  k.get('/hello/:name', (ctx) => {
     const { name } = ctx.req.pathParams;
 
     ctx.req.log.info('Greeting request received', { name });
@@ -52,7 +52,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Query parameters
-  app.get('/search', (ctx) => {
+  k.get('/search', (ctx) => {
     const { q, limit = '10' } = ctx.req.queryParams;
     const queryString = Array.isArray(q) ? q[0] : q;
 
@@ -75,7 +75,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Request validation with Zod
-  app.post('/users', {
+  k.post('/users', {
     requestSchema: zodRequest({
       body: CreateUserSchema,
     }),
@@ -102,20 +102,19 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Using addRoute API
-  app.addRoute({
+  k.addRoute({
     method: 'GET',
     path: '/about',
-    handler: (ctx) => {
-      return ctx.res.json({
+    handler: (ctx) =>
+      ctx.res.json({
         message: 'This route demonstrates addRoute API',
         note: 'Both app.get() and app.addRoute() are valid approaches',
         framework: 'Kori',
-      });
-    },
+      }),
   });
 
   // Error handling
-  app.onError((ctx, err) => {
+  k.onError((ctx, err) => {
     ctx.req.log.error('Request failed', {
       error: (err as Error).message,
       path: ctx.req.url.pathname,
@@ -131,17 +130,17 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Initialization hook
-  app.onInit(() => {
-    app.log.info('Getting Started example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET  /              - Welcome message');
-    app.log.info('   GET  /hello/:name   - Personalized greeting');
-    app.log.info('   GET  /search?q=...  - Search with query params');
-    app.log.info('   POST /users         - Create user with validation');
-    app.log.info('   GET  /about         - About page');
-    app.log.info('');
-    app.log.info('Getting Started example ready!');
+  k.onInit(() => {
+    k.log.info('Getting Started example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET  /              - Welcome message');
+    k.log.info('   GET  /hello/:name   - Personalized greeting');
+    k.log.info('   GET  /search?q=...  - Search with query params');
+    k.log.info('   POST /users         - Create user with validation');
+    k.log.info('   GET  /about         - About page');
+    k.log.info('');
+    k.log.info('Getting Started example ready!');
   });
 
-  return app;
+  return k;
 }

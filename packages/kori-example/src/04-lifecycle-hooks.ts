@@ -8,27 +8,22 @@
  * - Child instances with hooks
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
 import { type Kori, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { type KoriZodRequestValidator, type KoriZodResponseValidator } from 'kori-zod-validator';
-
-// Request tracking state
-let requestCount = 0;
-const activeRequests = new Map<string, number>();
 
 /**
  * Configure Lifecycle Hooks example routes
  * This demonstrates comprehensive lifecycle management
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
+  // Request tracking state (encapsulated within this instance)
+  let requestCount = 0;
+  const activeRequests = new Map<string, number>();
+
   // Apply lifecycle hooks to the app
-  app
+  const app = k
     .onInit(() => {
       app.log.info('Lifecycle Hooks example initializing...');
       app.log.info('Environment: ' + (process.env.NODE_ENV ?? 'development'));
@@ -124,7 +119,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
       requestCount,
       activeRequests: activeRequests.size,
       uptime: process.uptime(),
-      requestId: (ctx.req as any).requestId,
+      requestId: ctx.req.requestId,
     }),
   );
 
@@ -133,7 +128,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return ctx.res.json({
       message: 'This was a slow request (2 seconds)',
-      requestId: (ctx.req as any).requestId,
+      requestId: ctx.req.requestId,
       duration: '2000ms',
     });
   });
@@ -154,65 +149,63 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
     return ctx.res.json({
       id,
       data: `Data for ID ${id}`,
-      requestId: (ctx.req as any).requestId,
+      requestId: ctx.req.requestId,
       timestamp: new Date().toISOString(),
     });
   });
 
   // Create child instance with additional auth hooks
-  const authChild = app
-    .createChild({
-      prefix: '/auth',
-      configure: (kori) => kori,
-    })
-    .onRequest<{ user: { id: string; token: string } | null }, unknown>((ctx) => {
-      const authHeader = ctx.req.headers.authorization;
+  app.createChild({
+    prefix: '/auth',
+    configure: (kc) =>
+      kc
+        .onRequest<{ user: { id: string; token: string } | null }, unknown>((ctx) => {
+          const authHeader = ctx.req.headers.authorization;
 
-      if (!authHeader) {
-        ctx.req.log.info('No authorization header found');
-        return ctx.withReq({ user: null });
-      } else {
-        const token = authHeader.replace('Bearer ', '');
-        ctx.req.log.info('Auth token found', { token: token.substring(0, 8) + '...' });
-        return ctx.withReq({ user: { id: 'user123', token } });
-      }
-    })
-    .onResponse((ctx) => {
-      if ((ctx.req as any).user) {
-        ctx.res.setHeader('X-User-Id', (ctx.req as any).user.id);
-        ctx.req.log.info('Added user ID to response headers');
-      }
-    });
+          if (!authHeader) {
+            ctx.req.log.info('No authorization header found');
+            return ctx.withReq({ user: null });
+          } else {
+            const token = authHeader.replace('Bearer ', '');
+            ctx.req.log.info('Auth token found', { token: token.substring(0, 8) + '...' });
+            return ctx.withReq({ user: { id: 'user123', token } });
+          }
+        })
+        .onResponse((ctx) => {
+          if (ctx.req.user) {
+            ctx.res.setHeader('X-User-Id', ctx.req.user.id);
+            ctx.req.log.info('Added user ID to response headers');
+          }
+        })
 
-  // Auth-protected profile endpoint
-  authChild.get('/profile', (ctx) => {
-    const user = (ctx.req as any).user;
+        // Auth-protected profile endpoint
+        .get('/profile', (ctx) => {
+          const user = ctx.req.user;
 
-    if (!user) {
-      return ctx.res.unauthorized({ message: 'Authorization required' });
-    }
+          if (!user) {
+            return ctx.res.unauthorized({ message: 'Authorization required' });
+          }
 
-    return ctx.res.json({
-      message: 'Profile accessed successfully',
-      user,
-      requestId: (ctx.req as any).requestId,
-      note: 'This endpoint demonstrates child instance with auth hooks',
-    });
+          return ctx.res.json({
+            message: 'Profile accessed successfully',
+            user,
+            requestId: ctx.req.requestId,
+            note: 'This endpoint demonstrates child instance with auth hooks',
+          });
+        }),
   });
 
   // API child with simplified route delegation example
   app.createChild({
     prefix: '/api',
-    configure: (kori) => {
-      kori.get('/status', (ctx) => {
-        return ctx.res.json({
+    configure: (kc) =>
+      kc.get('/status', (ctx) =>
+        ctx.res.json({
           message: 'API status endpoint',
           note: 'This demonstrates child instance configuration',
-          requestId: (ctx.req as any).requestId,
-        });
-      });
-      return kori;
-    },
+          requestId: ctx.req.requestId,
+        }),
+      ),
   });
 
   // Initialization hook specific to this example

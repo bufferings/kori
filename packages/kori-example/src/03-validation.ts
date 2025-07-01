@@ -39,10 +39,10 @@ const ProductSchema = z.object({
  * This demonstrates comprehensive validation patterns
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Welcome route
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori Validation Examples!',
       description: 'This example demonstrates comprehensive request validation',
@@ -51,7 +51,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // POST with body validation
-  app.post('/users', {
+  k.post('/users', {
     requestSchema: zodRequest({
       body: UserSchema,
     }),
@@ -65,7 +65,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // PUT with body and params validation
-  app.put('/users/:id', {
+  k.put('/users/:id', {
     requestSchema: zodRequest({
       body: UpdateUserSchema,
       params: z.object({
@@ -83,7 +83,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // GET with query validation
-  app.get('/users', {
+  k.get('/users', {
     requestSchema: zodRequest({
       queries: QuerySchema,
     }),
@@ -115,9 +115,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Complex validation with headers and nested objects
-  app.addRoute({
-    method: 'POST',
-    path: '/complex',
+  k.post('/complex', {
     requestSchema: zodRequest({
       body: z.object({
         tags: z.array(z.string()).describe('List of tags'),
@@ -143,7 +141,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Product creation with validation
-  app.post('/products', {
+  k.post('/products', {
     requestSchema: zodRequest({
       body: ProductSchema,
     }),
@@ -159,7 +157,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Test validation endpoint
-  app.post('/test-validation', {
+  k.post('/test-validation', {
     requestSchema: zodRequest({
       body: z.object({
         requiredField: z.string().min(1).describe('Required field'),
@@ -176,10 +174,10 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
     },
   });
 
-  // Legacy validation using addRoute
-  app.addRoute({
+  // Alternative validation using addRoute API
+  k.addRoute({
     method: 'POST',
-    path: '/legacy-validation',
+    path: '/addroute-validation',
     requestSchema: zodRequest({
       body: z.object({
         message: z.string().min(1).describe('Message content'),
@@ -189,7 +187,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
     handler: (ctx) => {
       const body = ctx.req.validated.body;
       return ctx.res.json({
-        message: 'Legacy validation passed using addRoute!',
+        message: 'Validation passed using addRoute API!',
         data: body,
         note: 'Both method aliases and addRoute support validation',
       });
@@ -197,7 +195,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Error handling for validation
-  app.onError((ctx, err) => {
+  k.onError((ctx, err) => {
     if (!ctx.res.isSet()) {
       ctx.res.badRequest({
         message: 'Validation or processing error occurred',
@@ -207,20 +205,20 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Initialization hook
-  app.onInit(() => {
-    app.log.info('Validation example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET  /              - Welcome message');
-    app.log.info('   POST /users         - Create user (body validation)');
-    app.log.info('   PUT  /users/:id     - Update user (body + params validation)');
-    app.log.info('   GET  /users         - List users (query validation)');
-    app.log.info('   POST /complex       - Complex validation (body + headers)');
-    app.log.info('   POST /products      - Create product (body validation)');
-    app.log.info('   POST /test-validation - Test validation');
-    app.log.info('   POST /legacy-validation - Legacy addRoute validation');
-    app.log.info('');
-    app.log.info('Validation example ready!');
+  k.onInit(() => {
+    k.log.info('Validation example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET  /              - Welcome message');
+    k.log.info('   POST /users         - Create user (body validation)');
+    k.log.info('   PUT  /users/:id     - Update user (body + params validation)');
+    k.log.info('   GET  /users         - List users (query validation)');
+    k.log.info('   POST /complex       - Complex validation (body + headers)');
+    k.log.info('   POST /products      - Create product (body validation)');
+    k.log.info('   POST /test-validation - Test validation');
+    k.log.info('   POST /addroute-validation - Alternative addRoute validation');
+    k.log.info('');
+    k.log.info('Validation example ready!');
   });
 
-  return app;
+  return k;
 }

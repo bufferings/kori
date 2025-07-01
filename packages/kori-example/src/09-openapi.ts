@@ -19,7 +19,7 @@ import { z } from 'zod';
  * This demonstrates OpenAPI integration with Zod validation
  */
 export function configure<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  app: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
+  k: Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator>,
 ): Kori<Env, Req, Res, KoriZodRequestValidator, KoriZodResponseValidator> {
   // Schema definitions
   const UserSchema = z.object({
@@ -33,7 +33,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   const CreateUserSchema = UserSchema.omit({ id: true, createdAt: true });
 
   // Welcome route
-  app.get('/', (ctx) =>
+  k.get('/', (ctx) =>
     ctx.res.json({
       message: 'Welcome to Kori OpenAPI Examples!',
       description: 'This demonstrates OpenAPI integration with Zod validation',
@@ -53,9 +53,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   );
 
   // List users with pagination and filtering
-  app.addRoute({
-    method: 'GET',
-    path: '/users',
+  k.get('/users', {
     requestSchema: zodRequest({
       queries: z.object({
         page: z.string().regex(/^\d+$/).transform(Number).default('1').describe('Page number'),
@@ -115,9 +113,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Get user by ID
-  app.addRoute({
-    method: 'GET',
-    path: '/users/:id',
+  k.get('/users/:id', {
     requestSchema: zodRequest({
       params: z.object({
         id: z.string().regex(/^\d+$/).describe('User ID'),
@@ -163,9 +159,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Create a new user
-  app.addRoute({
-    method: 'POST',
-    path: '/users',
+  k.post('/users', {
     requestSchema: zodRequest({
       body: CreateUserSchema,
     }),
@@ -194,9 +188,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Update user (partial update)
-  app.addRoute({
-    method: 'PATCH',
-    path: '/users/:id',
+  k.patch('/users/:id', {
     requestSchema: zodRequest({
       params: z.object({
         id: z.string().regex(/^\d+$/).describe('User ID'),
@@ -232,9 +224,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Delete user by ID
-  app.addRoute({
-    method: 'DELETE',
-    path: '/users/:id',
+  k.delete('/users/:id', {
     requestSchema: zodRequest({
       params: z.object({
         id: z.string().regex(/^\d+$/).describe('User ID'),
@@ -261,9 +251,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Bulk operations example
-  app.addRoute({
-    method: 'POST',
-    path: '/users/bulk',
+  k.post('/users/bulk', {
     requestSchema: zodRequest({
       body: z.object({
         users: z.array(CreateUserSchema).min(1).max(10).describe('Array of users to create (max 10)'),
@@ -298,9 +286,7 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Search users with complex query
-  app.addRoute({
-    method: 'GET',
-    path: '/users/search',
+  k.get('/users/search', {
     requestSchema: zodRequest({
       queries: z.object({
         q: z.string().min(1).describe('Search query'),
@@ -349,22 +335,22 @@ export function configure<Env extends KoriEnvironment, Req extends KoriRequest, 
   });
 
   // Initialization hook
-  app.onInit(() => {
-    app.log.info('OpenAPI example initialized!');
-    app.log.info('Available endpoints:');
-    app.log.info('   GET  /              - Welcome message');
-    app.log.info('   GET  /users         - List users (paginated, filterable)');
-    app.log.info('   GET  /users/:id     - Get user by ID');
-    app.log.info('   POST /users         - Create new user');
-    app.log.info('   PATCH /users/:id    - Update user by ID');
-    app.log.info('   DELETE /users/:id   - Delete user by ID');
-    app.log.info('   POST /users/bulk    - Bulk create users');
-    app.log.info('   GET  /users/search  - Search users');
-    app.log.info('');
-    app.log.info('All endpoints include OpenAPI metadata for documentation');
-    app.log.info('Zod validation is applied to all request schemas');
-    app.log.info('OpenAPI example ready!');
+  k.onInit(() => {
+    k.log.info('OpenAPI example initialized!');
+    k.log.info('Available endpoints:');
+    k.log.info('   GET  /              - Welcome message');
+    k.log.info('   GET  /users         - List users (paginated, filterable)');
+    k.log.info('   GET  /users/:id     - Get user by ID');
+    k.log.info('   POST /users         - Create new user');
+    k.log.info('   PATCH /users/:id    - Update user by ID');
+    k.log.info('   DELETE /users/:id   - Delete user by ID');
+    k.log.info('   POST /users/bulk    - Bulk create users');
+    k.log.info('   GET  /users/search  - Search users');
+    k.log.info('');
+    k.log.info('All endpoints include OpenAPI metadata for documentation');
+    k.log.info('Zod validation is applied to all request schemas');
+    k.log.info('OpenAPI example ready!');
   });
 
-  return app;
+  return k;
 }
