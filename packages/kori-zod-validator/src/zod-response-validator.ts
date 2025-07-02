@@ -7,11 +7,12 @@ import {
   createResponseValidator,
 } from 'kori';
 import { type KoriZodSchemaProvider, type KoriZodSchemaDefault } from 'kori-zod-schema';
+import { type $ZodIssue } from 'zod/v4/core';
 
 export type KoriZodResponseValidationError = {
   message: string;
   statusCode?: number;
-  errors?: unknown;
+  issues?: $ZodIssue[];
 };
 
 export type KoriZodResponseValidator = KoriResponseValidator<
@@ -35,11 +36,11 @@ export function createKoriZodResponseValidator(): KoriZodResponseValidator {
         if (!result.success) {
           return err({
             message: 'Response validation failed',
-            errors: result.error.errors,
+            issues: result.error.issues,
           });
         }
 
-        return ok(result.data);
+        return ok(result.data as InferSchemaOutput<S>);
       } catch (error) {
         return err({
           message: 'An error occurred during response validation',

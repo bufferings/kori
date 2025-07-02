@@ -1,5 +1,5 @@
 import { type KoriSchema, type KoriSchemaProvider, createKoriSchema } from 'kori';
-import { type z } from 'zod';
+import { type z } from 'zod/v4';
 
 export type KoriZodSchemaProvider = KoriSchemaProvider<'zod'>;
 

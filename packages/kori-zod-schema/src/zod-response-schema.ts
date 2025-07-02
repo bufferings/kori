@@ -1,5 +1,5 @@
 import { type KoriResponseSchema, type KoriResponseSchemaStructure } from 'kori';
-import { type z } from 'zod';
+import { type z } from 'zod/v4';
 
 import { type KoriZodSchema, type KoriZodSchemaProvider } from './zod-schema.js';
 

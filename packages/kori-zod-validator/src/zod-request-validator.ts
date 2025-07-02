@@ -7,16 +7,12 @@ import {
   createRequestValidator,
 } from 'kori';
 import { type KoriZodSchemaDefault, type KoriZodSchemaProvider } from 'kori-zod-schema';
-import { type ZodIssue } from 'zod';
+import { type $ZodIssue } from 'zod/v4/core';
 
 export type KoriZodRequestValidationError =
   | {
       message: string;
-      errors: {
-        path: string[];
-        message: string;
-        code: string;
-      }[];
+      issues: $ZodIssue[];
     }
   | {
       message: string;
@@ -39,15 +35,11 @@ function validateZodSchema<S extends KoriZodSchemaDefault>(
     if (!result.success) {
       return err({
         message: 'Validation error',
-        errors: result.error.errors.map((err: ZodIssue) => ({
-          path: err.path.map(String),
-          message: err.message,
-          code: err.code,
-        })),
+        issues: result.error.issues,
       });
     }
 
-    return ok(result.data);
+    return ok(result.data as InferSchemaOutput<S>);
   } catch (error) {
     return err({
       message: 'An error occurred during validation',
