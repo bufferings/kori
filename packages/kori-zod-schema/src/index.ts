@@ -2,6 +2,7 @@ export { type KoriZodRequestParts, type KoriZodRequestSchema, zodRequest } from 
 export { type KoriZodResponseSchema, zodResponse } from './zod-response-schema.js';
 export {
   createKoriZodSchema,
+  isKoriZodSchema,
   type KoriZodSchema,
   type KoriZodSchemaDefault,
   type KoriZodSchemaProvider,

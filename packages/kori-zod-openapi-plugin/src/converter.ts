@@ -1,15 +1,8 @@
-import { type KoriSchemaDefault, isKoriSchema } from 'kori';
+import { type KoriSchemaDefault } from 'kori';
 import { type SchemaConverter, type ConversionContext } from 'kori-openapi-plugin';
-import { type KoriZodSchema } from 'kori-zod-schema';
+import { isKoriZodSchema } from 'kori-zod-schema';
 import { type SchemaObject } from 'openapi3-ts/oas31';
 import { z } from 'zod/v4';
-
-/**
- * Check if a schema is a Kori Zod schema
- */
-function isKoriZodSchema(schema: KoriSchemaDefault): schema is KoriZodSchema<z.ZodType> {
-  return isKoriSchema(schema) && 'def' in schema && typeof schema.def === 'object' && schema.def !== null;
-}
 
 /**
  * Create a Zod schema converter for OpenAPI
