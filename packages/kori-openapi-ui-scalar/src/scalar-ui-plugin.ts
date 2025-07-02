@@ -89,6 +89,5 @@ function generateScalarHTML(options: ScalarHTMLOptions): string {
     });
   </script>
 </body>
-</html>
-`;
+</html>`;
 }

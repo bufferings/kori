@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
@@ -154,8 +153,8 @@ export function createNodeApp<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>) {
   return {
-    listen(port = 3000, host = 'localhost', callback?: () => void) {
-      startNodeServer(kori, { port, host, callback });
+    listen(port = 3000, host = 'localhost', callback?: () => void): Promise<void> {
+      return startNodeServer(kori, { port, host, callback });
     },
   };
 }
