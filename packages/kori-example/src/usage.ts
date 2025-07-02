@@ -71,13 +71,15 @@ const ProductSchema = z.object({
     .optional(),
 });
 
-const app = createKori({
+const baseApp = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
   loggerFactory,
-})
-  .applyPlugin(requestIdPlugin())
-  .applyPlugin(timingPlugin())
+});
+
+const appWithPlugins = baseApp.applyPlugin(requestIdPlugin()).applyPlugin(timingPlugin());
+
+const app = appWithPlugins
   .applyPlugin(
     zodOpenApiPlugin({
       info: {
