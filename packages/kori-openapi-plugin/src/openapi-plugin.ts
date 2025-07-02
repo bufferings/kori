@@ -32,20 +32,33 @@ export type OpenApiMeta = {
   description?: string;
   tags?: string[];
   operationId?: string;
+  exclude?: boolean;
 };
 
 export type OpenApiOptions = {
   info: InfoObject;
   servers?: ServerObject[];
   documentPath?: string;
-  excludePaths?: string[];
   converters: AtLeastOneConverter;
 };
 
 export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
+  // 開発時の警告
+  if (process.env.NODE_ENV === 'development' && meta.exclude && 
+      (meta.summary || meta.description || meta.tags || meta.operationId)) {
+    console.warn('OpenAPI meta: exclude=true specified with other metadata. Other metadata will be ignored.');
+  }
+  
   return {
     [OpenApiMetaSymbol]: meta,
   };
+}
+
+/**
+ * OpenAPIドキュメントから除外するためのヘルパー関数
+ */
+export function excludeFromOpenApi(): KoriRoutePluginMetadata {
+  return openApiMeta({ exclude: true });
 }
 
 export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
@@ -109,18 +122,26 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
           const doc = generateDocument();
           return ctx.res.json(doc);
         },
+        pluginMetadata: openApiMeta({ exclude: true }),
       });
 
       return kori.onInit((ctx) => {
         // Collect route metadata from the kori instance (after all routes are registered)
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {
+          const metadata = routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta;
+          
+          // exclude: true が設定されているルートは除外
+          if (metadata?.exclude) {
+            continue;
+          }
+          
           collector.addRoute({
             method: getMethodString(routeDef.method),
             path: routeDef.path,
             requestSchema: routeDef.requestSchema,
             responseSchema: routeDef.responseSchema,
-            metadata: routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta,
+            metadata,
           });
         }
         return ctx.withEnv({

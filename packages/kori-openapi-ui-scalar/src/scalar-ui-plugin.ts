@@ -1,5 +1,5 @@
 import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
-import { type OpenApiEnvironmentExtension } from 'kori-openapi-plugin';
+import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {
   path?: string;
@@ -51,6 +51,7 @@ export function scalarUiPlugin<
           });
           return ctx.res.html(html);
         },
+        pluginMetadata: openApiMeta({ exclude: true }),
       });
 
       return kori;
