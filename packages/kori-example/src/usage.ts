@@ -23,7 +23,7 @@ const loggerFactory = createPinoKoriLoggerFactory({
 
 type RequestIdExtension = { requestId: string };
 
-const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
+const requestIdPluginOriginal = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
   defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown, any, any>({
     name: 'requestId',
     apply: (k) =>
@@ -37,9 +37,11 @@ const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, R
         }),
   });
 
+const requestIdPlugin = requestIdPluginOriginal;
+
 type TimingExtension = { startTime: number };
 
-const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
+const timingPluginOriginal = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
   defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown, any, any>({
     name: 'timing',
     apply: (k) =>
@@ -50,6 +52,8 @@ const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res 
           ctx.res.setHeader('X-Response-Time', `${duration}ms`);
         }),
   });
+
+const timingPlugin = timingPluginOriginal;
 
 const ProductSchema = z.object({
   name: z.string().min(1).max(200).describe('Product name'),

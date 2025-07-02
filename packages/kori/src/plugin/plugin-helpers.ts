@@ -1,12 +1,22 @@
-import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
+import {
+  type KoriEnvironment,
+  type KoriHandlerContext,
+  type KoriRequest,
+  type KoriResponse,
+} from '../context/index.js';
 
 import { defineKoriPlugin, type KoriPlugin } from './plugin.js';
 
-export type SimplePluginConfig<_ReqExt = unknown, _ResExt = unknown> = {
+export type SimplePluginConfig<ReqExt = unknown, ResExt = unknown> = {
   name: string;
-  onRequest?: <Ctx>(ctx: Ctx) => Ctx;
-  onResponse?: <Ctx>(ctx: Ctx) => void;
-  onError?: <Ctx>(ctx: Ctx, error: Error) => void;
+  onRequest?: (
+    ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>,
+  ) => KoriHandlerContext<KoriEnvironment, KoriRequest & ReqExt, KoriResponse & ResExt>;
+  onResponse?: (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest & ReqExt, KoriResponse & ResExt>) => void;
+  onError?: (
+    ctx: KoriHandlerContext<KoriEnvironment, KoriRequest & ReqExt, KoriResponse & ResExt>,
+    error: Error,
+  ) => void;
 };
 
 export function defineSimplePlugin<ReqExt = unknown, ResExt = unknown>(
@@ -18,32 +28,39 @@ export function defineSimplePlugin<ReqExt = unknown, ResExt = unknown>(
   unknown,
   ReqExt,
   ResExt,
-  undefined,
-  undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
 > {
   return <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-    defineKoriPlugin<Env, Req, Res, unknown, ReqExt, ResExt, undefined, undefined>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    defineKoriPlugin<Env, Req, Res, unknown, ReqExt, ResExt, any, any>({
       name: config.name,
       apply: (k) => {
         let result = k;
         if (config.onRequest) {
-          result = result.onRequest(config.onRequest as never);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+          result = result.onRequest(config.onRequest as any);
         }
         if (config.onResponse) {
-          result = result.onResponse(config.onResponse as never);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+          result = result.onResponse(config.onResponse as any);
         }
         if (config.onError) {
-          result = result.onError(config.onError as never);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+          result = result.onError(config.onError as any);
         }
-        return result as never;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
+        return result as any;
       },
     });
 }
 
 export function defineRequestExtensionPlugin<T>(
   name: string,
-  extender: <Ctx>(ctx: Ctx) => T,
-  onResponse?: <Ctx>(ctx: Ctx) => void,
+  extender: () => T,
+  onResponse?: (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest & T, KoriResponse>) => void,
 ): <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() => KoriPlugin<
   Env,
   Req,
@@ -51,15 +68,16 @@ export function defineRequestExtensionPlugin<T>(
   unknown,
   T,
   unknown,
-  undefined,
-  undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
 > {
   return defineSimplePlugin<T>({
     name,
     onRequest: (ctx) => {
-      const extension = extender(ctx);
-      const contextWithReq = ctx as { withReq: (ext: T) => typeof ctx };
-      return contextWithReq.withReq(extension);
+      const extension = extender();
+      return ctx.withReq(extension);
     },
     onResponse,
   });
