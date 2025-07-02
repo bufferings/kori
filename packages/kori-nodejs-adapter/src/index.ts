@@ -135,7 +135,15 @@ export async function startNodeServer<
   await new Promise<void>((resolve, reject) => {
     server.listen(port, host, () => {
       kori.log.info(`Kori server started at http://${host}:${port}`);
-      if (options.callback) options.callback();
+      if (options.callback) {
+        try {
+          options.callback();
+        } catch (error) {
+          // Log the error but don't prevent the Promise from resolving
+          // The server has successfully started regardless of callback errors
+          kori.log.error('Error in callback', { err: error });
+        }
+      }
       resolve();
     });
 
