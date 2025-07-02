@@ -39,6 +39,11 @@ const requestIdPluginOriginal = <Env extends KoriEnvironment, Req extends KoriRe
 
 const requestIdPlugin = requestIdPluginOriginal;
 
+// const requestIdPlugin = defineRequestExtensionPlugin<RequestIdExtension>(
+//   'requestId',
+//   () => ({ requestId: `req-${Date.now()}-${Math.random().toString(36).substring(7)}` })
+// );
+
 type TimingExtension = { startTime: number };
 
 const timingPluginOriginal = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
@@ -54,6 +59,15 @@ const timingPluginOriginal = <Env extends KoriEnvironment, Req extends KoriReque
   });
 
 const timingPlugin = timingPluginOriginal;
+
+// const timingPlugin = defineRequestExtensionPlugin<TimingExtension>(
+//   'timing',
+//   () => ({ startTime: Date.now() }),
+//   (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest & TimingExtension, KoriResponse>) => {
+//     const duration = Date.now() - ctx.req.startTime;
+//     ctx.res.setHeader('X-Response-Time', `${duration}ms`);
+//   }
+// );
 
 const ProductSchema = z.object({
   name: z.string().min(1).max(200).describe('Product name'),
