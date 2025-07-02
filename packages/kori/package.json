@@ -30,7 +30,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch"
   },
   "dependencies": {
     "hono": "4.7.9"

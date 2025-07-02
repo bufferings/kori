@@ -31,7 +31,8 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@types/eslint": "catalog:",

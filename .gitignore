@@ -27,3 +27,6 @@ dist/
 # TypeScript build cache
 *.tsbuildinfo
 tsconfig.tsbuildinfo
+
+# Turborepo
+.turbo/
