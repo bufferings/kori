@@ -70,7 +70,8 @@ function generateScalarHTML(options: ScalarHTMLOptions): string {
   const customCssTag = options.customCss ? `<style>${options.customCss}</style>` : '';
   const proxyUrlConfig = options.proxyUrl ? `proxyUrl: '${options.proxyUrl}',` : '';
 
-  return `<!DOCTYPE html>
+  return `
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -89,5 +90,6 @@ function generateScalarHTML(options: ScalarHTMLOptions): string {
     });
   </script>
 </body>
-</html>`;
+</html>
+`;
 }
