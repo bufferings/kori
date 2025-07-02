@@ -16,16 +16,6 @@
       "cache": false,
       "persistent": true,
       "dependsOn": ["^build"]
-    },
-    "dev:getting-started": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^build"]
-    },
-    "dev:usage": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^build"]
     }
   }
 }
