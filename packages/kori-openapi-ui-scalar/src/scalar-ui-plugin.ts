@@ -9,10 +9,16 @@ export type ScalarUiOptions = {
   proxyUrl?: string;
 };
 
-export function scalarUiPlugin(options: ScalarUiOptions = {}): KoriPlugin<
-  KoriEnvironment & OpenApiEnvironmentExtension,
-  KoriRequest,
-  KoriResponse,
+export function scalarUiPlugin<
+  Env extends KoriEnvironment & OpenApiEnvironmentExtension,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(
+  options: ScalarUiOptions = {},
+): KoriPlugin<
+  Env,
+  Req,
+  Res,
   unknown,
   unknown,
   unknown,

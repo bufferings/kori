@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "kori": "workspace:*",
-    "pino": "^8.0.0"
+    "pino": "9.7.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

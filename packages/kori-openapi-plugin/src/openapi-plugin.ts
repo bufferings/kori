@@ -48,11 +48,7 @@ export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
   };
 }
 
-export function openApiPlugin<
-  Env extends KoriEnvironment = KoriEnvironment,
-  Req extends KoriRequest = KoriRequest,
-  Res extends KoriResponse = KoriResponse,
->(
+export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: OpenApiOptions,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown, any, any> {

@@ -4,11 +4,11 @@ import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const UserSchema = z.object({
-  name: z.string().min(1).max(100).describe('User name'),
-  email: z.string().email().describe('Email address'),
+  name: z.string().min(1).max(100).meta({ description: 'User name' }),
+  email: z.string().email().meta({ description: 'Email address' }),
 });
 
 const app = createKori({

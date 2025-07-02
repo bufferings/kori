@@ -2,8 +2,7 @@ import { type KoriSchemaDefault, isKoriSchema } from 'kori';
 import { type SchemaConverter, type ConversionContext } from 'kori-openapi-plugin';
 import { type KoriZodSchema } from 'kori-zod-schema';
 import { type SchemaObject } from 'openapi3-ts/oas31';
-import { type z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod/v4';
 
 /**
  * Check if a schema is a Kori Zod schema
@@ -27,15 +26,7 @@ export function createZodSchemaConverter(): SchemaConverter {
       }
 
       try {
-        // Convert Zod schema to JSON Schema compatible with OpenAPI
-        const jsonSchema = zodToJsonSchema(schema.def, {
-          target: 'openApi3',
-        });
-
-        // Remove $schema property as OpenAPI doesn't use it
-        const { $schema: _$schema, ...openApiSchema } = jsonSchema as Record<string, unknown>;
-
-        return openApiSchema as SchemaObject;
+        return z.toJSONSchema(schema.def) as SchemaObject;
       } catch {
         // Fallback to generic object schema
         return { type: 'object' };

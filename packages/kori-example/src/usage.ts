@@ -6,7 +6,7 @@ import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequest } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const isDev = process.env.NODE_ENV !== 'production';
 const loggerFactory = createPinoKoriLoggerFactory({
@@ -52,11 +52,11 @@ const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res 
   });
 
 const ProductSchema = z.object({
-  name: z.string().min(1).max(200).describe('Product name'),
-  description: z.string().max(1000).optional().describe('Product description'),
-  price: z.number().positive().describe('Product price'),
-  category: z.enum(['electronics', 'books', 'clothing']).describe('Product category'),
-  tags: z.array(z.string()).max(10).describe('Product tags'),
+  name: z.string().min(1).max(200).meta({ description: 'Product name' }),
+  description: z.string().max(1000).optional().meta({ description: 'Product description' }),
+  price: z.number().positive().meta({ description: 'Product price' }),
+  category: z.enum(['electronics', 'books', 'clothing']).meta({ description: 'Product category' }),
+  tags: z.array(z.string()).max(10).meta({ description: 'Product tags' }),
   metadata: z
     .object({
       weight: z.number().positive().optional(),
@@ -130,7 +130,7 @@ app.post('/products', {
     body: ProductSchema,
     headers: z.object({
       'x-api-version': z.enum(['1.0', '2.0']).optional(),
-      'x-client-id': z.string().min(1).describe('Client identifier'),
+      'x-client-id': z.string().min(1).meta({ description: 'Client identifier' }),
     }),
   }),
   handler: (ctx) => {
@@ -162,7 +162,7 @@ app.get('/products/search', {
   }),
   requestSchema: zodRequest({
     queries: z.object({
-      q: z.string().min(1).describe('Search query'),
+      q: z.string().min(1).meta({ description: 'Search query' }),
       category: z.enum(['electronics', 'books', 'clothing']).optional(),
       minPrice: z
         .string()
@@ -174,7 +174,7 @@ app.get('/products/search', {
         .regex(/^\d+(\.\d{2})?$/)
         .transform(Number)
         .optional(),
-      tags: z.string().optional().describe('Comma-separated tags'),
+      tags: z.string().optional().meta({ description: 'Comma-separated tags' }),
       sort: z.enum(['name', 'price', 'created']).default('name'),
       order: z.enum(['asc', 'desc']).default('asc'),
     }),
