@@ -43,22 +43,9 @@ export type OpenApiOptions = {
 };
 
 export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
-  // 開発時の警告
-  if (process.env.NODE_ENV === 'development' && meta.exclude && 
-      (meta.summary || meta.description || meta.tags || meta.operationId)) {
-    console.warn('OpenAPI meta: exclude=true specified with other metadata. Other metadata will be ignored.');
-  }
-  
   return {
     [OpenApiMetaSymbol]: meta,
   };
-}
-
-/**
- * OpenAPIドキュメントから除外するためのヘルパー関数
- */
-export function excludeFromOpenApi(): KoriRoutePluginMetadata {
-  return openApiMeta({ exclude: true });
 }
 
 export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
@@ -115,9 +102,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
     version: '1.0.0',
     apply: (kori) => {
       // Add OpenAPI document endpoint
-      kori.addRoute({
-        method: 'GET',
-        path: documentPath,
+      kori.get(documentPath, {
         handler: (ctx) => {
           const doc = generateDocument();
           return ctx.res.json(doc);
@@ -130,12 +115,10 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {
           const metadata = routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta;
-          
-          // exclude: true が設定されているルートは除外
           if (metadata?.exclude) {
             continue;
           }
-          
+
           collector.addRoute({
             method: getMethodString(routeDef.method),
             path: routeDef.path,

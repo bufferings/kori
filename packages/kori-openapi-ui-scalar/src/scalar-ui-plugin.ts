@@ -33,9 +33,7 @@ export function scalarUiPlugin<
       const uiPath = options.path ?? '/docs';
       const title = options.title ?? 'API Documentation';
 
-      kori.addRoute({
-        method: 'GET',
-        path: uiPath,
+      kori.get(uiPath, {
         handler: (ctx) => {
           const documentPath = ctx.env.openapi?.documentPath;
           if (!documentPath) {
