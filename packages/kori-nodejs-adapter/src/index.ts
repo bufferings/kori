@@ -131,10 +131,17 @@ export async function startNodeServer<
     }
   });
 
-  // Start server
-  server.listen(port, host, () => {
-    kori.log.info(`Kori server started at http://${host}:${port}`);
-    if (options.callback) options.callback();
+  // Start server and wait for it to be ready
+  await new Promise<void>((resolve, reject) => {
+    server.listen(port, host, () => {
+      kori.log.info(`Kori server started at http://${host}:${port}`);
+      if (options.callback) options.callback();
+      resolve();
+    });
+
+    server.on('error', (error) => {
+      reject(error);
+    });
   });
 
   // Shutdown processing
