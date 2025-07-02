@@ -1,5 +1,5 @@
 import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
-import { type OpenApiEnvironmentExtension } from 'kori-openapi-plugin';
+import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {
   path?: string;
@@ -33,9 +33,7 @@ export function scalarUiPlugin<
       const uiPath = options.path ?? '/docs';
       const title = options.title ?? 'API Documentation';
 
-      kori.addRoute({
-        method: 'GET',
-        path: uiPath,
+      kori.get(uiPath, {
         handler: (ctx) => {
           const documentPath = ctx.env.openapi?.documentPath;
           if (!documentPath) {
@@ -51,6 +49,7 @@ export function scalarUiPlugin<
           });
           return ctx.res.html(html);
         },
+        pluginMetadata: openApiMeta({ exclude: true }),
       });
 
       return kori;

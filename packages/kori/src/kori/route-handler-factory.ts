@@ -12,15 +12,15 @@ import {
   type KoriOnFinallyHook,
 } from '../hook/index.js';
 import {
-	resolveRequestValidationFunction,
-	type InferRequestValidatorError,
-	type KoriRequestValidatorDefault,
-	type WithValidatedRequest,
+  resolveRequestValidationFunction,
+  type InferRequestValidatorError,
+  type KoriRequestValidatorDefault,
+  type WithValidatedRequest,
 } from '../request-validation/index.js';
 import {
-	resolveResponseValidationFunction,
-	type KoriResponseValidatorDefault,
-	type InferResponseValidationError,
+  resolveResponseValidationFunction,
+  type KoriResponseValidatorDefault,
+  type InferResponseValidationError,
 } from '../response-validation/index.js';
 import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
 import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';

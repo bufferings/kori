@@ -32,13 +32,13 @@ export type OpenApiMeta = {
   description?: string;
   tags?: string[];
   operationId?: string;
+  exclude?: boolean;
 };
 
 export type OpenApiOptions = {
   info: InfoObject;
   servers?: ServerObject[];
   documentPath?: string;
-  excludePaths?: string[];
   converters: AtLeastOneConverter;
 };
 
@@ -102,25 +102,29 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
     version: '1.0.0',
     apply: (kori) => {
       // Add OpenAPI document endpoint
-      kori.addRoute({
-        method: 'GET',
-        path: documentPath,
+      kori.get(documentPath, {
         handler: (ctx) => {
           const doc = generateDocument();
           return ctx.res.json(doc);
         },
+        pluginMetadata: openApiMeta({ exclude: true }),
       });
 
       return kori.onInit((ctx) => {
         // Collect route metadata from the kori instance (after all routes are registered)
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {
+          const metadata = routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta;
+          if (metadata?.exclude) {
+            continue;
+          }
+
           collector.addRoute({
             method: getMethodString(routeDef.method),
             path: routeDef.path,
             requestSchema: routeDef.requestSchema,
             responseSchema: routeDef.responseSchema,
-            metadata: routeDef.pluginMetadata?.[OpenApiMetaSymbol] as OpenApiMeta,
+            metadata,
           });
         }
         return ctx.withEnv({
