@@ -18,7 +18,8 @@
     "start:getting-started": "NODE_ENV=development tsx src/getting-started.ts",
     "start:usage": "NODE_ENV=development tsx src/usage.ts",
     "typecheck": "tsc --noEmit",
-    "dev": "NODE_ENV=development tsx --watch src/getting-started.ts"
+    "dev:getting-started": "NODE_ENV=development tsx --watch src/getting-started.ts",
+    "dev:usage": "NODE_ENV=development tsx --watch src/usage.ts"
   },
   "dependencies": {
     "kori": "workspace:*",
