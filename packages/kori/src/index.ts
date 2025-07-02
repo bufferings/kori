@@ -77,6 +77,7 @@ export {
 } from './router/index.js';
 export {
   createKoriSchema,
+  getKoriSchemaBrand,
   type InferRequestSchemaProvider,
   type InferResponseSchemaProvider,
   type InferSchemaOutput,

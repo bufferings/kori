@@ -27,6 +27,7 @@ export {
 } from './response-schema.js';
 export {
   createKoriSchema,
+  getKoriSchemaBrand,
   type InferSchemaOutput,
   isKoriSchema,
   type KoriSchema,
