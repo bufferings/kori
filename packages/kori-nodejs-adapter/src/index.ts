@@ -95,7 +95,7 @@ export async function startNodeServer<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(
   kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
-  options: { port?: number; host?: string } = {},
+  options: { port?: number; host?: string; callback?: () => void } = {},
 ): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
@@ -135,6 +135,7 @@ export async function startNodeServer<
   // Start server
   server.listen(port, host, () => {
     kori.log.info(`Kori server started at http://${host}:${port}`);
+    if (options.callback) options.callback();
   });
 
   // Shutdown processing
@@ -154,8 +155,7 @@ export function createNodeApp<
 >(kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>) {
   return {
     listen(port = 3000, host = 'localhost', callback?: () => void) {
-      startNodeServer(kori, { port, host });
-      if (callback) callback();
+      startNodeServer(kori, { port, host, callback });
     },
   };
 }
