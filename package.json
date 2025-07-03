@@ -11,7 +11,8 @@
     "lint": "turbo build && eslint .",
     "lint:fix": "turbo build && eslint --fix .",
     "format": "prettier --write .",
-    "dev": "turbo dev --filter=kori-example..."
+    "dev:getting-started": "turbo run dev dev:getting-started --concurrency 20",
+    "dev:usage": "turbo run dev dev:usage --concurrency 20"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
