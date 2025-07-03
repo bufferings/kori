@@ -153,10 +153,9 @@ export async function startNodeServer<
   });
 
   // Shutdown processing
-  process.on('SIGINT', async () => {
+  process.once('SIGINT', async () => {
     kori.log.info('Shutting down server...');
     await onClose();
-    process.exit(0);
   });
 }
 
