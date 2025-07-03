@@ -156,6 +156,7 @@ export async function startNodeServer<
   process.once('SIGINT', async () => {
     kori.log.info('Shutting down server...');
     await onClose();
+    process.exit(0);
   });
 }
 
