@@ -32,7 +32,8 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/eslint": "catalog:",
