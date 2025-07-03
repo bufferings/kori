@@ -29,9 +29,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "dev": "tsc --watch"
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "dependencies": {
     "hono": "4.7.9"

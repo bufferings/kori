@@ -29,10 +29,10 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "dev": "tsc --watch"
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "vitest"
   },
   "devDependencies": {
     "@types/eslint": "catalog:",
