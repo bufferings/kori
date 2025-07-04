@@ -1,4 +1,4 @@
-import { defineKoriRawPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
+import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
 import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {
@@ -27,14 +27,14 @@ export function scalarUiPlugin<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 > {
-  return defineKoriRawPlugin({
+  return defineKoriPlugin({
     name: 'openapi-ui-scalar',
-    apply(kori) {
+    apply: (kori) => {
       const uiPath = options.path ?? '/docs';
       const title = options.title ?? 'API Documentation';
 
       kori.get(uiPath, {
-        handler: (ctx) => {
+        handler: (ctx: any) => {
           const documentPath = ctx.env.openapi?.documentPath;
           if (!documentPath) {
             throw new Error('openApiPlugin must be registered before scalarUiPlugin');

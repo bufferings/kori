@@ -1,5 +1,5 @@
 import {
-  defineKoriRawPlugin,
+  defineKoriPlugin,
   type KoriRoutePluginMetadata,
   type KoriPlugin,
   type KoriResponse,
@@ -97,20 +97,20 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
     return cachedDocument;
   }
 
-  return defineKoriRawPlugin({
+  return defineKoriPlugin({
     name: 'openapi',
     version: '1.0.0',
     apply: (kori) => {
       // Add OpenAPI document endpoint
       kori.get(documentPath, {
-        handler: (ctx) => {
+        handler: (ctx: any) => {
           const doc = generateDocument();
           return ctx.res.json(doc);
         },
         pluginMetadata: openApiMeta({ exclude: true }),
       });
 
-      return kori.onInit((ctx) => {
+      return kori.onInit((ctx: any) => {
         // Collect route metadata from the kori instance (after all routes are registered)
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {

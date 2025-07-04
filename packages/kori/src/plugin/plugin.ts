@@ -38,7 +38,7 @@ export function isKoriPlugin(value: unknown): value is KoriPluginDefault {
   return typeof value === 'object' && value !== null && KoriPluginBrand in value;
 }
 
-export function defineKoriRawPlugin<
+export function defineKoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
@@ -59,5 +59,75 @@ export function defineKoriRawPlugin<
     name: params.name,
     version: params.version,
     apply: params.apply,
+  };
+}
+
+// New type-inferred plugin definition function
+export function defineKoriSimplePlugin(params: {
+  name: string;
+  version?: string;
+  // Lifestyle Hooks
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onInit?: () => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClose?: (ctx: any) => void;
+  // Handler Hooks
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onRequest?: (ctx: any) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onResponse?: (ctx: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onError?: (ctx: any, err: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onFinally?: (ctx: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}): KoriPlugin<any, any, any, any, any, any, any, any> {
+  return {
+    [KoriPluginBrand]: KoriPluginBrand,
+    name: params.name,
+    version: params.version,
+    apply: (kori) => {
+      let result = kori;
+
+      if (params.onInit) {
+        result = result.onInit((ctx) => {
+          const envExt = params.onInit!();
+          return ctx.withEnv(envExt);
+        });
+      }
+
+      if (params.onClose) {
+        result = result.onClose((ctx) => {
+          params.onClose!(ctx);
+        });
+      }
+
+      if (params.onRequest) {
+        result = result.onRequest((ctx) => {
+          const reqExt = params.onRequest!(ctx);
+          return ctx.withReq(reqExt);
+        });
+      }
+
+      if (params.onResponse) {
+        result = result.onResponse((ctx) => {
+          params.onResponse!(ctx);
+        });
+      }
+
+      if (params.onError) {
+        result = result.onError((ctx, err) => {
+          params.onError!(ctx, err);
+        });
+      }
+
+      if (params.onFinally) {
+        result = result.onFinally((ctx) => {
+          params.onFinally!(ctx);
+        });
+      }
+
+      return result;
+    },
   };
 }

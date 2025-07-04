@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { createKori, defineKoriRawPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
+import { createKori, defineKoriSimplePlugin } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
@@ -21,35 +20,25 @@ const loggerFactory = createPinoKoriLoggerFactory({
   }),
 });
 
-type RequestIdExtension = { requestId: string };
+const requestIdPlugin = defineKoriSimplePlugin({
+  name: 'requestId',
+  onRequest: (ctx) => {
+    const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    return { requestId };
+  },
+  onResponse: (ctx) => {
+    ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
+  },
+});
 
-const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriRawPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown, any, any>({
-    name: 'requestId',
-    apply: (k) =>
-      k
-        .onRequest((ctx) => {
-          const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-          return ctx.withReq({ requestId });
-        })
-        .onResponse((ctx) => {
-          ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
-        }),
-  });
-
-type TimingExtension = { startTime: number };
-
-const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriRawPlugin<Env, Req, Res, unknown, TimingExtension, unknown, any, any>({
-    name: 'timing',
-    apply: (k) =>
-      k
-        .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
-        .onResponse((ctx) => {
-          const duration = Date.now() - ctx.req.startTime;
-          ctx.res.setHeader('X-Response-Time', `${duration}ms`);
-        }),
-  });
+const timingPlugin = defineKoriSimplePlugin({
+  name: 'timing',
+  onRequest: (ctx) => ({ startTime: Date.now() }),
+  onResponse: (ctx) => {
+    const duration = Date.now() - ctx.req.startTime;
+    ctx.res.setHeader('X-Response-Time', `${duration}ms`);
+  },
+});
 
 const ProductSchema = z.object({
   name: z.string().min(1).max(200).meta({ description: 'Product name' }),
@@ -76,8 +65,8 @@ const app = createKori({
   responseValidator: createKoriZodResponseValidator(),
   loggerFactory,
 })
-  .applyPlugin(requestIdPlugin())
-  .applyPlugin(timingPlugin())
+  .applyPlugin(requestIdPlugin)
+  .applyPlugin(timingPlugin)
   .applyPlugin(
     zodOpenApiPlugin({
       info: {
