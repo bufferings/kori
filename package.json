@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "build:watch": "turbo run build:watch",
-    "clean": "rm -rf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
+    "clean": "rimraf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run build --filter=kori-eslint-rules && eslint .",
@@ -25,6 +25,7 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "lefthook": "^1.10.1",
     "prettier": "3.4.2",
+    "rimraf": "^6.0.1",
     "tsx": "catalog:",
     "turbo": "^2.5.4",
     "typescript": "catalog:",
