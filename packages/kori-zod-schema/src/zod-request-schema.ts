@@ -27,11 +27,9 @@ export type KoriZodRequestBodySchema =
   | KoriRequestSchemaContent<KoriZodSchema<z.ZodType>>
   | KoriRequestSchemaBody<KoriZodSchema<z.ZodType>>;
 
-// Convert raw zod schema to wrapped schema type
 type ToKoriZodSchema<T extends z.ZodType> = KoriZodSchema<T>;
 
-// Main zodRequest function with proper type inference
-export function zodRequest<
+export function zodRequestSchema<
   TParams extends z.ZodType | undefined = undefined,
   THeaders extends z.ZodType | undefined = undefined,
   TQueries extends z.ZodType | undefined = undefined,
