@@ -1,1 +1,1 @@
-export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin.js';
+export { defineKoriRawPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin.js';
