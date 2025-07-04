@@ -1,4 +1,4 @@
-import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
+import { defineKoriRawPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
 import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {
@@ -27,7 +27,7 @@ export function scalarUiPlugin<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 > {
-  return defineKoriPlugin({
+  return defineKoriRawPlugin({
     name: 'openapi-ui-scalar',
     apply(kori) {
       const uiPath = options.path ?? '/docs';

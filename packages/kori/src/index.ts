@@ -47,7 +47,7 @@ export {
   type KoriSimpleLoggerOptions,
   wrapKoriLogger,
 } from './logging/index.js';
-export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
+export { defineKoriRawPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
 export {
   createRequestValidator,
   type InferRequestValidatorError,
