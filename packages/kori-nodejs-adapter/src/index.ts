@@ -3,8 +3,7 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable import-x/no-nodejs-modules */
 
-import { createServer } from 'node:http';
-import { type IncomingMessage, type ServerResponse } from 'node:http';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 
 import {
   type Kori,
@@ -83,6 +82,29 @@ async function writeResponseToNodeResponse(fetchRes: Response, res: ServerRespon
   res.end(Buffer.from(buffer));
 }
 
+function setupGracefulShutdown<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  RequestValidator extends KoriRequestValidatorDefault | undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+>(server: Server, kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>, onClose: () => Promise<void>) {
+  const handler = async () => {
+    kori.log.info('Shutting down server...');
+    await onClose();
+    server.close((err) => {
+      if (err) {
+        kori.log.error('Error closing server', { err });
+        process.exit(1);
+      }
+      process.exit(0);
+    });
+  };
+
+  process.once('SIGINT', handler);
+  process.once('SIGTERM', handler);
+}
+
 /**
  * Run Kori application as a Node.js HTTP server
  */
@@ -94,7 +116,12 @@ export async function startNodeServer<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(
   kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
-  options: { port?: number; host?: string; callback?: () => void } = {},
+  options: {
+    port?: number;
+    host?: string;
+    callback?: () => void;
+    enableGracefulShutdown?: boolean;
+  } = {},
 ): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
@@ -152,12 +179,9 @@ export async function startNodeServer<
     });
   });
 
-  // Shutdown processing
-  process.on('SIGINT', async () => {
-    kori.log.info('Shutting down server...');
-    await onClose();
-    process.exit(0);
-  });
+  if (options.enableGracefulShutdown ?? true) {
+    setupGracefulShutdown(server, kori, onClose);
+  }
 }
 
 export function createNodeApp<

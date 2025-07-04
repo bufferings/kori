@@ -29,8 +29,9 @@
     }
   },
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build:watch": "tsc --watch"
   },
   "dependencies": {
     "kori": "workspace:*"

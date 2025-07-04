@@ -15,19 +15,19 @@
   },
   "scripts": {
     "build": "tsc",
-    "start:getting-started": "NODE_ENV=development tsx src/getting-started.ts",
-    "start:usage": "NODE_ENV=development tsx src/usage.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:getting-started": "NODE_ENV=development tsx --watch src/getting-started.ts",
+    "dev:usage": "NODE_ENV=development tsx --watch src/usage.ts"
   },
   "dependencies": {
     "kori": "workspace:*",
     "kori-nodejs-adapter": "workspace:*",
-    "kori-zod-openapi-plugin": "workspace:*",
-    "kori-zod-schema": "workspace:*",
-    "kori-zod-validator": "workspace:*",
     "kori-openapi-plugin": "workspace:*",
     "kori-openapi-ui-scalar": "workspace:*",
     "kori-pino-adapter": "workspace:*",
+    "kori-zod-openapi-plugin": "workspace:*",
+    "kori-zod-schema": "workspace:*",
+    "kori-zod-validator": "workspace:*",
     "pino": "9.7.0",
     "zod": "3.25.67"
   },
