@@ -5,6 +5,7 @@
   "packageManager": "pnpm@9.15.3",
   "scripts": {
     "build": "turbo build",
+    "build:watch": "turbo build:watch",
     "clean": "rm -rf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
     "test": "turbo test",
     "typecheck": "turbo typecheck",
