@@ -4,7 +4,7 @@ import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
-import { zodRequest } from 'kori-zod-schema';
+import { zodRequestSchema } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod/v4';
 
@@ -126,7 +126,7 @@ app.post('/products', {
     description: 'Create a product with complex validation',
     tags: ['Products'],
   }),
-  requestSchema: zodRequest({
+  requestSchema: zodRequestSchema({
     body: ProductSchema,
     headers: z.object({
       'x-api-version': z.enum(['1.0', '2.0']).optional(),
@@ -160,7 +160,7 @@ app.get('/products/search', {
     description: 'Advanced product search with filtering',
     tags: ['Products'],
   }),
-  requestSchema: zodRequest({
+  requestSchema: zodRequestSchema({
     queries: z.object({
       q: z.string().min(1).meta({ description: 'Search query' }),
       category: z.enum(['electronics', 'books', 'clothing']).optional(),
@@ -247,7 +247,7 @@ app.createChild({
           description: 'Enable or disable maintenance mode',
           tags: ['Admin'],
         }),
-        requestSchema: zodRequest({
+        requestSchema: zodRequestSchema({
           body: z.object({
             mode: z.enum(['enable', 'disable']),
             reason: z.string().optional(),

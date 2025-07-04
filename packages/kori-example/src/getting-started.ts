@@ -2,7 +2,7 @@ import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
-import { zodRequest } from 'kori-zod-schema';
+import { zodRequestSchema } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
 import { z } from 'zod/v4';
 
@@ -54,7 +54,7 @@ app.post('/users', {
     description: 'Create a new user with validation',
     tags: ['Users'],
   }),
-  requestSchema: zodRequest({
+  requestSchema: zodRequestSchema({
     body: UserSchema,
   }),
   handler: (ctx) => {
