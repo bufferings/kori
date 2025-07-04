@@ -38,7 +38,7 @@ export function isKoriPlugin(value: unknown): value is KoriPluginDefault {
   return typeof value === 'object' && value !== null && KoriPluginBrand in value;
 }
 
-export function defineKoriRawPlugin<
+export function defineKoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,

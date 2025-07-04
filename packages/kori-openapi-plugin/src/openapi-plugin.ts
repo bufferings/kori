@@ -1,5 +1,5 @@
 import {
-  defineKoriRawPlugin,
+  defineKoriPlugin,
   type KoriRoutePluginMetadata,
   type KoriPlugin,
   type KoriResponse,
@@ -97,7 +97,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
     return cachedDocument;
   }
 
-  return defineKoriRawPlugin({
+  return defineKoriPlugin({
     name: 'openapi',
     version: '1.0.0',
     apply: (kori) => {
