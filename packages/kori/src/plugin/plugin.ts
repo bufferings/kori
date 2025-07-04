@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { type Kori } from '../kori/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
@@ -13,7 +12,9 @@ export type KoriPlugin<
   EnvExt = unknown,
   ReqExt = unknown,
   ResExt = unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
 > = {
   [KoriPluginBrand]: typeof KoriPluginBrand;
@@ -46,7 +47,9 @@ export function defineKoriPlugin<
   EnvExt = unknown,
   ReqExt = unknown,
   ResExt = unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
 >(params: {
   name: string;
