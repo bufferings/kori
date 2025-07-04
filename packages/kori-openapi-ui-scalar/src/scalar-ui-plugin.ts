@@ -13,20 +13,7 @@ export function scalarUiPlugin<
   Env extends KoriEnvironment & OpenApiEnvironmentExtension,
   Req extends KoriRequest,
   Res extends KoriResponse,
->(
-  options: ScalarUiOptions = {},
-): KoriPlugin<
-  Env,
-  Req,
-  Res,
-  unknown,
-  unknown,
-  unknown,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
-> {
+>(options: ScalarUiOptions = {}): KoriPlugin<Env, Req, Res> {
   return defineKoriPlugin({
     name: 'openapi-ui-scalar',
     apply(kori) {

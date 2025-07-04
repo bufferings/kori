@@ -12,8 +12,10 @@ export type KoriPlugin<
   EnvExt = unknown,
   ReqExt = unknown,
   ResExt = unknown,
-  RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
 > = {
   [KoriPluginBrand]: typeof KoriPluginBrand;
   name: string;
@@ -45,8 +47,10 @@ export function defineKoriPlugin<
   EnvExt = unknown,
   ReqExt = unknown,
   ResExt = unknown,
-  RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
 >(params: {
   name: string;
   version?: string;
