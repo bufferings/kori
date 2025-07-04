@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
@@ -24,7 +23,7 @@ const loggerFactory = createPinoKoriLoggerFactory({
 type RequestIdExtension = { requestId: string };
 
 const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown, any, any>({
+  defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown>({
     name: 'requestId',
     apply: (k) =>
       k
@@ -40,7 +39,7 @@ const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, R
 type TimingExtension = { startTime: number };
 
 const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown, any, any>({
+  defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown>({
     name: 'timing',
     apply: (k) =>
       k

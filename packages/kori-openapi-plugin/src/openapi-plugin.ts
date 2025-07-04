@@ -50,8 +50,7 @@ export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
 
 export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: OpenApiOptions,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown, any, any> {
+): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown> {
   const documentPath = options.documentPath ?? '/openapi.json';
 
   const collector = createRouteCollector();
