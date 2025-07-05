@@ -221,8 +221,11 @@ function createPreRequestValidationErrorHandler<
           message: err.message,
           details: err.cause,
         });
-      default:
-        throw new Error(`Unknown pre validation error type`);
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        const _exhaustiveCheck: never = err;
+        throw new Error(`Unknown pre validation error type: ${(_exhaustiveCheck as any).type}`);
+      }
     }
   };
 }
@@ -375,8 +378,11 @@ export function createRouteHandler<
               ctx,
               error.error as InferRequestValidatorError<RequestValidator>,
             );
-          default:
-            throw new Error(`Unknown validation error stage: ${(error as any).stage}`);
+          default: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            const _exhaustiveCheck: never = error;
+            throw new Error(`Unknown validation error stage: ${(_exhaustiveCheck as any).stage}`);
+          }
         }
       }
 
