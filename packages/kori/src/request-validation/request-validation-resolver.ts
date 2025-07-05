@@ -2,7 +2,7 @@ import { type KoriRequest } from '../context/index.js';
 import { type KoriRequestSchemaDefault, type KoriRequestSchemaContentDefault, isKoriSchema } from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
-import { type KoriRequestValidationError } from './request-validation-error.js';
+import { type KoriRequestFieldError, type KoriRequestValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 async function validateRequestParams({
@@ -13,7 +13,7 @@ async function validateRequestParams({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['params'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestFieldError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -24,6 +24,7 @@ async function validateRequestParams({
   }
 
   return err({
+    field: 'params',
     stage: 'validation',
     error: result.error,
   });
@@ -37,7 +38,7 @@ async function validateRequestQueries({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['queries'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestFieldError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -48,6 +49,7 @@ async function validateRequestQueries({
   }
 
   return err({
+    field: 'queries',
     stage: 'validation',
     error: result.error,
   });
@@ -61,7 +63,7 @@ async function validateRequestHeaders({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['headers'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestFieldError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -72,6 +74,7 @@ async function validateRequestHeaders({
   }
 
   return err({
+    field: 'headers',
     stage: 'validation',
     error: result.error,
   });
@@ -85,7 +88,7 @@ async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestFieldError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -99,17 +102,17 @@ async function validateRequestBody({
       }
 
       return err({
+        field: 'body',
         stage: 'validation',
         error: result.error,
       });
     } catch (error) {
       return err({
+        field: 'body',
         stage: 'pre-validation',
-        error: {
-          type: 'INVALID_JSON',
-          message: 'Failed to parse request body as JSON',
-          cause: error,
-        },
+        type: 'INVALID_JSON',
+        message: 'Failed to parse request body as JSON',
+        cause: error,
       });
     }
   }
@@ -119,13 +122,12 @@ async function validateRequestBody({
 
   if (!contentType || !(contentType in content)) {
     return err({
+      field: 'body',
       stage: 'pre-validation',
-      error: {
-        type: 'UNSUPPORTED_MEDIA_TYPE',
-        message: 'Unsupported Media Type',
-        supportedTypes: Object.keys(content),
-        requestedType: contentType,
-      },
+      type: 'UNSUPPORTED_MEDIA_TYPE',
+      message: 'Unsupported Media Type',
+      supportedTypes: Object.keys(content),
+      requestedType: contentType,
     });
   }
 
@@ -137,21 +139,21 @@ async function validateRequestBody({
     const body = await req.json();
     const result = await validator.validateBody({ schema: schemaForContentType, body });
     if (result.ok) {
-      return ok({ type: contentType, data: result.value });
+      return ok({ contentType, data: result.value });
     }
 
     return err({
+      field: 'body',
       stage: 'validation',
       error: result.error,
     });
   } catch (error) {
     return err({
+      field: 'body',
       stage: 'pre-validation',
-      error: {
-        type: 'INVALID_JSON',
-        message: `Failed to parse request body as ${contentType}`,
-        cause: error,
-      },
+      type: 'INVALID_JSON',
+      message: `Failed to parse request body as ${contentType}`,
+      cause: error,
     });
   }
 }
@@ -186,23 +188,11 @@ export function resolveRequestValidationFunction({
       });
     }
 
-    // Check for pre-validation errors first (these should be handled immediately)
-    const preValidationError = [paramsResult, queriesResult, headersResult, bodyResult].find(
-      (result) => !result.ok && result.error.stage === 'pre-validation',
-    );
-    if (preValidationError && !preValidationError.ok) {
-      return preValidationError;
-    }
-
-    // Collect all validation errors
-    return err({
-      stage: 'validation',
-      error: {
-        params: paramsResult.ok ? undefined : paramsResult.error.error,
-        queries: queriesResult.ok ? undefined : queriesResult.error.error,
-        headers: headersResult.ok ? undefined : headersResult.error.error,
-        body: bodyResult.ok ? undefined : bodyResult.error.error,
-      },
-    });
+    const errors: KoriRequestFieldError<unknown>[] = [];
+    if (!paramsResult.ok) errors.push(paramsResult.error);
+    if (!queriesResult.ok) errors.push(queriesResult.error);
+    if (!headersResult.ok) errors.push(headersResult.error);
+    if (!bodyResult.ok) errors.push(bodyResult.error);
+    return err(errors);
   };
 }

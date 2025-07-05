@@ -1,6 +1,8 @@
 import { type InferSchemaOutput, type KoriSchemaDefault, type KoriSchemaProviderDefault } from '../schema/index.js';
 import { type KoriResult, type MaybePromise } from '../util/index.js';
 
+import { type KoriRequestFieldError } from './request-validation-error.js';
+
 const ProviderProp = Symbol('schema-provider-prop');
 
 export type KoriRequestValidatorMethods<Schema extends KoriSchemaDefault, ErrorType> = {
@@ -56,5 +58,5 @@ export type KoriRequestValidatorErrorDefault = KoriRequestValidatorError<unknown
 
 export type InferRequestValidatorError<V extends KoriRequestValidatorDefault | undefined> =
   V extends KoriRequestValidator<infer _Provider, infer _Schema, infer ErrorType>
-    ? KoriRequestValidatorError<ErrorType>
+    ? KoriRequestFieldError<ErrorType>[]
     : never;

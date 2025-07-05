@@ -328,21 +328,12 @@ app.post('/validation-demo', {
       }),
     }),
   }),
-  // Route-level error handling examples
-  onPreRequestValidationError: (ctx, err) => {
-    if (err.type === 'UNSUPPORTED_MEDIA_TYPE') {
-      return ctx.res.unsupportedMediaType({
-        message: 'Please use JSON format for this demo',
-        details: { supported: err.supportedTypes },
-      });
-    }
-    // Let other errors fall through to default handling
-  },
-  onRequestValidationError: (ctx, err) => {
+  // Route-level validation error handling
+  onRequestValidationError: (ctx, errors) => {
     return ctx.res.badRequest({
       message: 'Validation demo failed',
       details: {
-        errors: err,
+        errors: errors,
         hint: 'Check the required fields: email (valid email), age (18-120), preferences (newsletter: boolean, theme: light/dark)',
       },
     });

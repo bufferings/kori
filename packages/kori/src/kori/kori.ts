@@ -20,7 +20,6 @@ import {
   type KoriAddRoute,
   type KoriHandler,
   type KoriRoutePluginMetadata,
-  type KoriRoutePreRequestValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
@@ -47,7 +46,6 @@ type KoriMethodAlias<
       requestSchema?: RequestSchema;
       responseSchema?: ResponseSchema;
       handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-      onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
       onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
         Env,
         Req,
