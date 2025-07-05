@@ -16,6 +16,7 @@ import {
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
+  type KoriPreRequestValidationError,
 } from '../request-validation/index.js';
 import {
   resolveResponseValidationFunction,
@@ -27,6 +28,8 @@ import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '.
 
 import {
   type KoriHandler,
+  type KoriInstancePreRequestValidationErrorHandler,
+  type KoriRoutePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
@@ -49,8 +52,9 @@ type Dependencies<
 > = {
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  instanceRequestValidationErrorHandler?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
-  instanceResponseValidationErrorHandler?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
+  onPreRequestValidationError?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
+  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
+  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   requestHooks: KoriOnRequestHookAny[];
   responseHooks: KoriOnResponseHookAny[];
   errorHooks: KoriOnErrorHookAny[];
@@ -70,7 +74,8 @@ type RouteParameters<
   requestSchema?: RequestSchema;
   responseSchema?: ResponseSchema;
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-  routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
+  onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
     Env,
     Req,
     Res,
@@ -78,7 +83,7 @@ type RouteParameters<
     RequestValidator,
     RequestSchema
   >;
-  routeResponseValidationErrorHandler?: KoriRouteResponseValidationErrorHandler<
+  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
     Env,
     Req,
     Res,
@@ -169,6 +174,62 @@ function createHookExecutor<
   };
 }
 
+function createPreRequestValidationErrorHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+>({
+  instanceHandler,
+  routeHandler,
+}: {
+  instanceHandler?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
+  routeHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+}): (
+  ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+  error: KoriPreRequestValidationError,
+) => Promise<KoriResponse> {
+  return async (ctx, err) => {
+    // 1. Try route handler first
+    if (routeHandler) {
+      const routeResult = await routeHandler(ctx, err);
+      if (routeResult) {
+        return routeResult;
+      }
+    }
+
+    // 2. Try instance handler
+    if (instanceHandler) {
+      const instanceResult = await instanceHandler(ctx, err);
+      if (instanceResult) {
+        return instanceResult;
+      }
+    }
+
+    // 3. Default handling (always executed if no handler returns a response)
+    switch (err.type) {
+      case 'UNSUPPORTED_MEDIA_TYPE':
+        return ctx.res.unsupportedMediaType({
+          message: err.message,
+          details: {
+            supportedTypes: err.supportedTypes,
+            requestedType: err.requestedType,
+          },
+        });
+      case 'INVALID_JSON':
+        return ctx.res.badRequest({
+          message: err.message,
+          details: err.cause,
+        });
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        const _exhaustiveCheck: never = err;
+        throw new Error(`Unknown pre validation error type: ${(_exhaustiveCheck as any).type}`);
+      }
+    }
+  };
+}
+
 function createRequestValidationErrorHandler<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
@@ -185,18 +246,29 @@ function createRequestValidationErrorHandler<
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   error: InferRequestValidatorError<RequestValidator>,
-) => Promise<KoriResponse | void> {
-  if (routeHandler) {
-    return (ctx, err) => Promise.resolve(routeHandler(ctx, err));
-  }
+) => Promise<KoriResponse> {
+  return async (ctx, err) => {
+    // 1. Try route handler first
+    if (routeHandler) {
+      const routeResult = await routeHandler(ctx, err);
+      if (routeResult) {
+        return routeResult;
+      }
+    }
 
-  if (instanceHandler) {
-    return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
-  }
+    // 2. Try instance handler
+    if (instanceHandler) {
+      const instanceResult = await instanceHandler(ctx, err);
+      if (instanceResult) {
+        return instanceResult;
+      }
+    }
 
-  return (ctx, err) => {
-    ctx.req.log.warn('Validation error occurred but is not being handled.', { err });
-    return Promise.resolve(undefined);
+    // 3. Default handling (always executed if no handler returns a response)
+    return ctx.res.badRequest({
+      message: 'Request validation failed',
+      details: err,
+    });
   };
 }
 
@@ -217,17 +289,26 @@ function createResponseValidationErrorHandler<
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   error: InferResponseValidationError<ResponseValidator>,
 ) => Promise<KoriResponse | void> {
-  if (routeHandler) {
-    return (ctx, err) => Promise.resolve(routeHandler(ctx, err));
-  }
+  return async (ctx, err) => {
+    // 1. Try route handler first
+    if (routeHandler) {
+      const routeResult = await routeHandler(ctx, err);
+      if (routeResult) {
+        return routeResult;
+      }
+    }
 
-  if (instanceHandler) {
-    return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
-  }
+    // 2. Try instance handler
+    if (instanceHandler) {
+      const instanceResult = await instanceHandler(ctx, err);
+      if (instanceResult) {
+        return instanceResult;
+      }
+    }
 
-  return (ctx, err) => {
-    ctx.req.log.warn('Response validation error occurred but is not being handled.', { err });
-    return Promise.resolve(undefined);
+    // 3. Default handling (log warning but return void to use original response)
+    ctx.req.log.warn('Response validation failed', { err });
+    return undefined;
   };
 }
 
@@ -267,29 +348,45 @@ export function createRouteHandler<
     responseSchema: routeParams.responseSchema,
   });
 
+  const preRequestValidationErrorHandler = createPreRequestValidationErrorHandler({
+    instanceHandler: deps.onPreRequestValidationError,
+    routeHandler: routeParams.onPreRequestValidationError,
+  });
+
   const requestValidationErrorHandler = createRequestValidationErrorHandler({
-    instanceHandler: deps.instanceRequestValidationErrorHandler,
-    routeHandler: routeParams.routeRequestValidationErrorHandler,
+    instanceHandler: deps.onRequestValidationError,
+    routeHandler: routeParams.onRequestValidationError,
   });
 
   const responseValidationErrorHandler = createResponseValidationErrorHandler({
-    instanceHandler: deps.instanceResponseValidationErrorHandler,
-    routeHandler: routeParams.routeResponseValidationErrorHandler,
+    instanceHandler: deps.onResponseValidationError,
+    routeHandler: routeParams.onResponseValidationError,
   });
 
   const mainHandler = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<KoriResponse> => {
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.ok) {
-        const handlerResult = await requestValidationErrorHandler(
-          ctx,
-          validationResult.error as InferRequestValidatorError<RequestValidator>,
-        );
-        if (handlerResult) {
-          return handlerResult;
+        const error = validationResult.error;
+
+        // Handle validation errors based on stage
+        switch (error.stage) {
+          case 'pre-validation':
+            return await preRequestValidationErrorHandler(ctx, error.error);
+          case 'validation':
+            return await requestValidationErrorHandler(
+              ctx,
+              error.error as InferRequestValidatorError<RequestValidator>,
+            );
+          default: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            const _exhaustiveCheck: never = error;
+            throw new Error(`Unknown validation error stage: ${(_exhaustiveCheck as any).stage}`);
+          }
         }
-        return ctx.res.badRequest({ message: 'Validation Failed' });
       }
+
+      // Set validated data only when validation succeeds
       ctx = ctx.withReq({ validated: validationResult.value });
     }
 
@@ -303,9 +400,9 @@ export function createRouteHandler<
           responseValidationResult.error as InferResponseValidationError<ResponseValidator>,
         );
         if (handlerResult) {
-          // TODO: Consider
           return handlerResult;
         }
+        // If handler returns void, fall through to return original response
       }
     }
 

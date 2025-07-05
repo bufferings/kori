@@ -8,6 +8,7 @@ import {
   type WithValidatedRequest,
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
+  type KoriPreRequestValidationError,
 } from '../request-validation/index.js';
 import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validation/index.js';
 import { type WithPathParams } from '../router/index.js';
@@ -37,6 +38,22 @@ export type KoriHandler<
 > = (
   ctx: KoriHandlerContext<Env, WithValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>, Res>,
 ) => MaybePromise<KoriResponse>;
+
+export type KoriInstancePreRequestValidationErrorHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+> = (ctx: KoriHandlerContext<Env, Req, Res>, err: KoriPreRequestValidationError) => MaybePromise<KoriResponse | void>;
+
+export type KoriRoutePreRequestValidationErrorHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+> = (
+  ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+  err: KoriPreRequestValidationError,
+) => MaybePromise<KoriResponse | void>;
 
 export type KoriInstanceRequestValidationErrorHandler<
   Env extends KoriEnvironment,
@@ -109,7 +126,8 @@ export type KoriAddRoute<
     requestSchema?: RequestSchema;
     responseSchema?: ResponseSchema;
     handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-    routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
+    onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+    onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
       Env,
       Req,
       Res,
@@ -117,7 +135,7 @@ export type KoriAddRoute<
       RequestValidator,
       RequestSchema
     >;
-    routeResponseValidationErrorHandler?: KoriRouteResponseValidationErrorHandler<
+    onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
       Env,
       Req,
       Res,

@@ -311,4 +311,59 @@ app.get('/error/:type', {
   },
 });
 
+// Demonstration of new validation error handling
+app.post('/validation-demo', {
+  pluginMetadata: openApiMeta({
+    summary: 'Validation demo',
+    description: 'Demonstrates new validation error handling features',
+    tags: ['Demo'],
+  }),
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      email: z.string().email(),
+      age: z.number().min(18).max(120),
+      preferences: z.object({
+        newsletter: z.boolean(),
+        theme: z.enum(['light', 'dark']),
+      }),
+    }),
+  }),
+  // Route-level error handling examples
+  onPreRequestValidationError: (ctx, err) => {
+    if (err.type === 'UNSUPPORTED_MEDIA_TYPE') {
+      return ctx.res.unsupportedMediaType({
+        message: 'Please use JSON format for this demo',
+        details: { supported: err.supportedTypes },
+      });
+    }
+    // Let other errors fall through to default handling
+  },
+  onRequestValidationError: (ctx, err) => {
+    return ctx.res.badRequest({
+      message: 'Validation demo failed',
+      details: {
+        errors: err,
+        hint: 'Check the required fields: email (valid email), age (18-120), preferences (newsletter: boolean, theme: light/dark)',
+      },
+    });
+  },
+  handler: (ctx) => {
+    const { email, age, preferences } = ctx.req.validated.body;
+
+    return ctx.res.json({
+      message: 'Validation successful! New error handling is working.',
+      user: { email, age, preferences },
+      timestamp: new Date().toISOString(),
+      info: {
+        note: 'Try sending invalid JSON or wrong Content-Type to see new error handling in action',
+        examples: [
+          'Send with Content-Type: text/plain to get 415 Unsupported Media Type',
+          'Send invalid JSON to get proper JSON parsing error',
+          'Send invalid schema data to get detailed validation errors',
+        ],
+      },
+    });
+  },
+});
+
 await startNodeServer(app, { port: 3001, host: 'localhost' });

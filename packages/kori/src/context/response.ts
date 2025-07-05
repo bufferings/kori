@@ -55,6 +55,7 @@ export type KoriResponse = {
   forbidden(options?: ErrorResponseOptions): KoriResponse;
   notFound(options?: ErrorResponseOptions): KoriResponse;
   methodNotAllowed(options?: ErrorResponseOptions): KoriResponse;
+  unsupportedMediaType(options?: ErrorResponseOptions): KoriResponse;
   timeout(options?: ErrorResponseOptions): KoriResponse;
   internalError(options?: ErrorResponseOptions): KoriResponse;
 
@@ -84,6 +85,7 @@ type ErrorType =
   | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'METHOD_NOT_ALLOWED'
+  | 'UNSUPPORTED_MEDIA_TYPE'
   | 'TIMEOUT'
   | 'INTERNAL_SERVER_ERROR';
 
@@ -246,6 +248,27 @@ export function createKoriResponse(): KoriResponse {
           type: 'json',
           value: createErrorResponseBodyJson({
             errorType: 'METHOD_NOT_ALLOWED',
+            message,
+            details: options.details,
+          }),
+        };
+      }
+      return self;
+    },
+
+    unsupportedMediaType: function (options: ErrorResponseOptions = {}) {
+      internalState.status = HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+      const message = options.message ?? 'Unsupported Media Type';
+      if (options.type === 'text') {
+        internalState.body = {
+          type: 'text',
+          value: message,
+        };
+      } else {
+        internalState.body = {
+          type: 'json',
+          value: createErrorResponseBodyJson({
+            errorType: 'UNSUPPORTED_MEDIA_TYPE',
             message,
             details: options.details,
           }),
