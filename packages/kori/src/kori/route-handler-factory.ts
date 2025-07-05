@@ -16,8 +16,6 @@ import {
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-  type KoriPreRequestValidationError,
-  type KoriRequestValidationError,
 } from '../request-validation/index.js';
 import {
   resolveResponseValidationFunction,
@@ -29,8 +27,6 @@ import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '.
 
 import {
   type KoriHandler,
-  type KoriInstancePreRequestValidationErrorHandler,
-  type KoriRoutePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
@@ -53,7 +49,6 @@ type Dependencies<
 > = {
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  onPreRequestValidationError?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
   onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
   onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   requestHooks: KoriOnRequestHookAny[];
@@ -75,7 +70,6 @@ type RouteParameters<
   requestSchema?: RequestSchema;
   responseSchema?: ResponseSchema;
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-  onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
   onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
     Env,
     Req,
@@ -172,61 +166,6 @@ function createHookExecutor<
     }
 
     return currentCtx.res;
-  };
-}
-
-function createPreRequestValidationErrorHandler<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  Path extends string,
->({
-  instanceHandler,
-  routeHandler,
-}: {
-  instanceHandler?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
-  routeHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
-}): (
-  ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  error: KoriPreRequestValidationError,
-) => Promise<KoriResponse> {
-  return async (ctx, err) => {
-    // 1. Try route handler first
-    if (routeHandler) {
-      const routeResult = await routeHandler(ctx, err);
-      if (routeResult) {
-        return routeResult;
-      }
-    }
-
-    // 2. Try instance handler
-    if (instanceHandler) {
-      const instanceResult = await instanceHandler(ctx, err);
-      if (instanceResult) {
-        return instanceResult;
-      }
-    }
-
-    // 3. Default handling (always executed if no handler returns a response)
-    switch (err.type) {
-      case 'UNSUPPORTED_MEDIA_TYPE':
-        return ctx.res.unsupportedMediaType({
-          message: err.message,
-          details: {
-            supportedTypes: err.supportedTypes,
-            requestedType: err.requestedType,
-          },
-        });
-      case 'INVALID_JSON':
-        return ctx.res.badRequest({
-          message: err.message,
-          details: err.cause,
-        });
-      default: {
-        const _exhaustiveCheck: never = err;
-        throw new Error(`Unknown pre validation error type: ${(err as KoriPreRequestValidationError).type}`);
-      }
-    }
   };
 }
 
@@ -348,11 +287,6 @@ export function createRouteHandler<
     responseSchema: routeParams.responseSchema,
   });
 
-  const preRequestValidationErrorHandler = createPreRequestValidationErrorHandler({
-    instanceHandler: deps.onPreRequestValidationError,
-    routeHandler: routeParams.onPreRequestValidationError,
-  });
-
   const requestValidationErrorHandler = createRequestValidationErrorHandler({
     instanceHandler: deps.onRequestValidationError,
     routeHandler: routeParams.onRequestValidationError,
@@ -367,19 +301,10 @@ export function createRouteHandler<
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.ok) {
-        const err = validationResult.error;
-
-        // Handle validation errors based on stage
-        switch (err.stage) {
-          case 'pre-validation':
-            return await preRequestValidationErrorHandler(ctx, err.error);
-          case 'validation':
-            return await requestValidationErrorHandler(ctx, err.error as InferRequestValidatorError<RequestValidator>);
-          default: {
-            const _exhaustiveCheck: never = err;
-            throw new Error(`Unknown validation error stage: ${(err as KoriRequestValidationError).stage}`);
-          }
-        }
+        return await requestValidationErrorHandler(
+          ctx,
+          validationResult.error as InferRequestValidatorError<RequestValidator>,
+        );
       }
 
       // Set validated data only when validation succeeds

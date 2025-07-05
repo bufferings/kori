@@ -23,11 +23,9 @@ import { type RequestProviderCompatibility, type ResponseProviderCompatibility }
 import {
   type HttpMethod,
   type KoriHandler,
-  type KoriInstancePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRoutePluginMetadata,
-  type KoriRoutePreRequestValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
@@ -72,7 +70,6 @@ export function createKoriInternal<
   shared,
   requestValidator,
   responseValidator,
-  onPreRequestValidationError,
   onRequestValidationError,
   onResponseValidationError,
   prefix = '',
@@ -86,7 +83,6 @@ export function createKoriInternal<
   shared: KoriInternalShared;
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  onPreRequestValidationError?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
   onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
   onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   prefix?: string;
@@ -100,7 +96,6 @@ export function createKoriInternal<
   const _shared = shared;
   const _requestValidator = requestValidator;
   const _responseValidator = responseValidator;
-  const _onPreRequestValidationError = onPreRequestValidationError;
   const _onRequestValidationError = onRequestValidationError;
   const _onResponseValidationError = onResponseValidationError;
   const _prefix = prefix;
@@ -182,7 +177,6 @@ export function createKoriInternal<
         shared: _shared,
         requestValidator: _requestValidator,
         responseValidator: _responseValidator,
-        onPreRequestValidationError: _onPreRequestValidationError,
         onRequestValidationError: _onRequestValidationError,
         onResponseValidationError: _onResponseValidationError,
         prefix: `${_prefix}${childOptions.prefix ?? ''}`,
@@ -214,7 +208,6 @@ export function createKoriInternal<
       requestSchema,
       responseSchema,
       handler,
-      onPreRequestValidationError,
       onRequestValidationError,
       onResponseValidationError,
       pluginMetadata,
@@ -224,7 +217,6 @@ export function createKoriInternal<
       requestSchema?: RequestSchema;
       responseSchema?: ResponseSchema;
       handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-      onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
       onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
         Env,
         Req,
@@ -256,7 +248,6 @@ export function createKoriInternal<
         {
           requestValidator: _requestValidator,
           responseValidator: _responseValidator,
-          onPreRequestValidationError: _onPreRequestValidationError,
           onRequestValidationError: _onRequestValidationError,
           onResponseValidationError: _onResponseValidationError,
           requestHooks: _requestHooks,
@@ -268,7 +259,6 @@ export function createKoriInternal<
           requestSchema,
           responseSchema,
           handler,
-          onPreRequestValidationError,
           onRequestValidationError,
           onResponseValidationError,
         },
