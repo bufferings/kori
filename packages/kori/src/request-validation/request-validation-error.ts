@@ -1,9 +1,9 @@
-import { type PreValidationError } from './pre-validation-error.js';
+import { type PreRequestValidationError } from './pre-validation-error.js';
 
 export type RequestValidationError<TValidatorError = unknown> =
   | {
       stage: 'pre-validation';
-      error: PreValidationError;
+      error: PreRequestValidationError;
     }
   | {
       stage: 'validation';

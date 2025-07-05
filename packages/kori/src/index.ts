@@ -58,7 +58,7 @@ export {
   type KoriRequestValidatorDefault,
   type KoriRequestValidatorError,
   type KoriRequestValidatorErrorDefault,
-  type PreValidationError,
+  type PreRequestValidationError,
   type RequestValidationError,
   type WithValidatedRequest,
 } from './request-validation/index.js';

@@ -1,4 +1,4 @@
-export type PreValidationError =
+export type PreRequestValidationError =
   | {
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;
