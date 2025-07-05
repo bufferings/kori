@@ -305,8 +305,8 @@ function createResponseValidationErrorHandler<
       }
     }
 
-    // 3. Default handling (log error but return void to use original response)
-    ctx.req.log.error('Response validation failed', { err });
+    // 3. Default handling (log warning but return void to use original response)
+    ctx.req.log.warn('Response validation failed', { err });
     return undefined;
   };
 }
