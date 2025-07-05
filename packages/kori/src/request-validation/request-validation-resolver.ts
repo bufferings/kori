@@ -139,7 +139,7 @@ async function validateRequestBody({
     const body = await req.json();
     const result = await validator.validateBody({ schema: schemaForContentType, body });
     if (result.ok) {
-      return result;
+      return ok({ contentType, data: result.value });
     }
 
     return err({
