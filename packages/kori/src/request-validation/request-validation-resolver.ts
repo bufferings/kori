@@ -180,7 +180,12 @@ export function resolveRequestValidationFunction({
     ]);
 
     if (paramsResult.ok && queriesResult.ok && headersResult.ok && bodyResult.ok) {
-      return ok(undefined);
+      return ok({
+        params: paramsResult.value,
+        queries: queriesResult.value,
+        headers: headersResult.value,
+        body: bodyResult.value,
+      });
     }
 
     const errors: KoriRequestFieldError<unknown>[] = [];
