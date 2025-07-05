@@ -8,7 +8,7 @@ import {
   type WithValidatedRequest,
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
-  type PreRequestValidationError,
+  type KoriPreRequestValidationError,
 } from '../request-validation/index.js';
 import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validation/index.js';
 import { type WithPathParams } from '../router/index.js';
@@ -43,7 +43,7 @@ export type KoriInstancePreRequestValidationErrorHandler<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-> = (ctx: KoriHandlerContext<Env, Req, Res>, err: PreRequestValidationError) => MaybePromise<KoriResponse | void>;
+> = (ctx: KoriHandlerContext<Env, Req, Res>, err: KoriPreRequestValidationError) => MaybePromise<KoriResponse | void>;
 
 export type KoriRoutePreRequestValidationErrorHandler<
   Env extends KoriEnvironment,
@@ -52,7 +52,7 @@ export type KoriRoutePreRequestValidationErrorHandler<
   Path extends string,
 > = (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  err: PreRequestValidationError,
+  err: KoriPreRequestValidationError,
 ) => MaybePromise<KoriResponse | void>;
 
 export type KoriInstanceRequestValidationErrorHandler<

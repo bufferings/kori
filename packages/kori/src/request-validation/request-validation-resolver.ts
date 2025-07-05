@@ -2,7 +2,7 @@ import { type KoriRequest } from '../context/index.js';
 import { type KoriRequestSchemaDefault, type KoriRequestSchemaContentDefault, isKoriSchema } from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
-import { type RequestValidationError } from './request-validation-error.js';
+import { type KoriRequestValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 async function validateRequestParams({
@@ -13,7 +13,7 @@ async function validateRequestParams({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['params'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -35,7 +35,7 @@ async function validateRequestQueries({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['queries'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -57,7 +57,7 @@ async function validateRequestHeaders({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['headers'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -79,7 +79,7 @@ async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestValidationError>> {
+}): Promise<KoriResult<unknown, KoriRequestValidationError>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -152,7 +152,7 @@ export function resolveRequestValidationFunction({
 }: {
   requestValidator?: KoriRequestValidatorDefault;
   requestSchema?: KoriRequestSchemaDefault;
-}): ((req: KoriRequest) => Promise<KoriResult<unknown, RequestValidationError>>) | undefined {
+}): ((req: KoriRequest) => Promise<KoriResult<unknown, KoriRequestValidationError>>) | undefined {
   if (!requestValidator || !requestSchema) {
     return undefined;
   }

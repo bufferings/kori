@@ -54,12 +54,12 @@ export {
   createRequestValidator,
   type InferRequestValidatorError,
   type InferRequestValidatorSchemaProvider,
+  type KoriPreRequestValidationError,
+  type KoriRequestValidationError,
   type KoriRequestValidator,
   type KoriRequestValidatorDefault,
   type KoriRequestValidatorError,
   type KoriRequestValidatorErrorDefault,
-  type PreRequestValidationError,
-  type RequestValidationError,
   type WithValidatedRequest,
 } from './request-validation/index.js';
 export {

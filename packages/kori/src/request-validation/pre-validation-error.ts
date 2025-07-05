@@ -1,4 +1,4 @@
-export type PreRequestValidationError =
+export type KoriPreRequestValidationError =
   | {
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;

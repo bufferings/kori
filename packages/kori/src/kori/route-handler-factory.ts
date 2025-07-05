@@ -16,7 +16,7 @@ import {
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-  type PreRequestValidationError,
+  type KoriPreRequestValidationError,
 } from '../request-validation/index.js';
 import {
   resolveResponseValidationFunction,
@@ -187,7 +187,7 @@ function createPreRequestValidationErrorHandler<
   routeHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  error: PreRequestValidationError,
+  error: KoriPreRequestValidationError,
 ) => Promise<KoriResponse | void> {
   if (routeHandler) {
     return (ctx, err) => Promise.resolve(routeHandler(ctx, err));

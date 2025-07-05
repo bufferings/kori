@@ -1,9 +1,9 @@
-import { type PreRequestValidationError } from './pre-validation-error.js';
+import { type KoriPreRequestValidationError } from './pre-validation-error.js';
 
-export type RequestValidationError<TValidatorError = unknown> =
+export type KoriRequestValidationError<TValidatorError = unknown> =
   | {
       stage: 'pre-validation';
-      error: PreRequestValidationError;
+      error: KoriPreRequestValidationError;
     }
   | {
       stage: 'validation';
