@@ -52,6 +52,8 @@ export {
   createRequestValidator,
   type InferRequestValidatorError,
   type InferRequestValidatorSchemaProvider,
+  type KoriBodyValidationError,
+  type KoriFieldValidationError,
   type KoriRequestValidationError,
   type KoriRequestValidator,
   type KoriRequestValidatorDefault,

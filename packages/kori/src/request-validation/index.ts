@@ -1,4 +1,8 @@
-export { type KoriRequestFieldError, type KoriRequestValidationError } from './request-validation-error.js';
+export {
+  type KoriBodyValidationError,
+  type KoriFieldValidationError,
+  type KoriRequestValidationError,
+} from './request-validation-error.js';
 export { resolveRequestValidationFunction } from './request-validation-resolver.js';
 export {
   createRequestValidator,
@@ -8,5 +12,6 @@ export {
   type KoriRequestValidatorDefault,
   type KoriRequestValidatorError,
   type KoriRequestValidatorErrorDefault,
+  type KoriRequestValidatorMethods,
 } from './request-validator.js';
 export { type WithValidatedRequest } from './validated-request.js';
