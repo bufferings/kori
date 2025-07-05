@@ -197,7 +197,7 @@ function createPreRequestValidationErrorHandler<
     return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
   }
 
-  // デフォルト処理（自動的に適切なレスポンスを返す）
+  // Default handling (automatically returns appropriate response)
   return (ctx, err) => {
     ctx.req.log.warn('Pre-validation error occurred but is not being handled.', { err });
 
@@ -344,16 +344,16 @@ export function createRouteHandler<
       if (!validationResult.ok) {
         const error = validationResult.error;
 
-        // 1. Pre-validation error の処理
+        // 1. Handle pre-validation errors
         if (error.stage === 'pre-validation') {
           const handlerResult = await preRequestValidationErrorHandler(ctx, error.error);
           if (handlerResult) {
             return handlerResult;
           }
-          // デフォルトハンドラーで必ず処理されるため、ここには来ない
+          // Default handler always processes this, so this line should never be reached
         }
 
-        // 2. Validation error の処理
+        // 2. Handle validation errors
         if (error.stage === 'validation') {
           const handlerResult = await requestValidationErrorHandler(
             ctx,
@@ -365,7 +365,7 @@ export function createRouteHandler<
           return ctx.res.badRequest({ message: 'Validation Failed' });
         }
       } else {
-        // Validation が成功した場合のみ validated data を設定
+        // Set validated data only when validation succeeds
         ctx = ctx.withReq({ validated: validationResult.value });
       }
     }
