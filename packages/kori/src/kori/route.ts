@@ -126,7 +126,8 @@ export type KoriAddRoute<
     requestSchema?: RequestSchema;
     responseSchema?: ResponseSchema;
     handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-    routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
+    onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+    onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
       Env,
       Req,
       Res,
@@ -134,7 +135,7 @@ export type KoriAddRoute<
       RequestValidator,
       RequestSchema
     >;
-    routeResponseValidationErrorHandler?: KoriRouteResponseValidationErrorHandler<
+    onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
       Env,
       Req,
       Res,

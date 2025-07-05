@@ -74,8 +74,8 @@ type RouteParameters<
   requestSchema?: RequestSchema;
   responseSchema?: ResponseSchema;
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-  routePreRequestValidationErrorHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
-  routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
+  onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
     Env,
     Req,
     Res,
@@ -83,7 +83,7 @@ type RouteParameters<
     RequestValidator,
     RequestSchema
   >;
-  routeResponseValidationErrorHandler?: KoriRouteResponseValidationErrorHandler<
+  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
     Env,
     Req,
     Res,
@@ -325,17 +325,17 @@ export function createRouteHandler<
 
   const preRequestValidationErrorHandler = createPreRequestValidationErrorHandler({
     instanceHandler: deps.onPreRequestValidationError,
-    routeHandler: routeParams.routePreRequestValidationErrorHandler,
+    routeHandler: routeParams.onPreRequestValidationError,
   });
 
   const requestValidationErrorHandler = createRequestValidationErrorHandler({
     instanceHandler: deps.onRequestValidationError,
-    routeHandler: routeParams.routeRequestValidationErrorHandler,
+    routeHandler: routeParams.onRequestValidationError,
   });
 
   const responseValidationErrorHandler = createResponseValidationErrorHandler({
     instanceHandler: deps.onResponseValidationError,
-    routeHandler: routeParams.routeResponseValidationErrorHandler,
+    routeHandler: routeParams.onResponseValidationError,
   });
 
   const mainHandler = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<KoriResponse> => {

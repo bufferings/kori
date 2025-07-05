@@ -75,55 +75,6 @@ const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
   loggerFactory,
-
-  // Pre-validation error handler (Content-Type, JSON parsing errors)
-  onPreRequestValidationError: (ctx, err) => {
-    ctx.req.log.warn('Pre-validation error occurred', {
-      error: err,
-    });
-
-    switch (err.type) {
-      case 'UNSUPPORTED_MEDIA_TYPE':
-        return ctx.res.unsupportedMediaType({
-          message: `This API only supports: ${err.supportedTypes.join(', ')}`,
-          details: {
-            supported: err.supportedTypes,
-            requested: err.requestedType,
-            hint: 'Make sure to set the correct Content-Type header',
-          },
-        });
-      case 'INVALID_JSON':
-        return ctx.res.badRequest({
-          message: 'Invalid JSON in request body',
-          details: {
-            hint: 'Please check your JSON syntax',
-          },
-        });
-    }
-  },
-
-  // Validation error handler (schema violations)
-  onRequestValidationError: (ctx, err) => {
-    ctx.req.log.warn('Request validation failed', {
-      error: err,
-    });
-
-    return ctx.res.badRequest({
-      message: 'Request validation failed',
-      details: err,
-    });
-  },
-
-  // Response validation error handler
-  onResponseValidationError: (ctx, err) => {
-    ctx.req.log.error('Response validation failed', {
-      error: err,
-    });
-
-    return ctx.res.internalError({
-      message: 'Response validation failed',
-    });
-  },
 })
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())
@@ -183,6 +134,47 @@ app.post('/products', {
       'x-client-id': z.string().min(1).meta({ description: 'Client identifier' }),
     }),
   }),
+  // Route-level error handlers for demonstration
+  onPreRequestValidationError: (ctx, err) => {
+    ctx.req.log.warn('Products endpoint pre-validation error', {
+      error: err,
+    });
+
+    switch (err.type) {
+      case 'UNSUPPORTED_MEDIA_TYPE':
+        return ctx.res.unsupportedMediaType({
+          message: 'Product creation requires JSON content',
+          details: {
+            endpoint: '/products',
+            supported: err.supportedTypes,
+            requested: err.requestedType,
+            hint: 'Set Content-Type: application/json header',
+          },
+        });
+      case 'INVALID_JSON':
+        return ctx.res.badRequest({
+          message: 'Invalid JSON in product data',
+          details: {
+            endpoint: '/products',
+            hint: 'Check your JSON syntax and try again',
+          },
+        });
+    }
+  },
+  onRequestValidationError: (ctx, err) => {
+    ctx.req.log.warn('Product validation failed', {
+      error: err,
+    });
+
+    return ctx.res.badRequest({
+      message: 'Product validation failed',
+      details: {
+        endpoint: '/products',
+        errors: err,
+        hint: 'Check the API documentation for the correct product schema',
+      },
+    });
+  },
   handler: (ctx) => {
     const product = ctx.req.validated.body;
     const headers = ctx.req.validated.headers;
@@ -377,6 +369,16 @@ app.post('/validation-demo', {
       }),
     }),
   }),
+  // Simpler route-level error handling example
+  onPreRequestValidationError: (ctx, err) => {
+    if (err.type === 'UNSUPPORTED_MEDIA_TYPE') {
+      return ctx.res.unsupportedMediaType({
+        message: 'Please use JSON format for this demo',
+        details: { supported: err.supportedTypes },
+      });
+    }
+    // Let other errors fall through to default handling
+  },
   handler: (ctx) => {
     const { email, age, preferences } = ctx.req.validated.body;
 
