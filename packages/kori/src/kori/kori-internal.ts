@@ -265,7 +265,7 @@ export function createKoriInternal<
           requestSchema,
           responseSchema,
           handler,
-          routeRequestValidationErrorHandler,
+          onRequestValidationError,
           routeResponseValidationErrorHandler,
         },
       );

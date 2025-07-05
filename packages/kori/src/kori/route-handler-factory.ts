@@ -221,8 +221,10 @@ function createPreRequestValidationErrorHandler<
           message: err.message,
           details: err.cause,
         });
-      default:
-        return undefined;
+      default: {
+        const _exhaustiveCheck: never = err.type;
+        throw new Error(`Unknown pre validation error type: ${_exhaustiveCheck}`);
+      }
     }
   };
 }
