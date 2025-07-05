@@ -1,4 +1,4 @@
-export { type KoriPreRequestValidationError } from './pre-validation-error.js';
+export { type KoriPreRequestValidationError } from './pre-request-validation-error.js';
 export { type KoriRequestValidationError } from './request-validation-error.js';
 export { resolveRequestValidationFunction } from './request-validation-resolver.js';
 export {

@@ -1,4 +1,4 @@
-import { type KoriPreRequestValidationError } from './pre-validation-error.js';
+import { type KoriPreRequestValidationError } from './pre-request-validation-error.js';
 
 export type KoriRequestValidationError<TValidatorError = unknown> =
   | {
