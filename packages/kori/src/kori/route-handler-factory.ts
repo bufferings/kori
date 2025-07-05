@@ -245,18 +245,29 @@ function createRequestValidationErrorHandler<
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   error: InferRequestValidatorError<RequestValidator>,
-) => Promise<KoriResponse | void> {
-  if (routeHandler) {
-    return (ctx, err) => Promise.resolve(routeHandler(ctx, err));
-  }
+) => Promise<KoriResponse> {
+  return async (ctx, err) => {
+    // 1. Try route handler first
+    if (routeHandler) {
+      const routeResult = await routeHandler(ctx, err);
+      if (routeResult) {
+        return routeResult;
+      }
+    }
 
-  if (instanceHandler) {
-    return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
-  }
+    // 2. Try instance handler
+    if (instanceHandler) {
+      const instanceResult = await instanceHandler(ctx, err);
+      if (instanceResult) {
+        return instanceResult;
+      }
+    }
 
-  return (ctx, err) => {
-    ctx.req.log.warn('Validation error occurred but is not being handled.', { err });
-    return Promise.resolve(undefined);
+    // 3. Default handling (always executed if no handler returns a response)
+    return ctx.res.badRequest({
+      message: 'Request validation failed',
+      details: err,
+    });
   };
 }
 
@@ -355,14 +366,10 @@ export function createRouteHandler<
 
         // 2. Handle validation errors
         if (error.stage === 'validation') {
-          const handlerResult = await requestValidationErrorHandler(
+          return await requestValidationErrorHandler(
             ctx,
             error.error as InferRequestValidatorError<RequestValidator>,
           );
-          if (handlerResult) {
-            return handlerResult;
-          }
-          return ctx.res.badRequest({ message: 'Validation Failed' });
         }
       } else {
         // Set validated data only when validation succeeds
