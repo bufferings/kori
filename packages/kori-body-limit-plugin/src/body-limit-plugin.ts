@@ -59,6 +59,37 @@ function shouldSkipPath(pathname: string, compiledSkipPaths: CompiledSkipPath[])
 }
 
 /**
+ * Validates Content-Length header value according to HTTP RFC 7230
+ * Must be a non-negative integer represented as a decimal string
+ */
+function isValidContentLength(value: string): boolean {
+  // Must not be empty
+  if (!value || value.length === 0) {
+    return false;
+  }
+
+  // Must contain only digits (no negative sign, no letters, no whitespace)
+  if (!/^\d+$/.test(value)) {
+    return false;
+  }
+
+  // Parse and ensure it's within safe integer range
+  const parsed = parseInt(value, 10);
+
+  // Must not overflow JavaScript's safe integer range
+  if (!Number.isSafeInteger(parsed)) {
+    return false;
+  }
+
+  // Ensure parsed value exactly matches original string (catches leading zeros issues)
+  if (parsed.toString() !== value) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Validates plugin options
  */
 function validateOptions(options: BodyLimitOptions): void {
@@ -129,9 +160,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
           return;
         }
 
-        const contentLength = parseInt(contentLengthHeader, 10);
-
-        if (isNaN(contentLength)) {
+        // Validate Content-Length format and value
+        if (!isValidContentLength(contentLengthHeader)) {
           requestLog.warn('Invalid Content-Length header value', {
             path: req.url.pathname,
             method: req.method,
@@ -145,6 +175,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             code: ERROR_CODES.INVALID_CONTENT_LENGTH,
           });
         }
+
+        const contentLength = parseInt(contentLengthHeader, 10);
 
         if (contentLength > maxSize) {
           requestLog.warn('Request body size exceeds limit', {
