@@ -27,6 +27,7 @@ import {
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRoutePluginMetadata,
+  type KoriRoutePreRequestValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
@@ -213,8 +214,9 @@ export function createKoriInternal<
       requestSchema,
       responseSchema,
       handler,
-      routeRequestValidationErrorHandler,
-      routeResponseValidationErrorHandler,
+      onPreRequestValidationError,
+      onRequestValidationError,
+      onResponseValidationError,
       pluginMetadata,
     }: {
       method: HttpMethod;
@@ -222,7 +224,8 @@ export function createKoriInternal<
       requestSchema?: RequestSchema;
       responseSchema?: ResponseSchema;
       handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-      routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
+      onPreRequestValidationError?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+      onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
         Env,
         Req,
         Res,
@@ -230,7 +233,7 @@ export function createKoriInternal<
         RequestValidator,
         RequestSchema
       >;
-      routeResponseValidationErrorHandler?: KoriRouteResponseValidationErrorHandler<
+      onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
         Env,
         Req,
         Res,
@@ -265,8 +268,9 @@ export function createKoriInternal<
           requestSchema,
           responseSchema,
           handler,
+          onPreRequestValidationError,
           onRequestValidationError,
-          routeResponseValidationErrorHandler,
+          onResponseValidationError,
         },
       );
 
