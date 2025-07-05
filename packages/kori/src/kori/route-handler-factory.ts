@@ -188,7 +188,7 @@ function createPreRequestValidationErrorHandler<
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   error: KoriPreRequestValidationError,
-) => Promise<KoriResponse | void> {
+) => Promise<KoriResponse> {
   return async (ctx, err) => {
     // 1. Try route handler first
     if (routeHandler) {
@@ -350,11 +350,7 @@ export function createRouteHandler<
 
         // 1. Handle pre-validation errors
         if (error.stage === 'pre-validation') {
-          const handlerResult = await preRequestValidationErrorHandler(ctx, error.error);
-          if (handlerResult) {
-            return handlerResult;
-          }
-          // Default handler always processes this, so this line should never be reached
+          return await preRequestValidationErrorHandler(ctx, error.error);
         }
 
         // 2. Handle validation errors
