@@ -1,0 +1,17 @@
+---
+description: 'Git workflow guidelines for Kori framework development'
+globs: []
+alwaysApply: true
+---
+
+# Git Rules
+
+## Commit Messages
+
+- For commit messages, keep them super short and concise. Just a couple of sentences max.
+- Use only ASCII characters in commit messages (no emojis, Japanese, etc.)
+- Write commit messages in English for international collaboration
+
+## Pull Requests
+
+- Write titles and descriptions in English for international collaboration
