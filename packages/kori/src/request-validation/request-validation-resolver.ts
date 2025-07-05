@@ -2,42 +2,12 @@ import { type KoriRequest } from '../context/index.js';
 import { type KoriRequestSchemaDefault, type KoriRequestSchemaContentDefault, isKoriSchema } from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
-import { type KoriRequestValidationError } from './request-validation-error.js';
+import {
+  type KoriRequestValidationError,
+  type KoriFieldValidationError,
+  type KoriBodyValidationError,
+} from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
-
-type ParamsValidationError<TValidatorError> = {
-  stage: 'validation';
-  error: TValidatorError;
-};
-
-type QueriesValidationError<TValidatorError> = {
-  stage: 'validation';
-  error: TValidatorError;
-};
-
-type HeadersValidationError<TValidatorError> = {
-  stage: 'validation';
-  error: TValidatorError;
-};
-
-type BodyValidationError<TValidatorError> =
-  | {
-      stage: 'validation';
-      error: TValidatorError;
-    }
-  | {
-      stage: 'pre-validation';
-      type: 'UNSUPPORTED_MEDIA_TYPE';
-      message: string;
-      supportedTypes: string[];
-      requestedType?: string;
-    }
-  | {
-      stage: 'pre-validation';
-      type: 'INVALID_JSON';
-      message: string;
-      cause?: unknown;
-    };
 
 async function validateRequestParams({
   validator,
@@ -47,7 +17,7 @@ async function validateRequestParams({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['params'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, ParamsValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, KoriFieldValidationError<unknown>>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -71,7 +41,7 @@ async function validateRequestQueries({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['queries'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, QueriesValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, KoriFieldValidationError<unknown>>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -95,7 +65,7 @@ async function validateRequestHeaders({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['headers'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, HeadersValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, KoriFieldValidationError<unknown>>> {
   if (!schema) {
     return ok(undefined);
   }
@@ -119,7 +89,7 @@ async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, BodyValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
   if (!schema) {
     return ok(undefined);
   }
