@@ -17,6 +17,7 @@ import {
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
   type KoriPreRequestValidationError,
+  type KoriRequestValidationError,
 } from '../request-validation/index.js';
 import {
   resolveResponseValidationFunction,
@@ -222,9 +223,8 @@ function createPreRequestValidationErrorHandler<
           details: err.cause,
         });
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const _exhaustiveCheck: never = err;
-        throw new Error(`Unknown pre validation error type: ${(_exhaustiveCheck as any).type}`);
+        throw new Error(`Unknown pre validation error type: ${(err as KoriPreRequestValidationError).type}`);
       }
     }
   };
@@ -367,21 +367,17 @@ export function createRouteHandler<
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.ok) {
-        const error = validationResult.error;
+        const err = validationResult.error;
 
         // Handle validation errors based on stage
-        switch (error.stage) {
+        switch (err.stage) {
           case 'pre-validation':
-            return await preRequestValidationErrorHandler(ctx, error.error);
+            return await preRequestValidationErrorHandler(ctx, err.error);
           case 'validation':
-            return await requestValidationErrorHandler(
-              ctx,
-              error.error as InferRequestValidatorError<RequestValidator>,
-            );
+            return await requestValidationErrorHandler(ctx, err.error as InferRequestValidatorError<RequestValidator>);
           default: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            const _exhaustiveCheck: never = error;
-            throw new Error(`Unknown validation error stage: ${(_exhaustiveCheck as any).stage}`);
+            const _exhaustiveCheck: never = err;
+            throw new Error(`Unknown validation error stage: ${(err as KoriRequestValidationError).stage}`);
           }
         }
       }
