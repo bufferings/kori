@@ -368,17 +368,19 @@ export function createRouteHandler<
       if (!validationResult.ok) {
         const error = validationResult.error;
 
-        // 1. Handle pre-validation errors
-        if (error.stage === 'pre-validation') {
-          return await preRequestValidationErrorHandler(ctx, error.error);
-        }
-
-        // 2. Handle validation errors
-        if (error.stage === 'validation') {
-          return await requestValidationErrorHandler(
-            ctx,
-            error.error as InferRequestValidatorError<RequestValidator>,
-          );
+        // Handle validation errors based on stage
+        switch (error.stage) {
+          case 'pre-validation':
+            return await preRequestValidationErrorHandler(ctx, error.error);
+          case 'validation':
+            return await requestValidationErrorHandler(
+              ctx,
+              error.error as InferRequestValidatorError<RequestValidator>,
+            );
+          default: {
+            const _exhaustiveCheck: never = error as never;
+            throw new Error(`Unknown validation error stage: ${_exhaustiveCheck}`);
+          }
         }
       } else {
         // Set validated data only when validation succeeds
