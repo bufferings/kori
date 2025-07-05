@@ -185,7 +185,9 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             contentLength,
             maxSize,
             userAgent: req.headers['user-agent'],
-            remoteAddress: req.headers['x-forwarded-for'] ?? req.headers['x-real-ip'],
+            remoteAddress: req.headers['x-forwarded-for']?.trim()
+              ? req.headers['x-forwarded-for']
+              : req.headers['x-real-ip'],
           });
 
           // Use custom error handler if provided
