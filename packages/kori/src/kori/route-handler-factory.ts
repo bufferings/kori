@@ -382,10 +382,10 @@ export function createRouteHandler<
             throw new Error(`Unknown validation error stage: ${_exhaustiveCheck}`);
           }
         }
-      } else {
-        // Set validated data only when validation succeeds
-        ctx = ctx.withReq({ validated: validationResult.value });
       }
+      
+      // Set validated data only when validation succeeds
+      ctx = ctx.withReq({ validated: validationResult.value });
     }
 
     const response = await routeParams.handler(ctx as ValidatedContext);
