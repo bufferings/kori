@@ -19,12 +19,14 @@ async function validateRequestParams({
   }
 
   const result = await validator.validateParams({ schema, params: req.pathParams });
-  return result.ok
-    ? result
-    : err({
-        stage: 'validation',
-        error: result.error,
-      });
+  if (result.ok) {
+    return result;
+  }
+
+  return err({
+    stage: 'validation',
+    error: result.error,
+  });
 }
 
 async function validateRequestQueries({
@@ -41,12 +43,14 @@ async function validateRequestQueries({
   }
 
   const result = await validator.validateQueries({ schema, queries: req.queryParams });
-  return result.ok
-    ? result
-    : err({
-        stage: 'validation',
-        error: result.error,
-      });
+  if (result.ok) {
+    return result;
+  }
+
+  return err({
+    stage: 'validation',
+    error: result.error,
+  });
 }
 
 async function validateRequestHeaders({
@@ -63,12 +67,14 @@ async function validateRequestHeaders({
   }
 
   const result = await validator.validateHeaders({ schema, headers: req.headers });
-  return result.ok
-    ? result
-    : err({
-        stage: 'validation',
-        error: result.error,
-      });
+  if (result.ok) {
+    return result;
+  }
+
+  return err({
+    stage: 'validation',
+    error: result.error,
+  });
 }
 
 async function validateRequestBody({
@@ -88,12 +94,14 @@ async function validateRequestBody({
     try {
       const body = await req.json();
       const result = await validator.validateBody({ schema, body });
-      return result.ok
-        ? result
-        : err({
-            stage: 'validation',
-            error: result.error,
-          });
+      if (result.ok) {
+        return result;
+      }
+
+      return err({
+        stage: 'validation',
+        error: result.error,
+      });
     } catch (error) {
       return err({
         stage: 'pre-validation',
@@ -128,12 +136,14 @@ async function validateRequestBody({
   try {
     const body = await req.json();
     const result = await validator.validateBody({ schema: schemaForContentType, body });
-    return result.ok
-      ? ok({ type: contentType, data: result.value })
-      : err({
-          stage: 'validation',
-          error: result.error,
-        });
+    if (result.ok) {
+      return ok({ type: contentType, data: result.value });
+    }
+
+    return err({
+      stage: 'validation',
+      error: result.error,
+    });
   } catch (error) {
     return err({
       stage: 'pre-validation',
@@ -178,9 +188,9 @@ export function resolveRequestValidationFunction({
 
     // Check for pre-validation errors first (these should be handled immediately)
     const preValidationError = [paramsResult, queriesResult, headersResult, bodyResult].find(
-      (result) => !result.ok && result.error.stage === 'pre-validation'
+      (result) => !result.ok && result.error.stage === 'pre-validation',
     );
-    if (preValidationError) {
+    if (preValidationError && !preValidationError.ok) {
       return preValidationError;
     }
 

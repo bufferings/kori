@@ -221,10 +221,8 @@ function createPreRequestValidationErrorHandler<
           message: err.message,
           details: err.cause,
         });
-      default: {
-        const _exhaustiveCheck: never = err.type;
-        throw new Error(`Unknown pre validation error type: ${_exhaustiveCheck}`);
-      }
+      default:
+        throw new Error(`Unknown pre validation error type`);
     }
   };
 }
@@ -377,13 +375,11 @@ export function createRouteHandler<
               ctx,
               error.error as InferRequestValidatorError<RequestValidator>,
             );
-          default: {
-            const _exhaustiveCheck: never = error as never;
-            throw new Error(`Unknown validation error stage: ${_exhaustiveCheck}`);
-          }
+          default:
+            throw new Error(`Unknown validation error stage: ${(error as any).stage}`);
         }
       }
-      
+
       // Set validated data only when validation succeeds
       ctx = ctx.withReq({ validated: validationResult.value });
     }
