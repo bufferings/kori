@@ -189,38 +189,40 @@ function createPreRequestValidationErrorHandler<
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   error: KoriPreRequestValidationError,
 ) => Promise<KoriResponse | void> {
-  if (routeHandler) {
-    return (ctx, err) => Promise.resolve(routeHandler(ctx, err));
-  }
+  return async (ctx, err) => {
+    // 1. Try route handler first
+    if (routeHandler) {
+      const routeResult = await routeHandler(ctx, err);
+      if (routeResult) {
+        return routeResult;
+      }
+    }
 
-  if (instanceHandler) {
-    return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
-  }
+    // 2. Try instance handler
+    if (instanceHandler) {
+      const instanceResult = await instanceHandler(ctx, err);
+      if (instanceResult) {
+        return instanceResult;
+      }
+    }
 
-  // Default handling (automatically returns appropriate response)
-  return (ctx, err) => {
-    ctx.req.log.warn('Pre-validation error occurred but is not being handled.', { err });
-
+    // 3. Default handling (always executed if no handler returns a response)
     switch (err.type) {
       case 'UNSUPPORTED_MEDIA_TYPE':
-        return Promise.resolve(
-          ctx.res.unsupportedMediaType({
-            message: err.message,
-            details: {
-              supportedTypes: err.supportedTypes,
-              requestedType: err.requestedType,
-            },
-          }),
-        );
+        return ctx.res.unsupportedMediaType({
+          message: err.message,
+          details: {
+            supportedTypes: err.supportedTypes,
+            requestedType: err.requestedType,
+          },
+        });
       case 'INVALID_JSON':
-        return Promise.resolve(
-          ctx.res.badRequest({
-            message: err.message,
-            details: err.cause,
-          }),
-        );
+        return ctx.res.badRequest({
+          message: err.message,
+          details: err.cause,
+        });
       default:
-        return Promise.resolve(undefined);
+        return undefined;
     }
   };
 }
