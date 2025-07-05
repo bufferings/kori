@@ -179,13 +179,15 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         const contentLength = parseInt(contentLengthHeader, 10);
 
         if (contentLength > maxSize) {
+          const xForwardedFor = req.headers['x-forwarded-for']?.trim();
           requestLog.warn('Request body size exceeds limit', {
             path: req.url.pathname,
             method: req.method,
             contentLength,
             maxSize,
             userAgent: req.headers['user-agent'],
-            remoteAddress: req.headers['x-forwarded-for'] || req.headers['x-real-ip'],
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            remoteAddress: xForwardedFor || req.headers['x-real-ip'],
           });
 
           // Use custom error handler if provided
