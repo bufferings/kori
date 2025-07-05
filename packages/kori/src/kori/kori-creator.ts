@@ -8,6 +8,7 @@ import { createHonoRouter, type KoriRouter } from '../router/index.js';
 import { createKoriInternal, type KoriInternalShared } from './kori-internal.js';
 import { type Kori } from './kori.js';
 import {
+  type KoriInstancePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
 } from './route.js';
@@ -18,13 +19,18 @@ type CreateKoriOptions<
 > = {
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  instanceRequestValidationErrorHandler?: KoriInstanceRequestValidationErrorHandler<
+  onPreRequestValidationError?: KoriInstancePreRequestValidationErrorHandler<
+    KoriEnvironment,
+    KoriRequest,
+    KoriResponse
+  >;
+  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<
     KoriEnvironment,
     KoriRequest,
     KoriResponse,
     RequestValidator
   >;
-  instanceResponseValidationErrorHandler?: KoriInstanceResponseValidationErrorHandler<
+  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<
     KoriEnvironment,
     KoriRequest,
     KoriResponse,
@@ -57,8 +63,9 @@ export function createKori<
     shared,
     requestValidator: options?.requestValidator,
     responseValidator: options?.responseValidator,
-    instanceRequestValidationErrorHandler: options?.instanceRequestValidationErrorHandler,
-    instanceResponseValidationErrorHandler: options?.instanceResponseValidationErrorHandler,
+    onPreRequestValidationError: options?.onPreRequestValidationError,
+    onRequestValidationError: options?.onRequestValidationError,
+    onResponseValidationError: options?.onResponseValidationError,
   });
 
   shared.root = root;

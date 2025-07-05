@@ -28,10 +28,12 @@ export {
   type Kori,
   type KoriAddRoute,
   type KoriHandler,
+  type KoriInstancePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteDefinition,
   type KoriRoutePluginMetadata,
+  type KoriRoutePreRequestValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './kori/index.js';
@@ -56,6 +58,8 @@ export {
   type KoriRequestValidatorDefault,
   type KoriRequestValidatorError,
   type KoriRequestValidatorErrorDefault,
+  type PreValidationError,
+  type RequestValidationError,
   type WithValidatedRequest,
 } from './request-validation/index.js';
 export {

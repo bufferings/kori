@@ -75,6 +75,55 @@ const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
   loggerFactory,
+
+  // Pre-validation error handler (Content-Type, JSON parsing errors)
+  onPreRequestValidationError: (ctx, err) => {
+    ctx.req.log.warn('Pre-validation error occurred', {
+      error: err,
+    });
+
+    switch (err.type) {
+      case 'UNSUPPORTED_MEDIA_TYPE':
+        return ctx.res.unsupportedMediaType({
+          message: `This API only supports: ${err.supportedTypes.join(', ')}`,
+          details: {
+            supported: err.supportedTypes,
+            requested: err.requestedType,
+            hint: 'Make sure to set the correct Content-Type header',
+          },
+        });
+      case 'INVALID_JSON':
+        return ctx.res.badRequest({
+          message: 'Invalid JSON in request body',
+          details: {
+            hint: 'Please check your JSON syntax',
+          },
+        });
+    }
+  },
+
+  // Validation error handler (schema violations)
+  onRequestValidationError: (ctx, err) => {
+    ctx.req.log.warn('Request validation failed', {
+      error: err,
+    });
+
+    return ctx.res.badRequest({
+      message: 'Request validation failed',
+      details: err,
+    });
+  },
+
+  // Response validation error handler
+  onResponseValidationError: (ctx, err) => {
+    ctx.req.log.error('Response validation failed', {
+      error: err,
+    });
+
+    return ctx.res.internalError({
+      message: 'Response validation failed',
+    });
+  },
 })
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())
@@ -308,6 +357,42 @@ app.get('/error/:type', {
       default:
         throw new Error(`Unknown error type: ${type}`);
     }
+  },
+});
+
+// Demonstration of new validation error handling
+app.post('/validation-demo', {
+  pluginMetadata: openApiMeta({
+    summary: 'Validation demo',
+    description: 'Demonstrates new validation error handling features',
+    tags: ['Demo'],
+  }),
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      email: z.string().email(),
+      age: z.number().min(18).max(120),
+      preferences: z.object({
+        newsletter: z.boolean(),
+        theme: z.enum(['light', 'dark']),
+      }),
+    }),
+  }),
+  handler: (ctx) => {
+    const { email, age, preferences } = ctx.req.validated.body;
+
+    return ctx.res.json({
+      message: 'Validation successful! New error handling is working.',
+      user: { email, age, preferences },
+      timestamp: new Date().toISOString(),
+      info: {
+        note: 'Try sending invalid JSON or wrong Content-Type to see new error handling in action',
+        examples: [
+          'Send with Content-Type: text/plain to get 415 Unsupported Media Type',
+          'Send invalid JSON to get proper JSON parsing error',
+          'Send invalid schema data to get detailed validation errors',
+        ],
+      },
+    });
   },
 });
 

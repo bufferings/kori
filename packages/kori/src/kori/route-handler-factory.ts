@@ -16,6 +16,7 @@ import {
   type InferRequestValidatorError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
+  type PreValidationError,
 } from '../request-validation/index.js';
 import {
   resolveResponseValidationFunction,
@@ -27,6 +28,8 @@ import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '.
 
 import {
   type KoriHandler,
+  type KoriInstancePreRequestValidationErrorHandler,
+  type KoriRoutePreRequestValidationErrorHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
@@ -49,8 +52,9 @@ type Dependencies<
 > = {
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  instanceRequestValidationErrorHandler?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
-  instanceResponseValidationErrorHandler?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
+  onPreRequestValidationError?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
+  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
+  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   requestHooks: KoriOnRequestHookAny[];
   responseHooks: KoriOnResponseHookAny[];
   errorHooks: KoriOnErrorHookAny[];
@@ -70,6 +74,7 @@ type RouteParameters<
   requestSchema?: RequestSchema;
   responseSchema?: ResponseSchema;
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
+  routePreRequestValidationErrorHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
   routeRequestValidationErrorHandler?: KoriRouteRequestValidationErrorHandler<
     Env,
     Req,
@@ -166,6 +171,57 @@ function createHookExecutor<
     }
 
     return currentCtx.res;
+  };
+}
+
+function createPreRequestValidationErrorHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+>({
+  instanceHandler,
+  routeHandler,
+}: {
+  instanceHandler?: KoriInstancePreRequestValidationErrorHandler<Env, Req, Res>;
+  routeHandler?: KoriRoutePreRequestValidationErrorHandler<Env, Req, Res, Path>;
+}): (
+  ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+  error: PreValidationError,
+) => Promise<KoriResponse | void> {
+  if (routeHandler) {
+    return (ctx, err) => Promise.resolve(routeHandler(ctx, err));
+  }
+
+  if (instanceHandler) {
+    return (ctx, err) => Promise.resolve(instanceHandler(ctx, err));
+  }
+
+  // デフォルト処理（自動的に適切なレスポンスを返す）
+  return (ctx, err) => {
+    ctx.req.log.warn('Pre-validation error occurred but is not being handled.', { err });
+
+    switch (err.type) {
+      case 'UNSUPPORTED_MEDIA_TYPE':
+        return Promise.resolve(
+          ctx.res.unsupportedMediaType({
+            message: err.message,
+            details: {
+              supportedTypes: err.supportedTypes,
+              requestedType: err.requestedType,
+            },
+          }),
+        );
+      case 'INVALID_JSON':
+        return Promise.resolve(
+          ctx.res.badRequest({
+            message: err.message,
+            details: err.cause,
+          }),
+        );
+      default:
+        return Promise.resolve(undefined);
+    }
   };
 }
 
@@ -267,13 +323,18 @@ export function createRouteHandler<
     responseSchema: routeParams.responseSchema,
   });
 
+  const preRequestValidationErrorHandler = createPreRequestValidationErrorHandler({
+    instanceHandler: deps.onPreRequestValidationError,
+    routeHandler: routeParams.routePreRequestValidationErrorHandler,
+  });
+
   const requestValidationErrorHandler = createRequestValidationErrorHandler({
-    instanceHandler: deps.instanceRequestValidationErrorHandler,
+    instanceHandler: deps.onRequestValidationError,
     routeHandler: routeParams.routeRequestValidationErrorHandler,
   });
 
   const responseValidationErrorHandler = createResponseValidationErrorHandler({
-    instanceHandler: deps.instanceResponseValidationErrorHandler,
+    instanceHandler: deps.onResponseValidationError,
     routeHandler: routeParams.routeResponseValidationErrorHandler,
   });
 
@@ -281,16 +342,32 @@ export function createRouteHandler<
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.ok) {
-        const handlerResult = await requestValidationErrorHandler(
-          ctx,
-          validationResult.error as InferRequestValidatorError<RequestValidator>,
-        );
-        if (handlerResult) {
-          return handlerResult;
+        const error = validationResult.error;
+
+        // 1. Pre-validation error の処理
+        if (error.stage === 'pre-validation') {
+          const handlerResult = await preRequestValidationErrorHandler(ctx, error.error);
+          if (handlerResult) {
+            return handlerResult;
+          }
+          // デフォルトハンドラーで必ず処理されるため、ここには来ない
         }
-        return ctx.res.badRequest({ message: 'Validation Failed' });
+
+        // 2. Validation error の処理
+        if (error.stage === 'validation') {
+          const handlerResult = await requestValidationErrorHandler(
+            ctx,
+            error.error as InferRequestValidatorError<RequestValidator>,
+          );
+          if (handlerResult) {
+            return handlerResult;
+          }
+          return ctx.res.badRequest({ message: 'Validation Failed' });
+        }
+      } else {
+        // Validation が成功した場合のみ validated data を設定
+        ctx = ctx.withReq({ validated: validationResult.value });
       }
-      ctx = ctx.withReq({ validated: validationResult.value });
     }
 
     const response = await routeParams.handler(ctx as ValidatedContext);

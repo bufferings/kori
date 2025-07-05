@@ -1,3 +1,5 @@
+export { type PreValidationError } from './pre-validation-error.js';
+export { type RequestValidationError } from './request-validation-error.js';
 export { resolveRequestValidationFunction } from './request-validation-resolver.js';
 export {
   createRequestValidator,
