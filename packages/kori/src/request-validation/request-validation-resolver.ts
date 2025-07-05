@@ -176,16 +176,23 @@ export function resolveRequestValidationFunction({
       });
     }
 
-    // Return the first error encountered
-    if (!paramsResult.ok) return paramsResult;
-    if (!queriesResult.ok) return queriesResult;
-    if (!headersResult.ok) return headersResult;
-    if (!bodyResult.ok) return bodyResult;
+    // Check for pre-validation errors first (these should be handled immediately)
+    const preValidationError = [paramsResult, queriesResult, headersResult, bodyResult].find(
+      (result) => !result.ok && result.error.stage === 'pre-validation'
+    );
+    if (preValidationError) {
+      return preValidationError;
+    }
 
-    // This should never be reached
+    // Collect all validation errors
     return err({
       stage: 'validation',
-      error: 'Unknown validation error',
+      error: {
+        params: paramsResult.ok ? undefined : paramsResult.error.error,
+        queries: queriesResult.ok ? undefined : queriesResult.error.error,
+        headers: headersResult.ok ? undefined : headersResult.error.error,
+        body: bodyResult.ok ? undefined : bodyResult.error.error,
+      },
     });
   };
 }
