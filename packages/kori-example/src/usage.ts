@@ -134,47 +134,6 @@ app.post('/products', {
       'x-client-id': z.string().min(1).meta({ description: 'Client identifier' }),
     }),
   }),
-  // Route-level error handlers for demonstration
-  onPreRequestValidationError: (ctx, err) => {
-    ctx.req.log.warn('Products endpoint pre-validation error', {
-      error: err,
-    });
-
-    switch (err.type) {
-      case 'UNSUPPORTED_MEDIA_TYPE':
-        return ctx.res.unsupportedMediaType({
-          message: 'Product creation requires JSON content',
-          details: {
-            endpoint: '/products',
-            supported: err.supportedTypes,
-            requested: err.requestedType,
-            hint: 'Set Content-Type: application/json header',
-          },
-        });
-      case 'INVALID_JSON':
-        return ctx.res.badRequest({
-          message: 'Invalid JSON in product data',
-          details: {
-            endpoint: '/products',
-            hint: 'Check your JSON syntax and try again',
-          },
-        });
-    }
-  },
-  onRequestValidationError: (ctx, err) => {
-    ctx.req.log.warn('Product validation failed', {
-      error: err,
-    });
-
-    return ctx.res.badRequest({
-      message: 'Product validation failed',
-      details: {
-        endpoint: '/products',
-        errors: err,
-        hint: 'Check the API documentation for the correct product schema',
-      },
-    });
-  },
   handler: (ctx) => {
     const product = ctx.req.validated.body;
     const headers = ctx.req.validated.headers;
