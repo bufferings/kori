@@ -1,4 +1,5 @@
 import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
+import { bodyLimitPlugin } from 'kori-body-limit-plugin';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
 import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
@@ -77,6 +78,7 @@ const app = createKori({
 })
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())
+  .applyPlugin(bodyLimitPlugin())
   .applyPlugin(
     zodOpenApiPlugin({
       info: {
