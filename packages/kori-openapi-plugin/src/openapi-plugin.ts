@@ -16,6 +16,7 @@ import {
 } from 'openapi3-ts/oas31';
 
 import { createRouteCollector, type ConversionContext, type SchemaConverter } from './route-collector.js';
+import { PLUGIN_VERSION } from './version.js';
 
 export const OpenApiMetaSymbol = Symbol('openapi-meta');
 
@@ -98,7 +99,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
 
   return defineKoriPlugin({
     name: 'openapi',
-    version: '1.0.0',
+    version: PLUGIN_VERSION,
     apply: (kori) => {
       // Add OpenAPI document endpoint
       kori.get(documentPath, {

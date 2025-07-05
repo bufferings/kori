@@ -7,6 +7,8 @@ import {
   HttpStatus,
 } from 'kori';
 
+import { PLUGIN_VERSION } from './version.js';
+
 export type BodyLimitOptions = {
   /** Maximum request body size in bytes (default: 1MB) */
   maxSize?: number;
@@ -116,7 +118,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
 
   return defineKoriPlugin({
     name: PLUGIN_NAME,
-    version: '1.0.0',
+    version: PLUGIN_VERSION,
     apply: (kori) => {
       // Instance-level logger for plugin initialization
       const log = kori.log.child(LOGGER_NAME);
