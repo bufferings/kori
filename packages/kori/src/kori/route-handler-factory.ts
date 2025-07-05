@@ -398,7 +398,7 @@ export function createRouteHandler<
         if (handlerResult) {
           return handlerResult;
         }
-        // If handler returns void, continue with the original response
+        // If handler returns void, fall through to return original response
       }
     }
 
