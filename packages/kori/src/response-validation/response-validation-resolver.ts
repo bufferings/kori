@@ -5,7 +5,7 @@ import {
   type KoriResponseSchemaValueDefault,
   isKoriSchema,
 } from '../schema/index.js';
-import { err, type KoriResult } from '../util/index.js';
+import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseValidatorDefault } from './response-validator.js';
 
@@ -43,6 +43,11 @@ async function validateResponseBody({
   schema: KoriResponseSchemaValueDefault | undefined;
   res: KoriResponse;
 }): Promise<KoriResult<unknown, unknown>> {
+  // Skip validation for streaming responses
+  if (res.isStream()) {
+    return ok(undefined);
+  }
+
   if (!schema) {
     // TODO: Consider
     return err({ message: 'No response schema found for status code' });
