@@ -16,7 +16,7 @@ export type KoriBodyValidationError<TValidatorError> =
     }
   | {
       stage: 'pre-validation';
-      type: 'INVALID_JSON';
+      type: 'INVALID_BODY';
       message: string;
       cause?: unknown;
     };
