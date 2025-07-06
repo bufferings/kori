@@ -6,9 +6,9 @@
   "scripts": {
     "typecheck": "turbo run typecheck",
     "lint": "turbo run dev:build --filter=kori-eslint-rules && eslint .",
-    "lint:fix": "turbo run build --filter=kori-eslint-rules && eslint --fix .",
+    "lint:fix": "turbo run dev:build --filter=kori-eslint-rules && eslint --fix .",
     "format": "prettier --write .",
-    "dev:clean": "rimraf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
+    "dev:clean": "rimraf .turbo packages/*/dist-dev packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
     "dev:build": "turbo run dev:build",
     "dev:watch": "turbo run dev:watch",
     "publish:clean": "turbo run publish:clean",
