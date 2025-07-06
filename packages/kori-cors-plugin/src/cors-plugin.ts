@@ -69,33 +69,22 @@ const DEFAULT_METHODS = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'];
 const DEFAULT_MAX_AGE = 86400; // 24 hours
 const DEFAULT_OPTIONS_SUCCESS_STATUS = HttpStatus.NO_CONTENT;
 
-function isOriginAllowed(origin: string | undefined, allowedOrigin: CorsOptions['origin']): boolean {
-  if (typeof allowedOrigin === 'boolean') {
-    return allowedOrigin;
-  }
-
-  if (typeof allowedOrigin === 'string') {
-    return origin === allowedOrigin;
-  }
-
-  if (Array.isArray(allowedOrigin)) {
-    return origin !== undefined && allowedOrigin.includes(origin);
-  }
-
-  if (typeof allowedOrigin === 'function') {
-    // Function will be called with request context
-    return false; // Will be handled in the hook
-  }
-
-  return false;
-}
-
 function getOriginHeader(
   origin: string | undefined,
   allowedOrigin: CorsOptions['origin'],
   req?: KoriRequest,
+  credentials?: boolean,
 ): string | undefined {
   if (typeof allowedOrigin === 'boolean') {
+    // CORS spec violation: Cannot use '*' with credentials
+    // When credentials are enabled, we must echo back the specific origin
+    if (allowedOrigin && credentials && origin) {
+      return origin;
+    }
+    // When credentials are enabled but no origin is provided, deny the request
+    if (allowedOrigin && credentials && !origin) {
+      return undefined;
+    }
     return allowedOrigin ? '*' : undefined;
   }
 
@@ -180,15 +169,21 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
             });
 
             // Check if origin is allowed
-            const allowedOriginHeader = getOriginHeader(requestOrigin, origin, req);
-            if (!allowedOriginHeader && origin !== true) {
+            const allowedOriginHeader = getOriginHeader(requestOrigin, origin, req, credentials);
+            if (!allowedOriginHeader && (origin !== true || (origin === true && credentials))) {
               requestLog.warn('Preflight request rejected - origin not allowed', {
                 origin: requestOrigin,
                 allowedOrigin: origin,
+                credentials,
+                reason:
+                  credentials && origin === true
+                    ? 'Cannot use wildcard origin with credentials'
+                    : 'Origin not in allowed list',
               });
               return res.status(HttpStatus.FORBIDDEN).json({
                 error: 'CORS policy violation',
-                message: 'Origin not allowed',
+                message:
+                  credentials && origin === true ? 'Cannot use wildcard origin with credentials' : 'Origin not allowed',
               });
             }
 
@@ -248,7 +243,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
           });
 
           // Set origin header
-          const allowedOriginHeader = getOriginHeader(requestOrigin, origin, req);
+          const allowedOriginHeader = getOriginHeader(requestOrigin, origin, req, credentials);
           if (allowedOriginHeader) {
             res.setHeader('access-control-allow-origin', allowedOriginHeader);
             if (allowedOriginHeader !== '*') {

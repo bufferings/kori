@@ -8,11 +8,11 @@ const app1 = createKori()
     return ctx.res.json({ message: 'Hello from CORS-enabled API!' });
   });
 
-// Specific origin configuration
+// Specific origin configuration with credentials (CORS compliant)
 const app2 = createKori()
   .applyPlugin(
     corsPlugin({
-      origin: 'https://example.com',
+      origin: 'https://example.com', // Specific origin required when credentials: true
       credentials: true,
     }),
   )
@@ -51,13 +51,14 @@ const app4 = createKori()
     return ctx.res.json({ message: 'Dynamic origin validation' });
   });
 
-// Preflight continue example
+// Preflight continue example (no credentials with wildcard origin)
 const app5 = createKori()
   .applyPlugin(
     corsPlugin({
-      origin: true,
+      origin: true, // Wildcard origin - credentials must be false
       preflightContinue: true,
       optionsSuccessStatus: 200,
+      credentials: false, // Explicit to show CORS compliance
     }),
   )
   .options('/api/custom-preflight', (ctx) => {

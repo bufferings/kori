@@ -86,11 +86,15 @@ const app = createKori()
 
 ### Origin Configuration
 
-- **`true`**: Allow all origins (`*`)
+- **`true`**: Allow all origins (`*`) - **Note**: Cannot be used with `credentials: true`
 - **`false`**: Disable CORS
 - **`string`**: Allow specific origin
 - **`string[]`**: Allow multiple specific origins
 - **`function`**: Dynamic origin validation function
+
+#### Important CORS Specification Note
+
+When `credentials: true` is set, you **cannot** use `origin: true` (wildcard). This violates the CORS specification and browsers will reject such responses. You must specify explicit origins when credentials are enabled.
 
 ### Headers Configuration
 
@@ -116,7 +120,17 @@ const app = createKori()
 const app = createKori()
   .applyPlugin(corsPlugin({
     origin: true,
-    credentials: false,
+    credentials: false, // Must be false when using wildcard origin
+  }));
+```
+
+### Credentials with Specific Origins (Secure)
+
+```typescript
+const app = createKori()
+  .applyPlugin(corsPlugin({
+    origin: ['https://myapp.com', 'https://admin.myapp.com'], // Specific origins required
+    credentials: true,
   }));
 ```
 
