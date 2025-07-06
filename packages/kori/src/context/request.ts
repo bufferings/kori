@@ -15,9 +15,9 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   headers: Record<string, string>;
 
   contentType(): ContentTypeValue | undefined;
-  fullContentType(): string | null;
-  bodyParser(): Promise<unknown>;
-  customBodyParser?: () => Promise<unknown>;
+  fullContentType(): string | undefined;
+  parseBody(): Promise<unknown>;
+  parseBodyCustom?: () => Promise<unknown>;
 
   json(): Promise<unknown>;
   text(): Promise<string>;
@@ -76,19 +76,17 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function contentType(): ContentTypeValue | undefined {
-    const header = rawRequest.headers.get('content-type');
-    return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
+    return fullContentType()?.split(';')[0] as ContentTypeValue | undefined;
   }
 
-  function fullContentType(): string | null {
-    return rawRequest.headers.get('content-type')?.trim().toLowerCase() ?? null;
+  function fullContentType(): string | undefined {
+    return rawRequest.headers.get('content-type')?.trim().toLowerCase();
   }
 
-  function bodyParser(): Promise<unknown> {
-    const contentType =
-      rawRequest.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() ?? 'application/json';
+  function parseBody(): Promise<unknown> {
+    const contentTypeValue = contentType() ?? 'application/json';
 
-    switch (contentType) {
+    switch (contentTypeValue) {
       case ContentType.APPLICATION_JSON:
         return json();
       case ContentType.APPLICATION_FORM_URLENCODED:
@@ -136,7 +134,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     },
     contentType,
     fullContentType,
-    bodyParser,
+    parseBody,
     json,
     text,
     formData,

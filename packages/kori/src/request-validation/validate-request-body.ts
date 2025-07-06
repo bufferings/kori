@@ -53,7 +53,7 @@ async function parseRequestBodyWithContentType(
   contentType: string,
 ): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
   try {
-    const body = req.customBodyParser ? await req.customBodyParser() : await req.bodyParser();
+    const body = req.parseBodyCustom ? await req.parseBodyCustom() : await req.parseBody();
     return ok(body);
   } catch (error) {
     const errorInfo = getParseErrorInfo(contentType);
