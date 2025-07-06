@@ -24,9 +24,9 @@ function resolveSchema({
 }: {
   req: KoriRequest;
   schema: NonNullable<KoriRequestSchemaDefault['body']>;
-}): KoriResult<{ resolvedSchema: KoriSchemaDefault; resolvedMediaType?: string }, KoriBodyValidationError<unknown>> {
+}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, KoriBodyValidationError<unknown>> {
   if (isKoriSchema(schema)) {
-    return ok({ resolvedSchema: schema });
+    return ok({ schema });
   }
 
   const effectiveContentType = req.contentType() ?? DEFAULT_CONTENT_TYPE;
@@ -45,8 +45,8 @@ function resolveSchema({
   const mediaTypeSchema = content[effectiveContentType]!;
   const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
   return ok({
-    resolvedSchema: targetSchema,
-    resolvedMediaType: effectiveContentType,
+    schema: targetSchema,
+    mediaType: effectiveContentType,
   });
 }
 
@@ -103,7 +103,7 @@ export async function validateRequestBody({
     return resolveResult;
   }
 
-  const { resolvedSchema, resolvedMediaType } = resolveResult.value;
+  const { schema: resolvedSchema, mediaType: resolvedMediaType } = resolveResult.value;
 
   const parseResult = await parseRequestBody(req);
   if (!parseResult.ok) {
