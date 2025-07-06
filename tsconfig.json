@@ -20,6 +20,7 @@
   "references": [
     { "path": "./packages/kori" },
     { "path": "./packages/kori-body-limit-plugin" },
+    { "path": "./packages/kori-cors-plugin" },
     { "path": "./packages/kori-nodejs-adapter" },
     { "path": "./packages/kori-pino-adapter" },
     { "path": "./packages/kori-eslint-rules" },
