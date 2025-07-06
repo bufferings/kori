@@ -17,6 +17,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   contentType(): ContentTypeValue | undefined;
   fullContentType(): string | undefined;
   parseBody(): Promise<unknown>;
+  parseBodyDefault(): Promise<unknown>;
   parseBodyCustom?: () => Promise<unknown>;
 
   json(): Promise<unknown>;
@@ -84,6 +85,10 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function parseBody(): Promise<unknown> {
+    return koriRequest.parseBodyCustom ? koriRequest.parseBodyCustom() : parseBodyDefault();
+  }
+
+  function parseBodyDefault(): Promise<unknown> {
     const contentTypeValue = contentType() ?? ContentType.APPLICATION_JSON;
 
     switch (contentTypeValue) {
@@ -135,6 +140,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     contentType,
     fullContentType,
     parseBody,
+    parseBodyDefault,
     json,
     text,
     formData,
