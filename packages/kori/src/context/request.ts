@@ -75,6 +75,11 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     return bodyCache.arrayBuffer;
   }
 
+  function contentType(): ContentTypeValue | undefined {
+    const header = rawRequest.headers.get('content-type');
+    return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
+  }
+
   function fullContentType(): string | null {
     return rawRequest.headers.get('content-type')?.trim().toLowerCase() ?? null;
   }
@@ -129,10 +134,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       headersCache = obj;
       return obj;
     },
-    contentType() {
-      const header = rawRequest.headers.get('content-type');
-      return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
-    },
+    contentType,
     fullContentType,
     bodyParser,
     json,
