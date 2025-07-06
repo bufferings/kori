@@ -84,7 +84,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function parseBody(): Promise<unknown> {
-    const contentTypeValue = contentType() ?? 'application/json';
+    const contentTypeValue = contentType() ?? ContentType.APPLICATION_JSON;
 
     switch (contentTypeValue) {
       case ContentType.APPLICATION_JSON:
