@@ -4,14 +4,14 @@
   "type": "module",
   "packageManager": "pnpm@9.15.3",
   "scripts": {
-    "build": "turbo run build",
-    "build:watch": "turbo run build:watch",
-    "clean": "rimraf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
-    "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run build --filter=kori-eslint-rules && eslint .",
+    "lint": "turbo run dev:build --filter=kori-eslint-rules && eslint .",
     "lint:fix": "turbo run build --filter=kori-eslint-rules && eslint --fix .",
     "format": "prettier --write .",
+    "dev:clean": "rimraf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
+    "dev:build": "turbo run dev:build",
+    "dev:watch": "turbo run dev:watch",
+    "test": "turbo run test",
     "dev": "turbo run build:watch dev:getting-started dev:usage --concurrency 20"
   },
   "devDependencies": {

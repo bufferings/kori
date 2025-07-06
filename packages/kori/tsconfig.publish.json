@@ -1,11 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "./dist",
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "allowImportingTsExtensions": true,
     "resolvePackageJsonExports": true,
     "verbatimModuleSyntax": true

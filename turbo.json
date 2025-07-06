@@ -1,12 +1,21 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
+    "dev:build": {
+      "dependsOn": ["^dev:build"],
+      "outputs": ["dist-dev/**"]
+    },
+    "dev:watch": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^dev:build"]
+    },
+    "publish:build": {
+      "dependsOn": ["^publish:build"],
       "outputs": ["dist/**"]
     },
     "kori-example#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^publish:build"],
       "outputs": []
     },
     "typecheck": {
@@ -14,22 +23,17 @@
     },
     "test": {
       "cache": false,
-      "dependsOn": ["^build"]
-    },
-    "build:watch": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^publish:build"]
     },
     "dev:getting-started": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^dev:build"]
     },
     "dev:usage": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^dev:build"]
     }
   }
 }

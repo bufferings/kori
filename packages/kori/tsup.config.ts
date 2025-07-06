@@ -8,6 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: false,
   shims: true,
+  outDir: './dist',
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',
