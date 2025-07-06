@@ -167,9 +167,9 @@ importers:
       kori-openapi-plugin:
         specifier: workspace:*
         version: link:../kori-openapi-plugin
-      kori-openapi-ui-scalar:
+      kori-openapi-scalar-ui-plugin:
         specifier: workspace:*
-        version: link:../kori-openapi-ui-scalar
+        version: link:../kori-openapi-scalar-ui-plugin
       kori-pino-adapter:
         specifier: workspace:*
         version: link:../kori-pino-adapter
@@ -231,7 +231,7 @@ importers:
         specifier: 'catalog:'
         version: 5.8.3
 
-  packages/kori-openapi-ui-scalar:
+  packages/kori-openapi-scalar-ui-plugin:
     dependencies:
       kori:
         specifier: workspace:*
