@@ -17,6 +17,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   contentType(): ContentTypeValue | undefined;
   fullContentType(): string | undefined;
   parseBody(): Promise<unknown>;
+  parseBodyDefault(): Promise<unknown>;
   parseBodyCustom?: () => Promise<unknown>;
 
   json(): Promise<unknown>;
@@ -49,6 +50,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   let queriesCache: Record<string, string | string[]> | undefined;
   let headersCache: Record<string, string> | undefined;
   let clonedRawRequest: Request | undefined = undefined;
+  let isCustomParsing = false;
 
   function getClonedRawRequest(): Request {
     clonedRawRequest ??= rawRequest.clone();
@@ -84,7 +86,16 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function parseBody(): Promise<unknown> {
-    return koriRequest.parseBodyCustom ? koriRequest.parseBodyCustom() : parseBodyDefault();
+    if (isCustomParsing) return parseBodyDefault();
+    if (koriRequest.parseBodyCustom) {
+      isCustomParsing = true;
+      try {
+        return koriRequest.parseBodyCustom();
+      } finally {
+        isCustomParsing = false;
+      }
+    }
+    return parseBodyDefault();
   }
 
   function parseBodyDefault(): Promise<unknown> {
@@ -139,6 +150,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     contentType,
     fullContentType,
     parseBody,
+    parseBodyDefault,
     json,
     text,
     formData,
