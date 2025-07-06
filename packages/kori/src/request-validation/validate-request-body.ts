@@ -11,22 +11,18 @@ import { ok, err, type KoriResult } from '../util/index.js';
 import { type KoriBodyValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
-const CONTENT_TYPE_PARSERS = {
-  [ContentType.APPLICATION_JSON]: (req: KoriRequest) => req.json(),
-  [ContentType.APPLICATION_FORM_URLENCODED]: (req: KoriRequest) => req.formData(),
-  [ContentType.MULTIPART_FORM_DATA]: (req: KoriRequest) => req.formData(),
-  [ContentType.TEXT_PLAIN]: (req: KoriRequest) => req.text(),
-  [ContentType.TEXT_HTML]: (req: KoriRequest) => req.text(),
-  [ContentType.APPLICATION_OCTET_STREAM]: (req: KoriRequest) => req.arrayBuffer(),
-} as const;
-
 function parseRequestBody(req: KoriRequest, contentType: string): Promise<unknown> {
-  const parser = CONTENT_TYPE_PARSERS[contentType as keyof typeof CONTENT_TYPE_PARSERS];
-  if (!parser) {
-    // Default to JSON
-    return req.json();
+  switch (contentType) {
+    case ContentType.APPLICATION_JSON:
+      return req.json();
+    case ContentType.APPLICATION_FORM_URLENCODED:
+    case ContentType.MULTIPART_FORM_DATA:
+      return req.formData();
+    case ContentType.APPLICATION_OCTET_STREAM:
+      return req.arrayBuffer();
+    default:
+      return req.text();
   }
-  return parser(req);
 }
 
 function getParseErrorInfo(contentType: string) {
