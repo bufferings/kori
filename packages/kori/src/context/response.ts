@@ -1,4 +1,4 @@
-import { HttpStatus, type HttpStatusCode } from '../http/index.js';
+import { HttpStatus, type HttpStatusCode, type HttpResponseHeaderValue } from '../http/index.js';
 
 const KoriResponseBrand = Symbol('kori-response');
 
@@ -39,9 +39,9 @@ export type KoriResponse = {
 
   status(statusCode: HttpStatusCode): KoriResponse;
 
-  setHeader(name: string, value: string): KoriResponse;
-  appendHeader(name: string, value: string): KoriResponse;
-  removeHeader(name: string): KoriResponse;
+  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
+  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
+  removeHeader(key: HttpResponseHeaderValue): KoriResponse;
 
   json<T>(body: T): KoriResponse;
   text(body: string): KoriResponse;
@@ -110,18 +110,18 @@ export function createKoriResponse(): KoriResponse {
       return self;
     },
 
-    setHeader: function (name: string, value: string) {
-      internalState.headers.set(name, value);
+    setHeader: function (key: HttpResponseHeaderValue, value: string) {
+      internalState.headers.set(key, value);
       return self;
     },
 
-    appendHeader: function (name: string, value: string) {
-      internalState.headers.append(name, value);
+    appendHeader: function (key: HttpResponseHeaderValue, value: string) {
+      internalState.headers.append(key, value);
       return self;
     },
 
-    removeHeader: function (name: string) {
-      internalState.headers.delete(name);
+    removeHeader: function (key: HttpResponseHeaderValue) {
+      internalState.headers.delete(key);
       return self;
     },
 

@@ -1,4 +1,9 @@
-import { type ContentTypeValue, ContentType, DEFAULT_CONTENT_TYPE } from '../http/index.js';
+import {
+  type ContentTypeValue,
+  ContentType,
+  DEFAULT_CONTENT_TYPE,
+  type HttpRequestHeaderValue,
+} from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
@@ -16,6 +21,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
 
   contentType(): ContentTypeValue | undefined;
   fullContentType(): string | undefined;
+  getHeader(key: HttpRequestHeaderValue): string | undefined;
   parseBody(): Promise<unknown>;
   parseBodyDefault(): Promise<unknown>;
   parseBodyCustom?: () => Promise<unknown>;
@@ -85,6 +91,10 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     return rawRequest.headers.get('content-type')?.trim().toLowerCase();
   }
 
+  function getHeader(key: HttpRequestHeaderValue): string | undefined {
+    return koriRequest.headers[key.toLowerCase()];
+  }
+
   async function parseBody(): Promise<unknown> {
     if (isCustomParsing) return parseBodyDefault();
     if (koriRequest.parseBodyCustom) {
@@ -149,6 +159,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     },
     contentType,
     fullContentType,
+    getHeader,
     parseBody,
     parseBodyDefault,
     json,
