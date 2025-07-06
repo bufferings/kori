@@ -30,8 +30,7 @@
   "exports": {
     ".": {
       "types": "./dist-dev/index.d.ts",
-      "import": "./dist-dev/index.js",
-      "require": "./dist-dev/index.js"
+      "import": "./dist-dev/index.js"
     }
   },
   "scripts": {

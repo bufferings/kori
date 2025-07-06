@@ -11,8 +11,10 @@
     "dev:clean": "rimraf .turbo packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
     "dev:build": "turbo run dev:build",
     "dev:watch": "turbo run dev:watch",
+    "publish:clean": "turbo run publish:clean",
+    "publish:build": "turbo run publish:build",
     "test": "turbo run test",
-    "dev": "turbo run build:watch dev:getting-started dev:usage --concurrency 20"
+    "dev": "turbo run dev:watch dev:getting-started dev:usage --concurrency 20"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

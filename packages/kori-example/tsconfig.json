@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist-dev",
+    "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"],
@@ -11,6 +12,10 @@
     { "path": "../kori-body-limit-plugin" },
     { "path": "../kori-cors-plugin" },
     { "path": "../kori-nodejs-adapter" },
+    { "path": "../kori-openapi-plugin" },
+    { "path": "../kori-openapi-scalar-ui-plugin" },
+    { "path": "../kori-pino-adapter" },
+    { "path": "../kori-zod-openapi-plugin" },
     { "path": "../kori-zod-schema" },
     { "path": "../kori-zod-validator" }
   ]
