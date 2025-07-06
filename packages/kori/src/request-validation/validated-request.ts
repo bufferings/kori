@@ -25,9 +25,9 @@ type ExtractRequestSchemaQueries<S> =
 type ExtractRequestSchemaBody<S> =
   S extends KoriRequestSchema<infer _P, infer _Params, infer _H, infer _Q, infer Body>
     ? Body extends KoriRequestSchemaBody<infer S>
-      ? { contentType: string; data: InferSchemaOutput<S> }
+      ? { mediaType: string; value: InferSchemaOutput<S> }
       : Body extends KoriRequestSchemaContent<infer S>
-        ? { contentType: string; data: InferSchemaOutput<S> }
+        ? { mediaType: string; value: InferSchemaOutput<S> }
         : Body
     : never;
 

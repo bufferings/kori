@@ -66,6 +66,14 @@ export const ContentType = {
 } as const;
 
 /**
+ * Default Content-Type
+ *
+ * The default Content-Type used when no Content-Type is specified in the request.
+ * This ensures consistent behavior across request parsing and schema resolution.
+ */
+export const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
+
+/**
  * Represents a union of all known Content-Type values.
  * It also includes `string` as a fallback for any content types not explicitly listed.
  */

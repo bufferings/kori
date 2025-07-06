@@ -21,7 +21,14 @@ export {
   type KoriOnRequestHook,
   type KoriOnResponseHook,
 } from './hook/index.js';
-export { ContentType, type ContentTypeValue, getMethodString, HttpStatus, type HttpStatusCode } from './http/index.js';
+export {
+  ContentType,
+  type ContentTypeValue,
+  DEFAULT_CONTENT_TYPE,
+  getMethodString,
+  HttpStatus,
+  type HttpStatusCode,
+} from './http/index.js';
 export {
   createKori,
   type HttpMethod,

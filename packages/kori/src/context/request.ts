@@ -1,4 +1,4 @@
-import { type ContentTypeValue } from '../http/index.js';
+import { type ContentTypeValue, ContentType, DEFAULT_CONTENT_TYPE } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
@@ -15,6 +15,10 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   headers: Record<string, string>;
 
   contentType(): ContentTypeValue | undefined;
+  fullContentType(): string | undefined;
+  parseBody(): Promise<unknown>;
+  parseBodyDefault(): Promise<unknown>;
+  parseBodyCustom?: () => Promise<unknown>;
 
   json(): Promise<unknown>;
   text(): Promise<string>;
@@ -46,6 +50,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   let queriesCache: Record<string, string | string[]> | undefined;
   let headersCache: Record<string, string> | undefined;
   let clonedRawRequest: Request | undefined = undefined;
+  let isCustomParsing = false;
 
   function getClonedRawRequest(): Request {
     clonedRawRequest ??= rawRequest.clone();
@@ -70,6 +75,43 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   function arrayBuffer(): Promise<ArrayBuffer> {
     bodyCache.arrayBuffer ??= getClonedRawRequest().arrayBuffer();
     return bodyCache.arrayBuffer;
+  }
+
+  function contentType(): ContentTypeValue | undefined {
+    return fullContentType()?.split(';')[0]?.trim() as ContentTypeValue | undefined;
+  }
+
+  function fullContentType(): string | undefined {
+    return rawRequest.headers.get('content-type')?.trim().toLowerCase();
+  }
+
+  async function parseBody(): Promise<unknown> {
+    if (isCustomParsing) return parseBodyDefault();
+    if (koriRequest.parseBodyCustom) {
+      isCustomParsing = true;
+      try {
+        return await koriRequest.parseBodyCustom();
+      } finally {
+        isCustomParsing = false;
+      }
+    }
+    return parseBodyDefault();
+  }
+
+  function parseBodyDefault(): Promise<unknown> {
+    const contentTypeValue = contentType() ?? DEFAULT_CONTENT_TYPE;
+
+    switch (contentTypeValue) {
+      case DEFAULT_CONTENT_TYPE:
+        return json();
+      case ContentType.APPLICATION_FORM_URLENCODED:
+      case ContentType.MULTIPART_FORM_DATA:
+        return formData();
+      case ContentType.APPLICATION_OCTET_STREAM:
+        return arrayBuffer();
+      default:
+        return text();
+    }
   }
 
   const koriRequest: KoriRequest<PathParams> = {
@@ -105,10 +147,10 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       headersCache = obj;
       return obj;
     },
-    contentType() {
-      const header = rawRequest.headers.get('content-type');
-      return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
-    },
+    contentType,
+    fullContentType,
+    parseBody,
+    parseBodyDefault,
     json,
     text,
     formData,
