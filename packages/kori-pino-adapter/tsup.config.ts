@@ -9,7 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
-  external: ['pino'],
+  external: ['kori', 'pino'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',

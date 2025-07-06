@@ -9,7 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
-  external: ['@scalar/api-reference'],
+  external: ['kori', 'kori-openapi-plugin', '@scalar/api-reference'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',

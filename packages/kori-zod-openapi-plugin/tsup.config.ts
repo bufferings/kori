@@ -9,7 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
-  external: ['openapi3-ts', 'zod'],
+  external: ['kori', 'kori-zod-schema', 'kori-openapi-plugin', 'openapi3-ts', 'zod'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',
