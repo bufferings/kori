@@ -1,6 +1,6 @@
 import { createKori } from 'kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
-import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
+import { scalarUiPlugin } from 'kori-openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequestSchema } from 'kori-zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';

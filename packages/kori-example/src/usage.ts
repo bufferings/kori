@@ -1,7 +1,7 @@
 import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from 'kori';
 import { bodyLimitPlugin } from 'kori-body-limit-plugin';
 import { startNodeServer } from 'kori-nodejs-adapter';
-import { scalarUiPlugin } from 'kori-openapi-ui-scalar';
+import { scalarUiPlugin } from 'kori-openapi-scalar-ui-plugin';
 import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
 import { zodRequestSchema } from 'kori-zod-schema';

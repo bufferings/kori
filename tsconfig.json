@@ -24,7 +24,7 @@
     { "path": "./packages/kori-pino-adapter" },
     { "path": "./packages/kori-eslint-rules" },
     { "path": "./packages/kori-openapi-plugin" },
-    { "path": "./packages/kori-openapi-ui-scalar" },
+    { "path": "./packages/kori-openapi-scalar-ui-plugin" },
     { "path": "./packages/kori-zod-schema" },
     { "path": "./packages/kori-zod-validator" },
     { "path": "./packages/kori-zod-openapi-plugin" },

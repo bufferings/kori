@@ -1,5 +1,5 @@
 {
-  "name": "kori-openapi-ui-scalar",
+  "name": "kori-openapi-scalar-ui-plugin",
   "version": "0.0.1",
   "description": "Scalar UI plugin for Kori OpenAPI documentation",
   "type": "module",

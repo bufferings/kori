@@ -24,7 +24,7 @@
     "kori-body-limit-plugin": "workspace:*",
     "kori-nodejs-adapter": "workspace:*",
     "kori-openapi-plugin": "workspace:*",
-    "kori-openapi-ui-scalar": "workspace:*",
+    "kori-openapi-scalar-ui-plugin": "workspace:*",
     "kori-pino-adapter": "workspace:*",
     "kori-zod-openapi-plugin": "workspace:*",
     "kori-zod-schema": "workspace:*",
