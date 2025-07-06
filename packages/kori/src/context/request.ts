@@ -18,6 +18,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   pathParams: PathParams;
   queryParams: Record<string, string | string[]>;
   headers: Record<string, string>;
+  body: ReadableStream<Uint8Array> | null;
 
   contentType(): ContentTypeValue | undefined;
   fullContentType(): string | undefined;
@@ -131,6 +132,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     url,
     method: rawRequest.method,
     pathParams,
+    body: rawRequest.body,
     get queryParams() {
       if (queriesCache) {
         return queriesCache;

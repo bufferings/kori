@@ -64,6 +64,7 @@ export type KoriResponse = {
   getBody(): unknown;
   getContentType(): string | undefined;
   isSet(): boolean;
+  isStream(): boolean;
 
   build(): Response;
 };
@@ -337,6 +338,10 @@ export function createKoriResponse(): KoriResponse {
 
     isSet: function (): boolean {
       return internalState.body.type !== 'initial';
+    },
+
+    isStream: function (): boolean {
+      return internalState.body.type === 'stream';
     },
 
     build: function (): Response {
