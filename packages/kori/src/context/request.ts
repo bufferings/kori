@@ -76,7 +76,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function contentType(): ContentTypeValue | undefined {
-    return fullContentType()?.split(';')[0] as ContentTypeValue | undefined;
+    return fullContentType()?.split(';')[0]?.trim() as ContentTypeValue | undefined;
   }
 
   function fullContentType(): string | undefined {
