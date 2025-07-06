@@ -32,15 +32,6 @@ function getParseErrorInfo(contentType: string) {
   };
 }
 
-function getDefaultContentType(content: Record<string, unknown>): string {
-  // Priority: application/json > form-data > text/plain > first key
-  if (ContentType.APPLICATION_JSON in content) return ContentType.APPLICATION_JSON;
-  if (ContentType.APPLICATION_FORM_URLENCODED in content) return ContentType.APPLICATION_FORM_URLENCODED;
-  if (ContentType.MULTIPART_FORM_DATA in content) return ContentType.MULTIPART_FORM_DATA;
-  if (ContentType.TEXT_PLAIN in content) return ContentType.TEXT_PLAIN;
-  return Object.keys(content)[0] ?? ContentType.APPLICATION_JSON;
-}
-
 function resolveContentTypeAndSchema(
   schema: NonNullable<KoriRequestSchemaDefault['body']>,
   requestContentType: string | null,
@@ -48,31 +39,27 @@ function resolveContentTypeAndSchema(
   { isSimpleSchema: boolean; contentType: string; targetSchema: KoriSchemaDefault },
   KoriBodyValidationError<unknown>
 > {
-  // Simple schema (Content-Type not specified)
+  const contentType = requestContentType ?? ContentType.APPLICATION_JSON;
+
   if (isKoriSchema(schema)) {
-    const contentType = requestContentType ?? ContentType.APPLICATION_JSON;
     return ok({ isSimpleSchema: true, contentType, targetSchema: schema });
   }
 
-  // Content-Type specified schema
   const content = (schema.content ?? schema) as KoriRequestSchemaContentDefault;
-  const finalContentType = requestContentType ?? getDefaultContentType(content);
-
-  if (!(finalContentType in content)) {
+  if (!(contentType in content)) {
     return err({
       stage: 'pre-validation',
       type: 'UNSUPPORTED_MEDIA_TYPE',
       message: 'Unsupported Media Type',
       supportedTypes: Object.keys(content),
-      requestedType: finalContentType,
+      requestedType: contentType,
     });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const mediaTypeSchema = content[finalContentType]!;
+  const mediaTypeSchema = content[contentType]!;
   const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
-
-  return ok({ isSimpleSchema: false, contentType: finalContentType, targetSchema });
+  return ok({ isSimpleSchema: false, contentType, targetSchema });
 }
 
 async function parseRequestBodyWithContentType(

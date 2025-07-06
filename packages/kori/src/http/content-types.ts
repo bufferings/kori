@@ -69,5 +69,4 @@ export const ContentType = {
  * Represents a union of all known Content-Type values.
  * It also includes `string` as a fallback for any content types not explicitly listed.
  */
-
 export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | (string & {});
