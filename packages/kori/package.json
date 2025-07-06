@@ -18,26 +18,34 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*"
+    "dist"
   ],
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "default": "./dist/index.js"
+      },
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
+    "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "build:watch": "tsc --watch"
+    "build": "npm run clean && tsup && tsc -p tsconfig.build.json",
+    "build:watch": "tsup --watch"
   },
   "dependencies": {
     "hono": "4.7.9"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "tsup": "8.5.0",
     "typescript": "catalog:"
   }
 }
