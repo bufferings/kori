@@ -1,4 +1,4 @@
-import { type ContentTypeValue } from '../http/index.js';
+import { type ContentTypeValue, ContentType } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
@@ -15,6 +15,9 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   headers: Record<string, string>;
 
   contentType(): ContentTypeValue | undefined;
+  fullContentType(): string | null;
+  bodyParser(): Promise<unknown>;
+  customBodyParser?: () => Promise<unknown>;
 
   json(): Promise<unknown>;
   text(): Promise<string>;
@@ -72,6 +75,27 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     return bodyCache.arrayBuffer;
   }
 
+  function fullContentType(): string | null {
+    return rawRequest.headers.get('content-type')?.trim().toLowerCase() ?? null;
+  }
+
+  function bodyParser(): Promise<unknown> {
+    const contentType =
+      rawRequest.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() ?? 'application/json';
+
+    switch (contentType) {
+      case ContentType.APPLICATION_JSON:
+        return json();
+      case ContentType.APPLICATION_FORM_URLENCODED:
+      case ContentType.MULTIPART_FORM_DATA:
+        return formData();
+      case ContentType.APPLICATION_OCTET_STREAM:
+        return arrayBuffer();
+      default:
+        return text();
+    }
+  }
+
   const koriRequest: KoriRequest<PathParams> = {
     [KoriRequestBrand]: KoriRequestBrand,
     log: requestLogger,
@@ -109,6 +133,8 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       const header = rawRequest.headers.get('content-type');
       return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
     },
+    fullContentType,
+    bodyParser,
     json,
     text,
     formData,

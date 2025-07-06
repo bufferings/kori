@@ -11,20 +11,6 @@ import { ok, err, type KoriResult } from '../util/index.js';
 import { type KoriBodyValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
-function parseRequestBody(req: KoriRequest, contentType: string): Promise<unknown> {
-  switch (contentType) {
-    case ContentType.APPLICATION_JSON:
-      return req.json();
-    case ContentType.APPLICATION_FORM_URLENCODED:
-    case ContentType.MULTIPART_FORM_DATA:
-      return req.formData();
-    case ContentType.APPLICATION_OCTET_STREAM:
-      return req.arrayBuffer();
-    default:
-      return req.text();
-  }
-}
-
 function getParseErrorInfo(contentType: string) {
   return {
     type: 'INVALID_BODY' as const,
@@ -67,7 +53,7 @@ async function parseRequestBodyWithContentType(
   contentType: string,
 ): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
   try {
-    const body = await parseRequestBody(req, contentType);
+    const body = req.customBodyParser ? await req.customBodyParser() : await req.bodyParser();
     return ok(body);
   } catch (error) {
     const errorInfo = getParseErrorInfo(contentType);
