@@ -19,6 +19,24 @@ export type KoriBodyValidationError<TValidatorError> =
       type: 'INVALID_JSON';
       message: string;
       cause?: unknown;
+    }
+  | {
+      stage: 'pre-validation';
+      type: 'INVALID_FORM_DATA';
+      message: string;
+      cause?: unknown;
+    }
+  | {
+      stage: 'pre-validation';
+      type: 'INVALID_TEXT';
+      message: string;
+      cause?: unknown;
+    }
+  | {
+      stage: 'pre-validation';
+      type: 'INVALID_BINARY';
+      message: string;
+      cause?: unknown;
     };
 
 export type KoriRequestValidationError<TValidatorError = unknown> = {

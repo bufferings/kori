@@ -1,3 +1,4 @@
+import { type ContentTypeValue } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
@@ -12,6 +13,8 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   pathParams: PathParams;
   queryParams: Record<string, string | string[]>;
   headers: Record<string, string>;
+
+  contentType(): ContentTypeValue | undefined;
 
   json(): Promise<unknown>;
   text(): Promise<string>;
@@ -101,6 +104,10 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       });
       headersCache = obj;
       return obj;
+    },
+    contentType() {
+      const header = rawRequest.headers.get('content-type');
+      return header?.split(';')[0]?.trim() as ContentTypeValue | undefined;
     },
     json,
     text,
