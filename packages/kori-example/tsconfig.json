@@ -9,6 +9,7 @@
   "references": [
     { "path": "../kori" },
     { "path": "../kori-body-limit-plugin" },
+    { "path": "../kori-cors-plugin" },
     { "path": "../kori-nodejs-adapter" },
     { "path": "../kori-zod-schema" },
     { "path": "../kori-zod-validator" }
