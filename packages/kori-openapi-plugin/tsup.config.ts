@@ -9,6 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
+  external: ['kori', 'openapi3-ts'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',

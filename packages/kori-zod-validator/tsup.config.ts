@@ -9,6 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
+  external: ['kori', 'kori-zod-schema', 'zod'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',

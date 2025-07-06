@@ -9,6 +9,7 @@ export default defineConfig({
   clean: false,
   shims: true,
   outDir: './dist',
+  external: ['eslint'],
   outExtension({ format }) {
     return {
       js: format === 'cjs' ? '.js' : '.mjs',

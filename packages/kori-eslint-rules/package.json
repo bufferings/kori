@@ -15,23 +15,31 @@
     "node": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      }
+    },
+    "files": [
+      "dist"
+    ]
   },
-  "files": [
-    "dist/**/*"
-  ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist-dev/index.d.ts",
+      "import": "./dist-dev/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "dev:clean": "rimraf dist-dev tsconfig.tsbuildinfo",
+    "dev:build": "tsc",
+    "dev:watch": "tsc -w",
+    "publish:clean": "rimraf dist tsconfig.publish.tsbuildinfo",
+    "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -42,6 +50,7 @@
     "@typescript-eslint/rule-tester": "catalog:",
     "@typescript-eslint/types": "catalog:",
     "@typescript-eslint/utils": "catalog:",
+    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

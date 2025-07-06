@@ -15,30 +15,43 @@
     "node": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      }
+    },
+    "files": [
+      "dist"
+    ]
   },
-  "files": [
-    "dist/**/*"
-  ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist-dev/index.d.ts",
+      "import": "./dist-dev/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "build:watch": "tsc --watch"
+    "dev:clean": "rimraf dist-dev tsconfig.tsbuildinfo",
+    "dev:build": "tsc",
+    "dev:watch": "tsc -w",
+    "publish:clean": "rimraf dist tsconfig.publish.tsbuildinfo",
+    "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "kori": "workspace:*",
-    "pino": "9.7.0"
+    "kori": "workspace:*"
+  },
+  "peerDependencies": {
+    "pino": "^9.0.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/pino": "^7.0.5",
+    "pino": "9.7.0",
+    "tsup": "catalog:",
     "typescript": "catalog:"
   }
 }
