@@ -85,12 +85,12 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     return rawRequest.headers.get('content-type')?.trim().toLowerCase();
   }
 
-  function parseBody(): Promise<unknown> {
+  async function parseBody(): Promise<unknown> {
     if (isCustomParsing) return parseBodyDefault();
     if (koriRequest.parseBodyCustom) {
       isCustomParsing = true;
       try {
-        return koriRequest.parseBodyCustom();
+        return await koriRequest.parseBodyCustom();
       } finally {
         isCustomParsing = false;
       }
