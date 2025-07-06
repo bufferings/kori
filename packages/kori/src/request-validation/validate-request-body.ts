@@ -1,12 +1,16 @@
 import { type KoriRequest } from '../context/index.js';
 import { ContentType } from '../http/index.js';
-import { type KoriRequestSchemaDefault, type KoriRequestSchemaContentDefault, isKoriSchema } from '../schema/index.js';
+import {
+  type KoriRequestSchemaDefault,
+  type KoriRequestSchemaContentDefault,
+  type KoriSchemaDefault,
+  isKoriSchema,
+} from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriBodyValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
-// Content-Type parsing strategy mapping
 const CONTENT_TYPE_PARSERS = {
   [ContentType.APPLICATION_JSON]: (req: KoriRequest) => req.json(),
   [ContentType.APPLICATION_FORM_URLENCODED]: (req: KoriRequest) => req.formData(),
@@ -14,34 +18,6 @@ const CONTENT_TYPE_PARSERS = {
   [ContentType.TEXT_PLAIN]: (req: KoriRequest) => req.text(),
   [ContentType.TEXT_HTML]: (req: KoriRequest) => req.text(),
   [ContentType.APPLICATION_OCTET_STREAM]: (req: KoriRequest) => req.arrayBuffer(),
-} as const;
-
-// Error type and message mapping
-const PARSE_ERROR_MAP = {
-  [ContentType.APPLICATION_JSON]: {
-    type: 'INVALID_JSON' as const,
-    message: 'Failed to parse request body as JSON',
-  },
-  [ContentType.APPLICATION_FORM_URLENCODED]: {
-    type: 'INVALID_FORM_DATA' as const,
-    message: 'Failed to parse request body as form data',
-  },
-  [ContentType.MULTIPART_FORM_DATA]: {
-    type: 'INVALID_FORM_DATA' as const,
-    message: 'Failed to parse request body as form data',
-  },
-  [ContentType.TEXT_PLAIN]: {
-    type: 'INVALID_TEXT' as const,
-    message: 'Failed to parse request body as text',
-  },
-  [ContentType.TEXT_HTML]: {
-    type: 'INVALID_TEXT' as const,
-    message: 'Failed to parse request body as text',
-  },
-  [ContentType.APPLICATION_OCTET_STREAM]: {
-    type: 'INVALID_BINARY' as const,
-    message: 'Failed to parse request body as binary data',
-  },
 } as const;
 
 function parseRequestBody(req: KoriRequest, contentType: string): Promise<unknown> {
@@ -54,12 +30,10 @@ function parseRequestBody(req: KoriRequest, contentType: string): Promise<unknow
 }
 
 function getParseErrorInfo(contentType: string) {
-  return (
-    PARSE_ERROR_MAP[contentType as keyof typeof PARSE_ERROR_MAP] ?? {
-      type: 'INVALID_JSON' as const,
-      message: `Failed to parse request body as ${contentType}`,
-    }
-  );
+  return {
+    type: 'INVALID_BODY' as const,
+    message: `Failed to parse request body as ${contentType}`,
+  };
 }
 
 function getDefaultContentType(content: Record<string, unknown>): string {
@@ -69,6 +43,74 @@ function getDefaultContentType(content: Record<string, unknown>): string {
   if (ContentType.MULTIPART_FORM_DATA in content) return ContentType.MULTIPART_FORM_DATA;
   if (ContentType.TEXT_PLAIN in content) return ContentType.TEXT_PLAIN;
   return Object.keys(content)[0] ?? ContentType.APPLICATION_JSON;
+}
+
+function resolveContentTypeAndSchema(
+  schema: NonNullable<KoriRequestSchemaDefault['body']>,
+  requestContentType: string | null,
+): KoriResult<
+  { isSimpleSchema: boolean; contentType: string; targetSchema: KoriSchemaDefault },
+  KoriBodyValidationError<unknown>
+> {
+  // Simple schema (Content-Type not specified)
+  if (isKoriSchema(schema)) {
+    const contentType = requestContentType ?? ContentType.APPLICATION_JSON;
+    return ok({ isSimpleSchema: true, contentType, targetSchema: schema });
+  }
+
+  // Content-Type specified schema
+  const content = (schema.content ?? schema) as KoriRequestSchemaContentDefault;
+  const finalContentType = requestContentType ?? getDefaultContentType(content);
+
+  if (!(finalContentType in content)) {
+    return err({
+      stage: 'pre-validation',
+      type: 'UNSUPPORTED_MEDIA_TYPE',
+      message: 'Unsupported Media Type',
+      supportedTypes: Object.keys(content),
+      requestedType: finalContentType,
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const mediaTypeSchema = content[finalContentType]!;
+  const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
+
+  return ok({ isSimpleSchema: false, contentType: finalContentType, targetSchema });
+}
+
+async function parseRequestBodyWithContentType(
+  req: KoriRequest,
+  contentType: string,
+): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+  try {
+    const body = await parseRequestBody(req, contentType);
+    return ok(body);
+  } catch (error) {
+    const errorInfo = getParseErrorInfo(contentType);
+    return err({
+      stage: 'pre-validation',
+      type: errorInfo.type,
+      message: errorInfo.message,
+      cause: error,
+    });
+  }
+}
+
+async function validateParsedBody(
+  validator: KoriRequestValidatorDefault,
+  schema: KoriSchemaDefault,
+  body: unknown,
+): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+  const result = await validator.validateBody({ schema, body });
+  if (result.ok) {
+    return result;
+  }
+
+  return err({
+    stage: 'validation',
+    error: result.error,
+  });
 }
 
 export async function validateRequestBody({
@@ -84,72 +126,26 @@ export async function validateRequestBody({
     return ok(undefined);
   }
 
-  // Simple schema (Content-Type not specified)
-  if (isKoriSchema(schema)) {
-    // Use Content-Type if present, otherwise default to JSON
-    const contentType = req.contentType() ?? ContentType.APPLICATION_JSON;
-
-    try {
-      const body = await parseRequestBody(req, contentType);
-      const result = await validator.validateBody({ schema, body });
-      if (result.ok) {
-        return result;
-      }
-
-      return err({
-        stage: 'validation',
-        error: result.error,
-      });
-    } catch (error) {
-      const errorInfo = getParseErrorInfo(contentType);
-      return err({
-        stage: 'pre-validation',
-        type: errorInfo.type,
-        message: errorInfo.message,
-        cause: error,
-      });
-    }
+  const resolveResult = resolveContentTypeAndSchema(schema, req.contentType() ?? null);
+  if (!resolveResult.ok) {
+    return resolveResult;
   }
 
-  // Content-Type specified schema
-  const content = (schema.content ?? schema) as KoriRequestSchemaContentDefault;
-  const contentType = req.contentType();
+  const { isSimpleSchema, contentType, targetSchema } = resolveResult.value;
 
-  // Content-Type determination: request header > default selection
-  const finalContentType = contentType ?? getDefaultContentType(content);
-
-  if (!(finalContentType in content)) {
-    return err({
-      stage: 'pre-validation',
-      type: 'UNSUPPORTED_MEDIA_TYPE',
-      message: 'Unsupported Media Type',
-      supportedTypes: Object.keys(content),
-      requestedType: finalContentType,
-    });
+  const parseResult = await parseRequestBodyWithContentType(req, contentType);
+  if (!parseResult.ok) {
+    return parseResult;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const mediaTypeSchema = content[finalContentType]!;
-  const schemaForContentType = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
+  const validationResult = await validateParsedBody(validator, targetSchema, parseResult.value);
+  if (!validationResult.ok) {
+    return validationResult;
+  }
 
-  try {
-    const body = await parseRequestBody(req, finalContentType);
-    const result = await validator.validateBody({ schema: schemaForContentType, body });
-    if (result.ok) {
-      return ok({ contentType: finalContentType, data: result.value });
-    }
-
-    return err({
-      stage: 'validation',
-      error: result.error,
-    });
-  } catch (error) {
-    const errorInfo = getParseErrorInfo(finalContentType);
-    return err({
-      stage: 'pre-validation',
-      type: errorInfo.type,
-      message: errorInfo.message,
-      cause: error,
-    });
+  if (isSimpleSchema) {
+    return ok(validationResult.value);
+  } else {
+    return ok({ contentType, data: validationResult.value });
   }
 }

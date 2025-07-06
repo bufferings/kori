@@ -16,25 +16,7 @@ export type KoriBodyValidationError<TValidatorError> =
     }
   | {
       stage: 'pre-validation';
-      type: 'INVALID_JSON';
-      message: string;
-      cause?: unknown;
-    }
-  | {
-      stage: 'pre-validation';
-      type: 'INVALID_FORM_DATA';
-      message: string;
-      cause?: unknown;
-    }
-  | {
-      stage: 'pre-validation';
-      type: 'INVALID_TEXT';
-      message: string;
-      cause?: unknown;
-    }
-  | {
-      stage: 'pre-validation';
-      type: 'INVALID_BINARY';
+      type: 'INVALID_BODY';
       message: string;
       cause?: unknown;
     };
