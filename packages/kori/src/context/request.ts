@@ -107,7 +107,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
     },
     contentType() {
       const header = rawRequest.headers.get('content-type');
-      return header?.split(';')[0]?.trim() as ContentTypeValue | undefined;
+      return header?.split(';')[0]?.trim().toLowerCase() as ContentTypeValue | undefined;
     },
     json,
     text,
