@@ -1,65 +1,20 @@
 import { type KoriRequest } from '../context/index.js';
-import { DEFAULT_CONTENT_TYPE } from '../http/index.js';
-import {
-  type KoriRequestSchemaDefault,
-  type KoriRequestSchemaContentDefault,
-  type KoriSchemaDefault,
-  isKoriSchema,
-} from '../schema/index.js';
+import { type KoriRequestSchemaDefault, type KoriSchemaDefault } from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriBodyValidationError } from './request-validation-error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
-
-function getParseErrorInfo() {
-  return {
-    type: 'INVALID_BODY' as const,
-    message: 'Failed to parse request body',
-  };
-}
-
-function resolveSchema({
-  req,
-  schema,
-}: {
-  req: KoriRequest;
-  schema: NonNullable<KoriRequestSchemaDefault['body']>;
-}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, KoriBodyValidationError<unknown>> {
-  if (isKoriSchema(schema)) {
-    return ok({ schema });
-  }
-
-  const effectiveContentType = req.contentType() ?? DEFAULT_CONTENT_TYPE;
-  const content = (schema.content ?? schema) as KoriRequestSchemaContentDefault;
-  if (!(effectiveContentType in content)) {
-    return err({
-      stage: 'pre-validation',
-      type: 'UNSUPPORTED_MEDIA_TYPE',
-      message: 'Unsupported Media Type',
-      supportedTypes: Object.keys(content),
-      requestedType: effectiveContentType,
-    });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const mediaTypeSchema = content[effectiveContentType]!;
-  const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
-  return ok({
-    schema: targetSchema,
-    mediaType: effectiveContentType,
-  });
-}
+import { resolveRequestBodySchema } from './resolve-request-body-schema.js';
 
 async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
   try {
     const body = await req.parseBody();
     return ok(body);
   } catch (error) {
-    const errorInfo = getParseErrorInfo();
     return err({
       stage: 'pre-validation',
-      type: errorInfo.type,
-      message: errorInfo.message,
+      type: 'INVALID_BODY',
+      message: 'Failed to parse request body',
       cause: error,
     });
   }
@@ -98,7 +53,7 @@ export async function validateRequestBody({
     return ok(undefined);
   }
 
-  const resolveResult = resolveSchema({ req, schema });
+  const resolveResult = resolveRequestBodySchema({ req, schema });
   if (!resolveResult.ok) {
     return resolveResult;
   }
