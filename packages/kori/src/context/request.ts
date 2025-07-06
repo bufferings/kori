@@ -1,4 +1,4 @@
-import { type ContentTypeValue, ContentType } from '../http/index.js';
+import { type ContentTypeValue, ContentType, DEFAULT_CONTENT_TYPE } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
@@ -89,10 +89,10 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   }
 
   function parseBodyDefault(): Promise<unknown> {
-    const contentTypeValue = contentType() ?? ContentType.APPLICATION_JSON;
+    const contentTypeValue = contentType() ?? DEFAULT_CONTENT_TYPE;
 
     switch (contentTypeValue) {
-      case ContentType.APPLICATION_JSON:
+      case DEFAULT_CONTENT_TYPE:
         return json();
       case ContentType.APPLICATION_FORM_URLENCODED:
       case ContentType.MULTIPART_FORM_DATA:

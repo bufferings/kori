@@ -1,5 +1,5 @@
 import { type KoriRequest } from '../context/index.js';
-import { ContentType } from '../http/index.js';
+import { DEFAULT_CONTENT_TYPE } from '../http/index.js';
 import {
   type KoriRequestSchemaDefault,
   type KoriRequestSchemaContentDefault,
@@ -18,15 +18,18 @@ function getParseErrorInfo() {
   };
 }
 
-function resolveSchema(
-  req: KoriRequest,
-  schema: NonNullable<KoriRequestSchemaDefault['body']>,
-): KoriResult<{ resolvedSchema: KoriSchemaDefault; resolvedMediaType?: string }, KoriBodyValidationError<unknown>> {
+function resolveSchema({
+  req,
+  schema,
+}: {
+  req: KoriRequest;
+  schema: NonNullable<KoriRequestSchemaDefault['body']>;
+}): KoriResult<{ resolvedSchema: KoriSchemaDefault; resolvedMediaType?: string }, KoriBodyValidationError<unknown>> {
   if (isKoriSchema(schema)) {
     return ok({ resolvedSchema: schema });
   }
 
-  const effectiveContentType = req.contentType() ?? ContentType.APPLICATION_JSON;
+  const effectiveContentType = req.contentType() ?? DEFAULT_CONTENT_TYPE;
   const content = (schema.content ?? schema) as KoriRequestSchemaContentDefault;
   if (!(effectiveContentType in content)) {
     return err({
@@ -62,11 +65,15 @@ async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, K
   }
 }
 
-async function validateParsedBody(
-  validator: KoriRequestValidatorDefault,
-  schema: KoriSchemaDefault,
-  body: unknown,
-): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+async function validateParsedBody({
+  validator,
+  schema,
+  body,
+}: {
+  validator: KoriRequestValidatorDefault;
+  schema: KoriSchemaDefault;
+  body: unknown;
+}): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
   const result = await validator.validateBody({ schema, body });
   if (result.ok) {
     return result;
@@ -91,7 +98,7 @@ export async function validateRequestBody({
     return ok(undefined);
   }
 
-  const resolveResult = resolveSchema(req, schema);
+  const resolveResult = resolveSchema({ req, schema });
   if (!resolveResult.ok) {
     return resolveResult;
   }
@@ -103,7 +110,11 @@ export async function validateRequestBody({
     return parseResult;
   }
 
-  const validationResult = await validateParsedBody(validator, resolvedSchema, parseResult.value);
+  const validationResult = await validateParsedBody({
+    validator,
+    schema: resolvedSchema,
+    body: parseResult.value,
+  });
   if (!validationResult.ok) {
     return validationResult;
   }
