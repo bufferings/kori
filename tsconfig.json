@@ -20,17 +20,17 @@
   },
   "references": [
     { "path": "./packages/kori" },
-    { "path": "./packages/kori-body-limit-plugin" },
-    { "path": "./packages/kori-cors-plugin" },
-    { "path": "./packages/kori-nodejs-adapter" },
-    { "path": "./packages/kori-pino-adapter" },
-    { "path": "./packages/kori-eslint-rules" },
-    { "path": "./packages/kori-openapi-plugin" },
-    { "path": "./packages/kori-openapi-scalar-ui-plugin" },
-    { "path": "./packages/kori-zod-schema" },
-    { "path": "./packages/kori-zod-validator" },
-    { "path": "./packages/kori-zod-openapi-plugin" },
-    { "path": "./packages/kori-example" }
+    { "path": "./packages/body-limit-plugin" },
+    { "path": "./packages/cors-plugin" },
+    { "path": "./packages/nodejs-adapter" },
+    { "path": "./packages/pino-adapter" },
+    { "path": "./packages/eslint-rule" },
+    { "path": "./packages/openapi-plugin" },
+    { "path": "./packages/openapi-scalar-ui-plugin" },
+    { "path": "./packages/zod-schema" },
+    { "path": "./packages/zod-validator" },
+    { "path": "./packages/zod-openapi-plugin" },
+    { "path": "./packages/example" }
   ],
   "include": []
 }
