@@ -5,7 +5,7 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
-import koriEslintRules from './packages/kori-eslint-rules/dist/index.js';
+import koriEslintRules from './packages/eslint-rule/dist/index.js';
 
 export default tseslint.config(
   {

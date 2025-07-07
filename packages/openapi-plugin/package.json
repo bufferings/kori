@@ -1,8 +1,8 @@
 {
-  "name": "@korits/kori",
-  "version": "0.0.1-20250707",
+  "name": "kori-openapi-plugin",
+  "version": "0.0.1",
+  "description": "OpenAPI plugin for Kori framework",
   "type": "module",
-  "description": "A modern TypeScript web framework",
   "author": "mitz (@bufferings)",
   "license": "MIT",
   "repository": {
@@ -42,10 +42,14 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "hono": "4.7.9"
+    "@korits/kori": "workspace:*"
+  },
+  "peerDependencies": {
+    "openapi3-ts": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "openapi3-ts": "^4.4.0",
     "tsup": "catalog:",
     "typescript": "catalog:"
   }

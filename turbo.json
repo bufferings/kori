@@ -8,7 +8,7 @@
       "dependsOn": ["^dev:build"],
       "outputs": ["dist-dev/**"]
     },
-    "kori-example#dev:build": {
+    "example#dev:build": {
       "dependsOn": ["^dev:build"],
       "outputs": []
     },

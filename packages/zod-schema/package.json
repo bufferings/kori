@@ -1,8 +1,8 @@
 {
-  "name": "@korits/kori",
-  "version": "0.0.1-20250707",
+  "name": "kori-zod-schema",
+  "version": "0.0.1",
+  "description": "Zod schema integration for Kori framework",
   "type": "module",
-  "description": "A modern TypeScript web framework",
   "author": "mitz (@bufferings)",
   "license": "MIT",
   "repository": {
@@ -42,11 +42,15 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "hono": "4.7.9"
+    "@korits/kori": "workspace:*"
+  },
+  "peerDependencies": {
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "tsup": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "3.25.67"
   }
 }
