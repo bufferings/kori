@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@korits/kori": "workspace:*",
-    "kori-body-limit-plugin": "workspace:*",
+    "@korits/body-limit-plugin": "workspace:*",
     "kori-cors-plugin": "workspace:*",
     "kori-nodejs-adapter": "workspace:*",
     "kori-openapi-plugin": "workspace:*",

@@ -167,12 +167,12 @@ importers:
 
   packages/example:
     dependencies:
+      '@korits/body-limit-plugin':
+        specifier: workspace:*
+        version: link:../body-limit-plugin
       '@korits/kori':
         specifier: workspace:*
         version: link:../kori
-      kori-body-limit-plugin:
-        specifier: workspace:*
-        version: link:../body-limit-plugin
       kori-cors-plugin:
         specifier: workspace:*
         version: link:../cors-plugin
