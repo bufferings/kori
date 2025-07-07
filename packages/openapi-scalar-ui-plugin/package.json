@@ -1,6 +1,6 @@
 {
-  "name": "kori-openapi-scalar-ui-plugin",
-  "version": "0.0.1",
+  "name": "@korix/openapi-scalar-ui-plugin",
+  "version": "0.0.1-20250707",
   "description": "Scalar UI plugin for OpenAPI documentation in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@korix/kori": "workspace:*",
-    "kori-openapi-plugin": "workspace:*"
+    "@korix/openapi-plugin": "workspace:*"
   },
   "peerDependencies": {
     "@scalar/api-reference": "^1.25.62"

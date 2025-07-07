@@ -1,6 +1,6 @@
 {
-  "name": "kori-eslint-rules",
-  "version": "0.0.1",
+  "name": "@korix/eslint-rule",
+  "version": "0.0.1-20250707",
   "description": "ESLint rules for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

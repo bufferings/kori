@@ -1,6 +1,6 @@
 {
-  "name": "kori-openapi-plugin",
-  "version": "0.0.1",
+  "name": "@korix/openapi-plugin",
+  "version": "0.0.1-20250707",
   "description": "OpenAPI plugin for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

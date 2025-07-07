@@ -1,5 +1,5 @@
 import { type KoriRequest, type KoriEnvironment, type KoriResponse, type KoriPlugin } from '@korix/kori';
-import { openApiPlugin, type OpenApiOptions, type OpenApiEnvironmentExtension } from 'kori-openapi-plugin';
+import { openApiPlugin, type OpenApiOptions, type OpenApiEnvironmentExtension } from '@korix/openapi-plugin';
 
 import { createZodSchemaConverter } from './converter.js';
 
@@ -18,4 +18,4 @@ export function zodOpenApiPlugin<
 }
 
 export { createZodSchemaConverter } from './converter.js';
-export { openApiMeta } from 'kori-openapi-plugin';
+export { openApiMeta } from '@korix/openapi-plugin';

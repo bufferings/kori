@@ -170,31 +170,31 @@ importers:
       '@korix/body-limit-plugin':
         specifier: workspace:*
         version: link:../body-limit-plugin
+      '@korix/cors-plugin':
+        specifier: workspace:*
+        version: link:../cors-plugin
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      kori-cors-plugin:
-        specifier: workspace:*
-        version: link:../cors-plugin
-      kori-nodejs-adapter:
+      '@korix/nodejs-adapter':
         specifier: workspace:*
         version: link:../nodejs-adapter
-      kori-openapi-plugin:
+      '@korix/openapi-plugin':
         specifier: workspace:*
         version: link:../openapi-plugin
-      kori-openapi-scalar-ui-plugin:
+      '@korix/openapi-scalar-ui-plugin':
         specifier: workspace:*
         version: link:../openapi-scalar-ui-plugin
-      kori-pino-adapter:
+      '@korix/pino-adapter':
         specifier: workspace:*
         version: link:../pino-adapter
-      kori-zod-openapi-plugin:
+      '@korix/zod-openapi-plugin':
         specifier: workspace:*
         version: link:../zod-openapi-plugin
-      kori-zod-schema:
+      '@korix/zod-schema':
         specifier: workspace:*
         version: link:../zod-schema
-      kori-zod-validator:
+      '@korix/zod-validator':
         specifier: workspace:*
         version: link:../zod-validator
       pino:
@@ -273,7 +273,7 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      kori-openapi-plugin:
+      '@korix/openapi-plugin':
         specifier: workspace:*
         version: link:../openapi-plugin
     devDependencies:
@@ -317,10 +317,10 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      kori-openapi-plugin:
+      '@korix/openapi-plugin':
         specifier: workspace:*
         version: link:../openapi-plugin
-      kori-zod-schema:
+      '@korix/zod-schema':
         specifier: workspace:*
         version: link:../zod-schema
     devDependencies:
@@ -364,7 +364,7 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      kori-zod-schema:
+      '@korix/zod-schema':
         specifier: workspace:*
         version: link:../zod-schema
     devDependencies:

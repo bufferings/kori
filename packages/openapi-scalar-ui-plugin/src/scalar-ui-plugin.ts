@@ -5,7 +5,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
 } from '@korix/kori';
-import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
+import { type OpenApiEnvironmentExtension, openApiMeta } from '@korix/openapi-plugin';
 
 export type ScalarUiOptions = {
   path?: string;

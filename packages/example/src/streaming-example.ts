@@ -1,6 +1,6 @@
 import { createKori } from '@korix/kori';
 import { type KoriRequest } from '@korix/kori';
-import { startNodeServer } from 'kori-nodejs-adapter';
+import { startNodeServer } from '@korix/nodejs-adapter';
 
 const app = createKori();
 

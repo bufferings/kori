@@ -1,6 +1,6 @@
 {
-  "name": "kori-zod-validator",
-  "version": "0.0.1",
+  "name": "@korix/zod-validator",
+  "version": "0.0.1-20250707",
   "description": "Zod validator for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@korix/kori": "workspace:*",
-    "kori-zod-schema": "workspace:*"
+    "@korix/zod-schema": "workspace:*"
   },
   "peerDependencies": {
     "zod": "^3.25.0"

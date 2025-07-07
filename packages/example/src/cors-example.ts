@@ -1,5 +1,5 @@
 import { createKori } from '@korix/kori';
-import { corsPlugin } from 'kori-cors-plugin';
+import { corsPlugin } from '@korix/cors-plugin';
 
 // Basic CORS setup - allows all origins
 const app1 = createKori()
