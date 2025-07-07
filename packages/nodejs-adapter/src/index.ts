@@ -12,7 +12,7 @@ import {
   type KoriResponse,
   type KoriRequestValidatorDefault,
   type KoriResponseValidatorDefault,
-} from '@korits/kori';
+} from '@korix/kori';
 
 /**
  * Function to read request body asynchronously

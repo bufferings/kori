@@ -1,6 +1,6 @@
 {
-  "name": "kori-zod-openapi-plugin",
-  "version": "0.0.1",
+  "name": "@korix/zod-openapi-plugin",
+  "version": "0.0.1-20250707",
   "description": "OpenAPI plugin for Zod schemas in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -42,9 +42,9 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "@korits/kori": "workspace:*",
-    "kori-zod-schema": "workspace:*",
-    "kori-openapi-plugin": "workspace:*"
+    "@korix/kori": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*"
   },
   "peerDependencies": {
     "openapi3-ts": "^4.4.0",

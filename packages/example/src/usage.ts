@@ -1,11 +1,11 @@
-import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korits/kori';
-import { bodyLimitPlugin } from 'kori-body-limit-plugin';
-import { startNodeServer } from 'kori-nodejs-adapter';
-import { scalarUiPlugin } from 'kori-openapi-scalar-ui-plugin';
-import { createPinoKoriLoggerFactory } from 'kori-pino-adapter';
-import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';
-import { zodRequestSchema } from 'kori-zod-schema';
-import { createKoriZodRequestValidator, createKoriZodResponseValidator } from 'kori-zod-validator';
+import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korix/kori';
+import { bodyLimitPlugin } from '@korix/body-limit-plugin';
+import { startNodeServer } from '@korix/nodejs-adapter';
+import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { createPinoKoriLoggerFactory } from '@korix/pino-adapter';
+import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import { zodRequestSchema } from '@korix/zod-schema';
+import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
 import { z } from 'zod/v4';
 
 const isDev = process.env.NODE_ENV !== 'production';

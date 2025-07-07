@@ -4,7 +4,7 @@ import {
   type KoriLogData,
   type KoriLogSerializers,
   type KoriLoggerFactory,
-} from '@korits/kori';
+} from '@korix/kori';
 import { pino } from 'pino';
 
 const PINO_LEVEL_MAP: Record<KoriLogLevel, pino.Level> = {

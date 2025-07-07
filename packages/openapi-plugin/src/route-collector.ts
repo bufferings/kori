@@ -3,7 +3,7 @@ import {
   type KoriResponseSchemaDefault,
   type KoriSchemaDefault,
   isKoriSchema,
-} from '@korits/kori';
+} from '@korix/kori';
 import {
   type OperationObject,
   type ParameterObject,

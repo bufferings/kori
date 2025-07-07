@@ -1,6 +1,6 @@
 {
-  "name": "kori-zod-schema",
-  "version": "0.0.1",
+  "name": "@korix/zod-schema",
+  "version": "0.0.1-20250707",
   "description": "Zod schema integration for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -42,7 +42,7 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "@korits/kori": "workspace:*"
+    "@korix/kori": "workspace:*"
   },
   "peerDependencies": {
     "zod": "^3.25.0"
