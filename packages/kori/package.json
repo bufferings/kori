@@ -1,6 +1,6 @@
 {
   "name": "@korix/kori",
-  "version": "0.0.1-20250707",
+  "version": "0.0.1-20250707.3",
   "type": "module",
   "description": "A modern TypeScript web framework",
   "author": "mitz (@bufferings)",
@@ -14,6 +14,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public",
     "exports": {
@@ -22,10 +25,7 @@
         "import": "./dist/index.mjs",
         "require": "./dist/index.js"
       }
-    },
-    "files": [
-      "dist"
-    ]
+    }
   },
   "exports": {
     ".": {
