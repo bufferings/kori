@@ -1,4 +1,4 @@
-import { type KoriSchemaDefault } from '@korits/kori';
+import { type KoriSchemaDefault } from '@korix/kori';
 import { type SchemaConverter, type ConversionContext } from 'kori-openapi-plugin';
 import { isKoriZodSchema } from 'kori-zod-schema';
 import { type SchemaObject } from 'openapi3-ts/oas31';

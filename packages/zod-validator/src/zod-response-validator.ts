@@ -5,7 +5,7 @@ import {
   err,
   type KoriResponseValidator,
   createResponseValidator,
-} from '@korits/kori';
+} from '@korix/kori';
 import { type KoriZodSchemaProvider, type KoriZodSchemaDefault } from 'kori-zod-schema';
 import { type $ZodIssue } from 'zod/v4/core';
 

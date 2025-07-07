@@ -1,5 +1,5 @@
 {
-  "name": "@korits/kori",
+  "name": "@korix/kori",
   "version": "0.0.1-20250707",
   "type": "module",
   "description": "A modern TypeScript web framework",

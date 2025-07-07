@@ -1,5 +1,5 @@
 {
-  "name": "@korits/body-limit-plugin",
+  "name": "@korix/body-limit-plugin",
   "version": "0.0.1-20250707",
   "description": "Request body size limit plugin for Kori framework",
   "type": "module",
@@ -42,7 +42,7 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "@korits/kori": "workspace:*"
+    "@korix/kori": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

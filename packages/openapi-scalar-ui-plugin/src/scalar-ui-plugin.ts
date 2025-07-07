@@ -4,7 +4,7 @@ import {
   type KoriResponse,
   type KoriRequest,
   type KoriEnvironment,
-} from '@korits/kori';
+} from '@korix/kori';
 import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {

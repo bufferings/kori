@@ -1,4 +1,4 @@
-import { createKori } from '@korits/kori';
+import { createKori } from '@korix/kori';
 import { corsPlugin } from 'kori-cors-plugin';
 
 // Basic CORS setup - allows all origins

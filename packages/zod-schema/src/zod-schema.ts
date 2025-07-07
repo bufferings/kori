@@ -4,7 +4,7 @@ import {
   createKoriSchema,
   isKoriSchema,
   getKoriSchemaBrand,
-} from '@korits/kori';
+} from '@korix/kori';
 import { type z } from 'zod/v4';
 
 const ZodSchemaBrand = Symbol('zod-schema-brand');

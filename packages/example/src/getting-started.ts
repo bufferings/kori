@@ -1,4 +1,4 @@
-import { createKori } from '@korits/kori';
+import { createKori } from '@korix/kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 import { scalarUiPlugin } from 'kori-openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from 'kori-zod-openapi-plugin';

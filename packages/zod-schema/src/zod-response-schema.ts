@@ -1,4 +1,4 @@
-import { type KoriResponseSchema, type KoriResponseSchemaStructure } from '@korits/kori';
+import { type KoriResponseSchema, type KoriResponseSchemaStructure } from '@korix/kori';
 import { type z } from 'zod/v4';
 
 import { type KoriZodSchema, type KoriZodSchemaProvider } from './zod-schema.js';

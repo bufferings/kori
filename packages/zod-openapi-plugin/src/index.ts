@@ -1,4 +1,4 @@
-import { type KoriRequest, type KoriEnvironment, type KoriResponse, type KoriPlugin } from '@korits/kori';
+import { type KoriRequest, type KoriEnvironment, type KoriResponse, type KoriPlugin } from '@korix/kori';
 import { openApiPlugin, type OpenApiOptions, type OpenApiEnvironmentExtension } from 'kori-openapi-plugin';
 
 import { createZodSchemaConverter } from './converter.js';

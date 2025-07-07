@@ -101,7 +101,7 @@ importers:
 
   packages/body-limit-plugin:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -117,7 +117,7 @@ importers:
 
   packages/cors-plugin:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -167,10 +167,10 @@ importers:
 
   packages/example:
     dependencies:
-      '@korits/body-limit-plugin':
+      '@korix/body-limit-plugin':
         specifier: workspace:*
         version: link:../body-limit-plugin
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
       kori-cors-plugin:
@@ -235,7 +235,7 @@ importers:
 
   packages/nodejs-adapter:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -251,7 +251,7 @@ importers:
 
   packages/openapi-plugin:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -270,7 +270,7 @@ importers:
 
   packages/openapi-scalar-ui-plugin:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
       kori-openapi-plugin:
@@ -292,7 +292,7 @@ importers:
 
   packages/pino-adapter:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -314,7 +314,7 @@ importers:
 
   packages/zod-openapi-plugin:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
       kori-openapi-plugin:
@@ -342,7 +342,7 @@ importers:
 
   packages/zod-schema:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
@@ -361,7 +361,7 @@ importers:
 
   packages/zod-validator:
     dependencies:
-      '@korits/kori':
+      '@korix/kori':
         specifier: workspace:*
         version: link:../kori
       kori-zod-schema:
