@@ -6,7 +6,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
   getMethodString,
-} from 'kori';
+} from '@korits/kori';
 import {
   type OpenAPIObject,
   type InfoObject,

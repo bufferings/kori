@@ -1,4 +1,10 @@
-import { defineKoriPlugin, type KoriPlugin, type KoriResponse, type KoriRequest, type KoriEnvironment } from 'kori';
+import {
+  defineKoriPlugin,
+  type KoriPlugin,
+  type KoriResponse,
+  type KoriRequest,
+  type KoriEnvironment,
+} from '@korits/kori';
 import { type OpenApiEnvironmentExtension, openApiMeta } from 'kori-openapi-plugin';
 
 export type ScalarUiOptions = {

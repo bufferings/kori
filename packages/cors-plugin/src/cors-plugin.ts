@@ -5,7 +5,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
   HttpStatus,
-} from 'kori';
+} from '@korits/kori';
 
 import { PLUGIN_VERSION } from './version.js';
 

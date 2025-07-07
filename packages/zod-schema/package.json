@@ -42,7 +42,7 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "kori": "workspace:*"
+    "@korits/kori": "workspace:*"
   },
   "peerDependencies": {
     "zod": "^3.25.0"

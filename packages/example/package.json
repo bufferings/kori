@@ -22,7 +22,7 @@
     "dev:usage": "NODE_ENV=development tsx --watch src/usage.ts"
   },
   "dependencies": {
-    "kori": "workspace:*",
+    "@korits/kori": "workspace:*",
     "kori-body-limit-plugin": "workspace:*",
     "kori-cors-plugin": "workspace:*",
     "kori-nodejs-adapter": "workspace:*",

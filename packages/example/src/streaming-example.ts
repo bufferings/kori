@@ -1,5 +1,5 @@
-import { createKori } from 'kori';
-import { type KoriRequest } from 'kori';
+import { createKori } from '@korits/kori';
+import { type KoriRequest } from '@korits/kori';
 import { startNodeServer } from 'kori-nodejs-adapter';
 
 const app = createKori();

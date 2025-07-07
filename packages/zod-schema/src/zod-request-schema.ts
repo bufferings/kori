@@ -3,7 +3,7 @@ import {
   type KoriRequestSchemaStructure,
   type KoriRequestSchemaContent,
   type KoriRequestSchemaBody,
-} from 'kori';
+} from '@korits/kori';
 import { type z } from 'zod/v4';
 
 import { type KoriZodSchema, type KoriZodSchemaProvider, createKoriZodSchema } from './zod-schema.js';
