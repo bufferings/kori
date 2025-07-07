@@ -43,13 +43,15 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "@typescript-eslint/types": "catalog:",
+    "@typescript-eslint/utils": "catalog:"
+  },
   "devDependencies": {
-    "@types/eslint": "catalog:",
-    "@types/node": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@typescript-eslint/rule-tester": "catalog:",
-    "@typescript-eslint/types": "catalog:",
-    "@typescript-eslint/utils": "catalog:",
+    "@types/eslint": "catalog:",
+    "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
