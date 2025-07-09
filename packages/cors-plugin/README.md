@@ -29,10 +29,12 @@ const app = createKori()
 
 ```typescript
 const app = createKori()
-  .applyPlugin(corsPlugin({
-    origin: 'https://example.com',
-    credentials: true,
-  }))
+  .applyPlugin(
+    corsPlugin({
+      origin: 'https://example.com',
+      credentials: true,
+    }),
+  )
   .get('/api/secure', (ctx) => {
     return ctx.res.json({ data: 'Secure data' });
   });
@@ -42,13 +44,15 @@ const app = createKori()
 
 ```typescript
 const app = createKori()
-  .applyPlugin(corsPlugin({
-    origin: ['https://app1.com', 'https://app2.com'],
-    methods: ['GET', 'POST', 'PUT'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['X-Total-Count'],
-    maxAge: 3600, // 1 hour
-  }))
+  .applyPlugin(
+    corsPlugin({
+      origin: ['https://app1.com', 'https://app2.com'],
+      methods: ['GET', 'POST', 'PUT'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['X-Total-Count'],
+      maxAge: 3600, // 1 hour
+    }),
+  )
   .get('/api/multi-origin', (ctx) => {
     return ctx.res.json({ message: 'Multi-origin enabled' });
   });
@@ -58,14 +62,16 @@ const app = createKori()
 
 ```typescript
 const app = createKori()
-  .applyPlugin(corsPlugin({
-    origin: (origin, req) => {
-      // Allow requests from subdomains of example.com
-      if (!origin) return false;
-      return origin.endsWith('.example.com') || origin === 'https://example.com';
-    },
-    credentials: true,
-  }))
+  .applyPlugin(
+    corsPlugin({
+      origin: (origin, req) => {
+        // Allow requests from subdomains of example.com
+        if (!origin) return false;
+        return origin.endsWith('.example.com') || origin === 'https://example.com';
+      },
+      credentials: true,
+    }),
+  )
   .get('/api/dynamic', (ctx) => {
     return ctx.res.json({ message: 'Dynamic origin validation' });
   });
@@ -73,16 +79,16 @@ const app = createKori()
 
 ## Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `origin` | `string \| string[] \| boolean \| function` | `true` | Configures the Access-Control-Allow-Origin header |
-| `methods` | `string[]` | `['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']` | Configures the Access-Control-Allow-Methods header |
-| `allowedHeaders` | `string[] \| boolean` | `undefined` | Configures the Access-Control-Allow-Headers header |
-| `exposedHeaders` | `string[]` | `undefined` | Configures the Access-Control-Expose-Headers header |
-| `credentials` | `boolean` | `false` | Configures the Access-Control-Allow-Credentials header |
-| `maxAge` | `number` | `86400` | Configures the Access-Control-Max-Age header (in seconds) |
-| `preflightContinue` | `boolean` | `false` | Pass control to next handler for preflight requests |
-| `optionsSuccessStatus` | `number` | `204` | Status code for successful preflight requests |
+| Option                 | Type                                        | Default                                             | Description                                               |
+| ---------------------- | ------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| `origin`               | `string \| string[] \| boolean \| function` | `true`                                              | Configures the Access-Control-Allow-Origin header         |
+| `methods`              | `string[]`                                  | `['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']` | Configures the Access-Control-Allow-Methods header        |
+| `allowedHeaders`       | `string[] \| boolean`                       | `undefined`                                         | Configures the Access-Control-Allow-Headers header        |
+| `exposedHeaders`       | `string[]`                                  | `undefined`                                         | Configures the Access-Control-Expose-Headers header       |
+| `credentials`          | `boolean`                                   | `false`                                             | Configures the Access-Control-Allow-Credentials header    |
+| `maxAge`               | `number`                                    | `86400`                                             | Configures the Access-Control-Max-Age header (in seconds) |
+| `preflightContinue`    | `boolean`                                   | `false`                                             | Pass control to next handler for preflight requests       |
+| `optionsSuccessStatus` | `number`                                    | `204`                                               | Status code for successful preflight requests             |
 
 ### Origin Configuration
 
@@ -117,45 +123,50 @@ When `credentials: true` is set, you **cannot** use `origin: true` (wildcard). T
 ### Allow All Origins (Development)
 
 ```typescript
-const app = createKori()
-  .applyPlugin(corsPlugin({
+const app = createKori().applyPlugin(
+  corsPlugin({
     origin: true,
     credentials: false, // Must be false when using wildcard origin
-  }));
+  }),
+);
 ```
 
 ### Credentials with Specific Origins (Secure)
 
 ```typescript
-const app = createKori()
-  .applyPlugin(corsPlugin({
+const app = createKori().applyPlugin(
+  corsPlugin({
     origin: ['https://myapp.com', 'https://admin.myapp.com'], // Specific origins required
     credentials: true,
-  }));
+  }),
+);
 ```
 
 ### Production Configuration
 
 ```typescript
-const app = createKori()
-  .applyPlugin(corsPlugin({
+const app = createKori().applyPlugin(
+  corsPlugin({
     origin: ['https://myapp.com', 'https://admin.myapp.com'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
     maxAge: 86400, // 24 hours
-  }));
+  }),
+);
 ```
 
 ### Custom Preflight Handling
 
 ```typescript
 const app = createKori()
-  .applyPlugin(corsPlugin({
-    origin: true,
-    preflightContinue: true,
-    optionsSuccessStatus: 200,
-  }))
+  .applyPlugin(
+    corsPlugin({
+      origin: true,
+      preflightContinue: true,
+      optionsSuccessStatus: 200,
+    }),
+  )
   .options('/api/custom-preflight', (ctx) => {
     // Custom preflight logic
     return ctx.res.json({ message: 'Custom preflight response' });
