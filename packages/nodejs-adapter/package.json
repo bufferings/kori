@@ -1,6 +1,6 @@
 {
   "name": "@korix/nodejs-adapter",
-  "version": "0.0.1-20250707.1",
+  "version": "0.0.1-20250708.8",
   "description": "Node.js adapter for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -42,6 +42,7 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
+    "@hono/node-server": "1.15.0",
     "@korix/kori": "workspace:*"
   },
   "devDependencies": {

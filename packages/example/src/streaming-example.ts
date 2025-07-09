@@ -125,4 +125,4 @@ app.get('/download-stream', {
 });
 
 // Start the server
-await startNodeServer(app, { port: 3002, host: 'localhost' });
+await startNodeServer(app, { port: 3002, hostname: 'localhost' });

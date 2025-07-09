@@ -357,4 +357,4 @@ app.post('/validation-demo', {
   },
 });
 
-await startNodeServer(app, { port: 3001, host: 'localhost' });
+await startNodeServer(app, { port: 3001, hostname: 'localhost' });

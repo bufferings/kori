@@ -14,7 +14,7 @@ catalogs:
       version: 9.6.1
     '@types/node':
       specifier: ^20.11.17
-      version: 20.11.17
+      version: 20.19.4
     '@typescript-eslint/parser':
       specifier: ^8.33.1
       version: 8.33.1
@@ -55,7 +55,7 @@ importers:
         version: 9.27.0
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
@@ -97,7 +97,7 @@ importers:
         version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@20.11.17)
+        version: 2.1.9(@types/node@20.19.4)
 
   packages/body-limit-plugin:
     dependencies:
@@ -107,7 +107,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -123,7 +123,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -133,6 +133,12 @@ importers:
 
   packages/eslint-rule:
     dependencies:
+      '@typescript-eslint/types':
+        specifier: 'catalog:'
+        version: 8.33.1
+      '@typescript-eslint/utils':
+        specifier: 'catalog:'
+        version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
       eslint:
         specifier: '>=9.0.0'
         version: 9.27.0
@@ -142,17 +148,11 @@ importers:
         version: 9.6.1
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
       '@typescript-eslint/rule-tester':
-        specifier: 'catalog:'
-        version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
-      '@typescript-eslint/types':
-        specifier: 'catalog:'
-        version: 8.33.1
-      '@typescript-eslint/utils':
         specifier: 'catalog:'
         version: 8.33.1(eslint@9.27.0)(typescript@5.8.3)
       tsup:
@@ -163,7 +163,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@20.11.17)
+        version: 2.1.9(@types/node@20.19.4)
 
   packages/example:
     dependencies:
@@ -206,7 +206,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       pino-pretty:
         specifier: 13.0.0
         version: 13.0.0
@@ -220,12 +220,12 @@ importers:
   packages/kori:
     dependencies:
       hono:
-        specifier: 4.7.9
-        version: 4.7.9
+        specifier: 4.8.4
+        version: 4.8.4
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -235,13 +235,16 @@ importers:
 
   packages/nodejs-adapter:
     dependencies:
+      '@hono/node-server':
+        specifier: 1.15.0
+        version: 1.15.0(hono@4.8.4)
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -257,7 +260,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       openapi3-ts:
         specifier: ^4.4.0
         version: 4.4.0
@@ -282,7 +285,7 @@ importers:
         version: 1.32.1(tailwindcss@4.1.11)(typescript@5.8.3)
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -298,10 +301,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
-      '@types/pino':
-        specifier: ^7.0.5
-        version: 7.0.5
+        version: 20.19.4
       pino:
         specifier: 9.7.0
         version: 9.7.0
@@ -326,7 +326,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       openapi3-ts:
         specifier: ^4.4.0
         version: 4.4.0
@@ -348,7 +348,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -370,7 +370,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 20.11.17
+        version: 20.19.4
       tsup:
         specifier: 'catalog:'
         version: 8.5.0(postcss@8.5.6)(tsx@4.7.1)(typescript@5.8.3)(yaml@2.8.0)
@@ -936,6 +936,12 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
+  '@hono/node-server@1.15.0':
+    resolution: {integrity: sha512-MjmK4l5N4dQpZ9OSWN0tCj7ejuc7WvuWMzSKtc89bnknJykAeHxzRigXBTYZk85H6Awrii6RM59iUiUluApu2A==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -1295,15 +1301,11 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@20.11.17':
-    resolution: {integrity: sha512-QmgQZGWu1Yw9TDyAP9ZzpFJKynYNeOvwMJmaxABfieQoVoiVOS6MN1WSpqpRcbeA5+RW82kraAVxCCJg+780Qw==}
+  '@types/node@20.19.4':
+    resolution: {integrity: sha512-OP+We5WV8Xnbuvw0zC2m4qfB/BJvjyCwtNjhHdJxV1639SGSKrLmJkc3fMnp2Qy8nJyHp8RO6umxELN/dS1/EA==}
 
   '@types/node@22.16.0':
     resolution: {integrity: sha512-B2egV9wALML1JCpv3VQoQ+yesQKAmNMBIAY7OteVrikcOcAkWm+dGL6qpeCktPjAv6N1JLnhbNiqS35UpFyBsQ==}
-
-  '@types/pino@7.0.5':
-    resolution: {integrity: sha512-wKoab31pknvILkxAF8ss+v9iNyhw5Iu/0jLtRkUD74cNfOOLJNnqfFKAv0r7wVaTQxRZtWrMpGfShwwBjOcgcg==}
-    deprecated: This is a stub types definition. pino provides its own type definitions, so you do not need this installed.
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
@@ -2161,8 +2163,8 @@ packages:
   highlightjs-vue@1.0.0:
     resolution: {integrity: sha512-PDEfEF102G23vHmPhLyPboFCD+BkMGu+GuJe2d9/eH4FsCwvgBpnc9n0pGE+ffKdph38s6foEZiEjdgHdzp+IA==}
 
-  hono@4.7.9:
-    resolution: {integrity: sha512-/EsCoR5h7N4yu01TDu9GMCCJa6ZLk5ZJIWFFGNawAXmd1Tp53+Wir4xm0D2X19bbykWUlzQG0+BvPAji6p9E8Q==}
+  hono@4.8.4:
+    resolution: {integrity: sha512-KOIBp1+iUs0HrKztM4EHiB2UtzZDTBihDtOF5K6+WaJjCPeaW4Q92R8j63jOhvJI5+tZSMuKD9REVEXXY9illg==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -3058,9 +3060,6 @@ packages:
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
 
-  undici-types@5.26.5:
-    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
-
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
@@ -3674,6 +3673,10 @@ snapshots:
       '@tanstack/vue-virtual': 3.13.12(vue@3.5.17(typescript@5.8.3))
       vue: 3.5.17(typescript@5.8.3)
 
+  '@hono/node-server@1.15.0(hono@4.8.4)':
+    dependencies:
+      hono: 4.8.4
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -4226,17 +4229,13 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@20.11.17':
+  '@types/node@20.19.4':
     dependencies:
-      undici-types: 5.26.5
+      undici-types: 6.21.0
 
   '@types/node@22.16.0':
     dependencies:
       undici-types: 6.21.0
-
-  '@types/pino@7.0.5':
-    dependencies:
-      pino: 9.7.0
 
   '@types/unist@3.0.3': {}
 
@@ -4433,13 +4432,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.9(vite@5.4.19(@types/node@20.11.17))':
+  '@vitest/mocker@2.1.9(vite@5.4.19(@types/node@20.19.4))':
     dependencies:
       '@vitest/spy': 2.1.9
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 5.4.19(@types/node@20.11.17)
+      vite: 5.4.19(@types/node@20.19.4)
 
   '@vitest/pretty-format@2.1.9':
     dependencies:
@@ -5239,7 +5238,7 @@ snapshots:
 
   highlightjs-vue@1.0.0: {}
 
-  hono@4.7.9: {}
+  hono@4.8.4: {}
 
   hookable@5.5.3: {}
 
@@ -6290,8 +6289,6 @@ snapshots:
 
   ufo@1.6.1: {}
 
-  undici-types@5.26.5: {}
-
   undici-types@6.21.0: {}
 
   unhead@1.11.20:
@@ -6382,13 +6379,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vite-node@2.1.9(@types/node@20.11.17):
+  vite-node@2.1.9(@types/node@20.19.4):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 1.1.2
-      vite: 5.4.19(@types/node@20.11.17)
+      vite: 5.4.19(@types/node@20.19.4)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6400,19 +6397,19 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.4.19(@types/node@20.11.17):
+  vite@5.4.19(@types/node@20.19.4):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
       rollup: 4.44.2
     optionalDependencies:
-      '@types/node': 20.11.17
+      '@types/node': 20.19.4
       fsevents: 2.3.3
 
-  vitest@2.1.9(@types/node@20.11.17):
+  vitest@2.1.9(@types/node@20.19.4):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@20.11.17))
+      '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@20.19.4))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9
@@ -6428,11 +6425,11 @@ snapshots:
       tinyexec: 0.3.2
       tinypool: 1.0.2
       tinyrainbow: 1.2.0
-      vite: 5.4.19(@types/node@20.11.17)
-      vite-node: 2.1.9(@types/node@20.11.17)
+      vite: 5.4.19(@types/node@20.19.4)
+      vite-node: 2.1.9(@types/node@20.19.4)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.11.17
+      '@types/node': 20.19.4
     transitivePeerDependencies:
       - less
       - lightningcss

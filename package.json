@@ -5,8 +5,8 @@
   "packageManager": "pnpm@9.15.3",
   "scripts": {
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run dev:build --filter=eslint-rule && eslint .",
-    "lint:fix": "turbo run dev:build --filter=eslint-rule && eslint --fix .",
+    "lint": "turbo run dev:build --filter=@korix/eslint-rule && eslint .",
+    "lint:fix": "turbo run dev:build --filter=@korix/eslint-rule && eslint --fix .",
     "format": "prettier --write .",
     "dev:clean": "rimraf .turbo packages/*/dist-dev packages/*/dist packages/*/node_modules/.cache packages/*/*.tsbuildinfo",
     "dev:build": "turbo run dev:build",

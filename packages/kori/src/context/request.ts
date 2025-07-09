@@ -49,14 +49,15 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
   pathParams: PathParams;
   rootLogger: KoriLogger;
 }): KoriRequest<PathParams> {
-  const url = new URL(rawRequest.url);
-
-  const requestLogger = rootLogger.child('request');
-
-  const bodyCache: BodyCache = {};
+  // Cache variables - all uninitialized for lazy loading
+  let urlCache: URL | undefined;
+  let logCache: KoriLogger | undefined;
+  let methodCache: string | undefined;
   let queriesCache: Record<string, string | string[]> | undefined;
   let headersCache: Record<string, string> | undefined;
-  let clonedRawRequest: Request | undefined = undefined;
+  let clonedRawRequest: Request | undefined;
+
+  const bodyCache: BodyCache = {};
   let isCustomParsing = false;
 
   function getClonedRawRequest(): Request {
@@ -127,17 +128,34 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
 
   const koriRequest: KoriRequest<PathParams> = {
     [KoriRequestBrand]: KoriRequestBrand,
-    log: requestLogger,
+
+    // Lazy loaded properties
+    get log() {
+      return (logCache ??= rootLogger.child('request'));
+    },
+
     raw: rawRequest,
-    url,
-    method: rawRequest.method,
+
+    get url() {
+      return (urlCache ??= new URL(rawRequest.url));
+    },
+
+    get method() {
+      return (methodCache ??= rawRequest.method);
+    },
+
     pathParams,
-    body: rawRequest.body,
+
+    get body() {
+      return rawRequest.body;
+    },
+
     get queryParams() {
       if (queriesCache) {
         return queriesCache;
       }
-      const rawQueryParams = new URLSearchParams(url.search);
+      // Need to access url through the getter to ensure it's initialized
+      const rawQueryParams = new URLSearchParams(koriRequest.url.search);
       const obj: Record<string, string | string[]> = {};
       for (const key of rawQueryParams.keys()) {
         const values = rawQueryParams.getAll(key);
@@ -147,6 +165,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       queriesCache = obj;
       return obj;
     },
+
     get headers() {
       if (headersCache) {
         return headersCache;
@@ -159,6 +178,7 @@ export function createKoriRequest<PathParams extends Record<string, string>>({
       headersCache = obj;
       return obj;
     },
+
     contentType,
     fullContentType,
     getHeader,

@@ -1,6 +1,6 @@
 {
   "name": "@korix/kori",
-  "version": "0.0.1-20250707.3",
+  "version": "0.0.1-20250709.25",
   "type": "module",
   "description": "A modern TypeScript web framework",
   "author": "mitz (@bufferings)",
@@ -42,7 +42,7 @@
     "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
-    "hono": "4.7.9"
+    "hono": "4.8.4"
   },
   "devDependencies": {
     "@types/node": "catalog:",
