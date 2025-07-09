@@ -14,42 +14,37 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
-    "access": "public",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
-      }
-    },
-    "files": [
-      "dist"
-    ]
+    "access": "public"
   },
   "exports": {
     ".": {
-      "types": "./dist-dev/index.d.ts",
-      "import": "./dist-dev/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev:clean": "rimraf dist-dev tsconfig.tsbuildinfo",
-    "dev:build": "tsc",
-    "dev:watch": "tsc -w",
-    "publish:clean": "rimraf dist tsconfig.publish.tsbuildinfo",
-    "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "clean": "rimraf dist *.tsbuildinfo .turbo",
+    "build": "tsup && tsc -p tsconfig.publish.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "@typescript-eslint/types": "catalog:",
+    "@typescript-eslint/utils": "catalog:"
+  },
   "devDependencies": {
-    "@types/eslint": "catalog:",
-    "@types/node": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@typescript-eslint/rule-tester": "catalog:",
-    "@typescript-eslint/types": "catalog:",
-    "@typescript-eslint/utils": "catalog:",
+    "@types/eslint": "catalog:",
+    "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

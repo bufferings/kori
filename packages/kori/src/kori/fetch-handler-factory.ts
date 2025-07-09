@@ -42,11 +42,12 @@ export function createFetchHandler({
 
       const handlerCtx = createKoriHandlerContext({
         env: instanceCtx.env,
-        req: createKoriRequest({
-          rawRequest: request,
-          pathParams: routeResult.pathParams,
-          rootLogger,
-        }),
+        req: () =>
+          createKoriRequest({
+            rawRequest: request,
+            pathParams: routeResult.pathParams,
+            rootLogger,
+          }),
         res: createKoriResponse(),
       });
 

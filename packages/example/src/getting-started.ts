@@ -121,4 +121,4 @@ app.createChild({
     }),
 });
 
-await startNodeServer(app, { port: 3000, host: 'localhost' });
+await startNodeServer(app, { port: 3000, hostname: 'localhost' });

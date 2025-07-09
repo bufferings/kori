@@ -14,32 +14,25 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
-    "access": "public",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
-      }
-    },
-    "files": [
-      "dist"
-    ]
+    "access": "public"
   },
   "exports": {
     ".": {
-      "types": "./dist-dev/index.d.ts",
-      "import": "./dist-dev/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev:clean": "rimraf dist-dev tsconfig.tsbuildinfo",
-    "dev:build": "tsc",
-    "dev:watch": "tsc -w",
-    "publish:clean": "rimraf dist tsconfig.publish.tsbuildinfo",
-    "publish:build": "pnpm run publish:clean && tsup && tsc -p tsconfig.publish.json"
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "clean": "rimraf dist *.tsbuildinfo .turbo",
+    "build": "tsup && tsc -p tsconfig.publish.json"
   },
   "dependencies": {
     "@korix/kori": "workspace:*"
@@ -49,7 +42,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@types/pino": "^7.0.5",
     "pino": "9.7.0",
     "tsup": "catalog:",
     "typescript": "catalog:"

@@ -14,16 +14,25 @@ export function createKoriHandlerContext<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
->({ env, req, res }: { env: Env; req: Req; res: Res }): KoriHandlerContext<Env, Req, Res> {
-  return {
+>({ env, req, res }: { env: Env; req: Req | (() => Req); res: Res }): KoriHandlerContext<Env, Req, Res> {
+  let reqCache: Req | undefined;
+
+  const context: KoriHandlerContext<Env, Req, Res> = {
     env,
-    req,
+    get req() {
+      reqCache ??= typeof req === 'function' ? req() : req;
+      return reqCache;
+    },
     res,
     withReq: function <ReqExt>(reqExt: ReqExt) {
-      return createKoriHandlerContext({ env, req: { ...req, ...reqExt }, res });
+      // When extending req, we need to resolve it first
+      return createKoriHandlerContext({ env, req: { ...context.req, ...reqExt }, res });
     },
     withRes: function <ResExt>(resExt: ResExt) {
+      // Pass the lazy req as-is when extending res
       return createKoriHandlerContext({ env, req, res: { ...res, ...resExt } });
     },
   };
+
+  return context;
 }
