@@ -20,9 +20,7 @@ export function createKoriHandlerContext<
   const context: KoriHandlerContext<Env, Req, Res> = {
     env,
     get req() {
-      if (!reqCache) {
-        reqCache = typeof req === 'function' ? req() : req;
-      }
+      reqCache ??= typeof req === 'function' ? req() : req;
       return reqCache;
     },
     res,

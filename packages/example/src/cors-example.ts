@@ -1,5 +1,5 @@
-import { createKori } from '@korix/kori';
 import { corsPlugin } from '@korix/cors-plugin';
+import { createKori } from '@korix/kori';
 
 // Basic CORS setup - allows all origins
 const app1 = createKori()
@@ -39,7 +39,8 @@ const app3 = createKori()
 const app4 = createKori()
   .applyPlugin(
     corsPlugin({
-      origin: (origin: string | undefined, req: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      origin: (origin: string | undefined, _req: any) => {
         // Allow requests from subdomains of example.com
         if (!origin) return false;
         return origin.endsWith('.example.com') || origin === 'https://example.com';

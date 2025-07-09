@@ -18,13 +18,13 @@ app.get('/events', {
         timestamp: new Date().toISOString(),
         message: 'Hello from server!',
       })}\n\n`;
-      writer.write(encoder.encode(message));
+      void writer.write(encoder.encode(message));
     }, 1000);
 
     // Clean up when client disconnects
     ctx.req.raw.signal.addEventListener('abort', () => {
       clearInterval(intervalId);
-      writer.close();
+      void writer.close();
     });
 
     // Return streaming response with SSE headers

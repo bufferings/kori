@@ -1,5 +1,5 @@
-import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korix/kori';
 import { bodyLimitPlugin } from '@korix/body-limit-plugin';
+import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { createPinoKoriLoggerFactory } from '@korix/pino-adapter';

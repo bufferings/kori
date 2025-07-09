@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-/* eslint-disable import-x/no-nodejs-modules */
 
 import { createAdaptorServer, type ServerType } from '@hono/node-server';
 import {

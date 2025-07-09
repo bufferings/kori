@@ -53,6 +53,9 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.27.0
+      '@korix/eslint-rule':
+        specifier: workspace:*
+        version: link:packages/eslint-rule
       '@types/node':
         specifier: 'catalog:'
         version: 20.19.4
