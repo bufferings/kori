@@ -18,7 +18,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "clean": "rimraf dist *.tsbuildinfo .turbo",
-    "build": "",
     "dev:getting-started": "NODE_ENV=development tsx watch src/getting-started.ts",
     "dev:usage": "NODE_ENV=development tsx watch src/usage.ts"
   },
