@@ -15,8 +15,6 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
     "clean": "rimraf .turbo",
     "dev:getting-started": "NODE_OPTIONS='--conditions=development' tsx watch src/getting-started.ts",
     "dev:usage": "NODE_OPTIONS='--conditions=development' tsx watch src/usage.ts"

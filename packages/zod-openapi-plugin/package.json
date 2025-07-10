@@ -35,8 +35,6 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
     "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
     "build": "tsdown"
   },

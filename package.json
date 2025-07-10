@@ -5,8 +5,8 @@
   "packageManager": "pnpm@9.15.3",
   "scripts": {
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "clean": "turbo run clean",
     "build": "turbo run build",
