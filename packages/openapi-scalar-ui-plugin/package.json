@@ -48,6 +48,9 @@
     "@scalar/api-reference": "^1.25.62"
   },
   "devDependencies": {
-    "@scalar/api-reference": "^1.25.62"
+    "@scalar/api-reference": "^1.25.62",
+    "@types/node": "catalog:",
+    "tsdown": "^0.12.9",
+    "typescript": "catalog:"
   }
 }

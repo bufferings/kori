@@ -36,7 +36,9 @@
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "pino-pretty": "13.0.0",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -43,5 +43,10 @@
   "dependencies": {
     "@hono/node-server": "1.15.0",
     "@korix/kori": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "^0.12.9",
+    "typescript": "catalog:"
   }
 }

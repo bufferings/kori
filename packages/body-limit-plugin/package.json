@@ -42,5 +42,10 @@
   },
   "dependencies": {
     "@korix/kori": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "^0.12.9",
+    "typescript": "catalog:"
   }
 }
