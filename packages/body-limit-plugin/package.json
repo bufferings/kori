@@ -42,9 +42,5 @@
   },
   "dependencies": {
     "@korix/kori": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
   }
 }

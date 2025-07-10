@@ -47,8 +47,6 @@
     "pino": "^9.0.0"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "pino": "9.7.0",
-    "typescript": "catalog:"
+    "pino": "9.7.0"
   }
 }

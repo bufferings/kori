@@ -48,10 +48,7 @@
   "devDependencies": {
     "@typescript-eslint/parser": "catalog:",
     "@typescript-eslint/rule-tester": "catalog:",
-    "@types/eslint": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@types/eslint": "catalog:"
   },
   "peerDependencies": {
     "eslint": ">=9.0.0"
