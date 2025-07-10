@@ -49,7 +49,6 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "openapi3-ts": "^4.4.0",
-    "tsup": "catalog:",
     "typescript": "catalog:"
   }
 }

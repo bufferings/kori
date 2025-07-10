@@ -50,7 +50,6 @@
     "@typescript-eslint/rule-tester": "catalog:",
     "@types/eslint": "catalog:",
     "@types/node": "catalog:",
-    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

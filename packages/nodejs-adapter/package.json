@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsup": "catalog:",
     "typescript": "catalog:"
   }
 }
