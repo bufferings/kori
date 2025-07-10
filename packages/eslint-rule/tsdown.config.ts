@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: false,
   sourcemap: true,
-  external: ['eslint'],
+  external: ['@typescript-eslint/types', '@typescript-eslint/utils', 'eslint'],
 });
