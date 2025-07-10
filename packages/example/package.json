@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "clean": "rimraf dist *.tsbuildinfo .turbo",
+    "clean": "rimraf .turbo",
     "dev:getting-started": "NODE_ENV=development tsx watch src/getting-started.ts",
     "dev:usage": "NODE_ENV=development tsx watch src/usage.ts"
   },

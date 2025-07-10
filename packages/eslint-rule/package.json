@@ -22,19 +22,23 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "clean": "rimraf dist *.tsbuildinfo .turbo",
-    "build": "tsup && tsc -p tsconfig.publish.json",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
+    "build": "tsdown",
+    "test": "vitest"
   },
   "dependencies": {
     "@typescript-eslint/types": "catalog:",
