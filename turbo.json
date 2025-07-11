@@ -3,8 +3,12 @@
   "ui": "tui",
   "tasks": {
     "typecheck": {},
-    "lint": {},
-    "lint:fix": {},
+    "lint": {
+      "dependsOn": ["@korix/eslint-config#build"]
+    },
+    "lint:fix": {
+      "dependsOn": ["@korix/eslint-config#build"]
+    },
     "clean": {},
     "build": {
       "dependsOn": ["^build"],

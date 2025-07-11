@@ -34,24 +34,33 @@
     }
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
     "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
-    "build": "tsdown"
-  },
-  "dependencies": {
-    "@korix/kori": "workspace:*",
-    "@korix/zod-schema": "workspace:*",
-    "@korix/openapi-plugin": "workspace:*"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
+    "@korix/kori": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
     "openapi3-ts": "^4.4.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "openapi3-ts": "^4.4.0",
-    "tsdown": "^0.12.9",
+    "rimraf": "catalog:",
     "typescript": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "tsdown": "catalog:",
+    "vitest": "catalog:",
+    "@korix/kori": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "openapi3-ts": "4.4.0",
     "zod": "3.25.67"
   }
 }

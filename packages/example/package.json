@@ -14,10 +14,14 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf .turbo",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "dev:getting-started": "NODE_OPTIONS='--conditions=development' tsx watch src/getting-started.ts",
-    "dev:usage": "NODE_OPTIONS='--conditions=development' tsx watch src/usage.ts"
+    "dev:usage": "NODE_OPTIONS='--conditions=development' tsx watch src/usage.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@korix/kori": "workspace:*",
@@ -31,12 +35,18 @@
     "@korix/zod-schema": "workspace:*",
     "@korix/zod-validator": "workspace:*",
     "pino": "9.7.0",
+    "openapi3-ts": "4.4.0",
+    "@scalar/api-reference": "1.25.62",
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
     "@types/node": "catalog:",
-    "pino-pretty": "13.0.0",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
+    "eslint": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "vitest": "catalog:",
+    "tsx": "4.7.1",
+    "pino-pretty": "13.0.0"
   }
 }

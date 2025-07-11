@@ -34,20 +34,27 @@
     }
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
     "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
-    "build": "tsdown"
-  },
-  "dependencies": {
-    "@korix/kori": "workspace:*"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
-    "pino": "^9.0.0"
+    "@korix/kori": "workspace:*",
+    "pino": "^9.7.0"
   },
   "devDependencies": {
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
     "@types/node": "catalog:",
-    "pino": "9.7.0",
-    "tsdown": "^0.12.9",
-    "typescript": "catalog:"
+    "eslint": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "tsdown": "catalog:",
+    "vitest": "catalog:",
+    "@korix/kori": "workspace:*",
+    "pino": "9.7.0"
   }
 }

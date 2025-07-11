@@ -1,16 +1,13 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.dev.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "noEmit": false
+    "rootDir": "."
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.test.ts"],
+  "include": ["src/**/*", "tests/**/*"],
   "references": [
-    { "path": "../kori" },
     { "path": "../body-limit-plugin" },
     { "path": "../cors-plugin" },
+    { "path": "../kori" },
     { "path": "../nodejs-adapter" },
     { "path": "../openapi-plugin" },
     { "path": "../openapi-scalar-ui-plugin" },

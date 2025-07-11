@@ -1,0 +1,71 @@
+{
+  "name": "@korix/eslint-config",
+  "version": "0.0.1",
+  "description": "Shared ESLint configuration for Kori framework",
+  "type": "module",
+  "author": "mitz (@bufferings)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bufferings/kori"
+  },
+  "homepage": "https://github.com/bufferings/kori",
+  "bugs": "https://github.com/bufferings/kori/issues",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@eslint/js": "9.16.0",
+    "@typescript-eslint/parser": "8.33.1",
+    "@typescript-eslint/types": "8.33.1",
+    "@typescript-eslint/utils": "8.33.1",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import-x": "4.15.0",
+    "eslint-plugin-simple-import-sort": "12.1.1",
+    "eslint-plugin-unused-imports": "4.1.4",
+    "typescript-eslint": "8.33.1"
+  },
+  "peerDependencies": {
+    "eslint": "^9.16.0",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "9.6.1",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/node": "catalog:",
+    "@typescript-eslint/rule-tester": "8.33.1",
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
