@@ -1,0 +1,21 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@korix/body-limit-plugin": "0.0.1-20250707",
+    "@korix/cors-plugin": "0.0.1-20250707",
+    "@korix/eslint-config": "0.0.1",
+    "@korix/example": "0.0.1-20250707",
+    "@korix/kori": "0.0.1-20250709.25",
+    "@korix/nodejs-adapter": "0.0.1-20250708.8",
+    "@korix/openapi-plugin": "0.0.1-20250707",
+    "@korix/openapi-scalar-ui-plugin": "0.0.1-20250707",
+    "@korix/pino-adapter": "0.0.1-20250707",
+    "@korix/zod-openapi-plugin": "0.0.1-20250707",
+    "@korix/zod-schema": "0.0.1-20250707",
+    "@korix/zod-validator": "0.0.1-20250707"
+  },
+  "changesets": [
+    "cors-plugin-v0-1-0-alpha"
+  ]
+}
