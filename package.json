@@ -11,9 +11,13 @@
     "format": "prettier --write .",
     "build": "turbo run build",
     "dev": "turbo watch dev:getting-started dev:usage",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.5",
     "@korix/eslint-config": "workspace:*",
     "eslint": "catalog:",
     "lefthook": "1.10.1",
