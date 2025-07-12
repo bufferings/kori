@@ -32,9 +32,6 @@ importers:
       '@korix/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       eslint:
         specifier: 'catalog:'
         version: 9.16.0(jiti@2.4.2)
@@ -211,6 +208,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: 'catalog:'
         version: 9.16.0(jiti@2.4.2)

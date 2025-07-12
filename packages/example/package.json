@@ -24,9 +24,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@korix/kori": "workspace:*",
     "@korix/body-limit-plugin": "workspace:*",
     "@korix/cors-plugin": "workspace:*",
+    "@korix/kori": "workspace:*",
     "@korix/nodejs-adapter": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/openapi-scalar-ui-plugin": "workspace:*",
@@ -34,19 +34,20 @@
     "@korix/zod-openapi-plugin": "workspace:*",
     "@korix/zod-schema": "workspace:*",
     "@korix/zod-validator": "workspace:*",
-    "pino": "9.7.0",
-    "openapi3-ts": "4.4.0",
     "@scalar/api-reference": "1.25.62",
+    "openapi3-ts": "4.4.0",
+    "pino": "9.7.0",
     "zod": "3.25.67"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
     "@korix/eslint-config": "workspace:*",
-    "vitest": "catalog:",
+    "@types/node": "catalog:",
+    "cross-env": "7.0.3",
+    "eslint": "catalog:",
+    "pino-pretty": "13.0.0",
+    "rimraf": "catalog:",
     "tsx": "4.7.1",
-    "pino-pretty": "13.0.0"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
