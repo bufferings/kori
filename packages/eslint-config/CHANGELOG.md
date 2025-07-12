@@ -1,4 +1,4 @@
-# @korix/cors-plugin
+# @korix/eslint-config
 
 ## 0.1.0-alpha.0
 

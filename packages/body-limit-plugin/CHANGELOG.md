@@ -1,4 +1,4 @@
-# @korix/cors-plugin
+# @korix/body-limit-plugin
 
 ## 0.1.0-alpha.0
 

@@ -1,4 +1,4 @@
-# @korix/cors-plugin
+# @korix/nodejs-adapter
 
 ## 0.1.0-alpha.0
 

@@ -1,4 +1,4 @@
-# @korix/cors-plugin
+# @korix/openapi-scalar-ui-plugin
 
 ## 0.1.0-alpha.0
 
