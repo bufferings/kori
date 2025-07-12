@@ -5,7 +5,7 @@
     "@korix/body-limit-plugin": "0.0.1",
     "@korix/cors-plugin": "0.0.1",
     "@korix/eslint-config": "0.0.1",
-    "@korix/example": "0.0.1-20250707",
+    "@korix/example": "0.1.0",
     "@korix/kori": "0.0.1",
     "@korix/nodejs-adapter": "0.0.1",
     "@korix/openapi-plugin": "0.0.1",
@@ -15,7 +15,5 @@
     "@korix/zod-schema": "0.0.1",
     "@korix/zod-validator": "0.0.1"
   },
-  "changesets": [
-    "initial-alpha-unified"
-  ]
+  "changesets": ["initial-alpha-unified"]
 }
