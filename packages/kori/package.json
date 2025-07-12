@@ -22,24 +22,36 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "development": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "clean": "rimraf dist *.tsbuildinfo .turbo",
-    "build": "tsup && tsc -p tsconfig.publish.json"
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "hono": "4.8.4"
   },
   "devDependencies": {
+    "@korix/eslint-config": "workspace:*",
     "@types/node": "catalog:",
-    "tsup": "catalog:",
-    "typescript": "catalog:"
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

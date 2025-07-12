@@ -8,9 +8,32 @@ alwaysApply: true
 
 ## Commit Messages
 
+### Basic Guidelines
+
 - For commit messages, keep them super short and concise. Just a couple of sentences max.
 - Use only ASCII characters in commit messages (no emojis, Japanese, etc.)
 - Write commit messages in English for international collaboration
+
+### Format Guidelines
+
+- **Subject line**: Keep it around 50 characters, capitalize the first letter, no period at the end
+- **Use imperative mood**: "Fix bug" not "Fixed bug" or "Fixes bug"
+- **Add details if needed**: Leave a blank line after the subject, then add explanation wrapped at 72 characters
+- **Focus on why**: Explain what the problem was and why this change fixes it
+
+### Examples
+
+```
+Fix API endpoint validation
+
+This commit addresses several validation issues:
+
+- Add null check for request body
+- Validate required fields before processing
+- Return proper error codes for invalid input
+
+Fixes #123
+```
 
 ## Pull Requests
 

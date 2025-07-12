@@ -14,17 +14,19 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "clean": "rimraf dist *.tsbuildinfo .turbo",
-    "dev:getting-started": "NODE_ENV=development tsx watch src/getting-started.ts",
-    "dev:usage": "NODE_ENV=development tsx watch src/usage.ts"
+    "lint:fix": "eslint . --fix",
+    "dev:getting-started": "cross-env NODE_OPTIONS='--conditions=development' tsx watch src/getting-started.ts",
+    "dev:usage": "cross-env NODE_OPTIONS='--conditions=development' tsx watch src/usage.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@korix/kori": "workspace:*",
     "@korix/body-limit-plugin": "workspace:*",
     "@korix/cors-plugin": "workspace:*",
+    "@korix/kori": "workspace:*",
     "@korix/nodejs-adapter": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/openapi-scalar-ui-plugin": "workspace:*",
@@ -32,13 +34,20 @@
     "@korix/zod-openapi-plugin": "workspace:*",
     "@korix/zod-schema": "workspace:*",
     "@korix/zod-validator": "workspace:*",
+    "@scalar/api-reference": "1.25.62",
+    "openapi3-ts": "4.4.0",
     "pino": "9.7.0",
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "@korix/eslint-config": "workspace:*",
     "@types/node": "catalog:",
+    "cross-env": "7.0.3",
+    "eslint": "catalog:",
     "pino-pretty": "13.0.0",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
+    "rimraf": "catalog:",
+    "tsx": "4.7.1",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

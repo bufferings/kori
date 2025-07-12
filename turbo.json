@@ -1,9 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "tasks": {
     "typecheck": {},
-    "lint": {},
-    "lint:fix": {},
+    "lint": {
+      "dependsOn": ["@korix/eslint-config#build"]
+    },
+    "lint:fix": {
+      "dependsOn": ["@korix/eslint-config#build"]
+    },
     "clean": {},
     "build": {
       "dependsOn": ["^build"],
@@ -11,13 +16,11 @@
     },
     "@korix/example#dev:getting-started": {
       "cache": false,
-      "persistent": true,
-      "dependsOn": ["build"]
+      "persistent": true
     },
     "@korix/example#dev:usage": {
       "cache": false,
-      "persistent": true,
-      "dependsOn": ["build"]
+      "persistent": true
     },
     "test": {
       "cache": false

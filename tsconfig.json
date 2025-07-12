@@ -1,36 +1,18 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    // Need this for project references
-    "composite": true,
-    // Composite projects require declaration options
-    "declaration": true,
-    "declarationMap": true,
-    // Don't emit anything from the root
-    "noEmit": true
-  },
+  "files": [],
+  "include": [],
   "references": [
-    { "path": "./packages/kori" },
     { "path": "./packages/body-limit-plugin" },
     { "path": "./packages/cors-plugin" },
+    { "path": "./packages/eslint-config" },
+    { "path": "./packages/example" },
+    { "path": "./packages/kori" },
     { "path": "./packages/nodejs-adapter" },
-    { "path": "./packages/pino-adapter" },
-    { "path": "./packages/eslint-rule" },
     { "path": "./packages/openapi-plugin" },
     { "path": "./packages/openapi-scalar-ui-plugin" },
-    { "path": "./packages/zod-schema" },
-    { "path": "./packages/zod-validator" },
+    { "path": "./packages/pino-adapter" },
     { "path": "./packages/zod-openapi-plugin" },
-    { "path": "./packages/example" }
-  ],
-  "include": []
+    { "path": "./packages/zod-schema" },
+    { "path": "./packages/zod-validator" }
+  ]
 }

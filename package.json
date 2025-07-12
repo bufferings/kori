@@ -4,32 +4,20 @@
   "type": "module",
   "packageManager": "pnpm@9.15.3",
   "scripts": {
+    "clean": "turbo run clean",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "format": "prettier --write .",
-    "clean": "turbo run clean",
     "build": "turbo run build",
-    "test": "turbo run test",
-    "dev": "turbo watch dev:getting-started dev:usage --concurrency 20"
+    "dev": "turbo watch dev:getting-started dev:usage",
+    "test": "turbo run test"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@korix/eslint-rule": "workspace:*",
-    "@types/node": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
+    "@korix/eslint-config": "workspace:*",
     "eslint": "catalog:",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import-x": "^4.15.0",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-unused-imports": "^4.1.4",
-    "lefthook": "^1.10.1",
+    "lefthook": "1.10.1",
     "prettier": "3.4.2",
-    "rimraf": "^6.0.1",
-    "tsx": "catalog:",
-    "turbo": "^2.5.4",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "turbo": "2.5.4"
   }
 }

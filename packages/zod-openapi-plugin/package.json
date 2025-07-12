@@ -22,32 +22,45 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "development": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "clean": "rimraf dist *.tsbuildinfo .turbo",
-    "build": "tsup && tsc -p tsconfig.publish.json"
-  },
-  "dependencies": {
-    "@korix/kori": "workspace:*",
-    "@korix/zod-schema": "workspace:*",
-    "@korix/openapi-plugin": "workspace:*"
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
+    "@korix/kori": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
     "openapi3-ts": "^4.4.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@korix/eslint-config": "workspace:*",
+    "@korix/kori": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
     "@types/node": "catalog:",
-    "openapi3-ts": "^4.4.0",
-    "tsup": "catalog:",
+    "eslint": "catalog:",
+    "openapi3-ts": "4.4.0",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vitest": "catalog:",
     "zod": "3.25.67"
   }
 }

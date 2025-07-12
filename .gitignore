@@ -23,6 +23,7 @@ lerna-debug.log*
 
 # build output
 dist/
+.tsup/
 
 # TypeScript build cache
 *.tsbuildinfo
