@@ -36,10 +36,6 @@ ruleTester.run('no-index-imports', noIndexImports, {
       code: `import { Button } from '../components/index.js';`,
       filename: '/project/src/pages/Home.ts',
     },
-    {
-      code: `import { Button } from '../components/';`,
-      filename: '/project/src/pages/Home.ts',
-    },
     // Re-export from index in other directory is valid
     {
       code: `export { Button } from '../components/index.js';`,
@@ -49,17 +45,9 @@ ruleTester.run('no-index-imports', noIndexImports, {
       code: `export * from '../components/index.js';`,
       filename: '/project/src/pages/index.ts',
     },
-    // Importing from subdirectory index is valid
+    // Importing from subdirectory with explicit index.js is valid
     {
       code: `import { something } from './subdir/index.js';`,
-      filename: '/project/src/utils/helper.ts',
-    },
-    {
-      code: `import { something } from './subdir/';`,
-      filename: '/project/src/utils/helper.ts',
-    },
-    {
-      code: `import { something } from './subdir';`,
       filename: '/project/src/utils/helper.ts',
     },
   ],
@@ -143,6 +131,33 @@ ruleTester.run('no-index-imports', noIndexImports, {
         },
       ],
     },
+    // Subdirectory imports without explicit index.js (with autofix)
+    {
+      code: `import { something } from './subdir';`,
+      filename: '/project/src/utils/helper.ts',
+      output: `import { something } from './subdir/index.js';`,
+      errors: [
+        {
+          messageId: 'otherDirectoryNonIndex',
+          data: {
+            suggestion: './subdir/index.js',
+          },
+        },
+      ],
+    },
+    {
+      code: `import { something } from './subdir/';`,
+      filename: '/project/src/utils/helper.ts',
+      output: `import { something } from './subdir/index.js';`,
+      errors: [
+        {
+          messageId: 'otherDirectoryNonIndex',
+          data: {
+            suggestion: './subdir/index.js',
+          },
+        },
+      ],
+    },
     // Directory import without explicit index (should be fixed to explicit index)
     {
       code: `import { utils } from '../utils';`,
@@ -153,6 +168,19 @@ ruleTester.run('no-index-imports', noIndexImports, {
           messageId: 'otherDirectoryNonIndex',
           data: {
             suggestion: '../utils/index.js',
+          },
+        },
+      ],
+    },
+    {
+      code: `import { Button } from '../components/';`,
+      filename: '/project/src/pages/Home.ts',
+      output: `import { Button } from '../components/index.js';`,
+      errors: [
+        {
+          messageId: 'otherDirectoryNonIndex',
+          data: {
+            suggestion: '../components/index.js',
           },
         },
       ],
