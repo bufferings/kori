@@ -46,12 +46,12 @@
     "hono": "4.8.4"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
+    "@korix/eslint-config": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "@korix/eslint-config": "workspace:*",
+    "rimraf": "catalog:",
     "tsdown": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   }
 }

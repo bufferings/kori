@@ -49,13 +49,13 @@
     "@korix/kori": "workspace:*"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "@korix/kori": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "@korix/eslint-config": "workspace:*",
+    "rimraf": "catalog:",
     "tsdown": "catalog:",
-    "vitest": "catalog:",
-    "@korix/kori": "workspace:*"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

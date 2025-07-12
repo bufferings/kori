@@ -47,14 +47,14 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "@korix/kori": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "@korix/eslint-config": "workspace:*",
+    "rimraf": "catalog:",
     "tsdown": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:",
-    "@korix/kori": "workspace:*",
     "zod": "3.25.67"
   }
 }

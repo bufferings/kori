@@ -44,23 +44,23 @@
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
-    "@korix/zod-schema": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
     "openapi3-ts": "^4.4.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
+    "@korix/eslint-config": "workspace:*",
+    "@korix/kori": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "@korix/zod-schema": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "@korix/eslint-config": "workspace:*",
-    "tsdown": "catalog:",
-    "vitest": "catalog:",
-    "@korix/kori": "workspace:*",
-    "@korix/zod-schema": "workspace:*",
-    "@korix/openapi-plugin": "workspace:*",
     "openapi3-ts": "4.4.0",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
     "zod": "3.25.67"
   }
 }

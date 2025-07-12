@@ -48,15 +48,15 @@
     "@scalar/api-reference": "^1.25.62"
   },
   "devDependencies": {
-    "rimraf": "catalog:",
-    "typescript": "catalog:",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
     "@korix/eslint-config": "workspace:*",
-    "tsdown": "catalog:",
-    "vitest": "catalog:",
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@scalar/api-reference": "1.25.62"
+    "@scalar/api-reference": "1.25.62",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
