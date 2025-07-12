@@ -5,7 +5,6 @@
     "@korix/body-limit-plugin": "0.0.1",
     "@korix/cors-plugin": "0.0.1",
     "@korix/eslint-config": "0.0.1",
-    "@korix/example": "0.1.0",
     "@korix/kori": "0.0.1",
     "@korix/nodejs-adapter": "0.0.1",
     "@korix/openapi-plugin": "0.0.1",
