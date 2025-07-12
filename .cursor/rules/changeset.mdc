@@ -1,3 +1,9 @@
+---
+description: 'Changeset operation rules for monorepo version management'
+globs: []
+alwaysApply: true
+---
+
 # Changeset Operation Rules
 
 ## Overview
