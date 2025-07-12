@@ -1,0 +1,183 @@
+---
+description: 'Changeset operation rules for monorepo version management'
+globs: []
+alwaysApply: true
+---
+
+# Changeset Operation Rules
+
+## Overview
+
+This project uses [Changesets](https://github.com/changesets/changesets) for monorepo version management and publishing. Since the AI assistant cannot interact with CLI prompts, we use a manual changeset file creation approach.
+
+## Current Status
+
+- **Alpha Development Mode**: Currently in `alpha` prerelease mode
+- **Base Version**: Starting from `0.1.0-alpha.0`
+- **Target**: Working towards `0.1.0` stable release
+
+## Workflow
+
+### 1. Making Changes
+
+When code changes are made that warrant a release:
+
+1. User requests: "Release [package-name] with [description]"
+2. AI assistant creates changeset file manually
+3. AI assistant runs `pnpm changeset version`
+4. AI assistant commits the changes
+
+### 2. Changeset File Creation
+
+**Manual Creation Process:**
+
+- AI creates `.changeset/[descriptive-name].md` file
+- Uses patch/minor/major based on change type
+- Includes clear description in English
+
+**Example changeset file:**
+
+```markdown
+---
+'@korix/cors-plugin': patch
+---
+
+Fix header configuration bug in CORS plugin
+```
+
+### 3. Version Bumping Rules
+
+**In Alpha Mode:**
+
+- **Patch changes**: `0.1.0-alpha.0` → `0.1.0-alpha.1`
+- **Minor changes**: `0.1.0-alpha.0` → `0.1.0-alpha.1` (same increment)
+- **Major changes**: `0.1.0-alpha.0` → `0.2.0-alpha.0` (only for breaking changes)
+
+**Default behavior**: Use `patch` for most changes during alpha development.
+
+### 4. Package Configuration
+
+**Included packages:**
+
+- All packages in `packages/` directory
+- Published to npm with `"access": "public"`
+
+**Excluded packages:**
+
+- `@korix/example` (configured in `ignore` array)
+
+## Commands
+
+### Development Commands
+
+```bash
+# Create changeset (manual file creation by AI)
+# File: .changeset/[name].md
+
+# Apply version changes
+pnpm changeset version
+
+# Publish to npm (when ready)
+pnpm changeset publish
+```
+
+### Mode Management
+
+```bash
+# Enter alpha mode (already done)
+pnpm changeset pre enter alpha
+
+# Exit alpha mode (for stable release)
+pnpm changeset pre exit
+
+# Re-enter alpha mode
+pnpm changeset pre enter alpha
+```
+
+## Release Process
+
+### Alpha Releases
+
+1. Make code changes
+2. Request release: "Release [package] with [description]"
+3. AI creates changeset file
+4. AI runs `changeset version` to bump alpha number
+5. AI commits changes
+6. Continue development
+
+### Stable Release (Future)
+
+1. Complete alpha testing
+2. Run `pnpm changeset pre exit`
+3. Run `pnpm changeset version` → creates `0.1.0`
+4. Run `pnpm changeset publish`
+5. Tag and release
+
+## Best Practices
+
+### User Requests
+
+- **Simple**: "Release cors-plugin with bug fix"
+- **Specific**: "Release kori with breaking API changes" (major)
+- **Multiple**: "Release cors-plugin and kori with new features"
+
+### AI Response Pattern
+
+1. Create appropriate changeset file(s)
+2. Run `changeset version`
+3. Show version changes
+4. Commit with descriptive message
+5. Confirm completion
+
+### Version Strategy
+
+- **Alpha phase**: Focus on `patch` increments
+- **Breaking changes**: Only use `major` for significant API changes
+- **New features**: Use `minor` sparingly during alpha
+- **Bug fixes**: Always use `patch`
+
+## Configuration Files
+
+### `.changeset/config.json`
+
+```json
+{
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@korix/example"]
+}
+```
+
+### Prerelease State
+
+- Stored in `.changeset/pre.json`
+- Tracks current alpha mode
+- Automatically managed by changeset commands
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Interactive prompts**: AI cannot respond - use manual file creation
+2. **Version conflicts**: Reset and recreate changeset files
+3. **Missing main branch**: Ensure `main` branch exists for base comparison
+
+### Recovery Steps
+
+```bash
+# Reset if needed
+git checkout -- packages/*/package.json
+rm packages/*/CHANGELOG.md
+
+# Recreate changeset
+# (AI creates new changeset file)
+pnpm changeset version
+```
+
+## Notes
+
+- Always commit changeset files along with code changes
+- CHANGELOG.md files are auto-generated
+- Package.json versions are automatically updated
+- Changeset files are consumed (deleted) after version bump

@@ -1,6 +1,6 @@
 {
   "name": "@korix/example",
-  "version": "0.0.1-20250707",
+  "version": "0.1.0",
   "private": true,
   "description": "Usage examples for Kori framework",
   "type": "module",
