@@ -20,6 +20,8 @@ export const createKoriZodSchema = <T extends z.ZodType>(schema: T): KoriZodSche
 };
 
 export function isKoriZodSchema(value: unknown): value is KoriZodSchemaDefault {
-  if (!isKoriSchema(value)) return false;
+  if (!isKoriSchema(value)) {
+    return false;
+  }
   return getKoriSchemaBrand(value) === ZodSchemaBrand;
 }

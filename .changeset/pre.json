@@ -16,6 +16,6 @@
     "@korix/example": "0.1.0"
   },
   "changesets": [
-    "optimize-pipeline-router"
+    "add-curly-rule"
   ]
 }

@@ -42,7 +42,9 @@ const app4 = createKori()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       origin: (origin: string | undefined, _req: any) => {
         // Allow requests from subdomains of example.com
-        if (!origin) return false;
+        if (!origin) {
+          return false;
+        }
         return origin.endsWith('.example.com') || origin === 'https://example.com';
       },
       credentials: true,

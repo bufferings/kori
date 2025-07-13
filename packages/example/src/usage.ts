@@ -195,9 +195,15 @@ app.get('/products/search', {
       { id: 1, name: 'Laptop', category: 'electronics', price: 999.99 },
       { id: 2, name: 'TypeScript Book', category: 'books', price: 29.99 },
     ].filter((product) => {
-      if (query.category && product.category !== query.category) return false;
-      if (query.minPrice && product.price < query.minPrice) return false;
-      if (query.maxPrice && product.price > query.maxPrice) return false;
+      if (query.category && product.category !== query.category) {
+        return false;
+      }
+      if (query.minPrice && product.price < query.minPrice) {
+        return false;
+      }
+      if (query.maxPrice && product.price > query.maxPrice) {
+        return false;
+      }
       return product.name.toLowerCase().includes(query.q.toLowerCase());
     });
 
