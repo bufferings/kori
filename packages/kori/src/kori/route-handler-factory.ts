@@ -138,7 +138,7 @@ function createHookExecutor<
       try {
         await hook(ctx);
       } catch (e) {
-        ctx.req.log.error('Finally Hook Error', { err: e });
+        ctx.req.log().error('Finally Hook Error', { err: e });
       }
     }
   };
@@ -246,7 +246,7 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.req.log.warn('Response validation failed', { err });
+    ctx.req.log().warn('Response validation failed', { err });
     return undefined;
   };
 }
@@ -329,6 +329,23 @@ export function createRouteHandler<
 
     return response;
   };
+
+  /* ------------------------------------------------------- */
+  /* Fast-path: no hooks & no validation                     */
+  /* ------------------------------------------------------- */
+  const hasHooks =
+    deps.requestHooks.length > 0 ||
+    deps.responseHooks.length > 0 ||
+    deps.errorHooks.length > 0 ||
+    deps.finallyHooks.length > 0;
+
+  const hasValidation = !!requestValidateFn || !!responseValidateFn;
+
+  if (!hasHooks && !hasValidation) {
+    // The route is a straight passthrough. Return the original handler
+    // to avoid unnecessary wrapper overhead.
+    return routeParams.handler as unknown as KoriRouterHandler<Env, WithPathParams<Req, Path>, Res>;
+  }
 
   return (ctx) => executeWithHooks(ctx, mainHandler);
 }

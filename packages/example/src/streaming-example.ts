@@ -22,7 +22,7 @@ app.get('/events', {
     }, 1000);
 
     // Clean up when client disconnects
-    ctx.req.raw.signal.addEventListener('abort', () => {
+    ctx.req.raw().signal.addEventListener('abort', () => {
       clearInterval(intervalId);
       void writer.close();
     });
@@ -46,12 +46,13 @@ app.post('/upload-stream', {
     const koriReq = req as KoriRequest;
 
     // Check if request has a body stream
-    if (!koriReq.body) {
+    const bodyStream = koriReq.bodyStream();
+    if (!bodyStream) {
       return res.status(400).json({ error: 'No request body' });
     }
 
     // Process the stream without loading it entirely into memory
-    const reader = koriReq.body.getReader();
+    const reader = bodyStream.getReader();
     let totalBytes = 0;
     const chunks: Uint8Array[] = [];
 
@@ -65,7 +66,7 @@ app.post('/upload-stream', {
 
         // Optional: Process chunks as they arrive
         // This is where you might save to disk, process data, etc.
-        ctx.req.log.info('Received chunk', { size: value.length, totalBytes });
+        ctx.req.log().info('Received chunk', { size: value.length, totalBytes });
       }
 
       // Combine all chunks (in real use case, you might process them differently)
@@ -82,7 +83,7 @@ app.post('/upload-stream', {
         chunksReceived: chunks.length,
       });
     } catch (error) {
-      ctx.req.log.error('Upload error', { error });
+      ctx.req.log().error('Upload error', { error });
       return res.status(500).json({ error: 'Upload failed' });
     }
   },
@@ -110,7 +111,7 @@ app.get('/download-stream', {
         }, 500);
 
         // Clean up on client disconnect
-        ctx.req.raw.signal.addEventListener('abort', () => {
+        ctx.req.raw().signal.addEventListener('abort', () => {
           clearInterval(interval);
           controller.close();
         });

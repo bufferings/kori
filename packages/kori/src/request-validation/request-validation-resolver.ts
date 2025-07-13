@@ -19,7 +19,7 @@ async function validateRequestParams({
     return ok(undefined);
   }
 
-  const result = await validator.validateParams({ schema, params: req.pathParams });
+  const result = await validator.validateParams({ schema, params: req.pathParams() });
   if (result.ok) {
     return result;
   }
@@ -43,7 +43,7 @@ async function validateRequestQueries({
     return ok(undefined);
   }
 
-  const result = await validator.validateQueries({ schema, queries: req.queryParams });
+  const result = await validator.validateQueries({ schema, queries: req.queryParams() });
   if (result.ok) {
     return result;
   }
@@ -67,7 +67,7 @@ async function validateRequestHeaders({
     return ok(undefined);
   }
 
-  const result = await validator.validateHeaders({ schema, headers: req.headers });
+  const result = await validator.validateHeaders({ schema, headers: req.headers() });
   if (result.ok) {
     return result;
   }

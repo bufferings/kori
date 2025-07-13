@@ -1,5 +1,12 @@
 import { bodyLimitPlugin } from '@korix/body-limit-plugin';
-import { createKori, defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korix/kori';
+import {
+  createKori,
+  defineKoriPlugin,
+  HttpRequestHeader,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+} from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { createPinoKoriLoggerFactory } from '@korix/pino-adapter';
@@ -97,26 +104,26 @@ const app = createKori({
     }),
   )
   .onRequest((ctx) => {
-    ctx.req.log.info('Request started', {
+    ctx.req.log().info('Request started', {
       requestId: ctx.req.requestId,
-      method: ctx.req.method,
-      path: ctx.req.url.pathname,
+      method: ctx.req.method(),
+      path: ctx.req.url().pathname,
     });
   })
   .onResponse((ctx) => {
-    ctx.req.log.info('Request completed', {
+    ctx.req.log().info('Request completed', {
       requestId: ctx.req.requestId,
       status: ctx.res.getStatus(),
     });
   })
   .onError((ctx, err) => {
     const error = err instanceof Error ? err : new Error(String(err));
-    ctx.req.log.error('Request failed', {
+    ctx.req.log().error('Request failed', {
       requestId: ctx.req.requestId,
       error: error.message,
     });
 
-    if (!ctx.res.isSet()) {
+    if (!ctx.res.isReady()) {
       ctx.res.internalError({ message: 'Internal server error' });
     }
   });
@@ -146,7 +153,7 @@ app.post('/products', {
       apiVersion: headers['x-api-version'] ?? '1.0',
     };
 
-    ctx.req.log.info('Product created', {
+    ctx.req.log().info('Product created', {
       productId: newProduct.id,
       requestId: ctx.req.requestId,
     });
@@ -209,16 +216,16 @@ app.createChild({
   configure: (k) =>
     k
       .onRequest((ctx) => {
-        const token = ctx.req.headers.authorization?.replace('Bearer ', '');
+        const token = ctx.req.header(HttpRequestHeader.AUTHORIZATION)?.replace('Bearer ', '');
         if (!token || token !== 'admin-secret-token') {
-          ctx.req.log.warn('Unauthorized admin access', { requestId: ctx.req.requestId });
+          ctx.req.log().warn('Unauthorized admin access', { requestId: ctx.req.requestId });
           throw new Error('Unauthorized');
         }
         return ctx.withReq({ isAdmin: true });
       })
       .onError((ctx, err) => {
         const error = err instanceof Error ? err : new Error(String(err));
-        if (error.message === 'Unauthorized' && !ctx.res.isSet()) {
+        if (error.message === 'Unauthorized' && !ctx.res.isReady()) {
           ctx.res.status(401).json({
             error: 'Unauthorized',
             message: 'Admin access required. Use Authorization: Bearer admin-secret-token',
@@ -257,7 +264,7 @@ app.createChild({
         handler: (ctx) => {
           const { mode, reason } = ctx.req.validated.body;
 
-          ctx.req.log.info('Maintenance mode changed', {
+          ctx.req.log().info('Maintenance mode changed', {
             mode,
             reason,
             requestId: ctx.req.requestId,

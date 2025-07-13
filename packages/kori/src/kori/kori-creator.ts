@@ -64,7 +64,7 @@ export function createKori<
   shared.root = root;
 
   root.onError((ctx, _err) => {
-    if (!ctx.res.isSet()) {
+    if (!ctx.res.isReady()) {
       ctx.res.internalError({
         message: 'Internal Server Error',
       });

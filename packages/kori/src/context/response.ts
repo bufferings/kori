@@ -1,6 +1,187 @@
-import { HttpStatus, type HttpStatusCode, type HttpResponseHeaderValue } from '../http/index.js';
+import {
+  HttpStatus,
+  type HttpStatusCode,
+  type HttpResponseHeaderValue,
+  HttpResponseHeader,
+  ContentTypeUtf8,
+  ContentType,
+} from '../http/index.js';
 
 const KoriResponseBrand = Symbol('kori-response');
+
+const DefaultJsonHeaders = new Headers({
+  [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
+});
+
+export type KoriResponse = {
+  [KoriResponseBrand]: typeof KoriResponseBrand;
+
+  status(statusCode: HttpStatusCode): KoriResponse;
+
+  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
+  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
+  removeHeader(key: HttpResponseHeaderValue): KoriResponse;
+
+  json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
+  text(body: string, statusCode?: HttpStatusCode): KoriResponse;
+  html(body: string, statusCode?: HttpStatusCode): KoriResponse;
+  empty(statusCode?: HttpStatusCode): KoriResponse;
+  stream(body: ReadableStream, statusCode?: HttpStatusCode): KoriResponse;
+
+  badRequest(options?: ErrorResponseOptions): KoriResponse;
+  unauthorized(options?: ErrorResponseOptions): KoriResponse;
+  forbidden(options?: ErrorResponseOptions): KoriResponse;
+  notFound(options?: ErrorResponseOptions): KoriResponse;
+  methodNotAllowed(options?: ErrorResponseOptions): KoriResponse;
+  unsupportedMediaType(options?: ErrorResponseOptions): KoriResponse;
+  timeout(options?: ErrorResponseOptions): KoriResponse;
+  internalError(options?: ErrorResponseOptions): KoriResponse;
+
+  getStatus(): HttpStatusCode;
+  getHeaders(): Headers;
+  getBody(): unknown;
+  getContentType(): string | undefined;
+  isReady(): boolean;
+  isStream(): boolean;
+
+  build(): Response;
+};
+
+type ResState = {
+  [KoriResponseBrand]: typeof KoriResponseBrand;
+
+  statusCode: HttpStatusCode;
+  headers: Headers | undefined;
+  bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
+  bodyValue: unknown;
+  headersShared: boolean;
+};
+
+export function isKoriResponse(value: unknown): value is KoriResponse {
+  return typeof value === 'object' && value !== null && KoriResponseBrand in value;
+}
+
+function ensureHeaders(res: ResState): void {
+  if (res.headersShared) {
+    res.headers = new Headers(res.headers);
+    res.headersShared = false;
+  }
+  res.headers ??= new Headers();
+}
+
+function setHeaderInternal(res: ResState, key: HttpResponseHeaderValue, value: string): void {
+  ensureHeaders(res);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  res.headers!.set(key, value);
+}
+
+function appendHeaderInternal(res: ResState, key: HttpResponseHeaderValue, value: string): void {
+  ensureHeaders(res);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  res.headers!.append(key, value);
+}
+
+function removeHeaderInternal(res: ResState, key: HttpResponseHeaderValue): void {
+  if (!res.headers) {
+    return;
+  }
+  ensureHeaders(res);
+  res.headers.delete(key);
+}
+
+function setStatusInternal(res: ResState, code: HttpStatusCode): void {
+  res.statusCode = code;
+}
+
+type BodyConfig<T> = {
+  res: ResState;
+  body: T;
+  code?: HttpStatusCode;
+};
+
+function setBodyJsonInternal<T>({ res, body, code }: BodyConfig<T>): void {
+  res.bodyKind = 'json';
+  res.bodyValue = JSON.stringify(body);
+  if (code) {
+    res.statusCode = code;
+  }
+  if (!res.headers) {
+    res.headers = DefaultJsonHeaders;
+    res.headersShared = true;
+  } else {
+    setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.APPLICATION_JSON);
+  }
+}
+
+function setBodyTextInternal({ res, body, code }: BodyConfig<string>): void {
+  res.bodyKind = 'text';
+  res.bodyValue = body;
+  if (code) {
+    res.statusCode = code;
+  }
+  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_PLAIN);
+}
+
+function setBodyHtmlInternal({ res, body, code }: BodyConfig<string>): void {
+  res.bodyKind = 'html';
+  res.bodyValue = body;
+  if (code) {
+    res.statusCode = code;
+  }
+  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_HTML);
+}
+
+type EmptyBodyConfig = {
+  res: ResState;
+  code?: HttpStatusCode;
+};
+
+function setBodyEmptyInternal({ res, code = HttpStatus.NO_CONTENT }: EmptyBodyConfig): void {
+  res.bodyKind = 'empty';
+  res.bodyValue = undefined;
+  res.statusCode = code;
+}
+
+function setBodyStreamInternal({ res, body, code }: BodyConfig<ReadableStream>): void {
+  res.bodyKind = 'stream';
+  res.bodyValue = body;
+  if (code) {
+    res.statusCode = code;
+  }
+  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentType.APPLICATION_OCTET_STREAM);
+}
+
+type ErrorType =
+  | 'BAD_REQUEST'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'METHOD_NOT_ALLOWED'
+  | 'UNSUPPORTED_MEDIA_TYPE'
+  | 'TIMEOUT'
+  | 'INTERNAL_SERVER_ERROR';
+
+type ErrorResponseBodyJson = {
+  error: {
+    type: ErrorType;
+    message: string;
+    details?: unknown;
+  };
+};
+
+function createErrorResponseBodyJson(options: {
+  errorType: ErrorType;
+  message: string;
+  details?: unknown;
+}): ErrorResponseBodyJson {
+  return {
+    error: {
+      type: options.errorType,
+      message: options.message,
+      details: options.details,
+    },
+  };
+}
 
 type ErrorResponseOptions =
   | {
@@ -19,305 +200,197 @@ type ErrorResponseOptions =
       details?: unknown;
     };
 
-export type KoriResponse = {
-  [KoriResponseBrand]: typeof KoriResponseBrand;
-
-  status(statusCode: HttpStatusCode): KoriResponse;
-
-  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
-  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
-  removeHeader(key: HttpResponseHeaderValue): KoriResponse;
-
-  json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
-  text(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  html(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  empty(statusCode?: HttpStatusCode): KoriResponse;
-  stream(body: ReadableStream, statusCode?: HttpStatusCode): KoriResponse;
-
-  // Error response helpers
-  badRequest(options?: ErrorResponseOptions): KoriResponse;
-  unauthorized(options?: ErrorResponseOptions): KoriResponse;
-  forbidden(options?: ErrorResponseOptions): KoriResponse;
-  notFound(options?: ErrorResponseOptions): KoriResponse;
-  methodNotAllowed(options?: ErrorResponseOptions): KoriResponse;
-  unsupportedMediaType(options?: ErrorResponseOptions): KoriResponse;
-  timeout(options?: ErrorResponseOptions): KoriResponse;
-  internalError(options?: ErrorResponseOptions): KoriResponse;
-
-  getStatus(): HttpStatusCode;
-  getHeaders(): Headers;
-  getBody(): unknown;
-  getContentType(): string | undefined;
-  isSet(): boolean;
-  isStream(): boolean;
-
-  build(): Response;
+type ErrorConfig = {
+  res: ResState;
+  errorType: ErrorType;
+  defaultMsg: string;
+  status: HttpStatusCode;
+  options?: ErrorResponseOptions;
 };
 
-export function isKoriResponse(value: unknown): value is KoriResponse {
-  return typeof value === 'object' && value !== null && KoriResponseBrand in value;
+function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
+  const msg = options.message ?? defaultMsg;
+  if (options.type === 'text') {
+    setBodyTextInternal({ res, body: msg, code: status });
+  } else {
+    setBodyJsonInternal({
+      res,
+      body: createErrorResponseBodyJson({ errorType, message: msg, details: options.details }),
+      code: status,
+    });
+  }
 }
 
-type ErrorType =
-  | 'BAD_REQUEST'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'METHOD_NOT_ALLOWED'
-  | 'UNSUPPORTED_MEDIA_TYPE'
-  | 'TIMEOUT'
-  | 'INTERNAL_SERVER_ERROR';
+const sharedMethods = {
+  status(code: HttpStatusCode): KoriResponse {
+    setStatusInternal(this, code);
+    return this as unknown as KoriResponse;
+  },
 
-const createErrorResponseBodyJson = (options: { errorType: ErrorType; message: string; details?: unknown }) => {
-  return {
-    error: { type: options.errorType, message: options.message, details: options.details },
-  };
-};
+  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse {
+    setHeaderInternal(this, key, value);
+    return this as unknown as KoriResponse;
+  },
+  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse {
+    appendHeaderInternal(this, key, value);
+    return this as unknown as KoriResponse;
+  },
+  removeHeader(key: HttpResponseHeaderValue): KoriResponse {
+    removeHeaderInternal(this, key);
+    return this as unknown as KoriResponse;
+  },
+
+  json<T>(body: T, code?: HttpStatusCode): KoriResponse {
+    setBodyJsonInternal({ res: this, body, code });
+    return this as unknown as KoriResponse;
+  },
+  text(body: string, code?: HttpStatusCode): KoriResponse {
+    setBodyTextInternal({ res: this, body, code });
+    return this as unknown as KoriResponse;
+  },
+  html(body: string, code?: HttpStatusCode): KoriResponse {
+    setBodyHtmlInternal({ res: this, body, code });
+    return this as unknown as KoriResponse;
+  },
+  empty(code: HttpStatusCode = HttpStatus.NO_CONTENT): KoriResponse {
+    setBodyEmptyInternal({ res: this, code });
+    return this as unknown as KoriResponse;
+  },
+  stream(body: ReadableStream, code?: HttpStatusCode): KoriResponse {
+    setBodyStreamInternal({ res: this, body, code });
+    return this as unknown as KoriResponse;
+  },
+
+  badRequest(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'BAD_REQUEST',
+      defaultMsg: 'Bad Request',
+      status: HttpStatus.BAD_REQUEST,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  unauthorized(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'UNAUTHORIZED',
+      defaultMsg: 'Unauthorized',
+      status: HttpStatus.UNAUTHORIZED,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  forbidden(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'FORBIDDEN',
+      defaultMsg: 'Forbidden',
+      status: HttpStatus.FORBIDDEN,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  notFound(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'NOT_FOUND',
+      defaultMsg: 'Not Found',
+      status: HttpStatus.NOT_FOUND,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  methodNotAllowed(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'METHOD_NOT_ALLOWED',
+      defaultMsg: 'Method Not Allowed',
+      status: HttpStatus.METHOD_NOT_ALLOWED,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  unsupportedMediaType(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'UNSUPPORTED_MEDIA_TYPE',
+      defaultMsg: 'Unsupported Media Type',
+      status: HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  timeout(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'TIMEOUT',
+      defaultMsg: 'Request Timeout',
+      status: HttpStatus.REQUEST_TIMEOUT,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+  internalError(options: ErrorResponseOptions = {}): KoriResponse {
+    setErrorInternal({
+      res: this,
+      errorType: 'INTERNAL_SERVER_ERROR',
+      defaultMsg: 'Internal Server Error',
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      options,
+    });
+    return this as unknown as KoriResponse;
+  },
+
+  build(): Response {
+    let body: BodyInit | null = null;
+    switch (this.bodyKind) {
+      case 'json':
+      case 'text':
+      case 'html':
+        body = this.bodyValue as string;
+        break;
+      case 'stream':
+        body = this.bodyValue as ReadableStream;
+        break;
+      default:
+        body = null;
+    }
+    return new Response(body, {
+      status: this.statusCode,
+      headers: this.headers,
+    });
+  },
+
+  getStatus(): HttpStatusCode {
+    return this.statusCode;
+  },
+  getHeaders(): Headers {
+    return new Headers(this.headers);
+  },
+  getBody(): unknown {
+    return this.bodyValue;
+  },
+  getContentType(): string | undefined {
+    return this.headers?.get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+  },
+  isReady(): boolean {
+    return this.bodyKind !== 'none';
+  },
+  isStream(): boolean {
+    return this.bodyKind === 'stream';
+  },
+} satisfies Omit<KoriResponse, typeof KoriResponseBrand> & ThisType<ResState>;
 
 export function createKoriResponse(): KoriResponse {
-  let response: Response | null = null;
-  let currentStatus: HttpStatusCode = HttpStatus.OK;
-  let bodyValue: unknown = null;
-  let isStreamBody = false;
+  const obj = Object.create(sharedMethods) as ResState;
 
-  const self: KoriResponse = {
-    [KoriResponseBrand]: KoriResponseBrand,
+  obj[KoriResponseBrand] = KoriResponseBrand;
+  obj.statusCode = HttpStatus.OK;
+  obj.headers = undefined;
+  obj.headersShared = false;
+  obj.bodyKind = 'none';
+  obj.bodyValue = undefined;
 
-    status: function (statusCode: HttpStatusCode) {
-      currentStatus = statusCode;
-      if (response) {
-        // Response is immutable, so we need to recreate it with new status
-        const newResponse = new Response(response.body, {
-          status: statusCode,
-          headers: response.headers,
-        });
-        response = newResponse;
-      }
-      return self;
-    },
-
-    setHeader: function (key: HttpResponseHeaderValue, value: string) {
-      if (response) {
-        response.headers.set(key, value);
-      }
-      return self;
-    },
-
-    appendHeader: function (key: HttpResponseHeaderValue, value: string) {
-      if (response) {
-        response.headers.append(key, value);
-      }
-      return self;
-    },
-
-    removeHeader: function (key: HttpResponseHeaderValue) {
-      if (response) {
-        response.headers.delete(key);
-      }
-      return self;
-    },
-
-    json: function <T>(body: T, statusCode?: HttpStatusCode) {
-      bodyValue = body;
-      isStreamBody = false;
-      response = new Response(JSON.stringify(body), {
-        status: statusCode ?? currentStatus,
-        headers: {
-          'content-type': 'application/json;charset=utf-8',
-        },
-      });
-      return self;
-    },
-
-    text: function (body: string, statusCode?: HttpStatusCode) {
-      bodyValue = body;
-      isStreamBody = false;
-      response = new Response(body, {
-        status: statusCode ?? currentStatus,
-        headers: {
-          'content-type': 'text/plain;charset=utf-8',
-        },
-      });
-      return self;
-    },
-
-    html: function (body: string, statusCode?: HttpStatusCode) {
-      bodyValue = body;
-      isStreamBody = false;
-      response = new Response(body, {
-        status: statusCode ?? currentStatus,
-        headers: {
-          'content-type': 'text/html;charset=utf-8',
-        },
-      });
-      return self;
-    },
-
-    empty: function (statusCode: HttpStatusCode = HttpStatus.NO_CONTENT) {
-      bodyValue = null;
-      isStreamBody = false;
-      response = new Response(null, {
-        status: statusCode,
-      });
-      return self;
-    },
-
-    stream: function (body: ReadableStream, statusCode?: HttpStatusCode) {
-      bodyValue = body;
-      isStreamBody = true;
-      response = new Response(body, {
-        status: statusCode ?? currentStatus,
-        headers: {
-          'content-type': 'application/octet-stream',
-        },
-      });
-      return self;
-    },
-
-    badRequest: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Bad Request';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.BAD_REQUEST);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'BAD_REQUEST',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.BAD_REQUEST);
-      }
-    },
-
-    unauthorized: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Unauthorized';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.UNAUTHORIZED);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'UNAUTHORIZED',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.UNAUTHORIZED);
-      }
-    },
-
-    forbidden: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Forbidden';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.FORBIDDEN);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'FORBIDDEN',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.FORBIDDEN);
-      }
-    },
-
-    notFound: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Not Found';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.NOT_FOUND);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'NOT_FOUND',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.NOT_FOUND);
-      }
-    },
-
-    methodNotAllowed: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Method Not Allowed';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.METHOD_NOT_ALLOWED);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'METHOD_NOT_ALLOWED',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.METHOD_NOT_ALLOWED);
-      }
-    },
-
-    unsupportedMediaType: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Unsupported Media Type';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'UNSUPPORTED_MEDIA_TYPE',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-      }
-    },
-
-    timeout: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Request Timeout';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.REQUEST_TIMEOUT);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'TIMEOUT',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.REQUEST_TIMEOUT);
-      }
-    },
-
-    internalError: function (options: ErrorResponseOptions = {}) {
-      const message = options.message ?? 'Internal Server Error';
-      if (options.type === 'text') {
-        return self.text(message, HttpStatus.INTERNAL_SERVER_ERROR);
-      } else {
-        const body = createErrorResponseBodyJson({
-          errorType: 'INTERNAL_SERVER_ERROR',
-          message,
-          details: options.details,
-        });
-        return self.json(body, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    },
-
-    getStatus: function () {
-      return response?.status ?? currentStatus;
-    },
-
-    getHeaders: function (): Headers {
-      return response ? new Headers(response.headers) : new Headers();
-    },
-
-    getBody: function (): unknown {
-      return bodyValue;
-    },
-
-    getContentType: function (): string | undefined {
-      return response?.headers.get('content-type') ?? undefined;
-    },
-
-    isSet: function (): boolean {
-      return response !== null;
-    },
-
-    isStream: function (): boolean {
-      return isStreamBody;
-    },
-
-    build: function (): Response {
-      if (!response) {
-        // If no response has been set, return an empty response
-        return new Response(null, { status: currentStatus });
-      }
-      return response;
-    },
-  };
-
-  return self;
+  return obj as unknown as KoriResponse;
 }

@@ -110,7 +110,7 @@ function getOriginHeader(
 }
 
 function isPreflightRequest(req: KoriRequest): boolean {
-  return req.method === 'OPTIONS' && req.headers['access-control-request-method'] !== undefined;
+  return req.method() === 'OPTIONS' && req.headers()['access-control-request-method'] !== undefined;
 }
 
 function setVaryHeader(res: KoriResponse, header: string): void {

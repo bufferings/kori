@@ -59,25 +59,21 @@ export function createHonoRouter(): KoriRouter {
 
     compile: (): KoriCompiledRouter => {
       return (request: Request): KoriRoutingMatch | undefined => {
-        const url = new URL(request.url);
-
         const method = request.method;
-        const path = url.pathname;
+        // Extract path directly using regex (same as Hono, avoids new URL())
+        const path = request.url.replace(/https?:\/\/[^/]+/, '');
 
         const matched = router.match(method, path);
-        if (matched && matched.length > 0 && matched[0].length > 0) {
-          const handler = matched[0]?.[0]?.[0];
-          if (!handler) {
-            return undefined;
-          }
-          const pathParams = convertParams(matched);
-          return {
-            handler,
-            pathParams,
-          };
+        const handler = matched[0]?.[0]?.[0];
+        if (!handler) {
+          return undefined;
         }
 
-        return undefined;
+        const pathParams = convertParams(matched);
+        return {
+          handler,
+          pathParams,
+        };
       };
     },
   };

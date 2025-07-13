@@ -22,11 +22,11 @@ export type KoriLogSerializers = {
 };
 
 const defaultKoriRequestSerializer: LogDataSerializer<KoriRequest> = (req: KoriRequest) => ({
-  url: req.url.toString(),
-  method: req.method,
-  pathParams: req.pathParams,
-  queryParams: req.queryParams,
-  headers: req.headers,
+  url: req.url().toString(),
+  method: req.method(),
+  pathParams: req.pathParams(),
+  queryParams: req.queryParams(),
+  headers: req.headers(),
 });
 
 const defaultKoriResponseSerializer: LogDataSerializer<KoriResponse> = (res: KoriResponse) => ({
