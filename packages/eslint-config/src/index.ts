@@ -96,6 +96,13 @@ export const baseConfig = tseslint.config(
 
   // Prettier should be last
   eslintConfigPrettier,
+
+  // Re-enable the curly-braces rule AFTER eslint-config-prettier, which turns it off.
+  {
+    rules: {
+      curly: 'error',
+    },
+  },
 );
 
 export const koriConfig = [

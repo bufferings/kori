@@ -61,8 +61,12 @@ export const noDuplicateExportFrom = createRule({
                     const aIsType = a.exportKind === 'type';
                     const bIsType = b.exportKind === 'type';
 
-                    if (aIsType && !bIsType) return -1;
-                    if (!aIsType && bIsType) return 1;
+                    if (aIsType && !bIsType) {
+                      return -1;
+                    }
+                    if (!aIsType && bIsType) {
+                      return 1;
+                    }
 
                     const aName =
                       a.exported.type === AST_NODE_TYPES.Identifier ? a.exported.name : String(a.exported.value);

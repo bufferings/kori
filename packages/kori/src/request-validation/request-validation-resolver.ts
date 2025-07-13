@@ -109,10 +109,18 @@ export function resolveRequestValidationFunction({
     }
 
     const errors: KoriRequestValidationError<unknown> = {};
-    if (!paramsResult.ok) errors.params = paramsResult.error;
-    if (!queriesResult.ok) errors.queries = queriesResult.error;
-    if (!headersResult.ok) errors.headers = headersResult.error;
-    if (!bodyResult.ok) errors.body = bodyResult.error;
+    if (!paramsResult.ok) {
+      errors.params = paramsResult.error;
+    }
+    if (!queriesResult.ok) {
+      errors.queries = queriesResult.error;
+    }
+    if (!headersResult.ok) {
+      errors.headers = headersResult.error;
+    }
+    if (!bodyResult.ok) {
+      errors.body = bodyResult.error;
+    }
     return err(errors);
   };
 }

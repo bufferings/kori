@@ -31,7 +31,9 @@ export const asciiOnlySource = createRule({
 
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
           const line = lines[lineIndex];
-          if (!line) continue;
+          if (!line) {
+            continue;
+          }
 
           let match;
           const regex = new RegExp(nonAsciiRegex.source, 'g');

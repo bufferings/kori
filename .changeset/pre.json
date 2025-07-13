@@ -15,7 +15,5 @@
     "@korix/zod-validator": "0.0.1",
     "@korix/example": "0.1.0"
   },
-  "changesets": [
-    "optimize-pipeline-router"
-  ]
+  "changesets": []
 }

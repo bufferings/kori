@@ -90,7 +90,9 @@ export function createRouteCollector(): RouteCollector {
   function generateParameters(route: RouteInfo, context: ConversionContext): ParameterObject[] {
     const parameters: ParameterObject[] = [];
 
-    if (!route.requestSchema) return parameters;
+    if (!route.requestSchema) {
+      return parameters;
+    }
 
     const schema = route.requestSchema;
 

@@ -59,7 +59,9 @@ app.post('/upload-stream', {
     try {
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
 
         totalBytes += value.length;
         chunks.push(value);

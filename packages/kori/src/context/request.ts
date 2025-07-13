@@ -88,7 +88,9 @@ function getPathParamsInternal(req: ReqStateAny): Record<string, string> {
 }
 
 function getQueryParamsInternal(req: ReqStateAny): Record<string, string | string[]> {
-  if (req.queriesCache) return req.queriesCache;
+  if (req.queriesCache) {
+    return req.queriesCache;
+  }
 
   const rawParams = new URLSearchParams(getUrlInternal(req).search);
   const obj: Record<string, string | string[]> = {};
@@ -102,7 +104,9 @@ function getQueryParamsInternal(req: ReqStateAny): Record<string, string | strin
 }
 
 function getHeadersInternal(req: ReqStateAny): Record<string, string> {
-  if (req.headersCache) return req.headersCache;
+  if (req.headersCache) {
+    return req.headersCache;
+  }
 
   const rawHeaders = new Headers(req.raw.headers);
   const obj: Record<string, string> = {};
