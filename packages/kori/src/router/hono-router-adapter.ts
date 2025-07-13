@@ -2,6 +2,7 @@ import { type Result } from 'hono/router';
 import { RegExpRouter } from 'hono/router/reg-exp-router';
 import { SmartRouter } from 'hono/router/smart-router';
 import { TrieRouter } from 'hono/router/trie-router';
+import { getPath } from 'hono/utils/url';
 
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 
@@ -60,8 +61,7 @@ export function createHonoRouter(): KoriRouter {
     compile: (): KoriCompiledRouter => {
       return (request: Request): KoriRoutingMatch | undefined => {
         const method = request.method;
-        // Extract path directly using regex (same as Hono, avoids new URL())
-        const path = request.url.replace(/https?:\/\/[^/]+/, '');
+        const path = getPath(request);
 
         const matched = router.match(method, path);
         const handler = matched[0]?.[0]?.[0];
