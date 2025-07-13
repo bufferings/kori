@@ -144,6 +144,7 @@ function getBodyArrayBufferInternal(req: ReqStateAny): Promise<ArrayBuffer> {
 }
 
 function getBodyStreamInternal(req: ReqStateAny): ReadableStream | null {
+  // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
   return req.raw.clone().body;
 }
 
