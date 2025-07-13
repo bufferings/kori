@@ -42,7 +42,6 @@ type BodyCache = {
   text?: Promise<string>;
   formData?: Promise<FormData>;
   arrayBuffer?: Promise<ArrayBuffer>;
-  stream?: ReadableStream<Uint8Array> | null;
 };
 
 type ReqState<PathParams extends Record<string, string>> = {
@@ -145,8 +144,7 @@ function getBodyArrayBufferInternal(req: ReqStateAny): Promise<ArrayBuffer> {
 }
 
 function getBodyStreamInternal(req: ReqStateAny): ReadableStream | null {
-  req.bodyCache.stream ??= req.raw.clone().body;
-  return req.bodyCache.stream;
+  return req.raw.clone().body;
 }
 
 function parseBodyInternal(req: ReqStateAny): Promise<unknown> {
