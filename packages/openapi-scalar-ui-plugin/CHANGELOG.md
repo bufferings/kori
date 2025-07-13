@@ -1,5 +1,13 @@
 # @korix/openapi-scalar-ui-plugin
 
+## 0.1.0-alpha.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @korix/kori@0.1.0-alpha.2
+  - @korix/openapi-plugin@0.1.0-alpha.2
+
 ## 0.1.0-alpha.1
 
 ### Patch Changes

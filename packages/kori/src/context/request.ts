@@ -38,7 +38,6 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
 type KoriRequestAny = KoriRequest<any>;
 
 type BodyCache = {
-  body?: ReadableStream<Uint8Array> | null;
   json?: Promise<unknown>;
   text?: Promise<string>;
   formData?: Promise<FormData>;
@@ -62,11 +61,6 @@ type ReqState<PathParams extends Record<string, string>> = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReqStateAny = ReqState<any>;
-
-function cloneRaw(req: ReqStateAny): Request {
-  req.clonedRawRequest ??= req.raw.clone();
-  return req.clonedRawRequest;
-}
 
 function getLogInternal(req: ReqStateAny): KoriLogger {
   req.logCache ??= req.rootLogger.child('request');
@@ -130,28 +124,28 @@ function getContentTypeInternal(req: ReqStateAny): ContentTypeValue | undefined 
 }
 
 function getBodyJsonInternal(req: ReqStateAny): Promise<unknown> {
-  req.bodyCache.json ??= cloneRaw(req).json();
+  req.bodyCache.json ??= req.raw.clone().json();
   return req.bodyCache.json;
 }
 
 function getBodyTextInternal(req: ReqStateAny): Promise<string> {
-  req.bodyCache.text ??= cloneRaw(req).text();
+  req.bodyCache.text ??= req.raw.clone().text();
   return req.bodyCache.text;
 }
 
 function getBodyFormDataInternal(req: ReqStateAny): Promise<FormData> {
-  req.bodyCache.formData ??= cloneRaw(req).formData();
+  req.bodyCache.formData ??= req.raw.clone().formData();
   return req.bodyCache.formData;
 }
 
 function getBodyArrayBufferInternal(req: ReqStateAny): Promise<ArrayBuffer> {
-  req.bodyCache.arrayBuffer ??= cloneRaw(req).arrayBuffer();
+  req.bodyCache.arrayBuffer ??= req.raw.clone().arrayBuffer();
   return req.bodyCache.arrayBuffer;
 }
 
 function getBodyStreamInternal(req: ReqStateAny): ReadableStream | null {
-  req.bodyCache.body ??= cloneRaw(req).body;
-  return req.bodyCache.body;
+  // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
+  return req.raw.clone().body;
 }
 
 function parseBodyInternal(req: ReqStateAny): Promise<unknown> {

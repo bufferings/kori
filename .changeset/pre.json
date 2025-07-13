@@ -16,6 +16,8 @@
     "@korix/example": "0.1.0"
   },
   "changesets": [
-    "add-curly-rule"
+    "add-curly-rule",
+    "fix-request-body-cloning",
+    "optimize-pipeline-router"
   ]
 }
