@@ -1,5 +1,12 @@
 # @korix/pino-adapter
 
+## 0.1.0-alpha.1
+
+### Patch Changes
+
+- Updated dependencies [5dd65db]
+  - @korix/kori@0.1.0-alpha.1
+
 ## 0.1.0-alpha.0
 
 ### Minor Changes

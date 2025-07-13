@@ -78,3 +78,14 @@ export const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
  * It also includes `string` as a fallback for any content types not explicitly listed.
  */
 export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | (string & {});
+
+// -----------------------------------------------------------
+// UTF-8 suffixed Content-Type constants used frequently in responses
+// -----------------------------------------------------------
+export const ContentTypeUtf8 = {
+  APPLICATION_JSON: 'application/json;charset=utf-8',
+  TEXT_PLAIN: 'text/plain;charset=utf-8',
+  TEXT_HTML: 'text/html;charset=utf-8',
+} as const;
+
+export type ContentTypeUtf8Value = (typeof ContentTypeUtf8)[keyof typeof ContentTypeUtf8];

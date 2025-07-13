@@ -128,36 +128,36 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         const { req, res } = ctx;
 
         // Request-level logger with request tracing
-        const requestLog = req.log.child(LOGGER_NAME);
+        const requestLog = req.log().child(LOGGER_NAME);
 
         // Skip methods that don't typically have bodies
-        if (!METHODS_WITH_BODY.has(req.method)) {
+        if (!METHODS_WITH_BODY.has(req.method())) {
           requestLog.debug('Skipping body limit check for method without body', {
-            method: req.method,
-            path: req.url.pathname,
+            method: req.method(),
+            path: req.url().pathname,
           });
           return;
         }
 
         // Skip check for certain paths
-        if (shouldSkipPath(req.url.pathname, compiledSkipPaths)) {
+        if (shouldSkipPath(req.url().pathname, compiledSkipPaths)) {
           requestLog.debug('Body limit check skipped for configured path', {
-            path: req.url.pathname,
-            method: req.method,
+            path: req.url().pathname,
+            method: req.method(),
           });
           return;
         }
 
         // Check Content-Length header
-        const contentLengthHeader = req.headers['content-length'];
+        const contentLengthHeader = req.headers()['content-length'];
 
         if (!contentLengthHeader) {
           // TODO: Support chunked transfer encoding (Transfer-Encoding: chunked)
           // For now, we can only check Content-Length header
           requestLog.debug('No Content-Length header found, cannot pre-check body size', {
-            path: req.url.pathname,
-            method: req.method,
-            transferEncoding: req.headers['transfer-encoding'],
+            path: req.url().pathname,
+            method: req.method(),
+            transferEncoding: req.headers()['transfer-encoding'],
           });
           return;
         }
@@ -165,10 +165,10 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         // Validate Content-Length format and value
         if (!isValidContentLength(contentLengthHeader)) {
           requestLog.warn('Invalid Content-Length header value', {
-            path: req.url.pathname,
-            method: req.method,
+            path: req.url().pathname,
+            method: req.method(),
             contentLength: contentLengthHeader,
-            userAgent: req.headers['user-agent'],
+            userAgent: req.headers()['user-agent'],
           });
 
           return res.status(HttpStatus.BAD_REQUEST).json({
@@ -181,15 +181,15 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         const contentLength = parseInt(contentLengthHeader, 10);
 
         if (contentLength > maxSize) {
-          const xForwardedFor = req.headers['x-forwarded-for']?.trim();
+          const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
           requestLog.warn('Request body size exceeds limit', {
-            path: req.url.pathname,
-            method: req.method,
+            path: req.url().pathname,
+            method: req.method(),
             contentLength,
             maxSize,
-            userAgent: req.headers['user-agent'],
+            userAgent: req.headers()['user-agent'],
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            remoteAddress: xForwardedFor || req.headers['x-real-ip'],
+            remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
           });
 
           // Use custom error handler if provided
@@ -216,8 +216,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         }
 
         requestLog.debug('Body size check passed', {
-          path: req.url.pathname,
-          method: req.method,
+          path: req.url().pathname,
+          method: req.method(),
           contentLength,
           maxSize,
         });

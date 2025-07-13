@@ -12,7 +12,10 @@
     "@korix/pino-adapter": "0.0.1",
     "@korix/zod-openapi-plugin": "0.0.1",
     "@korix/zod-schema": "0.0.1",
-    "@korix/zod-validator": "0.0.1"
+    "@korix/zod-validator": "0.0.1",
+    "@korix/example": "0.1.0"
   },
-  "changesets": ["initial-alpha-unified"]
+  "changesets": [
+    "optimize-pipeline-router"
+  ]
 }

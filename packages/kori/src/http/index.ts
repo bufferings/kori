@@ -1,4 +1,10 @@
-export { ContentType, type ContentTypeValue, DEFAULT_CONTENT_TYPE } from './content-types.js';
+export {
+  ContentType,
+  ContentTypeUtf8,
+  type ContentTypeUtf8Value,
+  type ContentTypeValue,
+  DEFAULT_CONTENT_TYPE,
+} from './content-types.js';
 export {
   HttpRequestHeader,
   type HttpRequestHeaderValue,

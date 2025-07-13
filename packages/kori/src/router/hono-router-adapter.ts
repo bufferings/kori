@@ -2,6 +2,7 @@ import { type Result } from 'hono/router';
 import { RegExpRouter } from 'hono/router/reg-exp-router';
 import { SmartRouter } from 'hono/router/smart-router';
 import { TrieRouter } from 'hono/router/trie-router';
+import { getPath } from 'hono/utils/url';
 
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 
@@ -59,25 +60,20 @@ export function createHonoRouter(): KoriRouter {
 
     compile: (): KoriCompiledRouter => {
       return (request: Request): KoriRoutingMatch | undefined => {
-        const url = new URL(request.url);
-
         const method = request.method;
-        const path = url.pathname;
+        const path = getPath(request);
 
         const matched = router.match(method, path);
-        if (matched && matched.length > 0 && matched[0].length > 0) {
-          const handler = matched[0]?.[0]?.[0];
-          if (!handler) {
-            return undefined;
-          }
-          const pathParams = convertParams(matched);
-          return {
-            handler,
-            pathParams,
-          };
+        const handler = matched[0]?.[0]?.[0];
+        if (!handler) {
+          return undefined;
         }
 
-        return undefined;
+        const pathParams = convertParams(matched);
+        return {
+          handler,
+          pathParams,
+        };
       };
     },
   };
