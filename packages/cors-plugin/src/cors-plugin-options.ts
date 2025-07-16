@@ -1,21 +1,6 @@
 import { type KoriRequest } from '@korix/kori';
 
-export type CorsPluginOptions = {
-  /**
-   * Configures the Access-Control-Allow-Origin header
-   * - string: specific origin
-   * - string[]: array of allowed origins
-   * - boolean: true for '*', false to disable
-   * - function: dynamic origin validation
-   */
-  origin?: string | string[] | boolean | ((origin: string | undefined, req: KoriRequest) => boolean);
-
-  /**
-   * Configures the Access-Control-Allow-Credentials header
-   * Default: false
-   */
-  credentials?: boolean;
-
+type CorsOptionsBase = {
   /**
    * Configures the Access-Control-Allow-Methods header
    * Default: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']
@@ -46,3 +31,36 @@ export type CorsPluginOptions = {
    */
   optionsSuccessStatus?: number;
 };
+
+type OriginOptionsWithCredentials = {
+  /**
+   * Configures the Access-Control-Allow-Credentials header.
+   * When set to `true`, `origin` cannot be a wildcard (`true`).
+   */
+  credentials: true;
+  /**
+   * Configures the Access-Control-Allow-Origin header.
+   * - string: specific origin
+   * - string[]: array of allowed origins
+   * - function: dynamic origin validation
+   */
+  origin: string | string[] | ((origin: string, req: KoriRequest) => boolean);
+};
+
+type OriginOptionsWithoutCredentials = {
+  /**
+   * Configures the Access-Control-Allow-Credentials header.
+   * Can be `false` or omitted.
+   */
+  credentials?: false;
+  /**
+   * Configures the Access-Control-Allow-Origin header.
+   * - string: specific origin
+   * - string[]: array of allowed origins
+   * - boolean: true for '*', false to disable
+   * - function: dynamic origin validation
+   */
+  origin?: string | string[] | boolean | ((origin: string, req: KoriRequest) => boolean);
+};
+
+export type CorsPluginOptions = CorsOptionsBase & (OriginOptionsWithCredentials | OriginOptionsWithoutCredentials);
