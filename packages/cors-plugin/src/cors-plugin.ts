@@ -26,6 +26,7 @@ const CORS_HEADERS = {
   ACCESS_CONTROL_ALLOW_HEADERS: 'access-control-allow-headers',
   ACCESS_CONTROL_MAX_AGE: 'access-control-max-age',
   ACCESS_CONTROL_EXPOSE_HEADERS: 'access-control-expose-headers',
+  VARY: 'vary',
 } as const;
 
 function isPreflightRequest(req: KoriRequest): boolean {
@@ -58,7 +59,7 @@ function resolveAllowOrigin(req: KoriRequest, originOption: CorsPluginOptions['o
 export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   userOptions: CorsPluginOptions = {},
 ): KoriPlugin<Env, Req, Res> {
-  const options: Required<CorsPluginOptions> = {
+  const options = {
     origin: userOptions.origin ?? false,
     credentials: userOptions.credentials ?? false,
     allowMethods: userOptions.allowMethods ?? DEFAULT_METHODS,
@@ -93,6 +94,14 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
   }
   if (options.exposeHeaders.length > 0) {
     actualRequestHeaders.push([CORS_HEADERS.ACCESS_CONTROL_EXPOSE_HEADERS, options.exposeHeaders.join(', ')]);
+  }
+
+  // If Access-Control-Allow-Origin can vary per request,
+  // we need to add `Vary: Origin` so that caches differentiate responses.
+  const varyByOrigin = typeof options.origin === 'function' || Array.isArray(options.origin);
+  if (varyByOrigin) {
+    staticPreflightHeaders.push([CORS_HEADERS.VARY, 'origin']);
+    actualRequestHeaders.push([CORS_HEADERS.VARY, 'origin']);
   }
 
   return defineKoriPlugin({
