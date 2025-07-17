@@ -50,7 +50,7 @@ function resolveAllowOrigin(req: KoriRequest, originOption: CorsPluginOptions['o
     return originOption.includes(requestOrigin) ? requestOrigin : undefined;
   }
   if (originOption === true) {
-    return requestOrigin;
+    return '*';
   }
 
   return undefined;
