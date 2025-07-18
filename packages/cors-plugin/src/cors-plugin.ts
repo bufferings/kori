@@ -5,6 +5,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
   HttpStatus,
+  type KoriHandlerContext,
 } from '@korix/kori';
 
 import { type CorsPluginOptions } from './cors-plugin-options.js';
@@ -56,6 +57,37 @@ function resolveAllowOrigin(req: KoriRequest, originOption: CorsPluginOptions['o
   return undefined;
 }
 
+function appendVaryHeader(res: KoriResponse, field: 'Origin') {
+  const header = res.getHeaders().get('vary');
+  let headerValue: string;
+
+  if (Array.isArray(header)) {
+    headerValue = header.join(',');
+  } else if (typeof header === 'number') {
+    headerValue = String(header);
+  } else {
+    headerValue = header ?? '';
+  }
+
+  if (!headerValue) {
+    res.setHeader('vary', field);
+    return;
+  }
+
+  if (headerValue.includes('*')) {
+    return;
+  }
+
+  const fields = headerValue.split(',').map((f) => f.trim());
+  if (fields.some((f) => f.toLowerCase() === field.toLowerCase())) {
+    return;
+  }
+
+  res.setHeader('vary', `${headerValue}, ${field}`);
+}
+
+type HeaderSetter = (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>) => void;
+
 export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   userOptions: CorsPluginOptions = {},
 ): KoriPlugin<Env, Req, Res> {
@@ -69,39 +101,41 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     optionsSuccessStatus: userOptions.optionsSuccessStatus ?? DEFAULT_OPTIONS_SUCCESS_STATUS,
   };
 
-  // Preflight headers (static and dynamic)
-  const staticPreflightHeaders: [string, string][] = [];
-  const dynamicPreflightHeaders: [string, (req: KoriRequest) => string | undefined][] = [];
+  const preflightHeaderSetters: HeaderSetter[] = [];
+  const actualRequestHeaderSetters: HeaderSetter[] = [];
 
-  staticPreflightHeaders.push([CORS_HEADERS.ACCESS_CONTROL_ALLOW_METHODS, options.allowMethods.join(', ')]);
-  staticPreflightHeaders.push([CORS_HEADERS.ACCESS_CONTROL_MAX_AGE, options.maxAge.toString()]);
-  if (options.credentials) {
-    staticPreflightHeaders.push([CORS_HEADERS.ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true']);
-  }
-  if (options.allowHeaders === true) {
-    dynamicPreflightHeaders.push([
-      CORS_HEADERS.ACCESS_CONTROL_ALLOW_HEADERS,
-      (req) => req.header(CORS_HEADERS.ACCESS_CONTROL_REQUEST_HEADERS),
-    ]);
-  } else if (Array.isArray(options.allowHeaders) && options.allowHeaders.length > 0) {
-    staticPreflightHeaders.push([CORS_HEADERS.ACCESS_CONTROL_ALLOW_HEADERS, options.allowHeaders.join(', ')]);
+  // --- Preflight-specific headers ---
+  preflightHeaderSetters.push(
+    (ctx) => ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_METHODS, options.allowMethods.join(', ')),
+    (ctx) => ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_MAX_AGE, options.maxAge.toString()),
+  );
+  if (options.allowHeaders.length > 0) {
+    const allowHeadersValue = options.allowHeaders.join(', ');
+    preflightHeaderSetters.push((ctx) =>
+      ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_HEADERS, allowHeadersValue),
+    );
   }
 
-  // Actual request headers (always static)
-  const actualRequestHeaders: [string, string][] = [];
-  if (options.credentials) {
-    actualRequestHeaders.push([CORS_HEADERS.ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true']);
-  }
+  // --- Actual request-specific headers ---
   if (options.exposeHeaders.length > 0) {
-    actualRequestHeaders.push([CORS_HEADERS.ACCESS_CONTROL_EXPOSE_HEADERS, options.exposeHeaders.join(', ')]);
+    const exposeHeadersValue = options.exposeHeaders.join(', ');
+    actualRequestHeaderSetters.push((ctx) =>
+      ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeadersValue),
+    );
   }
 
-  // If Access-Control-Allow-Origin can vary per request,
-  // we need to add `Vary: Origin` so that caches differentiate responses.
+  // --- Common headers for both ---
+  if (options.credentials) {
+    const setter: HeaderSetter = (ctx) => ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true');
+    preflightHeaderSetters.push(setter);
+    actualRequestHeaderSetters.push(setter);
+  }
+
   const varyByOrigin = typeof options.origin === 'function' || Array.isArray(options.origin);
   if (varyByOrigin) {
-    staticPreflightHeaders.push([CORS_HEADERS.VARY, 'origin']);
-    actualRequestHeaders.push([CORS_HEADERS.VARY, 'origin']);
+    const setter: HeaderSetter = (ctx) => appendVaryHeader(ctx.res, 'Origin');
+    preflightHeaderSetters.push(setter);
+    actualRequestHeaderSetters.push(setter);
   }
 
   return defineKoriPlugin({
@@ -134,16 +168,8 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
           }
 
           ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
-
-          for (const [name, value] of staticPreflightHeaders) {
-            ctx.res.setHeader(name, value);
-          }
-
-          for (const [name, valueFunc] of dynamicPreflightHeaders) {
-            const value = valueFunc(ctx.req);
-            if (value) {
-              ctx.res.setHeader(name, value);
-            }
+          for (const setHeader of preflightHeaderSetters) {
+            setHeader(ctx);
           }
           return ctx.res.status(options.optionsSuccessStatus).empty();
         })
@@ -158,9 +184,8 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
           }
 
           ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
-
-          for (const [name, value] of actualRequestHeaders) {
-            ctx.res.setHeader(name, value);
+          for (const setHeader of actualRequestHeaderSetters) {
+            setHeader(ctx);
           }
         });
     },

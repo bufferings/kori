@@ -10,9 +10,8 @@ type CorsOptionsBase = {
   /**
    * Configures the Access-Control-Allow-Headers header
    * - string[]: specific headers
-   * - boolean: true to reflect request headers, false to disable
    */
-  allowHeaders?: string[] | boolean;
+  allowHeaders?: string[];
 
   /**
    * Configures the Access-Control-Expose-Headers header
