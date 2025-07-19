@@ -14,7 +14,8 @@ import { PLUGIN_VERSION } from './version.js';
 const PLUGIN_NAME = 'cors-plugin';
 
 const DEFAULT_METHODS = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'];
-const DEFAULT_MAX_AGE = 24 * 60 * 60;
+const SECONDS_IN_A_DAY = 24 * 60 * 60;
+const DEFAULT_MAX_AGE = SECONDS_IN_A_DAY;
 const DEFAULT_OPTIONS_SUCCESS_STATUS = HttpStatus.NO_CONTENT;
 
 const CORS_HEADERS = {
@@ -100,6 +101,12 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     maxAge: userOptions.maxAge ?? DEFAULT_MAX_AGE,
     optionsSuccessStatus: userOptions.optionsSuccessStatus ?? DEFAULT_OPTIONS_SUCCESS_STATUS,
   };
+
+  if (options.credentials && options.origin === true) {
+    throw new Error(
+      'CORS configuration error: The `origin` option cannot be `true` (wildcard) when `credentials` is enabled. Please specify a specific origin or a function.',
+    );
+  }
 
   const preflightHeaderSetters: HeaderSetter[] = [];
   const actualRequestHeaderSetters: HeaderSetter[] = [];
