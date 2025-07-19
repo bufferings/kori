@@ -1,5 +1,11 @@
 # @korix/zod-openapi-plugin
 
+## 0.1.0-alpha.3
+
+### Patch Changes
+
+- Refactor zod-openapi-plugin to move logic out of index.ts and improve file naming.
+
 ## 0.1.0-alpha.2
 
 ### Patch Changes
