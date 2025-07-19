@@ -6,6 +6,7 @@ import {
   type KoriEnvironment,
   HttpStatus,
   type KoriHandlerContext,
+  type KoriLogger,
 } from '@korix/kori';
 
 import { type CorsPluginOptions } from './cors-plugin-options.js';
@@ -30,6 +31,25 @@ const CORS_HEADERS = {
   ACCESS_CONTROL_EXPOSE_HEADERS: 'access-control-expose-headers',
   VARY: 'vary',
 } as const;
+
+function validateCorsOptions(log: KoriLogger, options: Pick<Required<CorsPluginOptions>, 'origin' | 'credentials'>) {
+  if (!options.credentials) {
+    return;
+  }
+
+  if (options.origin === true) {
+    const errorMessage =
+      'CORS configuration error: The `origin` option cannot be `true` (wildcard) when `credentials` is enabled. Please specify a specific origin or a function.';
+    log.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  if (options.origin === false) {
+    log.warn(
+      'CORS `credentials` is enabled, but the `origin` option is not configured. All CORS requests will be blocked. This might be intentional, but it is often a configuration error.',
+    );
+  }
+}
 
 function isPreflightRequest(req: KoriRequest): boolean {
   return req.method() === 'OPTIONS' && req.header(CORS_HEADERS.ACCESS_CONTROL_REQUEST_METHOD) !== undefined;
@@ -138,20 +158,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     version: PLUGIN_VERSION,
     apply: (kori) => {
       const log = kori.log.child(PLUGIN_NAME);
-
-      if (options.credentials) {
-        if (options.origin === true) {
-          const errorMessage =
-            'CORS configuration error: The `origin` option cannot be `true` (wildcard) when `credentials` is enabled. Please specify a specific origin or a function.';
-          log.error(errorMessage);
-          throw new Error(errorMessage);
-        }
-        if (options.origin === false) {
-          log.warn(
-            'CORS `credentials` is enabled, but the `origin` option is not configured. All CORS requests will be blocked. This might be intentional, but it is often a configuration error.',
-          );
-        }
-      }
+      validateCorsOptions(log, options);
 
       log.info('CORS plugin initialized', {
         origin: typeof options.origin === 'function' ? 'function' : options.origin,
