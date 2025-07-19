@@ -2,6 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "//#clean:root": {
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    },
     "typecheck": {},
     "lint": {
       "dependsOn": ["@korix/eslint-config#build"]
@@ -9,7 +15,6 @@
     "lint:fix": {
       "dependsOn": ["@korix/eslint-config#build"]
     },
-    "clean": {},
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]

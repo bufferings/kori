@@ -46,6 +46,7 @@ export type KoriInternalShared = {
   root: KoriInternalAny;
   router: KoriRouter;
   rootLogger: KoriLogger;
+  applicationLogger: KoriLogger;
 };
 
 export type KoriInternal<
@@ -113,7 +114,9 @@ export function createKoriInternal<
   const _finallyHooks: KoriOnFinallyHookAny[] = [...parentHandlerHooks.finallyHooks];
 
   const _internal: KoriInternal<Env, Req, Res, RequestValidator, ResponseValidator> = {
-    log: _shared.rootLogger.child('application'),
+    log() {
+      return _shared.applicationLogger;
+    },
 
     _collectInitHooks() {
       const childHooks = _children.flatMap((child) => child._collectInitHooks());
