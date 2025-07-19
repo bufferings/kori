@@ -84,7 +84,7 @@ export type Kori<
   ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
 > = {
   // Logger
-  log: KoriLogger;
+  log(): KoriLogger;
 
   // Lifestyle Hooks
   onInit<EnvExt>(hook: KoriOnInitHook<Env, EnvExt>): Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;

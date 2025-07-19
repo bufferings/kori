@@ -19,11 +19,11 @@ function setupGracefulShutdown<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(server: ServerType, kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>, onClose: () => Promise<void>) {
   const handler = async () => {
-    kori.log.info('Shutting down server...');
+    kori.log().info('Shutting down server...');
     await onClose();
     server.close((err) => {
       if (err) {
-        kori.log.error('Error closing server', { err });
+        kori.log().error('Error closing server', { err });
         process.exit(1);
       }
       process.exit(0);
@@ -62,9 +62,11 @@ export async function startNodeServer<
     port,
     hostname,
   });
-  server.listen(port, hostname, () => {
-    kori.log.info(`Kori server started at http://${hostname}:${port}`);
-  });
+  if (hostname && port) {
+    server.listen(port, hostname, () => {
+      kori.log().info(`Kori server started at http://${hostname}:${port}`);
+    });
+  }
 
   if (options.enableGracefulShutdown ?? true) {
     setupGracefulShutdown(server, kori, onClose);

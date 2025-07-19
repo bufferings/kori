@@ -121,7 +121,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
     version: PLUGIN_VERSION,
     apply: (kori) => {
       // Instance-level logger for plugin initialization
-      const log = kori.log.child(LOGGER_NAME);
+      const log = kori.log().child(LOGGER_NAME);
       log.info(`Plugin initialized with max size: ${maxSize} bytes`);
 
       return kori.onRequest((ctx) => {

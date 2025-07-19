@@ -4,7 +4,8 @@
   "type": "module",
   "packageManager": "pnpm@9.15.3",
   "scripts": {
-    "clean": "turbo run clean",
+    "clean:root": "rimraf .turbo",
+    "clean": "turbo run clean:root clean",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
@@ -22,6 +23,7 @@
     "eslint": "catalog:",
     "lefthook": "1.10.1",
     "prettier": "3.4.2",
+    "rimraf": "catalog:",
     "turbo": "2.5.4"
   }
 }
