@@ -19,6 +19,9 @@
     "add-curly-rule",
     "cors-plugin-performance-refactor",
     "fix-request-body-cloning",
-    "optimize-pipeline-router"
+    "optimize-pipeline-router",
+    "refactor-nodejs-adapter-index",
+    "refactor-pino-adapter-index",
+    "refactor-zod-openapi-plugin"
   ]
 }
