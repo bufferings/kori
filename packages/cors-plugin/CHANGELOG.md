@@ -1,5 +1,17 @@
 # @korix/cors-plugin
 
+## 0.1.0-alpha.3
+
+### Patch Changes
+
+- Refactor CORS plugin for better performance and maintainability
+
+  - Optimize header setting by pre-computing static headers at initialization time
+  - Separate static and dynamic header handling to eliminate runtime type checking
+  - Remove conditional branching in hot path for better performance
+  - Improve code organization by splitting into separate files
+  - Maintain full CORS specification compliance with secure defaults
+
 ## 0.1.0-alpha.2
 
 ### Patch Changes
