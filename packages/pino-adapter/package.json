@@ -1,6 +1,6 @@
 {
   "name": "@korix/pino-adapter",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.4",
   "description": "Pino logger adapter for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

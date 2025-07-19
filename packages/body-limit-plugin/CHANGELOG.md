@@ -1,18 +1,10 @@
 # @korix/body-limit-plugin
 
-## 0.1.0-alpha.4
-
-### Patch Changes
-
-- Refactor the logger to be accessed via a `log()` method instead of a property. This improves consistency and prepares for future enhancements where logger instances might be dynamically created or configured.
-- Updated dependencies
-  - @korix/kori@0.1.0-alpha.4
-
 ## 0.1.0-alpha.3
 
 ### Patch Changes
 
-- Apply patch update for internal changes.
+- Refactor the logger to be accessed via a `log()` method instead of a property. This improves consistency and prepares for future enhancements where logger instances might be dynamically created or configured.
 - Updated dependencies
   - @korix/kori@0.1.0-alpha.3
 

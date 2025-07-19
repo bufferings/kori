@@ -1,12 +1,5 @@
 # @korix/openapi-plugin
 
-## 0.1.0-alpha.4
-
-### Patch Changes
-
-- Updated dependencies
-  - @korix/kori@0.1.0-alpha.4
-
 ## 0.1.0-alpha.3
 
 ### Patch Changes

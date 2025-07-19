@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 
 import { createAdaptorServer, type ServerType } from '@hono/node-server';
 import {
@@ -51,8 +50,8 @@ export async function startNodeServer<
     enableGracefulShutdown?: boolean;
   } = {},
 ): Promise<void> {
-  const port = options.port || 3000;
-  const hostname = options.hostname || 'localhost';
+  const port = options.port ?? 3000;
+  const hostname = options.hostname ?? 'localhost';
 
   const generated = kori.generate();
   const { fetchHandler, onClose } = await generated.onInit();
@@ -62,11 +61,23 @@ export async function startNodeServer<
     port,
     hostname,
   });
-  if (hostname && port) {
-    server.listen(port, hostname, () => {
-      kori.log().info(`Kori server started at http://${hostname}:${port}`);
-    });
-  }
+
+  server.listen(port, hostname, () => {
+    const address = server.address();
+    if (address && typeof address !== 'string') {
+      const actualHost = address.address;
+      const actualPort = address.port;
+      const displayHost = address.family === 'IPv6' ? `[${actualHost}]` : actualHost;
+
+      kori.log().info(`Kori server started at http://${displayHost}:${actualPort}`);
+    } else if (address && typeof address === 'string') {
+      // For IPC (unix domain socket), just show the path
+      kori.log().info(`Kori server started at ${address}`);
+    } else {
+      // Fallback, though it should not be reachable for a TCP server
+      kori.log().info(`Kori server listening... (could not determine address)`);
+    }
+  });
 
   if (options.enableGracefulShutdown ?? true) {
     setupGracefulShutdown(server, kori, onClose);
