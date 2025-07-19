@@ -70,8 +70,11 @@ function appendVaryOriginHeader(res: KoriResponse) {
     return;
   }
 
-  const fields = headerValue.split(',').map((f) => f.trim());
-  if (fields.some((f) => f.toLowerCase() === CORS_HEADERS.ORIGIN)) {
+  const lowerCaseFields = headerValue
+    .toLowerCase()
+    .split(',')
+    .map((f) => f.trim());
+  if (lowerCaseFields.includes(CORS_HEADERS.ORIGIN)) {
     return;
   }
 
