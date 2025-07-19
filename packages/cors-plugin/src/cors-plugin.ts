@@ -58,20 +58,11 @@ function resolveAllowOrigin(req: KoriRequest, originOption: CorsPluginOptions['o
   return undefined;
 }
 
-function appendVaryHeader(res: KoriResponse, field: 'Origin') {
-  const header = res.getHeaders().get('vary');
-  let headerValue: string;
-
-  if (Array.isArray(header)) {
-    headerValue = header.join(',');
-  } else if (typeof header === 'number') {
-    headerValue = String(header);
-  } else {
-    headerValue = header ?? '';
-  }
+function appendVaryOriginHeader(res: KoriResponse) {
+  const headerValue = res.getHeaders().get(CORS_HEADERS.VARY) ?? '';
 
   if (!headerValue) {
-    res.setHeader('vary', field);
+    res.setHeader(CORS_HEADERS.VARY, CORS_HEADERS.ORIGIN);
     return;
   }
 
@@ -80,11 +71,11 @@ function appendVaryHeader(res: KoriResponse, field: 'Origin') {
   }
 
   const fields = headerValue.split(',').map((f) => f.trim());
-  if (fields.some((f) => f.toLowerCase() === field.toLowerCase())) {
+  if (fields.some((f) => f.toLowerCase() === CORS_HEADERS.ORIGIN)) {
     return;
   }
 
-  res.setHeader('vary', `${headerValue}, ${field}`);
+  res.setHeader(CORS_HEADERS.VARY, `${headerValue}, ${CORS_HEADERS.ORIGIN}`);
 }
 
 type HeaderSetter = (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>) => void;
@@ -101,12 +92,6 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     maxAge: userOptions.maxAge ?? DEFAULT_MAX_AGE,
     optionsSuccessStatus: userOptions.optionsSuccessStatus ?? DEFAULT_OPTIONS_SUCCESS_STATUS,
   };
-
-  if (options.credentials && options.origin === true) {
-    throw new Error(
-      'CORS configuration error: The `origin` option cannot be `true` (wildcard) when `credentials` is enabled. Please specify a specific origin or a function.',
-    );
-  }
 
   const preflightHeaderSetters: HeaderSetter[] = [];
   const actualRequestHeaderSetters: HeaderSetter[] = [];
@@ -140,7 +125,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
 
   const varyByOrigin = typeof options.origin === 'function' || Array.isArray(options.origin);
   if (varyByOrigin) {
-    const setter: HeaderSetter = (ctx) => appendVaryHeader(ctx.res, 'Origin');
+    const setter: HeaderSetter = (ctx) => appendVaryOriginHeader(ctx.res);
     preflightHeaderSetters.push(setter);
     actualRequestHeaderSetters.push(setter);
   }
@@ -150,6 +135,21 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     version: PLUGIN_VERSION,
     apply: (kori) => {
       const log = kori.log.child(PLUGIN_NAME);
+
+      if (options.credentials) {
+        if (options.origin === true) {
+          const errorMessage =
+            'CORS configuration error: The `origin` option cannot be `true` (wildcard) when `credentials` is enabled. Please specify a specific origin or a function.';
+          log.error(errorMessage);
+          throw new Error(errorMessage);
+        }
+        if (options.origin === false) {
+          log.warn(
+            'CORS `credentials` is enabled, but the `origin` option is not configured. All CORS requests will be blocked. This might be intentional, but it is often a configuration error.',
+          );
+        }
+      }
+
       log.info('CORS plugin initialized', {
         origin: typeof options.origin === 'function' ? 'function' : options.origin,
         credentials: options.credentials,
