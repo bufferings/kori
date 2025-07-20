@@ -22,7 +22,7 @@ export async function syncVersion(): Promise<void> {
       await mkdir(srcDir, { recursive: true });
     }
 
-    const versionContent = `export const PLUGIN_VERSION = '${version}';\n`;
+    const versionContent = `export const PLUGIN_VERSION = ${JSON.stringify(version)};\n`;
 
     // Check if version file exists and has the same content
     if (existsSync(versionFilePath)) {
