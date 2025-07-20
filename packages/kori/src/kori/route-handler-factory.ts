@@ -11,6 +11,7 @@ import {
   type KoriOnErrorHook,
   type KoriOnFinallyHook,
 } from '../hook/index.js';
+import { HttpStatus } from '../http/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -203,7 +204,17 @@ function createRequestValidationErrorHandler<
       }
     }
 
-    // 3. Default handling (always executed if no handler returns a response)
+    // 3. Handle pre-validation unsupported media type errors with 415 status
+    if (err.body?.stage === 'pre-validation' && err.body.type === 'UNSUPPORTED_MEDIA_TYPE') {
+      return ctx.res.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).json({
+        error: 'Unsupported Media Type',
+        message: err.body.message,
+        supportedTypes: err.body.supportedTypes,
+        requestedType: err.body.requestedType,
+      });
+    }
+
+    // 4. Default validation error handling with 400 status
     return ctx.res.badRequest({
       message: 'Request validation failed',
       details: err,
