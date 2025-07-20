@@ -21,7 +21,7 @@ export function scalarUiPlugin<
   Res extends KoriResponse,
 >(options: ScalarUiOptions = {}): KoriPlugin<Env, Req, Res> {
   return defineKoriPlugin({
-    name: 'openapi-ui-scalar',
+    name: 'openapi-scalar-ui-plugin',
     apply(kori) {
       const uiPath = options.path ?? '/docs';
       const title = options.title ?? 'API Documentation';

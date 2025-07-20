@@ -25,7 +25,7 @@ export type BodyLimitOptions = {
 
 // Constants
 const DEFAULT_MAX_SIZE = 1024 * 1024; // 1MB
-const PLUGIN_NAME = 'body-limit';
+const PLUGIN_NAME = 'body-limit-plugin';
 const LOGGER_NAME = 'body-limit';
 
 // HTTP methods that typically have request bodies
