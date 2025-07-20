@@ -86,18 +86,13 @@ function ensureVaryOriginHeader(res: KoriResponse) {
     return;
   }
 
-  // Wildcard vary header means no modification is needed.
-  if (currentValue.includes('*')) {
-    return;
-  }
+  // Split, trim, and check tokens in a single pass
+  const shouldSkip = currentValue.split(',').some((token) => {
+    const t = token.trim().toLowerCase();
+    return t === '*' || t === CORS_HEADERS.ORIGIN;
+  });
 
-  // Check if 'origin' is already present as a token.
-  // This regex is used for performance, avoiding array creation via .split().
-  // It correctly identifies 'origin' as a whole token by using lookarounds
-  // to ensure it's preceded by a comma or the start of the string,
-  // and followed by a comma or the end of the string.
-  const isOriginPresent = /(?<=^|,)\s*origin\s*(?=$|,)/i.test(currentValue);
-  if (isOriginPresent) {
+  if (shouldSkip) {
     return;
   }
 
