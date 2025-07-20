@@ -1,5 +1,15 @@
 # @korix/eslint-config
 
+## 0.1.0-alpha.2
+
+### Patch Changes
+
+- Update ESLint configuration and rules
+
+  - Mark package as private and update configuration
+  - Improve eslint rule implementations
+  - Add curly rule enforcement
+
 ## 0.1.0-alpha.1
 
 ### Patch Changes

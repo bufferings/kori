@@ -13,17 +13,22 @@
     "@korix/zod-openapi-plugin": "0.0.1",
     "@korix/zod-schema": "0.0.1",
     "@korix/zod-validator": "0.0.1",
-    "@korix/example": "0.1.0"
+    "@korix/example": "0.1.0",
+    "@korix/script": "0.0.1"
   },
   "changesets": [
     "add-curly-rule",
     "cors-plugin-performance-refactor",
+    "dev-tooling-updates",
+    "eslint-config-updates",
     "fix-request-body-cloning",
+    "kori-fix-415-status",
     "optimize-pipeline-router",
     "refactor-logger-as-method",
     "refactor-nodejs-adapter-index",
     "refactor-pino-adapter-index",
     "refactor-response-header-api",
-    "refactor-zod-openapi-plugin"
+    "refactor-zod-openapi-plugin",
+    "script-package-new"
   ]
 }

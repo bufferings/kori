@@ -1,5 +1,21 @@
 # @korix/zod-openapi-plugin
 
+## 0.1.0-alpha.6
+
+### Patch Changes
+
+- Improve development tooling and scripts
+
+  - Add sync:version script for automatic version synchronization
+  - Add @korix/script as development dependency
+  - Update package scripts to use new 'ks' CLI tool
+
+- Updated dependencies
+- Updated dependencies
+  - @korix/openapi-plugin@0.1.0-alpha.5
+  - @korix/kori@0.1.0-alpha.5
+  - @korix/zod-schema@0.1.0-alpha.5
+
 ## 0.1.0-alpha.5
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @korix/body-limit-plugin
 
+## 0.1.0-alpha.5
+
+### Patch Changes
+
+- Improve development tooling and scripts
+
+  - Add sync:version script for automatic version synchronization
+  - Add @korix/script as development dependency
+  - Update package scripts to use new 'ks' CLI tool
+
+- Updated dependencies
+  - @korix/kori@0.1.0-alpha.5
+
 ## 0.1.0-alpha.4
 
 ### Patch Changes

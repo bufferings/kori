@@ -1,5 +1,15 @@
 # @korix/kori
 
+## 0.1.0-alpha.5
+
+### Patch Changes
+
+- Fix UNSUPPORTED_MEDIA_TYPE to return proper 415 status code
+
+  - Add proper 415 status code handling for unsupported media type errors
+  - Include detailed error information with supported types and requested type
+  - Improve error handling flow for pre-validation media type errors
+
 ## 0.1.0-alpha.4
 
 ### Patch Changes
