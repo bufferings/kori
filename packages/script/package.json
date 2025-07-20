@@ -10,7 +10,7 @@
     "node": ">=18.0.0"
   },
   "bin": {
-    "kori-script": "./dist/cli.js"
+    "ks": "./dist/cli.js"
   },
   "files": [
     "dist"

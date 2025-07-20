@@ -12,9 +12,9 @@ export async function syncVersion(): Promise<void> {
   try {
     const packageJsonContent = await readFile(packageJsonPath, 'utf-8');
 
-    let packageJson;
+    let packageJson: { version?: unknown };
     try {
-      packageJson = JSON.parse(packageJsonContent);
+      packageJson = JSON.parse(packageJsonContent) as { version?: unknown };
     } catch (parseError) {
       if (parseError instanceof SyntaxError) {
         throw new Error(`Invalid JSON in package.json: ${parseError.message}`);
@@ -22,8 +22,7 @@ export async function syncVersion(): Promise<void> {
       throw parseError;
     }
 
-    const version = packageJson.version;
-
+    const version = typeof packageJson?.version === 'string' ? packageJson.version : undefined;
     if (!version) {
       throw new Error('No version found in package.json');
     }

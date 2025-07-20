@@ -6,14 +6,13 @@ pre-commit:
     typecheck:
       run: pnpm typecheck
 
-    eslint:
-      glob: '*.{ts, tsx, js}'
-      run: pnpm eslint --fix {staged_files}
+    lint:
+      run: pnpm lint:fix
       stage_fixed: true
       skip:
         - merge
         - rebase
-    prettier:
+    format:
       glob: '*.{ts, tsx, js, yml, yaml, json}'
       run: pnpm prettier --write {staged_files}
       stage_fixed: true
