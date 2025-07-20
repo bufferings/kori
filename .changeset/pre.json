@@ -23,6 +23,7 @@
     "refactor-logger-as-method",
     "refactor-nodejs-adapter-index",
     "refactor-pino-adapter-index",
+    "refactor-response-header-api",
     "refactor-zod-openapi-plugin"
   ]
 }
