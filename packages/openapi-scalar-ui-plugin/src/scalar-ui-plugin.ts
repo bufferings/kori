@@ -7,6 +7,8 @@ import {
 } from '@korix/kori';
 import { type OpenApiEnvironmentExtension, openApiMeta } from '@korix/openapi-plugin';
 
+import { PLUGIN_VERSION } from './version.js';
+
 export type ScalarUiOptions = {
   path?: string;
   title?: string;
@@ -22,6 +24,7 @@ export function scalarUiPlugin<
 >(options: ScalarUiOptions = {}): KoriPlugin<Env, Req, Res> {
   return defineKoriPlugin({
     name: 'openapi-scalar-ui-plugin',
+    version: PLUGIN_VERSION,
     apply(kori) {
       const uiPath = options.path ?? '/docs';
       const title = options.title ?? 'API Documentation';
