@@ -22,8 +22,8 @@ export async function syncVersion(): Promise<void> {
       throw parseError;
     }
 
-    const version = typeof packageJson?.version === 'string' ? packageJson.version : undefined;
-    if (!version) {
+    const version = packageJson.version;
+    if (typeof version !== 'string') {
       throw new Error('No version found in package.json');
     }
 
