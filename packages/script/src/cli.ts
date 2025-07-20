@@ -15,12 +15,7 @@ async function main() {
 
   switch (command) {
     case 'sync-version':
-      try {
-        await syncVersion();
-      } catch (error) {
-        console.error('Error:', error instanceof Error ? error.message : String(error));
-        process.exit(1);
-      }
+      await syncVersion();
       break;
 
     case '--help':
