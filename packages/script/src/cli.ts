@@ -3,7 +3,7 @@
 import { syncVersion } from './commands/index.js';
 
 function printUsage() {
-  console.log('Usage: kori-scripts <command>');
+  console.log('Usage: ks <command>');
   console.log('');
   console.log('Commands:');
   console.log('  sync-version  Sync package.json version to src/version.ts');
@@ -15,12 +15,7 @@ async function main() {
 
   switch (command) {
     case 'sync-version':
-      try {
-        await syncVersion();
-      } catch (error) {
-        console.error('Error:', error instanceof Error ? error.message : String(error));
-        process.exit(1);
-      }
+      await syncVersion();
       break;
 
     case '--help':
@@ -36,4 +31,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((error) => {
+  console.error('Error:', error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});

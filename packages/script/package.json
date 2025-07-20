@@ -1,6 +1,6 @@
 {
-  "name": "@korix/scripts",
-  "version": "0.1.0",
+  "name": "@korix/script",
+  "version": "0.0.2-alpha.0",
   "description": "Development CLI scripts for Kori framework",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "node": ">=18.0.0"
   },
   "bin": {
-    "kori-scripts": "./dist/cli.js"
+    "ks": "./dist/cli.js"
   },
   "files": [
     "dist"

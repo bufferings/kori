@@ -25,9 +25,9 @@ const app3 = createKori()
   .applyPlugin(
     corsPlugin({
       origin: ['https://app1.com', 'https://app2.com'],
-      methods: ['GET', 'POST', 'PUT'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      exposedHeaders: ['X-Total-Count'],
+      allowMethods: ['GET', 'POST', 'PUT'],
+      allowHeaders: ['Content-Type', 'Authorization'],
+      exposeHeaders: ['X-Total-Count'],
       maxAge: 3600, // 1 hour
     }),
   )
@@ -59,7 +59,6 @@ const app5 = createKori()
   .applyPlugin(
     corsPlugin({
       origin: true, // Wildcard origin - credentials must be false
-      preflightContinue: true,
       optionsSuccessStatus: 200,
       credentials: false, // Explicit to show CORS compliance
     }),

@@ -14,7 +14,7 @@
     "dev": "turbo watch dev:getting-started dev:usage",
     "test": "turbo run test",
     "changeset": "changeset",
-    "changeset:version": "changeset version",
+    "changeset:version": "changeset version && pnpm sync:version",
     "changeset:publish": "changeset publish",
     "sync:version": "turbo run sync:version"
   },

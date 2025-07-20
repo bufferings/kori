@@ -1,7 +1,7 @@
 {
   "name": "@korix/eslint-config",
   "private": true,
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Shared ESLint configuration for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

@@ -1,6 +1,6 @@
 {
   "name": "@korix/openapi-scalar-ui-plugin",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "Scalar UI plugin for OpenAPI documentation in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -53,7 +53,7 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:version": "kori-scripts sync-version"
+    "sync:version": "ks sync-version && prettier --write src/version.ts"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
@@ -64,7 +64,7 @@
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@korix/scripts": "workspace:*",
+    "@korix/script": "workspace:*",
     "@scalar/api-reference": "1.25.62",
     "@types/node": "catalog:",
     "eslint": "catalog:",

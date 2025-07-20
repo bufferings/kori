@@ -1,6 +1,6 @@
 {
   "name": "@korix/openapi-plugin",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "OpenAPI plugin for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
@@ -53,7 +53,7 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:version": "kori-scripts sync-version"
+    "sync:version": "ks sync-version && prettier --write src/version.ts"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
@@ -62,7 +62,7 @@
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
-    "@korix/scripts": "workspace:*",
+    "@korix/script": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "openapi3-ts": "4.4.0",
