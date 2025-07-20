@@ -16,7 +16,7 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "sync:version": "turbo run sync:version --no-cache"
+    "sync:version": "turbo run sync:version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
