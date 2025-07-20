@@ -1,7 +1,10 @@
 pre-commit:
   commands:
+    sync-version:
+      run: pnpm sync:version
+
     typecheck:
-      run: pnpm tsc --noEmit
+      run: pnpm typecheck
 
     eslint:
       glob: '*.{ts, tsx, js}'
