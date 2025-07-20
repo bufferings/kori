@@ -31,7 +31,7 @@ const defaultKoriRequestSerializer: LogDataSerializer<KoriRequest> = (req: KoriR
 
 const defaultKoriResponseSerializer: LogDataSerializer<KoriResponse> = (res: KoriResponse) => ({
   status: res.getStatus(),
-  headers: res.getHeaders(),
+  headers: res.getHeadersCopy(),
 });
 
 const defaultErrorSerializer: LogDataSerializer<unknown> = (data: unknown) => {

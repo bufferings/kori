@@ -38,10 +38,10 @@ export type KoriResponse = {
   internalError(options?: ErrorResponseOptions): KoriResponse;
 
   getStatus(): HttpStatusCode;
-  getHeaders(): Headers;
+  getHeadersCopy(): Headers;
   getHeader(name: HttpResponseHeaderName): string | undefined;
-  getBody(): unknown;
   getContentType(): string | undefined;
+  getBody(): unknown;
   isReady(): boolean;
   isStream(): boolean;
 
@@ -366,17 +366,17 @@ const sharedMethods = {
   getStatus(): HttpStatusCode {
     return this.statusCode;
   },
-  getHeaders(): Headers {
+  getHeadersCopy(): Headers {
     return new Headers(this.headers);
   },
   getHeader(name: HttpResponseHeaderName): string | undefined {
     return this.headers?.get(name) ?? undefined;
   },
-  getBody(): unknown {
-    return this.bodyValue;
-  },
   getContentType(): string | undefined {
     return this.headers?.get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+  },
+  getBody(): unknown {
+    return this.bodyValue;
   },
   isReady(): boolean {
     return this.bodyKind !== 'none';
