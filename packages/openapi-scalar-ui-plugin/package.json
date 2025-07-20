@@ -52,7 +52,8 @@
     "lint:fix": "eslint . --fix",
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sync:version": "kori-scripts sync-version"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
@@ -63,6 +64,7 @@
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
+    "@korix/scripts": "workspace:*",
     "@scalar/api-reference": "1.25.62",
     "@types/node": "catalog:",
     "eslint": "catalog:",
