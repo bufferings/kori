@@ -31,7 +31,8 @@
       "cache": false
     },
     "sync:version": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["@korix/scripts#build"]
     }
   }
 }
