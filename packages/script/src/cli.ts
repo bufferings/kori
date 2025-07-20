@@ -3,7 +3,7 @@
 import { syncVersion } from './commands/index.js';
 
 function printUsage() {
-  console.log('Usage: kori-scripts <command>');
+  console.log('Usage: kori-script <command>');
   console.log('');
   console.log('Commands:');
   console.log('  sync-version  Sync package.json version to src/version.ts');

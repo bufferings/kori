@@ -11,7 +11,7 @@ export async function syncVersion(): Promise<void> {
   // Read package.json
   try {
     const packageJsonContent = await readFile(packageJsonPath, 'utf-8');
-    
+
     let packageJson;
     try {
       packageJson = JSON.parse(packageJsonContent);
@@ -21,7 +21,7 @@ export async function syncVersion(): Promise<void> {
       }
       throw parseError;
     }
-    
+
     const version = packageJson.version;
 
     if (!version) {

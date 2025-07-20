@@ -32,7 +32,7 @@
     },
     "sync:version": {
       "cache": false,
-      "dependsOn": ["@korix/scripts#build"]
+      "dependsOn": ["@korix/script#build"]
     }
   }
 }

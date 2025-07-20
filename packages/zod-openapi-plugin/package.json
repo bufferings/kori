@@ -53,7 +53,7 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:version": "kori-scripts sync-version && prettier --write src/version.ts"
+    "sync:version": "kori-script sync-version && prettier --write src/version.ts"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
@@ -66,7 +66,7 @@
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@korix/scripts": "workspace:*",
+    "@korix/script": "workspace:*",
     "@korix/zod-schema": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",

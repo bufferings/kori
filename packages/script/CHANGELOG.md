@@ -1,4 +1,4 @@
-# @korix/scripts
+# @korix/script
 
 ## 0.1.0
 
