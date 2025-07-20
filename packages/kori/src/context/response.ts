@@ -1,7 +1,7 @@
 import {
   HttpStatus,
   type HttpStatusCode,
-  type HttpResponseHeaderValue,
+  type HttpResponseHeaderName,
   HttpResponseHeader,
   ContentTypeUtf8,
   ContentType,
@@ -18,9 +18,9 @@ export type KoriResponse = {
 
   status(statusCode: HttpStatusCode): KoriResponse;
 
-  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
-  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse;
-  removeHeader(key: HttpResponseHeaderValue): KoriResponse;
+  setHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
+  appendHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
+  removeHeader(name: HttpResponseHeaderName): KoriResponse;
 
   json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
   text(body: string, statusCode?: HttpStatusCode): KoriResponse;
@@ -39,7 +39,7 @@ export type KoriResponse = {
 
   getStatus(): HttpStatusCode;
   getHeaders(): Headers;
-  getHeader(key: HttpResponseHeaderValue): string | undefined;
+  getHeader(name: HttpResponseHeaderName): string | undefined;
   getBody(): unknown;
   getContentType(): string | undefined;
   isReady(): boolean;
@@ -70,24 +70,24 @@ function ensureHeaders(res: ResState): void {
   res.headers ??= new Headers();
 }
 
-function setHeaderInternal(res: ResState, key: HttpResponseHeaderValue, value: string): void {
+function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   ensureHeaders(res);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.set(key, value);
+  res.headers!.set(name, value);
 }
 
-function appendHeaderInternal(res: ResState, key: HttpResponseHeaderValue, value: string): void {
+function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   ensureHeaders(res);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.append(key, value);
+  res.headers!.append(name, value);
 }
 
-function removeHeaderInternal(res: ResState, key: HttpResponseHeaderValue): void {
+function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void {
   if (!res.headers) {
     return;
   }
   ensureHeaders(res);
-  res.headers.delete(key);
+  res.headers.delete(name);
 }
 
 function setStatusInternal(res: ResState, code: HttpStatusCode): void {
@@ -228,16 +228,16 @@ const sharedMethods = {
     return this as unknown as KoriResponse;
   },
 
-  setHeader(key: HttpResponseHeaderValue, value: string): KoriResponse {
-    setHeaderInternal(this, key, value);
+  setHeader(name: HttpResponseHeaderName, value: string): KoriResponse {
+    setHeaderInternal(this, name, value);
     return this as unknown as KoriResponse;
   },
-  appendHeader(key: HttpResponseHeaderValue, value: string): KoriResponse {
-    appendHeaderInternal(this, key, value);
+  appendHeader(name: HttpResponseHeaderName, value: string): KoriResponse {
+    appendHeaderInternal(this, name, value);
     return this as unknown as KoriResponse;
   },
-  removeHeader(key: HttpResponseHeaderValue): KoriResponse {
-    removeHeaderInternal(this, key);
+  removeHeader(name: HttpResponseHeaderName): KoriResponse {
+    removeHeaderInternal(this, name);
     return this as unknown as KoriResponse;
   },
 
@@ -369,8 +369,8 @@ const sharedMethods = {
   getHeaders(): Headers {
     return new Headers(this.headers);
   },
-  getHeader(key: HttpResponseHeaderValue): string | undefined {
-    return this.headers?.get(key) ?? undefined;
+  getHeader(name: HttpResponseHeaderName): string | undefined {
+    return this.headers?.get(name) ?? undefined;
   },
   getBody(): unknown {
     return this.bodyValue;

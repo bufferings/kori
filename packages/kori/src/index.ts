@@ -27,9 +27,9 @@ export {
   DEFAULT_CONTENT_TYPE,
   getMethodString,
   HttpRequestHeader,
-  type HttpRequestHeaderValue,
+  type HttpRequestHeaderName,
   HttpResponseHeader,
-  type HttpResponseHeaderValue,
+  type HttpResponseHeaderName,
   HttpStatus,
   type HttpStatusCode,
 } from './http/index.js';

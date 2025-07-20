@@ -21,7 +21,7 @@ export const HttpRequestHeader = {
   X_FORWARDED_PROTO: 'x-forwarded-proto',
 } as const;
 
-export type HttpRequestHeaderValue = (typeof HttpRequestHeader)[keyof typeof HttpRequestHeader] | (string & {});
+export type HttpRequestHeaderName = (typeof HttpRequestHeader)[keyof typeof HttpRequestHeader] | (string & {});
 
 /**
  * HTTP Response Header constants
@@ -40,4 +40,4 @@ export const HttpResponseHeader = {
   WWW_AUTHENTICATE: 'www-authenticate',
 } as const;
 
-export type HttpResponseHeaderValue = (typeof HttpResponseHeader)[keyof typeof HttpResponseHeader] | (string & {});
+export type HttpResponseHeaderName = (typeof HttpResponseHeader)[keyof typeof HttpResponseHeader] | (string & {});

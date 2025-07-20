@@ -7,9 +7,9 @@ export {
 } from './content-types.js';
 export {
   HttpRequestHeader,
-  type HttpRequestHeaderValue,
+  type HttpRequestHeaderName,
   HttpResponseHeader,
-  type HttpResponseHeaderValue,
+  type HttpResponseHeaderName,
 } from './headers.js';
 export { getMethodString } from './method.js';
 export { HttpStatus, type HttpStatusCode } from './status-codes.js';
