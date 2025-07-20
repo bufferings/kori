@@ -2,7 +2,7 @@ import {
   type ContentTypeValue,
   ContentType,
   DEFAULT_CONTENT_TYPE,
-  type HttpRequestHeaderValue,
+  type HttpRequestHeaderName,
   HttpRequestHeader,
 } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
@@ -21,7 +21,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   queryParams(): Record<string, string | string[]>;
 
   headers(): Record<string, string>;
-  header(key: HttpRequestHeaderValue): string | undefined;
+  header(name: HttpRequestHeaderName): string | undefined;
   fullContentType(): string | undefined;
   contentType(): ContentTypeValue | undefined;
 
@@ -97,6 +97,16 @@ function getQueryParamsInternal(req: ReqStateAny): Record<string, string | strin
   return obj;
 }
 
+/**
+ * Caches and returns request headers as a lowercase-keyed plain object for performance.
+ *
+ * Iterating over a `Headers` object can be slow. This function converts the headers
+ * to a plain `Record<string, string>` on the first call and caches the result.
+ * Subsequent calls return the cached object, providing faster access.
+ *
+ * Note: The keys are normalized to lowercase during the conversion process,
+ * as `Headers.forEach` provides lowercase keys.
+ */
 function getHeadersInternal(req: ReqStateAny): Record<string, string> {
   if (req.headersCache) {
     return req.headersCache;
@@ -111,8 +121,8 @@ function getHeadersInternal(req: ReqStateAny): Record<string, string> {
   return obj;
 }
 
-function getHeaderInternal(req: ReqStateAny, key: HttpRequestHeaderValue): string | undefined {
-  return getHeadersInternal(req)[key.toLowerCase()];
+function getHeaderInternal(req: ReqStateAny, name: HttpRequestHeaderName): string | undefined {
+  return getHeadersInternal(req)[name.toLowerCase()];
 }
 
 function getFullContentTypeInternal(req: ReqStateAny): string | undefined {
@@ -190,8 +200,8 @@ const sharedMethods = {
   headers(): Record<string, string> {
     return getHeadersInternal(this);
   },
-  header(key: HttpRequestHeaderValue): string | undefined {
-    return getHeaderInternal(this, key);
+  header(name: HttpRequestHeaderName): string | undefined {
+    return getHeaderInternal(this, name);
   },
   fullContentType(): string | undefined {
     return getFullContentTypeInternal(this);

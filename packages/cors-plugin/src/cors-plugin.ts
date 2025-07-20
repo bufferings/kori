@@ -78,27 +78,25 @@ function resolveAllowOrigin(req: KoriRequest, originOption: CorsPluginOptions['o
   return undefined;
 }
 
-function appendVaryOriginHeader(res: KoriResponse) {
-  const headerValue = res.getHeaders().get(CORS_HEADERS.VARY) ?? '';
+function ensureVaryOriginHeader(res: KoriResponse) {
+  const currentValue = res.getHeader(CORS_HEADERS.VARY);
 
-  if (!headerValue) {
+  if (currentValue === undefined) {
     res.setHeader(CORS_HEADERS.VARY, CORS_HEADERS.ORIGIN);
     return;
   }
 
-  if (headerValue.includes('*')) {
+  // Split, trim, and check tokens in a single pass
+  const shouldSkip = currentValue.split(',').some((token) => {
+    const t = token.trim().toLowerCase();
+    return t === '*' || t === CORS_HEADERS.ORIGIN;
+  });
+
+  if (shouldSkip) {
     return;
   }
 
-  const lowerCaseFields = headerValue
-    .toLowerCase()
-    .split(',')
-    .map((f) => f.trim());
-  if (lowerCaseFields.includes(CORS_HEADERS.ORIGIN)) {
-    return;
-  }
-
-  res.setHeader(CORS_HEADERS.VARY, `${headerValue}, ${CORS_HEADERS.ORIGIN}`);
+  res.appendHeader(CORS_HEADERS.VARY, CORS_HEADERS.ORIGIN);
 }
 
 type HeaderSetter = (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>) => void;
@@ -148,7 +146,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
 
   const varyByOrigin = typeof options.origin === 'function' || Array.isArray(options.origin);
   if (varyByOrigin) {
-    const setter: HeaderSetter = (ctx) => appendVaryOriginHeader(ctx.res);
+    const setter: HeaderSetter = (ctx) => ensureVaryOriginHeader(ctx.res);
     preflightHeaderSetters.push(setter);
     actualRequestHeaderSetters.push(setter);
   }

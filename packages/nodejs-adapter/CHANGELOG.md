@@ -1,5 +1,12 @@
 # @korix/nodejs-adapter
 
+## 0.1.0-alpha.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @korix/kori@0.1.0-alpha.4
+
 ## 0.1.0-alpha.4
 
 ### Patch Changes

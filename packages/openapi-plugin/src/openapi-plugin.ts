@@ -98,7 +98,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
   }
 
   return defineKoriPlugin({
-    name: 'openapi',
+    name: 'openapi-plugin',
     version: PLUGIN_VERSION,
     apply: (kori) => {
       // Add OpenAPI document endpoint
