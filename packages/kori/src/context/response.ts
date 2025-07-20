@@ -39,6 +39,7 @@ export type KoriResponse = {
 
   getStatus(): HttpStatusCode;
   getHeaders(): Headers;
+  getHeader(key: HttpResponseHeaderValue): string | undefined;
   getBody(): unknown;
   getContentType(): string | undefined;
   isReady(): boolean;
@@ -367,6 +368,9 @@ const sharedMethods = {
   },
   getHeaders(): Headers {
     return new Headers(this.headers);
+  },
+  getHeader(key: HttpResponseHeaderValue): string | undefined {
+    return this.headers?.get(key) ?? undefined;
   },
   getBody(): unknown {
     return this.bodyValue;
