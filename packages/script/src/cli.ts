@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 
-import { syncVersion } from './commands/index.js';
+import { lintStaged, syncVersion } from './command/index.js';
 
-function printUsage() {
+function printUsage(): void {
   console.log('Usage: ks <command>');
-  console.log('');
   console.log('Commands:');
-  console.log('  sync-version  Sync package.json version to src/version.ts');
-  console.log('');
+  console.log('  sync-version');
+  console.log('  lint-staged');
 }
 
-async function main() {
+async function main(): Promise<void> {
   const command = process.argv[2];
 
   switch (command) {
@@ -18,16 +17,17 @@ async function main() {
       await syncVersion();
       break;
 
+    case 'lint-staged': {
+      const files = process.argv.slice(3);
+      await lintStaged(files);
+      break;
+    }
+
     case '--help':
     case '-h':
-    case undefined:
+    default:
       printUsage();
       break;
-
-    default:
-      console.error(`Unknown command: ${command}`);
-      printUsage();
-      process.exit(1);
   }
 }
 

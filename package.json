@@ -21,6 +21,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@korix/eslint-config": "workspace:*",
+    "@korix/script": "workspace:*",
     "eslint": "catalog:",
     "lefthook": "1.10.1",
     "prettier": "3.4.2",

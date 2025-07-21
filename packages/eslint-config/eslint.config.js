@@ -1,3 +1,13 @@
-import koriConfig from './dist/index.js';
+import eslintConfig from './dist/index.js';
 
-export default koriConfig;
+export default [
+  ...eslintConfig,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+];

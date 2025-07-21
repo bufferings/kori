@@ -37,6 +37,10 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "execa": "9.6.0",
+    "p-limit": "6.2.0"
+  },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
     "@types/node": "catalog:",

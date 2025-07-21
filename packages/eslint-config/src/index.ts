@@ -9,7 +9,9 @@ import koriRules from './rules/index.js';
 
 export const baseConfig = tseslint.config(
   // Ignore patterns
-  { ignores: ['**/dist/'] },
+  {
+    ignores: ['**/dist/', '*.config.js'],
+  },
 
   // Extend recommended configs
   eslint.configs.recommended,
@@ -20,9 +22,7 @@ export const baseConfig = tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['*.config.*'],
-        },
+        projectService: true,
       },
     },
   },
