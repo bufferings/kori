@@ -66,7 +66,7 @@ async function runEslint(packageDir: string, files: string[]): Promise<void> {
   const targetFiles = relativeFiles.filter((file) => /\.(ts|tsx|js|jsx)$/.test(file));
 
   if (targetFiles.length === 0) {
-    return Promise.resolve();
+    return;
   }
 
   const lintLabel = `Lint completed for ${packageDir}`;

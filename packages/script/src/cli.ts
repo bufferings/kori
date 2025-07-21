@@ -25,9 +25,13 @@ async function main(): Promise<void> {
 
     case '--help':
     case '-h':
-    default:
       printUsage();
       break;
+
+    default:
+      console.error(`Unknown command: ${command}`);
+      printUsage();
+      process.exit(1);
   }
 }
 
