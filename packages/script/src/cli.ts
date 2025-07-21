@@ -25,6 +25,7 @@ async function main(): Promise<void> {
 
     case '--help':
     case '-h':
+    case undefined:
       printUsage();
       break;
 

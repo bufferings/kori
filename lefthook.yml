@@ -16,5 +16,5 @@ pre-commit:
 
     - name: format
       run: pnpm prettier --write {staged_files}
-      glob: '*.{ts, tsx, js, yml, yaml, json}'
+      glob: '*.{ts,tsx,js,yml,yaml,json}'
       stage_fixed: true
