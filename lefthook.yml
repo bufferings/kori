@@ -1,21 +1,20 @@
 pre-commit:
-  commands:
-    sync-version:
-      run: pnpm sync:version
-
-    typecheck:
+  parallel: true
+  skip:
+    - merge
+    - rebase
+  jobs:
+    - name: typecheck
       run: pnpm typecheck
 
-    lint:
-      run: pnpm lint:fix
+    - name: lint
+      run: pnpm ks lint-staged {staged_files}
+      glob: '*.{ts,tsx,js}'
+      exclude:
+        - '*.config.js'
       stage_fixed: true
-      skip:
-        - merge
-        - rebase
-    format:
-      glob: '*.{ts, tsx, js, yml, yaml, json}'
+
+    - name: format
       run: pnpm prettier --write {staged_files}
+      glob: '*.{ts,tsx,js,yml,yaml,json}'
       stage_fixed: true
-      skip:
-        - merge
-        - rebase

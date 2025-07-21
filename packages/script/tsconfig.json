@@ -1,8 +1,7 @@
 {
   "extends": "../../tsconfig.base.dev.json",
   "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+    "rootDir": "."
   },
   "include": ["src/**/*", "tests/**/*"]
 }

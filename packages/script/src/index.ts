@@ -1,1 +1,1 @@
-export { syncVersion } from './commands/index.js';
+export { lintStaged, syncVersion } from './command/index.js';

@@ -1,6 +1,6 @@
 {
   "name": "@korix/script",
-  "version": "0.0.2-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Development CLI scripts for Kori framework",
   "private": true,
   "type": "module",
@@ -36,6 +36,10 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest"
+  },
+  "dependencies": {
+    "execa": "9.6.0",
+    "p-limit": "6.2.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
