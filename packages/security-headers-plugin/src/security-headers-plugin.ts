@@ -142,11 +142,24 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
       const directives = finalOptions.contentSecurityPolicy;
       const frameAncestors = directives[CSP_DIRECTIVES.FRAME_ANCESTORS];
 
-      if (frameAncestors === CSP_VALUES.FRAME_ANCESTORS.NONE) {
-        res.setHeader('x-frame-options', 'deny');
-      } else if (frameAncestors === CSP_VALUES.FRAME_ANCESTORS.SELF) {
-        res.setHeader('x-frame-options', 'sameorigin');
+      // Handle both string and array values for frame-ancestors
+      if (frameAncestors !== undefined) {
+        let frameAncestorsValue: string | undefined;
+
+        if (Array.isArray(frameAncestors)) {
+          // For arrays, find the first valid string value
+          frameAncestorsValue = frameAncestors.find((value) => typeof value === 'string');
+        } else if (typeof frameAncestors === 'string') {
+          frameAncestorsValue = frameAncestors;
+        }
+
+        if (frameAncestorsValue === CSP_VALUES.FRAME_ANCESTORS.NONE) {
+          res.setHeader('x-frame-options', 'deny');
+        } else if (frameAncestorsValue === CSP_VALUES.FRAME_ANCESTORS.SELF) {
+          res.setHeader('x-frame-options', 'sameorigin');
+        }
       }
+
       cspString = buildCspString(directives);
     }
     res.setHeader('content-security-policy', cspString);
