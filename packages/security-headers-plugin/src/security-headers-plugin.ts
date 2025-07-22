@@ -10,6 +10,14 @@ import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'security-headers-plugin';
 
+// CSP directive values as constants
+export const CSP_VALUES = {
+  FRAME_ANCESTORS: {
+    NONE: "'none'",
+    SELF: "'self'",
+  },
+} as const;
+
 export type CspDirectives = Record<string, string | string[]>;
 
 export type SecurityHeadersOptions = {
@@ -66,7 +74,7 @@ const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | '
   contentTypeOptions: 'nosniff',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
-  contentSecurityPolicy: { 'frame-ancestors': "'none'" },
+  contentSecurityPolicy: { 'frame-ancestors': CSP_VALUES.FRAME_ANCESTORS.NONE },
   permittedCrossDomainPolicies: 'none',
   downloadOptions: 'noopen',
   crossOriginEmbedderPolicy: false,
@@ -129,9 +137,9 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
       const directives = finalOptions.contentSecurityPolicy;
       const frameAncestors = directives['frame-ancestors'];
 
-      if (frameAncestors === "'none'") {
+      if (frameAncestors === CSP_VALUES.FRAME_ANCESTORS.NONE) {
         res.setHeader('x-frame-options', 'deny');
-      } else if (frameAncestors === "'self'") {
+      } else if (frameAncestors === CSP_VALUES.FRAME_ANCESTORS.SELF) {
         res.setHeader('x-frame-options', 'sameorigin');
       }
       cspString = buildCspString(directives);
