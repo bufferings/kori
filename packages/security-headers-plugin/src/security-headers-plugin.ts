@@ -10,15 +10,11 @@ import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'security-headers-plugin';
 
-export type SecurityHeadersOptions = {
-  /** x-frame-options header */
-  frameOptions?: 'DENY' | 'SAMEORIGIN' | `ALLOW-FROM ${string}` | false;
+export type CspDirectives = Record<string, string | string[]>;
 
+export type SecurityHeadersOptions = {
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
-
-  /** x-xss-protection header */
-  xssProtection?: '0' | '1' | '1; mode=block' | false;
 
   /** strict-transport-security header */
   strictTransportSecurity?: string | false;
@@ -35,8 +31,14 @@ export type SecurityHeadersOptions = {
     | 'unsafe-url'
     | false;
 
-  /** content-security-policy header */
-  contentSecurityPolicy?: string | false;
+  /**
+   * Sets the `Content-Security-Policy` header.
+   * Can be a string for simple policies, or a directive object for granular control.
+   * When using the object form, specifying `frame-ancestors` will also set the legacy
+   * `X-Frame-Options` header for backward compatibility.
+   * Defaults to `{ 'frame-ancestors': "'none'" }` to prevent all framing (clickjacking).
+   */
+  contentSecurityPolicy?: string | CspDirectives | false;
 
   /** x-permitted-cross-domain-policies header */
   permittedCrossDomainPolicies?: 'none' | 'master-only' | 'by-content-type' | 'all' | false;
@@ -61,12 +63,10 @@ export type SecurityHeadersOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | 'skipPaths'>> = {
-  frameOptions: 'DENY',
   contentTypeOptions: 'nosniff',
-  xssProtection: '1; mode=block',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: { 'frame-ancestors': "'none'" },
   permittedCrossDomainPolicies: 'none',
   downloadOptions: 'noopen',
   crossOriginEmbedderPolicy: false,
@@ -89,65 +89,76 @@ function shouldSkipPath(pathname: string, skipPaths: (string | RegExp)[]): boole
   return false;
 }
 
+function buildCspString(directives: CspDirectives): string {
+  return Object.entries(directives)
+    .map(([directive, value]) => {
+      if (Array.isArray(value)) {
+        return `${directive} ${value.join(' ')}`;
+      }
+      return `${directive} ${value}`;
+    })
+    .join('; ');
+}
+
 function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions): void {
   const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
-  // x-frame-options
-  if (finalOptions.frameOptions !== false) {
-    res.setHeader('x-frame-options', finalOptions.frameOptions);
-  }
-
-  // x-content-type-options
   if (finalOptions.contentTypeOptions !== false) {
     res.setHeader('x-content-type-options', finalOptions.contentTypeOptions);
   }
 
-  // x-xss-protection
-  if (finalOptions.xssProtection !== false) {
-    res.setHeader('x-xss-protection', finalOptions.xssProtection);
-  }
+  // This header is deprecated, but it's important to set it to '0'
+  // to disable the browser's built-in XSS auditor in older browsers,
+  // which can introduce XSS vulnerabilities. It is not configurable.
+  res.setHeader('x-xss-protection', '0');
 
-  // strict-transport-security
   if (finalOptions.strictTransportSecurity !== false) {
     res.setHeader('strict-transport-security', finalOptions.strictTransportSecurity);
   }
 
-  // referrer-policy
   if (finalOptions.referrerPolicy !== false) {
     res.setHeader('referrer-policy', finalOptions.referrerPolicy);
   }
 
-  // content-security-policy
   if (finalOptions.contentSecurityPolicy !== false) {
-    res.setHeader('content-security-policy', finalOptions.contentSecurityPolicy);
+    let cspString: string;
+
+    if (typeof finalOptions.contentSecurityPolicy === 'string') {
+      cspString = finalOptions.contentSecurityPolicy;
+    } else {
+      const directives = finalOptions.contentSecurityPolicy;
+      const frameAncestors = directives['frame-ancestors'];
+
+      if (frameAncestors === "'none'") {
+        res.setHeader('x-frame-options', 'deny');
+      } else if (frameAncestors === "'self'") {
+        res.setHeader('x-frame-options', 'sameorigin');
+      }
+      cspString = buildCspString(directives);
+    }
+    res.setHeader('content-security-policy', cspString);
   }
 
-  // x-permitted-cross-domain-policies
   if (finalOptions.permittedCrossDomainPolicies !== false) {
     res.setHeader('x-permitted-cross-domain-policies', finalOptions.permittedCrossDomainPolicies);
   }
 
-  // x-download-options
   if (finalOptions.downloadOptions !== false) {
     res.setHeader('x-download-options', finalOptions.downloadOptions);
   }
 
-  // cross-origin-embedder-policy
   if (finalOptions.crossOriginEmbedderPolicy !== false) {
     res.setHeader('cross-origin-embedder-policy', finalOptions.crossOriginEmbedderPolicy);
   }
 
-  // cross-origin-opener-policy
   if (finalOptions.crossOriginOpenerPolicy !== false) {
     res.setHeader('cross-origin-opener-policy', finalOptions.crossOriginOpenerPolicy);
   }
 
-  // cross-origin-resource-policy
   if (finalOptions.crossOriginResourcePolicy !== false) {
     res.setHeader('cross-origin-resource-policy', finalOptions.crossOriginResourcePolicy);
   }
 
-  // Custom headers
   if (options.customHeaders) {
     for (const [headerName, headerValue] of Object.entries(options.customHeaders)) {
       res.setHeader(headerName, headerValue);
@@ -173,12 +184,13 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
       const log = kori.log().child(PLUGIN_NAME);
 
       log.info('Security headers plugin initialized', {
-        frameOptions: options.frameOptions ?? DEFAULT_OPTIONS.frameOptions,
         contentTypeOptions: options.contentTypeOptions ?? DEFAULT_OPTIONS.contentTypeOptions,
-        xssProtection: options.xssProtection ?? DEFAULT_OPTIONS.xssProtection,
         strictTransportSecurity: options.strictTransportSecurity ?? DEFAULT_OPTIONS.strictTransportSecurity,
         referrerPolicy: options.referrerPolicy ?? DEFAULT_OPTIONS.referrerPolicy,
-        contentSecurityPolicy: options.contentSecurityPolicy ?? 'disabled',
+        contentSecurityPolicy:
+          typeof options.contentSecurityPolicy === 'object'
+            ? 'custom-directives'
+            : (options.contentSecurityPolicy ?? 'default'),
         skipPathsCount: skipPaths.length,
       });
 

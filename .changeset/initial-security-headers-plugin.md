@@ -1,8 +1,6 @@
-# @korix/security-headers-plugin
-
-## 0.1.0-alpha.1
-
-### Patch Changes
+---
+'@korix/security-headers-plugin': patch
+---
 
 Initial release of security headers plugin for Kori framework
 
