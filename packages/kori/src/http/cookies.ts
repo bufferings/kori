@@ -44,12 +44,16 @@ export type Cookie = {
 };
 
 /**
- * Parse Cookie header and return Record<string, string>
+ * Internal helper function for parsing cookies with optional logging
  *
  * @param cookieHeader - Cookie header value
+ * @param onDecodeError - Callback for decode errors (name, value, error)
  * @returns Parsed cookies
  */
-export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+function parseCookiesInternal(
+  cookieHeader: string | undefined,
+  onDecodeError?: (name: string, value: string, error: URIError) => void,
+): Record<string, string> {
   if (!cookieHeader) {
     return {};
   }
@@ -79,6 +83,9 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
       } catch (error) {
         // If decoding fails (URIError for malformed encoding), use the raw value
         if (error instanceof URIError) {
+          if (onDecodeError) {
+            onDecodeError(name, value, error);
+          }
           cookies[name] = value;
         } else {
           // Re-throw unexpected errors
@@ -89,6 +96,16 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
   }
 
   return cookies;
+}
+
+/**
+ * Parse Cookie header and return Record<string, string>
+ *
+ * @param cookieHeader - Cookie header value
+ * @returns Parsed cookies
+ */
+export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  return parseCookiesInternal(cookieHeader);
 }
 
 /**
@@ -277,46 +294,11 @@ export function deleteCookieWithLogging(
  * @returns Parsed cookies
  */
 export function parseCookiesWithLogging(cookieHeader: string | undefined, logger: KoriLogger): Record<string, string> {
-  if (!cookieHeader) {
-    return {};
-  }
-
-  const cookies: Record<string, string> = {};
-  const pairs = cookieHeader.split(';');
-
-  for (const pair of pairs) {
-    const trimmedPair = pair.trim();
-    if (!trimmedPair) {
-      continue;
-    }
-
-    const eqIndex = trimmedPair.indexOf('=');
-    if (eqIndex === -1) {
-      continue;
-    }
-
-    const name = trimmedPair.slice(0, eqIndex).trim();
-    const value = trimmedPair.slice(eqIndex + 1).trim();
-
-    if (name) {
-      try {
-        cookies[name] = decodeURIComponent(value);
-      } catch (error) {
-        // If decoding fails (URIError for malformed encoding), use the raw value
-        if (error instanceof URIError) {
-          logger.debug('Failed to decode cookie value, using raw value', {
-            cookieName: name,
-            rawValue: value,
-            error: error.message,
-          });
-          cookies[name] = value;
-        } else {
-          // Re-throw unexpected errors
-          throw error;
-        }
-      }
-    }
-  }
-
-  return cookies;
+  return parseCookiesInternal(cookieHeader, (name, value, error) => {
+    logger.debug('Failed to decode cookie value, using raw value', {
+      cookieName: name,
+      rawValue: value,
+      error: error.message,
+    });
+  });
 }
