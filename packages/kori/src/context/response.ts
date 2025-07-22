@@ -5,6 +5,10 @@ import {
   HttpResponseHeader,
   ContentTypeUtf8,
   ContentType,
+  type CookieOptions,
+  type CookieValue,
+  serializeCookie,
+  deleteCookie,
 } from '../http/index.js';
 
 const KoriResponseBrand = Symbol('kori-response');
@@ -21,6 +25,9 @@ export type KoriResponse = {
   setHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
   appendHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
   removeHeader(name: HttpResponseHeaderName): KoriResponse;
+
+  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
+  clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
 
   json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
   text(body: string, statusCode?: HttpStatusCode): KoriResponse;
@@ -92,6 +99,16 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
 
 function setStatusInternal(res: ResState, code: HttpStatusCode): void {
   res.statusCode = code;
+}
+
+function setCookieInternal(res: ResState, name: string, value: CookieValue, options?: CookieOptions): void {
+  const cookieValue = serializeCookie(name, value, options);
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
+}
+
+function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
+  const cookieValue = deleteCookie(name, options);
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
 }
 
 type BodyConfig<T> = {
@@ -238,6 +255,15 @@ const sharedMethods = {
   },
   removeHeader(name: HttpResponseHeaderName): KoriResponse {
     removeHeaderInternal(this, name);
+    return this as unknown as KoriResponse;
+  },
+
+  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse {
+    setCookieInternal(this, name, value, options);
+    return this as unknown as KoriResponse;
+  },
+  clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse {
+    clearCookieInternal(this, name, options);
     return this as unknown as KoriResponse;
   },
 

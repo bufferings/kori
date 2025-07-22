@@ -6,6 +6,14 @@ export {
   DEFAULT_CONTENT_TYPE,
 } from './content-types.js';
 export {
+  type Cookie,
+  type CookieOptions,
+  type CookieValue,
+  deleteCookie,
+  parseCookies,
+  serializeCookie,
+} from './cookies.js';
+export {
   HttpRequestHeader,
   type HttpRequestHeaderName,
   HttpResponseHeader,

@@ -1,0 +1,132 @@
+import { describe, expect, test } from 'vitest';
+
+import { deleteCookie, parseCookies, serializeCookie } from '../../src/http/cookies.js';
+
+describe('Cookie utilities', () => {
+  describe('parseCookies', () => {
+    test('should parse simple cookie', () => {
+      const result = parseCookies('sessionId=abc123');
+      expect(result).toEqual({ sessionId: 'abc123' });
+    });
+
+    test('should parse multiple cookies', () => {
+      const result = parseCookies('sessionId=abc123; username=john; theme=dark');
+      expect(result).toEqual({
+        sessionId: 'abc123',
+        username: 'john',
+        theme: 'dark',
+      });
+    });
+
+    test('should handle URL encoded values', () => {
+      const result = parseCookies('message=hello%20world; name=john%40example.com');
+      expect(result).toEqual({
+        message: 'hello world',
+        name: 'john@example.com',
+      });
+    });
+
+    test('should handle empty cookie header', () => {
+      expect(parseCookies('')).toEqual({});
+      expect(parseCookies(undefined)).toEqual({});
+    });
+
+    test('should handle malformed cookies', () => {
+      // Cookie without value
+      const result1 = parseCookies('sessionId=; username=john');
+      expect(result1).toEqual({ sessionId: '', username: 'john' });
+
+      // Cookie without equals sign
+      const result2 = parseCookies('sessionId; username=john');
+      expect(result2).toEqual({ username: 'john' });
+
+      // Extra spaces
+      const result3 = parseCookies('  sessionId = abc123  ;  username = john  ');
+      expect(result3).toEqual({ sessionId: 'abc123', username: 'john' });
+    });
+  });
+
+  describe('serializeCookie', () => {
+    test('should serialize simple cookie', () => {
+      const result = serializeCookie('sessionId', 'abc123');
+      expect(result).toBe('sessionId=abc123');
+    });
+
+    test('should URL encode cookie value', () => {
+      const result = serializeCookie('message', 'hello world');
+      expect(result).toBe('message=hello%20world');
+    });
+
+    test('should include expires option', () => {
+      const expires = new Date('2024-12-31T23:59:59.000Z');
+      const result = serializeCookie('sessionId', 'abc123', { expires });
+      expect(result).toBe('sessionId=abc123; Expires=Tue, 31 Dec 2024 23:59:59 GMT');
+    });
+
+    test('should include maxAge option', () => {
+      const result = serializeCookie('sessionId', 'abc123', { maxAge: 3600 });
+      expect(result).toBe('sessionId=abc123; Max-Age=3600');
+    });
+
+    test('should include domain option', () => {
+      const result = serializeCookie('sessionId', 'abc123', { domain: 'example.com' });
+      expect(result).toBe('sessionId=abc123; Domain=example.com');
+    });
+
+    test('should include path option', () => {
+      const result = serializeCookie('sessionId', 'abc123', { path: '/api' });
+      expect(result).toBe('sessionId=abc123; Path=/api');
+    });
+
+    test('should include secure flag', () => {
+      const result = serializeCookie('sessionId', 'abc123', { secure: true });
+      expect(result).toBe('sessionId=abc123; Secure');
+    });
+
+    test('should include httpOnly flag', () => {
+      const result = serializeCookie('sessionId', 'abc123', { httpOnly: true });
+      expect(result).toBe('sessionId=abc123; HttpOnly');
+    });
+
+    test('should include sameSite option', () => {
+      const result1 = serializeCookie('sessionId', 'abc123', { sameSite: 'strict' });
+      expect(result1).toBe('sessionId=abc123; SameSite=Strict');
+
+      const result2 = serializeCookie('sessionId', 'abc123', { sameSite: 'lax' });
+      expect(result2).toBe('sessionId=abc123; SameSite=Lax');
+
+      const result3 = serializeCookie('sessionId', 'abc123', { sameSite: 'none' });
+      expect(result3).toBe('sessionId=abc123; SameSite=None');
+    });
+
+    test('should include all options', () => {
+      const expires = new Date('2024-12-31T23:59:59.000Z');
+      const result = serializeCookie('sessionId', 'abc123', {
+        expires,
+        maxAge: 3600,
+        domain: 'example.com',
+        path: '/api',
+        secure: true,
+        httpOnly: true,
+        sameSite: 'strict',
+      });
+      expect(result).toBe(
+        'sessionId=abc123; Expires=Tue, 31 Dec 2024 23:59:59 GMT; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=Strict',
+      );
+    });
+  });
+
+  describe('deleteCookie', () => {
+    test('should create cookie deletion string', () => {
+      const result = deleteCookie('sessionId');
+      expect(result).toBe('sessionId=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0');
+    });
+
+    test('should include path and domain options', () => {
+      const result = deleteCookie('sessionId', { path: '/api', domain: 'example.com' });
+      expect(result).toBe(
+        'sessionId=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Domain=example.com; Path=/api',
+      );
+    });
+  });
+});
