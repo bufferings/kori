@@ -1,7 +1,7 @@
-import eslintConfig from './dist/index.js';
+import { koriConfig } from './dist/index.js';
 
 export default [
-  ...eslintConfig,
+  ...koriConfig,
   {
     languageOptions: {
       parserOptions: {
