@@ -6,6 +6,7 @@ Initial release of security headers plugin for Kori framework
 
 - Adds common security headers to HTTP responses with secure, modern defaults:
   - `content-security-policy` (defaults to `frame-ancestors 'none'` for clickjacking protection)
+  - `x-frame-options` (defaults to `deny` for legacy browser compatibility)
   - `x-content-type-options`
   - `x-xss-protection` (fixed to `0` and not configurable)
   - `strict-transport-security`

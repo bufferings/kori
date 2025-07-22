@@ -37,6 +37,9 @@ export type CspDirectives = {
 } & Record<string, string | string[]>;
 
 export type SecurityHeadersOptions = {
+  /** x-frame-options header */
+  frameOptions?: 'deny' | 'sameorigin' | `allow-from ${string}` | false;
+
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
 
@@ -58,9 +61,8 @@ export type SecurityHeadersOptions = {
   /**
    * Sets the `Content-Security-Policy` header.
    * Can be a string for simple policies, or a directive object for granular control.
-   * When using the object form, specifying `frame-ancestors` will also set the legacy
-   * `X-Frame-Options` header for backward compatibility.
    * Defaults to `{ 'frame-ancestors': "'none'" }` to prevent all framing (clickjacking).
+   * Uses CSP-first approach for modern web security best practices.
    */
   contentSecurityPolicy?: string | CspDirectives | false;
 
@@ -87,6 +89,7 @@ export type SecurityHeadersOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | 'skipPaths'>> = {
+  frameOptions: 'deny',
   contentTypeOptions: 'nosniff',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
@@ -135,6 +138,10 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
   // to disable the browser's built-in XSS auditor in older browsers,
   // which can introduce XSS vulnerabilities. It is not configurable.
   res.setHeader('x-xss-protection', '0');
+
+  if (finalOptions.frameOptions !== false) {
+    res.setHeader('x-frame-options', finalOptions.frameOptions);
+  }
 
   if (finalOptions.strictTransportSecurity !== false) {
     res.setHeader('strict-transport-security', finalOptions.strictTransportSecurity);
