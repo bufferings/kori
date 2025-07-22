@@ -109,19 +109,19 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
- * Generate Set-Cookie header value with logging support for debugging encoding errors
+ * Internal helper function for serializing cookies with optional logging
  *
  * @param name - Cookie name
  * @param value - Cookie value
  * @param options - Cookie options
- * @param logger - Logger instance for debug output
+ * @param onEncodeError - Callback for encode errors (name, value, error)
  * @returns Set-Cookie header value
  */
-export function serializeCookieWithLogging(
+function serializeCookieInternal(
   name: string,
   value: CookieValue,
   options: CookieOptions = {},
-  logger: KoriLogger,
+  onEncodeError?: (name: string, value: string, error: URIError) => void,
 ): string {
   let encodedValue: string;
   try {
@@ -129,11 +129,9 @@ export function serializeCookieWithLogging(
   } catch (error) {
     // If encoding fails (URIError for malformed values), use the raw value
     if (error instanceof URIError) {
-      logger.debug('Failed to encode cookie value, using raw value', {
-        cookieName: name,
-        rawValue: value,
-        error: error.message,
-      });
+      if (onEncodeError) {
+        onEncodeError(name, value, error);
+      }
       encodedValue = value;
     } else {
       // Re-throw unexpected errors
@@ -172,6 +170,30 @@ export function serializeCookieWithLogging(
   }
 
   return cookie;
+}
+
+/**
+ * Generate Set-Cookie header value with logging support for debugging encoding errors
+ *
+ * @param name - Cookie name
+ * @param value - Cookie value
+ * @param options - Cookie options
+ * @param logger - Logger instance for debug output
+ * @returns Set-Cookie header value
+ */
+export function serializeCookieWithLogging(
+  name: string,
+  value: CookieValue,
+  options: CookieOptions = {},
+  logger: KoriLogger,
+): string {
+  return serializeCookieInternal(name, value, options, (name, value, error) => {
+    logger.debug('Failed to encode cookie value, using raw value', {
+      cookieName: name,
+      rawValue: value,
+      error: error.message,
+    });
+  });
 }
 
 /**
@@ -197,53 +219,7 @@ function capitalizeSameSite(sameSite: string): string {
  * @returns Set-Cookie header value
  */
 export function serializeCookie(name: string, value: CookieValue, options: CookieOptions = {}): string {
-  let encodedValue: string;
-  try {
-    encodedValue = encodeURIComponent(value);
-  } catch (error) {
-    // If encoding fails (URIError for malformed values), use the raw value
-    if (error instanceof URIError) {
-      // Note: Encoding failed but no logging available in this utility function
-      // For debug logging of encoding failures, use serializeCookieWithLogging instead
-      // or log in the calling code: req.log().warn('Cookie encoding failed', { name, value, error })
-      encodedValue = value;
-    } else {
-      // Re-throw unexpected errors
-      throw error;
-    }
-  }
-  let cookie = `${name}=${encodedValue}`;
-
-  if (options.expires) {
-    cookie += `; Expires=${options.expires.toUTCString()}`;
-  }
-
-  if (options.maxAge !== undefined) {
-    cookie += `; Max-Age=${options.maxAge}`;
-  }
-
-  if (options.domain) {
-    cookie += `; Domain=${options.domain}`;
-  }
-
-  if (options.path) {
-    cookie += `; Path=${options.path}`;
-  }
-
-  if (options.secure) {
-    cookie += '; Secure';
-  }
-
-  if (options.httpOnly) {
-    cookie += '; HttpOnly';
-  }
-
-  if (options.sameSite) {
-    const sameSiteValue = capitalizeSameSite(options.sameSite);
-    cookie += `; SameSite=${sameSiteValue}`;
-  }
-
-  return cookie;
+  return serializeCookieInternal(name, value, options);
 }
 
 /**
