@@ -21,9 +21,20 @@ export const CSP_VALUES = {
 // CSP directive names as constants
 export const CSP_DIRECTIVES = {
   FRAME_ANCESTORS: 'frame-ancestors',
+  DEFAULT_SRC: 'default-src',
+  SCRIPT_SRC: 'script-src',
+  STYLE_SRC: 'style-src',
+  IMG_SRC: 'img-src',
+  CONNECT_SRC: 'connect-src',
+  FONT_SRC: 'font-src',
+  OBJECT_SRC: 'object-src',
+  MEDIA_SRC: 'media-src',
+  CHILD_SRC: 'child-src',
 } as const;
 
-export type CspDirectives = Record<string, string | string[]>;
+export type CspDirectives = {
+  [K in keyof typeof CSP_DIRECTIVES]?: string | string[];
+} & Record<string, string | string[]>;
 
 export type SecurityHeadersOptions = {
   /** x-content-type-options header */
@@ -79,7 +90,7 @@ const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | '
   contentTypeOptions: 'nosniff',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
-  contentSecurityPolicy: { [CSP_DIRECTIVES.FRAME_ANCESTORS]: CSP_VALUES.FRAME_ANCESTORS.NONE },
+  contentSecurityPolicy: { 'frame-ancestors': CSP_VALUES.FRAME_ANCESTORS.NONE },
   permittedCrossDomainPolicies: 'none',
   downloadOptions: 'noopen',
   crossOriginEmbedderPolicy: false,
@@ -139,28 +150,7 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
     if (typeof finalOptions.contentSecurityPolicy === 'string') {
       cspString = finalOptions.contentSecurityPolicy;
     } else {
-      const directives = finalOptions.contentSecurityPolicy;
-      const frameAncestors = directives[CSP_DIRECTIVES.FRAME_ANCESTORS];
-
-      // Handle both string and array values for frame-ancestors
-      if (frameAncestors !== undefined) {
-        let frameAncestorsValue: string | undefined;
-
-        if (Array.isArray(frameAncestors)) {
-          // For arrays, find the first valid string value
-          frameAncestorsValue = frameAncestors.find((value) => typeof value === 'string');
-        } else if (typeof frameAncestors === 'string') {
-          frameAncestorsValue = frameAncestors;
-        }
-
-        if (frameAncestorsValue === CSP_VALUES.FRAME_ANCESTORS.NONE) {
-          res.setHeader('x-frame-options', 'deny');
-        } else if (frameAncestorsValue === CSP_VALUES.FRAME_ANCESTORS.SELF) {
-          res.setHeader('x-frame-options', 'sameorigin');
-        }
-      }
-
-      cspString = buildCspString(directives);
+      cspString = buildCspString(finalOptions.contentSecurityPolicy);
     }
     res.setHeader('content-security-policy', cspString);
   }
