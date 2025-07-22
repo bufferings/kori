@@ -13,8 +13,9 @@
     "@korix/zod-openapi-plugin": "0.0.1",
     "@korix/zod-schema": "0.0.1",
     "@korix/zod-validator": "0.0.1",
-    "@korix/example": "0.1.0",
-    "@korix/script": "0.0.1"
+    "@korix/script": "0.0.1",
+    "@korix/security-headers-plugin": "0.0.1",
+    "@korix/example": "0.1.0"
   },
   "changesets": [
     "add-curly-rule",
@@ -23,6 +24,7 @@
     "dev-tooling-updates",
     "eslint-config-updates",
     "fix-request-body-cloning",
+    "initial-security-headers-plugin",
     "kori-fix-415-status",
     "optimize-pipeline-router",
     "refactor-logger-as-method",
@@ -30,6 +32,7 @@
     "refactor-pino-adapter-index",
     "refactor-response-header-api",
     "refactor-zod-openapi-plugin",
+    "remove-cors-plugin-version-export",
     "script-package-new"
   ]
 }

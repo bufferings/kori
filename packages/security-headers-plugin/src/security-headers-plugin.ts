@@ -10,15 +10,37 @@ import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'security-headers-plugin';
 
+// CSP directive values as constants
+export const CSP_VALUES = {
+  FRAME_ANCESTORS: {
+    NONE: "'none'",
+    SELF: "'self'",
+  },
+} as const;
+
+// CSP directive names as constants
+export const CSP_DIRECTIVES = {
+  FRAME_ANCESTORS: 'frame-ancestors',
+  DEFAULT_SRC: 'default-src',
+  SCRIPT_SRC: 'script-src',
+  STYLE_SRC: 'style-src',
+  IMG_SRC: 'img-src',
+  CONNECT_SRC: 'connect-src',
+  FONT_SRC: 'font-src',
+  OBJECT_SRC: 'object-src',
+  MEDIA_SRC: 'media-src',
+  CHILD_SRC: 'child-src',
+} as const;
+
+export type CspDirectives = Partial<Record<(typeof CSP_DIRECTIVES)[keyof typeof CSP_DIRECTIVES], string | string[]>> &
+  Record<string, string | string[]>;
+
 export type SecurityHeadersOptions = {
-  /** x-frame-options header */
-  frameOptions?: 'DENY' | 'SAMEORIGIN' | `ALLOW-FROM ${string}` | false;
+  /** x-frame-options header (legacy support, use CSP frame-ancestors for modern browsers) */
+  frameOptions?: 'deny' | 'sameorigin' | false;
 
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
-
-  /** x-xss-protection header */
-  xssProtection?: '0' | '1' | '1; mode=block' | false;
 
   /** strict-transport-security header */
   strictTransportSecurity?: string | false;
@@ -35,8 +57,13 @@ export type SecurityHeadersOptions = {
     | 'unsafe-url'
     | false;
 
-  /** content-security-policy header */
-  contentSecurityPolicy?: string | false;
+  /**
+   * Sets the `Content-Security-Policy` header.
+   * Can be a string for simple policies, or a directive object for granular control.
+   * Defaults to `{ 'frame-ancestors': "'none'" }` to prevent all framing (clickjacking).
+   * Uses CSP-first approach for modern web security best practices.
+   */
+  contentSecurityPolicy?: string | CspDirectives | false;
 
   /** x-permitted-cross-domain-policies header */
   permittedCrossDomainPolicies?: 'none' | 'master-only' | 'by-content-type' | 'all' | false;
@@ -61,12 +88,11 @@ export type SecurityHeadersOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | 'skipPaths'>> = {
-  frameOptions: 'DENY',
+  frameOptions: 'deny',
   contentTypeOptions: 'nosniff',
-  xssProtection: '1; mode=block',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: { 'frame-ancestors': CSP_VALUES.FRAME_ANCESTORS.NONE },
   permittedCrossDomainPolicies: 'none',
   downloadOptions: 'noopen',
   crossOriginEmbedderPolicy: false,
@@ -89,65 +115,72 @@ function shouldSkipPath(pathname: string, skipPaths: (string | RegExp)[]): boole
   return false;
 }
 
+function buildCspString(directives: CspDirectives): string {
+  return Object.entries(directives)
+    .map(([directive, value]) => {
+      if (Array.isArray(value)) {
+        return `${directive} ${value.join(' ')}`;
+      }
+      return `${directive} ${value}`;
+    })
+    .join('; ');
+}
+
 function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions): void {
   const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
-  // x-frame-options
-  if (finalOptions.frameOptions !== false) {
-    res.setHeader('x-frame-options', finalOptions.frameOptions);
-  }
-
-  // x-content-type-options
   if (finalOptions.contentTypeOptions !== false) {
     res.setHeader('x-content-type-options', finalOptions.contentTypeOptions);
   }
 
-  // x-xss-protection
-  if (finalOptions.xssProtection !== false) {
-    res.setHeader('x-xss-protection', finalOptions.xssProtection);
+  // This header is deprecated, but it's important to set it to '0'
+  // to disable the browser's built-in XSS auditor in older browsers,
+  // which can introduce XSS vulnerabilities. It is not configurable.
+  res.setHeader('x-xss-protection', '0');
+
+  if (finalOptions.frameOptions !== false) {
+    res.setHeader('x-frame-options', finalOptions.frameOptions);
   }
 
-  // strict-transport-security
   if (finalOptions.strictTransportSecurity !== false) {
     res.setHeader('strict-transport-security', finalOptions.strictTransportSecurity);
   }
 
-  // referrer-policy
   if (finalOptions.referrerPolicy !== false) {
     res.setHeader('referrer-policy', finalOptions.referrerPolicy);
   }
 
-  // content-security-policy
   if (finalOptions.contentSecurityPolicy !== false) {
-    res.setHeader('content-security-policy', finalOptions.contentSecurityPolicy);
+    let cspString: string;
+
+    if (typeof finalOptions.contentSecurityPolicy === 'string') {
+      cspString = finalOptions.contentSecurityPolicy;
+    } else {
+      cspString = buildCspString(finalOptions.contentSecurityPolicy);
+    }
+    res.setHeader('content-security-policy', cspString);
   }
 
-  // x-permitted-cross-domain-policies
   if (finalOptions.permittedCrossDomainPolicies !== false) {
     res.setHeader('x-permitted-cross-domain-policies', finalOptions.permittedCrossDomainPolicies);
   }
 
-  // x-download-options
   if (finalOptions.downloadOptions !== false) {
     res.setHeader('x-download-options', finalOptions.downloadOptions);
   }
 
-  // cross-origin-embedder-policy
   if (finalOptions.crossOriginEmbedderPolicy !== false) {
     res.setHeader('cross-origin-embedder-policy', finalOptions.crossOriginEmbedderPolicy);
   }
 
-  // cross-origin-opener-policy
   if (finalOptions.crossOriginOpenerPolicy !== false) {
     res.setHeader('cross-origin-opener-policy', finalOptions.crossOriginOpenerPolicy);
   }
 
-  // cross-origin-resource-policy
   if (finalOptions.crossOriginResourcePolicy !== false) {
     res.setHeader('cross-origin-resource-policy', finalOptions.crossOriginResourcePolicy);
   }
 
-  // Custom headers
   if (options.customHeaders) {
     for (const [headerName, headerValue] of Object.entries(options.customHeaders)) {
       res.setHeader(headerName, headerValue);
@@ -175,10 +208,14 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
       log.info('Security headers plugin initialized', {
         frameOptions: options.frameOptions ?? DEFAULT_OPTIONS.frameOptions,
         contentTypeOptions: options.contentTypeOptions ?? DEFAULT_OPTIONS.contentTypeOptions,
-        xssProtection: options.xssProtection ?? DEFAULT_OPTIONS.xssProtection,
         strictTransportSecurity: options.strictTransportSecurity ?? DEFAULT_OPTIONS.strictTransportSecurity,
         referrerPolicy: options.referrerPolicy ?? DEFAULT_OPTIONS.referrerPolicy,
-        contentSecurityPolicy: options.contentSecurityPolicy ?? 'disabled',
+        contentSecurityPolicy:
+          options.contentSecurityPolicy === false
+            ? 'disabled'
+            : typeof options.contentSecurityPolicy === 'object'
+              ? 'custom-directives'
+              : (options.contentSecurityPolicy ?? 'default-object'),
         skipPathsCount: skipPaths.length,
       });
 

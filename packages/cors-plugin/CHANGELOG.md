@@ -1,5 +1,15 @@
 # @korix/cors-plugin
 
+## 0.1.0-alpha.7
+
+### Patch Changes
+
+- Remove PLUGIN_VERSION export from public API
+
+  - Remove PLUGIN_VERSION export from index.ts
+  - Plugin version is still available internally for logging purposes
+  - Simplifies public API surface
+
 ## 0.1.0-alpha.6
 
 ### Patch Changes

@@ -11,6 +11,7 @@
     { "path": "./packages/openapi-plugin" },
     { "path": "./packages/openapi-scalar-ui-plugin" },
     { "path": "./packages/pino-adapter" },
+    { "path": "./packages/security-headers-plugin" },
     { "path": "./packages/zod-openapi-plugin" },
     { "path": "./packages/zod-schema" },
     { "path": "./packages/zod-validator" }
