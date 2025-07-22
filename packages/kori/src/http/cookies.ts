@@ -173,37 +173,13 @@ function serializeCookieInternal(
 }
 
 /**
- * Generate Set-Cookie header value with logging support for debugging encoding errors
- *
- * @param name - Cookie name
- * @param value - Cookie value
- * @param options - Cookie options
- * @param logger - Logger instance for debug output
- * @returns Set-Cookie header value
- */
-export function serializeCookieWithLogging(
-  name: string,
-  value: CookieValue,
-  options: CookieOptions = {},
-  logger: KoriLogger,
-): string {
-  return serializeCookieInternal(name, value, options, (name, value, error) => {
-    logger.debug('Failed to encode cookie value, using raw value', {
-      cookieName: name,
-      rawValue: value,
-      error: error.message,
-    });
-  });
-}
-
-/**
  * Helper function to capitalize the first letter of sameSite value
  *
  * @param sameSite - sameSite value ('strict', 'lax', 'none')
  * @returns Capitalized sameSite value ('Strict', 'Lax', 'None')
  */
-function capitalizeSameSite(sameSite: string): string {
-  return sameSite.charAt(0).toUpperCase() + sameSite.slice(1);
+function capitalizeSameSite(sameSite: 'strict' | 'lax' | 'none'): 'Strict' | 'Lax' | 'None' {
+  return (sameSite.charAt(0).toUpperCase() + sameSite.slice(1)) as 'Strict' | 'Lax' | 'None';
 }
 
 /**
@@ -235,31 +211,6 @@ export function deleteCookie(name: string, options: Pick<CookieOptions, 'path' |
     expires: new Date(0),
     maxAge: 0,
   });
-}
-
-/**
- * Generate Set-Cookie header value for deleting a cookie with logging support
- *
- * @param name - Cookie name
- * @param options - Cookie options (only path and domain are valid)
- * @param logger - Logger instance for debug output
- * @returns Set-Cookie header value for deletion
- */
-export function deleteCookieWithLogging(
-  name: string,
-  options: Pick<CookieOptions, 'path' | 'domain'> = {},
-  logger: KoriLogger,
-): string {
-  return serializeCookieWithLogging(
-    name,
-    '',
-    {
-      ...options,
-      expires: new Date(0),
-      maxAge: 0,
-    },
-    logger,
-  );
 }
 
 /**

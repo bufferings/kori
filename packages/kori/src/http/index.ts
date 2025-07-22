@@ -10,11 +10,8 @@ export {
   type CookieOptions,
   type CookieValue,
   deleteCookie,
-  deleteCookieWithLogging,
   parseCookies,
-  parseCookiesWithLogging,
   serializeCookie,
-  serializeCookieWithLogging,
 } from './cookies.js';
 export {
   HttpRequestHeader,

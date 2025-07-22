@@ -1,10 +1,10 @@
+import { parseCookiesWithLogging } from '../http/index.js';
 import {
   type ContentTypeValue,
   ContentType,
   DEFAULT_CONTENT_TYPE,
   type HttpRequestHeaderName,
   HttpRequestHeader,
-  parseCookiesWithLogging,
 } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
