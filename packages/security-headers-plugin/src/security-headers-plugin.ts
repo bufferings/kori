@@ -32,9 +32,8 @@ export const CSP_DIRECTIVES = {
   CHILD_SRC: 'child-src',
 } as const;
 
-export type CspDirectives = {
-  [K in keyof typeof CSP_DIRECTIVES]?: string | string[];
-} & Record<string, string | string[]>;
+export type CspDirectives = Partial<Record<(typeof CSP_DIRECTIVES)[keyof typeof CSP_DIRECTIVES], string | string[]>> &
+  Record<string, string | string[]>;
 
 export type SecurityHeadersOptions = {
   /** x-frame-options header */
