@@ -76,9 +76,10 @@ describe('Cookie utilities', () => {
     });
 
     test('should include expires option', () => {
-      const expires = new Date('2024-12-31T23:59:59.000Z');
+      // Use a date 24 hours from now to avoid hardcoded dates
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const result = serializeCookie('sessionId', 'abc123', { expires });
-      expect(result).toBe('sessionId=abc123; Expires=Tue, 31 Dec 2024 23:59:59 GMT');
+      expect(result).toBe(`sessionId=abc123; Expires=${expires.toUTCString()}`);
     });
 
     test('should include maxAge option', () => {
@@ -118,7 +119,8 @@ describe('Cookie utilities', () => {
     });
 
     test('should include all options', () => {
-      const expires = new Date('2024-12-31T23:59:59.000Z');
+      // Use a date 24 hours from now to avoid hardcoded dates
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const result = serializeCookie('sessionId', 'abc123', {
         expires,
         maxAge: 3600,
@@ -129,7 +131,7 @@ describe('Cookie utilities', () => {
         sameSite: 'strict',
       });
       expect(result).toBe(
-        'sessionId=abc123; Expires=Tue, 31 Dec 2024 23:59:59 GMT; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=Strict',
+        `sessionId=abc123; Expires=${expires.toUTCString()}; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=Strict`,
       );
     });
 
