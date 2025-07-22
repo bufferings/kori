@@ -2,8 +2,6 @@
  * Cookie utilities for parsing and serializing cookies
  */
 
-import { type KoriLogger } from '../logging/index.js';
-
 export type CookieValue = string;
 
 export type CookieOptions = {
@@ -186,8 +184,8 @@ function capitalizeSameSite(sameSite: 'strict' | 'lax' | 'none'): 'Strict' | 'La
  * Generate Set-Cookie header value
  *
  * Note: If encoding fails, this function falls back to using the raw value
- * without logging. For debug logging of encoding failures, use
- * serializeCookieWithLogging instead or handle logging in the calling code.
+ * without logging. For debug logging of encoding failures, handle logging
+ * in the calling code.
  *
  * @param name - Cookie name
  * @param value - Cookie value
@@ -210,22 +208,5 @@ export function deleteCookie(name: string, options: Pick<CookieOptions, 'path' |
     ...options,
     expires: new Date(0),
     maxAge: 0,
-  });
-}
-
-/**
- * Parse Cookie header with logging support for debugging malformed values
- *
- * @param cookieHeader - Cookie header value
- * @param logger - Logger instance for debug output
- * @returns Parsed cookies
- */
-export function parseCookiesWithLogging(cookieHeader: string | undefined, logger: KoriLogger): Record<string, string> {
-  return parseCookiesInternal(cookieHeader, (name, value, error) => {
-    logger.debug('Failed to decode cookie value, using raw value', {
-      cookieName: name,
-      rawValue: value,
-      error: error.message,
-    });
   });
 }
