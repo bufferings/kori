@@ -115,21 +115,36 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
  * @param onEncodeError - Callback for encode errors (name, value, error)
  * @returns Set-Cookie header value
  */
-function serializeCookieInternal(
-  name: string,
-  value: CookieValue,
-  options: CookieOptions = {},
-  onEncodeError?: (name: string, value: string, error: URIError) => void,
-): string {
+
+/**
+ * Helper function to capitalize the first letter of sameSite value
+ *
+ * @param sameSite - sameSite value ('strict', 'lax', 'none')
+ * @returns Capitalized sameSite value ('Strict', 'Lax', 'None')
+ */
+function capitalizeSameSite(sameSite: 'strict' | 'lax' | 'none'): 'Strict' | 'Lax' | 'None' {
+  return (sameSite.charAt(0).toUpperCase() + sameSite.slice(1)) as 'Strict' | 'Lax' | 'None';
+}
+
+/**
+ * Generate Set-Cookie header value
+ *
+ * Note: If encoding fails, this function falls back to using the raw value
+ * without logging. For debug logging of encoding failures, handle logging
+ * in the calling code.
+ *
+ * @param name - Cookie name
+ * @param value - Cookie value
+ * @param options - Cookie options
+ * @returns Set-Cookie header value
+ */
+export function serializeCookie(name: string, value: CookieValue, options: CookieOptions = {}): string {
   let encodedValue: string;
   try {
     encodedValue = encodeURIComponent(value);
   } catch (error) {
     // If encoding fails (URIError for malformed values), use the raw value
     if (error instanceof URIError) {
-      if (onEncodeError) {
-        onEncodeError(name, value, error);
-      }
       encodedValue = value;
     } else {
       // Re-throw unexpected errors
@@ -168,32 +183,6 @@ function serializeCookieInternal(
   }
 
   return cookie;
-}
-
-/**
- * Helper function to capitalize the first letter of sameSite value
- *
- * @param sameSite - sameSite value ('strict', 'lax', 'none')
- * @returns Capitalized sameSite value ('Strict', 'Lax', 'None')
- */
-function capitalizeSameSite(sameSite: 'strict' | 'lax' | 'none'): 'Strict' | 'Lax' | 'None' {
-  return (sameSite.charAt(0).toUpperCase() + sameSite.slice(1)) as 'Strict' | 'Lax' | 'None';
-}
-
-/**
- * Generate Set-Cookie header value
- *
- * Note: If encoding fails, this function falls back to using the raw value
- * without logging. For debug logging of encoding failures, handle logging
- * in the calling code.
- *
- * @param name - Cookie name
- * @param value - Cookie value
- * @param options - Cookie options
- * @returns Set-Cookie header value
- */
-export function serializeCookie(name: string, value: CookieValue, options: CookieOptions = {}): string {
-  return serializeCookieInternal(name, value, options);
 }
 
 /**
