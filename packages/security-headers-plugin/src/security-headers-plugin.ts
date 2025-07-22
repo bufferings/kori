@@ -211,9 +211,11 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
         strictTransportSecurity: options.strictTransportSecurity ?? DEFAULT_OPTIONS.strictTransportSecurity,
         referrerPolicy: options.referrerPolicy ?? DEFAULT_OPTIONS.referrerPolicy,
         contentSecurityPolicy:
-          typeof options.contentSecurityPolicy === 'object'
-            ? 'custom-directives'
-            : (options.contentSecurityPolicy ?? 'default'),
+          options.contentSecurityPolicy === false
+            ? 'disabled'
+            : typeof options.contentSecurityPolicy === 'object'
+              ? 'custom-directives'
+              : (options.contentSecurityPolicy ?? 'default-object'),
         skipPathsCount: skipPaths.length,
       });
 
