@@ -1,7 +1,7 @@
-import eslintConfig from '@korix/eslint-config';
+import { koriConfig } from '@korix/eslint-config';
 
 export default [
-  ...eslintConfig,
+  ...koriConfig,
   {
     languageOptions: {
       parserOptions: {
