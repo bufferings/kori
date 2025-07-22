@@ -11,19 +11,19 @@ import { PLUGIN_VERSION } from './version.js';
 const PLUGIN_NAME = 'security-headers-plugin';
 
 export type SecurityHeadersOptions = {
-  /** X-Frame-Options header */
+  /** x-frame-options header */
   frameOptions?: 'DENY' | 'SAMEORIGIN' | `ALLOW-FROM ${string}` | false;
 
-  /** X-Content-Type-Options header */
+  /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
 
-  /** X-XSS-Protection header */
+  /** x-xss-protection header */
   xssProtection?: '0' | '1' | '1; mode=block' | false;
 
-  /** Strict-Transport-Security header */
+  /** strict-transport-security header */
   strictTransportSecurity?: string | false;
 
-  /** Referrer-Policy header */
+  /** referrer-policy header */
   referrerPolicy?:
     | 'no-referrer'
     | 'no-referrer-when-downgrade'
@@ -35,22 +35,22 @@ export type SecurityHeadersOptions = {
     | 'unsafe-url'
     | false;
 
-  /** Content-Security-Policy header */
+  /** content-security-policy header */
   contentSecurityPolicy?: string | false;
 
-  /** X-Permitted-Cross-Domain-Policies header */
+  /** x-permitted-cross-domain-policies header */
   permittedCrossDomainPolicies?: 'none' | 'master-only' | 'by-content-type' | 'all' | false;
 
-  /** X-Download-Options header */
+  /** x-download-options header */
   downloadOptions?: 'noopen' | false;
 
-  /** Cross-Origin-Embedder-Policy header */
+  /** cross-origin-embedder-policy header */
   crossOriginEmbedderPolicy?: 'unsafe-none' | 'require-corp' | false;
 
-  /** Cross-Origin-Opener-Policy header */
+  /** cross-origin-opener-policy header */
   crossOriginOpenerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' | 'same-origin' | false;
 
-  /** Cross-Origin-Resource-Policy header */
+  /** cross-origin-resource-policy header */
   crossOriginResourcePolicy?: 'same-site' | 'same-origin' | 'cross-origin' | false;
 
   /** Custom headers to add */
@@ -92,59 +92,59 @@ function shouldSkipPath(pathname: string, skipPaths: (string | RegExp)[]): boole
 function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions): void {
   const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
-  // X-Frame-Options
+  // x-frame-options
   if (finalOptions.frameOptions !== false) {
-    res.setHeader('X-Frame-Options', finalOptions.frameOptions);
+    res.setHeader('x-frame-options', finalOptions.frameOptions);
   }
 
-  // X-Content-Type-Options
+  // x-content-type-options
   if (finalOptions.contentTypeOptions !== false) {
-    res.setHeader('X-Content-Type-Options', finalOptions.contentTypeOptions);
+    res.setHeader('x-content-type-options', finalOptions.contentTypeOptions);
   }
 
-  // X-XSS-Protection
+  // x-xss-protection
   if (finalOptions.xssProtection !== false) {
-    res.setHeader('X-XSS-Protection', finalOptions.xssProtection);
+    res.setHeader('x-xss-protection', finalOptions.xssProtection);
   }
 
-  // Strict-Transport-Security
+  // strict-transport-security
   if (finalOptions.strictTransportSecurity !== false) {
-    res.setHeader('Strict-Transport-Security', finalOptions.strictTransportSecurity);
+    res.setHeader('strict-transport-security', finalOptions.strictTransportSecurity);
   }
 
-  // Referrer-Policy
+  // referrer-policy
   if (finalOptions.referrerPolicy !== false) {
-    res.setHeader('Referrer-Policy', finalOptions.referrerPolicy);
+    res.setHeader('referrer-policy', finalOptions.referrerPolicy);
   }
 
-  // Content-Security-Policy
+  // content-security-policy
   if (finalOptions.contentSecurityPolicy !== false) {
-    res.setHeader('Content-Security-Policy', finalOptions.contentSecurityPolicy);
+    res.setHeader('content-security-policy', finalOptions.contentSecurityPolicy);
   }
 
-  // X-Permitted-Cross-Domain-Policies
+  // x-permitted-cross-domain-policies
   if (finalOptions.permittedCrossDomainPolicies !== false) {
-    res.setHeader('X-Permitted-Cross-Domain-Policies', finalOptions.permittedCrossDomainPolicies);
+    res.setHeader('x-permitted-cross-domain-policies', finalOptions.permittedCrossDomainPolicies);
   }
 
-  // X-Download-Options
+  // x-download-options
   if (finalOptions.downloadOptions !== false) {
-    res.setHeader('X-Download-Options', finalOptions.downloadOptions);
+    res.setHeader('x-download-options', finalOptions.downloadOptions);
   }
 
-  // Cross-Origin-Embedder-Policy
+  // cross-origin-embedder-policy
   if (finalOptions.crossOriginEmbedderPolicy !== false) {
-    res.setHeader('Cross-Origin-Embedder-Policy', finalOptions.crossOriginEmbedderPolicy);
+    res.setHeader('cross-origin-embedder-policy', finalOptions.crossOriginEmbedderPolicy);
   }
 
-  // Cross-Origin-Opener-Policy
+  // cross-origin-opener-policy
   if (finalOptions.crossOriginOpenerPolicy !== false) {
-    res.setHeader('Cross-Origin-Opener-Policy', finalOptions.crossOriginOpenerPolicy);
+    res.setHeader('cross-origin-opener-policy', finalOptions.crossOriginOpenerPolicy);
   }
 
-  // Cross-Origin-Resource-Policy
+  // cross-origin-resource-policy
   if (finalOptions.crossOriginResourcePolicy !== false) {
-    res.setHeader('Cross-Origin-Resource-Policy', finalOptions.crossOriginResourcePolicy);
+    res.setHeader('cross-origin-resource-policy', finalOptions.crossOriginResourcePolicy);
   }
 
   // Custom headers
@@ -159,7 +159,7 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
  * Security headers plugin for Kori framework
  *
  * Adds common security headers to HTTP responses to improve application security.
- * Includes headers like X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security, etc.
+ * Includes headers like x-frame-options, x-content-type-options, strict-transport-security, etc.
  */
 export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: SecurityHeadersOptions = {},

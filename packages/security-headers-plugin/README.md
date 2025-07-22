@@ -45,13 +45,13 @@ const app = createKori()
 
 The plugin sets the following headers by default:
 
-- **X-Frame-Options**: `DENY`
-- **X-Content-Type-Options**: `nosniff`
-- **X-XSS-Protection**: `1; mode=block`
-- **Strict-Transport-Security**: `max-age=31536000; includeSubDomains`
-- **Referrer-Policy**: `strict-origin-when-cross-origin`
-- **X-Permitted-Cross-Domain-Policies**: `none`
-- **X-Download-Options**: `noopen`
+- **x-frame-options**: `DENY`
+- **x-content-type-options**: `nosniff`
+- **x-xss-protection**: `1; mode=block`
+- **strict-transport-security**: `max-age=31536000; includeSubDomains`
+- **referrer-policy**: `strict-origin-when-cross-origin`
+- **x-permitted-cross-domain-policies**: `none`
+- **x-download-options**: `noopen`
 
 Additional headers can be enabled through configuration.
 

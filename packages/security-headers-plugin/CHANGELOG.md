@@ -6,17 +6,17 @@
 
 - Initial release of security headers plugin for Kori framework
 - Adds common security headers to HTTP responses:
-  - X-Frame-Options
-  - X-Content-Type-Options 
-  - X-XSS-Protection
-  - Strict-Transport-Security
-  - Referrer-Policy
-  - Content-Security-Policy
-  - X-Permitted-Cross-Domain-Policies
-  - X-Download-Options
-  - Cross-Origin-Embedder-Policy
-  - Cross-Origin-Opener-Policy
-  - Cross-Origin-Resource-Policy
+  - x-frame-options
+  - x-content-type-options 
+  - x-xss-protection
+  - strict-transport-security
+  - referrer-policy
+  - content-security-policy
+  - x-permitted-cross-domain-policies
+  - x-download-options
+  - cross-origin-embedder-policy
+  - cross-origin-opener-policy
+  - cross-origin-resource-policy
 - Support for custom headers
 - Path-based header skipping with string and regex patterns
 - Configurable header values with secure defaults

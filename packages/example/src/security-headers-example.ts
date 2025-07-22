@@ -55,8 +55,8 @@ const app3 = createKori()
 const app4 = createKori()
   .applyPlugin(
     securityHeadersPlugin({
-      frameOptions: false, // Disable X-Frame-Options
-      xssProtection: false, // Disable X-XSS-Protection (modern browsers don't need it)
+      frameOptions: false, // Disable x-frame-options
+      xssProtection: false, // Disable x-xss-protection (modern browsers don't need it)
       strictTransportSecurity: false, // Disable HSTS (for development)
       contentSecurityPolicy: "default-src 'self'",
     }),
