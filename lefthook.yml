@@ -8,7 +8,7 @@ pre-commit:
       run: pnpm typecheck
 
     - name: lint
-      run: pnpm exec ks lint-staged {staged_files}
+      run: pnpm ks lint-staged {staged_files}
       glob: '*.{ts,tsx,js}'
       exclude:
         - '*.config.js'
