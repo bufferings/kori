@@ -74,9 +74,14 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
     if (name) {
       try {
         cookies[name] = decodeURIComponent(value);
-      } catch {
-        // If decoding fails, use the raw value
-        cookies[name] = value;
+      } catch (error) {
+        // If decoding fails (URIError for malformed encoding), use the raw value
+        if (error instanceof URIError) {
+          cookies[name] = value;
+        } else {
+          // Re-throw unexpected errors
+          throw error;
+        }
       }
     }
   }
@@ -96,9 +101,14 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
   let encodedValue: string;
   try {
     encodedValue = encodeURIComponent(value);
-  } catch {
-    // If encoding fails, use the raw value
-    encodedValue = value;
+  } catch (error) {
+    // If encoding fails (URIError for malformed values), use the raw value
+    if (error instanceof URIError) {
+      encodedValue = value;
+    } else {
+      // Re-throw unexpected errors
+      throw error;
+    }
   }
   let cookie = `${name}=${encodedValue}`;
 

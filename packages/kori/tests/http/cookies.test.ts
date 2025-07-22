@@ -57,6 +57,10 @@ describe('Cookie utilities', () => {
       // Invalid UTF-8 sequence
       const result3 = parseCookies('token=%C0%80; user=alice');
       expect(result3).toEqual({ token: '%C0%80', user: 'alice' });
+
+      // Multiple malformed values should not affect parsing of valid ones
+      const result4 = parseCookies('bad1=%ZZ; good=valid; bad2=%2; another=test');
+      expect(result4).toEqual({ bad1: '%ZZ', good: 'valid', bad2: '%2', another: 'test' });
     });
   });
 
