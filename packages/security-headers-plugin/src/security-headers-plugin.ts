@@ -36,8 +36,8 @@ export type CspDirectives = Partial<Record<(typeof CSP_DIRECTIVES)[keyof typeof 
   Record<string, string | string[]>;
 
 export type SecurityHeadersOptions = {
-  /** x-frame-options header */
-  frameOptions?: 'deny' | 'sameorigin' | `allow-from ${string}` | false;
+  /** x-frame-options header (legacy support, use CSP frame-ancestors for modern browsers) */
+  frameOptions?: 'deny' | 'sameorigin' | false;
 
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
