@@ -85,8 +85,7 @@ app.get('/profile', ({ req, res }) => {
   const username = req.cookie('username');
 
   if (!sessionId) {
-    return res.unauthorized({
-      type: 'json',
+    return res.status(401).json({
       message: 'Login required',
     });
   }
