@@ -1,4 +1,4 @@
-import { parseCookiesWithLogging } from '../http/index.js';
+import { parseCookies } from '../http/index.js';
 import {
   type ContentTypeValue,
   ContentType,
@@ -144,7 +144,7 @@ function getCookiesInternal(req: ReqStateAny): Record<string, string> {
   }
 
   const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  req.cookiesCache = parseCookiesWithLogging(cookieHeader, getLogInternal(req));
+  req.cookiesCache = parseCookies(cookieHeader);
   return req.cookiesCache;
 }
 
