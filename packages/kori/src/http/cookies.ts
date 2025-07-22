@@ -150,11 +150,21 @@ export function serializeCookieWithLogging(
   }
 
   if (options.sameSite) {
-    const sameSiteValue = options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1);
+    const sameSiteValue = capitalizeSameSite(options.sameSite);
     cookie += `; SameSite=${sameSiteValue}`;
   }
 
   return cookie;
+}
+
+/**
+ * Helper function to capitalize the first letter of sameSite value
+ *
+ * @param sameSite - sameSite value ('strict', 'lax', 'none')
+ * @returns Capitalized sameSite value ('Strict', 'Lax', 'None')
+ */
+function capitalizeSameSite(sameSite: string): string {
+  return sameSite.charAt(0).toUpperCase() + sameSite.slice(1);
 }
 
 /**
@@ -212,7 +222,7 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
   }
 
   if (options.sameSite) {
-    const sameSiteValue = options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1);
+    const sameSiteValue = capitalizeSameSite(options.sameSite);
     cookie += `; SameSite=${sameSiteValue}`;
   }
 
