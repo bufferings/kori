@@ -4,7 +4,7 @@ import {
   DEFAULT_CONTENT_TYPE,
   type HttpRequestHeaderName,
   HttpRequestHeader,
-  parseCookies,
+  parseCookiesWithLogging,
 } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 
@@ -144,7 +144,7 @@ function getCookiesInternal(req: ReqStateAny): Record<string, string> {
   }
 
   const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  req.cookiesCache = parseCookies(cookieHeader);
+  req.cookiesCache = parseCookiesWithLogging(cookieHeader, getLogInternal(req));
   return req.cookiesCache;
 }
 

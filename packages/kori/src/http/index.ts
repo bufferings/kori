@@ -11,7 +11,9 @@ export {
   type CookieValue,
   deleteCookie,
   parseCookies,
+  parseCookiesWithLogging,
   serializeCookie,
+  serializeCookieWithLogging,
 } from './cookies.js';
 export {
   HttpRequestHeader,

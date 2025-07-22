@@ -2,6 +2,8 @@
  * Cookie utilities for parsing and serializing cookies
  */
 
+import { type KoriLogger } from '../logging/index.js';
+
 export type CookieValue = string;
 
 export type CookieOptions = {
@@ -90,6 +92,72 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
+ * Generate Set-Cookie header value with logging support for debugging encoding errors
+ *
+ * @param name - Cookie name
+ * @param value - Cookie value
+ * @param options - Cookie options
+ * @param logger - Logger instance for debug output
+ * @returns Set-Cookie header value
+ */
+export function serializeCookieWithLogging(
+  name: string,
+  value: CookieValue,
+  options: CookieOptions = {},
+  logger: KoriLogger,
+): string {
+  let encodedValue: string;
+  try {
+    encodedValue = encodeURIComponent(value);
+  } catch (error) {
+    // If encoding fails (URIError for malformed values), use the raw value
+    if (error instanceof URIError) {
+      logger.debug('Failed to encode cookie value, using raw value', {
+        cookieName: name,
+        rawValue: value,
+        error: error.message,
+      });
+      encodedValue = value;
+    } else {
+      // Re-throw unexpected errors
+      throw error;
+    }
+  }
+  let cookie = `${name}=${encodedValue}`;
+
+  if (options.expires) {
+    cookie += `; Expires=${options.expires.toUTCString()}`;
+  }
+
+  if (options.maxAge !== undefined) {
+    cookie += `; Max-Age=${options.maxAge}`;
+  }
+
+  if (options.domain) {
+    cookie += `; Domain=${options.domain}`;
+  }
+
+  if (options.path) {
+    cookie += `; Path=${options.path}`;
+  }
+
+  if (options.secure) {
+    cookie += '; Secure';
+  }
+
+  if (options.httpOnly) {
+    cookie += '; HttpOnly';
+  }
+
+  if (options.sameSite) {
+    const sameSiteValue = options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1);
+    cookie += `; SameSite=${sameSiteValue}`;
+  }
+
+  return cookie;
+}
+
+/**
  * Generate Set-Cookie header value
  *
  * @param name - Cookie name
@@ -157,4 +225,56 @@ export function deleteCookie(name: string, options: Pick<CookieOptions, 'path' |
     expires: new Date(0),
     maxAge: 0,
   });
+}
+
+/**
+ * Parse Cookie header with logging support for debugging malformed values
+ *
+ * @param cookieHeader - Cookie header value
+ * @param logger - Logger instance for debug output
+ * @returns Parsed cookies
+ */
+export function parseCookiesWithLogging(cookieHeader: string | undefined, logger: KoriLogger): Record<string, string> {
+  if (!cookieHeader) {
+    return {};
+  }
+
+  const cookies: Record<string, string> = {};
+  const pairs = cookieHeader.split(';');
+
+  for (const pair of pairs) {
+    const trimmedPair = pair.trim();
+    if (!trimmedPair) {
+      continue;
+    }
+
+    const eqIndex = trimmedPair.indexOf('=');
+    if (eqIndex === -1) {
+      continue;
+    }
+
+    const name = trimmedPair.slice(0, eqIndex).trim();
+    const value = trimmedPair.slice(eqIndex + 1).trim();
+
+    if (name) {
+      try {
+        cookies[name] = decodeURIComponent(value);
+      } catch (error) {
+        // If decoding fails (URIError for malformed encoding), use the raw value
+        if (error instanceof URIError) {
+          logger.debug('Failed to decode cookie value, using raw value', {
+            cookieName: name,
+            rawValue: value,
+            error: error.message,
+          });
+          cookies[name] = value;
+        } else {
+          // Re-throw unexpected errors
+          throw error;
+        }
+      }
+    }
+  }
+
+  return cookies;
 }
