@@ -44,6 +44,20 @@ describe('Cookie utilities', () => {
       const result3 = parseCookies('  sessionId = abc123  ;  username = john  ');
       expect(result3).toEqual({ sessionId: 'abc123', username: 'john' });
     });
+
+    test('should handle malformed URI encoding gracefully', () => {
+      // Malformed percent encoding
+      const result1 = parseCookies('sessionId=%ZZ; username=john');
+      expect(result1).toEqual({ sessionId: '%ZZ', username: 'john' });
+
+      // Incomplete percent encoding
+      const result2 = parseCookies('data=%2; valid=test');
+      expect(result2).toEqual({ data: '%2', valid: 'test' });
+
+      // Invalid UTF-8 sequence
+      const result3 = parseCookies('token=%C0%80; user=alice');
+      expect(result3).toEqual({ token: '%C0%80', user: 'alice' });
+    });
   });
 
   describe('serializeCookie', () => {
@@ -113,6 +127,15 @@ describe('Cookie utilities', () => {
       expect(result).toBe(
         'sessionId=abc123; Expires=Tue, 31 Dec 2024 23:59:59 GMT; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=Strict',
       );
+    });
+
+    test('should handle encoding errors gracefully', () => {
+      // Most values should encode fine, but if encoding fails, use raw value
+      const result1 = serializeCookie('sessionId', 'normal-value');
+      expect(result1).toBe('sessionId=normal-value');
+
+      const result2 = serializeCookie('data', 'value with spaces');
+      expect(result2).toBe('data=value%20with%20spaces');
     });
   });
 

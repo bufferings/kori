@@ -72,7 +72,12 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
     const value = trimmedPair.slice(eqIndex + 1).trim();
 
     if (name) {
-      cookies[name] = decodeURIComponent(value);
+      try {
+        cookies[name] = decodeURIComponent(value);
+      } catch {
+        // If decoding fails, use the raw value
+        cookies[name] = value;
+      }
     }
   }
 
@@ -88,7 +93,13 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
  * @returns Set-Cookie header value
  */
 export function serializeCookie(name: string, value: CookieValue, options: CookieOptions = {}): string {
-  const encodedValue = encodeURIComponent(value);
+  let encodedValue: string;
+  try {
+    encodedValue = encodeURIComponent(value);
+  } catch {
+    // If encoding fails, use the raw value
+    encodedValue = value;
+  }
   let cookie = `${name}=${encodedValue}`;
 
   if (options.expires) {
