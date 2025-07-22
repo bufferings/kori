@@ -160,6 +160,10 @@ export function serializeCookieWithLogging(
 /**
  * Generate Set-Cookie header value
  *
+ * Note: If encoding fails, this function falls back to using the raw value
+ * without logging. For debug logging of encoding failures, use
+ * serializeCookieWithLogging instead or handle logging in the calling code.
+ *
  * @param name - Cookie name
  * @param value - Cookie value
  * @param options - Cookie options
@@ -172,6 +176,9 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
   } catch (error) {
     // If encoding fails (URIError for malformed values), use the raw value
     if (error instanceof URIError) {
+      // Note: Encoding failed but no logging available in this utility function
+      // For debug logging of encoding failures, use serializeCookieWithLogging instead
+      // or log in the calling code: req.log().warn('Cookie encoding failed', { name, value, error })
       encodedValue = value;
     } else {
       // Re-throw unexpected errors
@@ -225,6 +232,31 @@ export function deleteCookie(name: string, options: Pick<CookieOptions, 'path' |
     expires: new Date(0),
     maxAge: 0,
   });
+}
+
+/**
+ * Generate Set-Cookie header value for deleting a cookie with logging support
+ *
+ * @param name - Cookie name
+ * @param options - Cookie options (only path and domain are valid)
+ * @param logger - Logger instance for debug output
+ * @returns Set-Cookie header value for deletion
+ */
+export function deleteCookieWithLogging(
+  name: string,
+  options: Pick<CookieOptions, 'path' | 'domain'> = {},
+  logger: KoriLogger,
+): string {
+  return serializeCookieWithLogging(
+    name,
+    '',
+    {
+      ...options,
+      expires: new Date(0),
+      maxAge: 0,
+    },
+    logger,
+  );
 }
 
 /**

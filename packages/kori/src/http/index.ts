@@ -10,6 +10,7 @@ export {
   type CookieOptions,
   type CookieValue,
   deleteCookie,
+  deleteCookieWithLogging,
   parseCookies,
   parseCookiesWithLogging,
   serializeCookie,
