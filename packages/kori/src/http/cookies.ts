@@ -33,10 +33,6 @@ export type CookieOptions = {
    * SameSite attribute for CSRF protection
    */
   sameSite?: 'strict' | 'lax' | 'none';
-  /**
-   * Cookie priority (Chrome only)
-   */
-  priority?: 'low' | 'medium' | 'high';
 };
 
 export type Cookie = {
