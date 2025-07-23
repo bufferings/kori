@@ -33,6 +33,10 @@ export type CookieOptions = {
    * SameSite attribute for CSRF protection
    */
   sameSite?: 'strict' | 'lax' | 'none';
+  /**
+   * Cookie priority (Chrome only)
+   */
+  priority?: 'low' | 'medium' | 'high';
 };
 
 export type Cookie = {
@@ -90,6 +94,23 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
+ * Validates a cookie name according to RFC 6265.
+ * Cookie names must contain only valid token characters.
+ */
+function validateCookieName(name: string): void {
+  if (!name) {
+    throw new Error('Cookie name cannot be empty');
+  }
+
+  // RFC 6265 token characters: ALPHA / DIGIT / "-" / "." / "_" / "~" / "!" / "#" / "$" / "&" / "'" / "*" / "+" / "^" / "`" / "|"
+  if (!/^[a-zA-Z0-9\-._~!#$&'*+^`|]+$/.test(name)) {
+    throw new Error(
+      `Invalid cookie name: "${name}". Cookie names must contain only RFC 6265 compliant characters (letters, numbers, and: - . _ ~ ! # $ & ' * + ^ \` |).`,
+    );
+  }
+}
+
+/**
  * Generate Set-Cookie header value
  *
  * Note: If encoding fails, this function falls back to using the raw value
@@ -102,6 +123,7 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
  * @returns Set-Cookie header value
  */
 export function serializeCookie(name: string, value: CookieValue, options: CookieOptions = {}): string {
+  validateCookieName(name);
   let encodedValue: string;
   try {
     encodedValue = encodeURIComponent(value);
@@ -155,6 +177,7 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
  * @returns Set-Cookie header value for deletion
  */
 export function deleteCookie(name: string, options: Pick<CookieOptions, 'path' | 'domain'> = {}): string {
+  validateCookieName(name);
   return serializeCookie(name, '', {
     ...options,
     expires: new Date(0),
