@@ -107,16 +107,6 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
- * Internal helper function for serializing cookies with optional logging
- *
- * @param name - Cookie name
- * @param value - Cookie value
- * @param options - Cookie options
- * @param onEncodeError - Callback for encode errors (name, value, error)
- * @returns Set-Cookie header value
- */
-
-/**
  * Helper function to capitalize the first letter of sameSite value
  *
  * @param sameSite - sameSite value ('strict', 'lax', 'none')
