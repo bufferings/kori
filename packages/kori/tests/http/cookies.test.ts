@@ -79,43 +79,43 @@ describe('Cookie utilities', () => {
       // Use a date 24 hours from now to avoid hardcoded dates
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const result = serializeCookie('sessionId', 'abc123', { expires });
-      expect(result).toBe(`sessionId=abc123; Expires=${expires.toUTCString()}`);
+      expect(result).toBe(`sessionId=abc123; expires=${expires.toUTCString()}`);
     });
 
     test('should include maxAge option', () => {
       const result = serializeCookie('sessionId', 'abc123', { maxAge: 3600 });
-      expect(result).toBe('sessionId=abc123; Max-Age=3600');
+      expect(result).toBe('sessionId=abc123; max-age=3600');
     });
 
     test('should include domain option', () => {
       const result = serializeCookie('sessionId', 'abc123', { domain: 'example.com' });
-      expect(result).toBe('sessionId=abc123; Domain=example.com');
+      expect(result).toBe('sessionId=abc123; domain=example.com');
     });
 
     test('should include path option', () => {
       const result = serializeCookie('sessionId', 'abc123', { path: '/api' });
-      expect(result).toBe('sessionId=abc123; Path=/api');
+      expect(result).toBe('sessionId=abc123; path=/api');
     });
 
     test('should include secure flag', () => {
       const result = serializeCookie('sessionId', 'abc123', { secure: true });
-      expect(result).toBe('sessionId=abc123; Secure');
+      expect(result).toBe('sessionId=abc123; secure');
     });
 
     test('should include httpOnly flag', () => {
       const result = serializeCookie('sessionId', 'abc123', { httpOnly: true });
-      expect(result).toBe('sessionId=abc123; HttpOnly');
+      expect(result).toBe('sessionId=abc123; httponly');
     });
 
     test('should include sameSite option', () => {
       const result1 = serializeCookie('sessionId', 'abc123', { sameSite: 'strict' });
-      expect(result1).toBe('sessionId=abc123; SameSite=strict');
+      expect(result1).toBe('sessionId=abc123; samesite=strict');
 
       const result2 = serializeCookie('sessionId', 'abc123', { sameSite: 'lax' });
-      expect(result2).toBe('sessionId=abc123; SameSite=lax');
+      expect(result2).toBe('sessionId=abc123; samesite=lax');
 
       const result3 = serializeCookie('sessionId', 'abc123', { sameSite: 'none' });
-      expect(result3).toBe('sessionId=abc123; SameSite=none');
+      expect(result3).toBe('sessionId=abc123; samesite=none');
     });
 
     test('should include all options', () => {
@@ -131,7 +131,7 @@ describe('Cookie utilities', () => {
         sameSite: 'strict',
       });
       expect(result).toBe(
-        `sessionId=abc123; Expires=${expires.toUTCString()}; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=strict`,
+        `sessionId=abc123; expires=${expires.toUTCString()}; max-age=3600; domain=example.com; path=/api; secure; httponly; samesite=strict`,
       );
     });
 
@@ -148,13 +148,13 @@ describe('Cookie utilities', () => {
   describe('deleteCookie', () => {
     test('should create cookie deletion string', () => {
       const result = deleteCookie('sessionId');
-      expect(result).toBe('sessionId=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0');
+      expect(result).toBe('sessionId=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0');
     });
 
     test('should include path and domain options', () => {
       const result = deleteCookie('sessionId', { path: '/api', domain: 'example.com' });
       expect(result).toBe(
-        'sessionId=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Domain=example.com; Path=/api',
+        'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; domain=example.com; path=/api',
       );
     });
   });

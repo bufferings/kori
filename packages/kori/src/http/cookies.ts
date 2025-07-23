@@ -134,31 +134,31 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
   let cookie = `${name}=${encodedValue}`;
 
   if (options.expires) {
-    cookie += `; Expires=${options.expires.toUTCString()}`;
+    cookie += `; expires=${options.expires.toUTCString()}`;
   }
 
   if (options.maxAge !== undefined) {
-    cookie += `; Max-Age=${options.maxAge}`;
+    cookie += `; max-age=${options.maxAge}`;
   }
 
   if (options.domain) {
-    cookie += `; Domain=${options.domain}`;
+    cookie += `; domain=${options.domain}`;
   }
 
   if (options.path) {
-    cookie += `; Path=${options.path}`;
+    cookie += `; path=${options.path}`;
   }
 
   if (options.secure) {
-    cookie += '; Secure';
+    cookie += '; secure';
   }
 
   if (options.httpOnly) {
-    cookie += '; HttpOnly';
+    cookie += '; httponly';
   }
 
   if (options.sameSite) {
-    cookie += `; SameSite=${options.sameSite}`;
+    cookie += `; samesite=${options.sameSite}`;
   }
 
   return cookie;
