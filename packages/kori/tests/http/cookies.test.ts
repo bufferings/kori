@@ -5,14 +5,14 @@ import { deleteCookie, parseCookies, serializeCookie } from '../../src/http/cook
 describe('Cookie utilities', () => {
   describe('parseCookies', () => {
     test('should parse simple cookie', () => {
-      const result = parseCookies('sessionId=abc123');
-      expect(result).toEqual({ sessionId: 'abc123' });
+      const result = parseCookies('session_id=abc123');
+      expect(result).toEqual({ session_id: 'abc123' });
     });
 
     test('should parse multiple cookies', () => {
-      const result = parseCookies('sessionId=abc123; username=john; theme=dark');
+      const result = parseCookies('session_id=abc123; username=john; theme=dark');
       expect(result).toEqual({
-        sessionId: 'abc123',
+        session_id: 'abc123',
         username: 'john',
         theme: 'dark',
       });
@@ -33,22 +33,22 @@ describe('Cookie utilities', () => {
 
     test('should handle malformed cookies', () => {
       // Cookie without value
-      const result1 = parseCookies('sessionId=; username=john');
-      expect(result1).toEqual({ sessionId: '', username: 'john' });
+      const result1 = parseCookies('session_id=; username=john');
+      expect(result1).toEqual({ session_id: '', username: 'john' });
 
       // Cookie without equals sign
-      const result2 = parseCookies('sessionId; username=john');
+      const result2 = parseCookies('session_id; username=john');
       expect(result2).toEqual({ username: 'john' });
 
       // Extra spaces
-      const result3 = parseCookies('  sessionId = abc123  ;  username = john  ');
-      expect(result3).toEqual({ sessionId: 'abc123', username: 'john' });
+      const result3 = parseCookies('  session_id = abc123  ;  username = john  ');
+      expect(result3).toEqual({ session_id: 'abc123', username: 'john' });
     });
 
     test('should handle malformed URI encoding gracefully', () => {
       // Malformed percent encoding
-      const result1 = parseCookies('sessionId=%ZZ; username=john');
-      expect(result1).toEqual({ sessionId: '%ZZ', username: 'john' });
+      const result1 = parseCookies('session_id=%ZZ; username=john');
+      expect(result1).toEqual({ session_id: '%ZZ', username: 'john' });
 
       // Incomplete percent encoding
       const result2 = parseCookies('data=%2; valid=test');
@@ -66,8 +66,8 @@ describe('Cookie utilities', () => {
 
   describe('serializeCookie', () => {
     test('should serialize simple cookie', () => {
-      const result = serializeCookie('sessionId', 'abc123');
-      expect(result).toBe('sessionId=abc123');
+      const result = serializeCookie('session_id', 'abc123');
+      expect(result).toBe('session_id=abc123');
     });
 
     test('should URL encode cookie value', () => {
@@ -78,50 +78,50 @@ describe('Cookie utilities', () => {
     test('should include expires option', () => {
       // Use a date 24 hours from now to avoid hardcoded dates
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = serializeCookie('sessionId', 'abc123', { expires });
-      expect(result).toBe(`sessionId=abc123; expires=${expires.toUTCString()}`);
+      const result = serializeCookie('session_id', 'abc123', { expires });
+      expect(result).toBe(`session_id=abc123; expires=${expires.toUTCString()}`);
     });
 
     test('should include maxAge option', () => {
-      const result = serializeCookie('sessionId', 'abc123', { maxAge: 3600 });
-      expect(result).toBe('sessionId=abc123; max-age=3600');
+      const result = serializeCookie('session_id', 'abc123', { maxAge: 3600 });
+      expect(result).toBe('session_id=abc123; max-age=3600');
     });
 
     test('should include domain option', () => {
-      const result = serializeCookie('sessionId', 'abc123', { domain: 'example.com' });
-      expect(result).toBe('sessionId=abc123; domain=example.com');
+      const result = serializeCookie('session_id', 'abc123', { domain: 'example.com' });
+      expect(result).toBe('session_id=abc123; domain=example.com');
     });
 
     test('should include path option', () => {
-      const result = serializeCookie('sessionId', 'abc123', { path: '/api' });
-      expect(result).toBe('sessionId=abc123; path=/api');
+      const result = serializeCookie('session_id', 'abc123', { path: '/api' });
+      expect(result).toBe('session_id=abc123; path=/api');
     });
 
     test('should include secure flag', () => {
-      const result = serializeCookie('sessionId', 'abc123', { secure: true });
-      expect(result).toBe('sessionId=abc123; secure');
+      const result = serializeCookie('session_id', 'abc123', { secure: true });
+      expect(result).toBe('session_id=abc123; secure');
     });
 
     test('should include httpOnly flag', () => {
-      const result = serializeCookie('sessionId', 'abc123', { httpOnly: true });
-      expect(result).toBe('sessionId=abc123; httponly');
+      const result = serializeCookie('session_id', 'abc123', { httpOnly: true });
+      expect(result).toBe('session_id=abc123; httponly');
     });
 
     test('should include sameSite option', () => {
-      const result1 = serializeCookie('sessionId', 'abc123', { sameSite: 'strict' });
-      expect(result1).toBe('sessionId=abc123; samesite=strict');
+      const result1 = serializeCookie('session_id', 'abc123', { sameSite: 'strict' });
+      expect(result1).toBe('session_id=abc123; samesite=strict');
 
-      const result2 = serializeCookie('sessionId', 'abc123', { sameSite: 'lax' });
-      expect(result2).toBe('sessionId=abc123; samesite=lax');
+      const result2 = serializeCookie('session_id', 'abc123', { sameSite: 'lax' });
+      expect(result2).toBe('session_id=abc123; samesite=lax');
 
-      const result3 = serializeCookie('sessionId', 'abc123', { sameSite: 'none' });
-      expect(result3).toBe('sessionId=abc123; samesite=none');
+      const result3 = serializeCookie('session_id', 'abc123', { sameSite: 'none' });
+      expect(result3).toBe('session_id=abc123; samesite=none');
     });
 
     test('should include all options', () => {
       // Use a date 24 hours from now to avoid hardcoded dates
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = serializeCookie('sessionId', 'abc123', {
+      const result = serializeCookie('session_id', 'abc123', {
         expires,
         maxAge: 3600,
         domain: 'example.com',
@@ -131,14 +131,14 @@ describe('Cookie utilities', () => {
         sameSite: 'strict',
       });
       expect(result).toBe(
-        `sessionId=abc123; expires=${expires.toUTCString()}; max-age=3600; domain=example.com; path=/api; secure; httponly; samesite=strict`,
+        `session_id=abc123; expires=${expires.toUTCString()}; max-age=3600; domain=example.com; path=/api; secure; httponly; samesite=strict`,
       );
     });
 
     test('should handle encoding errors gracefully', () => {
       // Most values should encode fine, but if encoding fails, use raw value
-      const result1 = serializeCookie('sessionId', 'normal-value');
-      expect(result1).toBe('sessionId=normal-value');
+      const result1 = serializeCookie('session_id', 'normal-value');
+      expect(result1).toBe('session_id=normal-value');
 
       const result2 = serializeCookie('data', 'value with spaces');
       expect(result2).toBe('data=value%20with%20spaces');
@@ -147,14 +147,14 @@ describe('Cookie utilities', () => {
 
   describe('deleteCookie', () => {
     test('should create cookie deletion string', () => {
-      const result = deleteCookie('sessionId');
-      expect(result).toBe('sessionId=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0');
+      const result = deleteCookie('session_id');
+      expect(result).toBe('session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0');
     });
 
     test('should include path and domain options', () => {
-      const result = deleteCookie('sessionId', { path: '/api', domain: 'example.com' });
+      const result = deleteCookie('session_id', { path: '/api', domain: 'example.com' });
       expect(result).toBe(
-        'sessionId=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; domain=example.com; path=/api',
+        'session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; domain=example.com; path=/api',
       );
     });
   });

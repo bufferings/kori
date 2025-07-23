@@ -16,7 +16,7 @@ app.get('/read-cookies', ({ req, res }) => {
   req.log().info('All cookies:', allCookies);
 
   // Get specific cookies
-  const sessionId = req.cookie('sessionId');
+  const sessionId = req.cookie('session_id');
   const username = req.cookie('username');
 
   if (sessionId) {
@@ -37,7 +37,7 @@ app.get('/read-cookies', ({ req, res }) => {
 // Example of setting cookies
 app.post('/login', ({ req, res }) => {
   // Basic cookie setting
-  res.setCookie('sessionId', 'abc123def456');
+  res.setCookie('session_id', 'abc123def456');
 
   // Note: If you need to log cookie encoding failures, you can use:
   // req.log().info('Setting session cookie', { sessionId: 'abc123def456' });
@@ -70,7 +70,7 @@ app.post('/login', ({ req, res }) => {
 // Example of deleting cookies
 app.post('/logout', ({ res }) => {
   // Delete cookies
-  res.clearCookie('sessionId');
+  res.clearCookie('session_id');
   res.clearCookie('username');
   res.clearCookie('rememberMe');
 
@@ -81,7 +81,7 @@ app.post('/logout', ({ res }) => {
 
 // Session management example
 app.get('/profile', ({ req, res }) => {
-  const sessionId = req.cookie('sessionId');
+  const sessionId = req.cookie('session_id');
   const username = req.cookie('username');
 
   if (!sessionId) {
