@@ -1,5 +1,24 @@
 # @korix/openapi-plugin
 
+## 0.1.0
+
+### Patch Changes
+
+- f496d82: Improve development tooling and scripts
+
+  - Add sync:version script for automatic version synchronization
+  - Add @korix/script as development dependency
+  - Update package scripts to use new 'ks' CLI tool
+
+- 8cc10fa: Refactor response header API and unify plugin names
+- Updated dependencies [f18a452]
+- Updated dependencies [42ed758]
+- Updated dependencies [f496d82]
+- Updated dependencies [d008f26]
+- Updated dependencies [0d13f42]
+- Updated dependencies [8cc10fa]
+  - @korix/kori@0.1.0
+
 ## 0.1.0-alpha.6
 
 ### Patch Changes

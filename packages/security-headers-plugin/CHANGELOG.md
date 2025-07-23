@@ -1,5 +1,42 @@
 # @korix/security-headers-plugin
 
+## 0.1.0
+
+### Patch Changes
+
+- f18a452: Add HTTP cookie support and improve security headers plugin
+
+  - **Cookie Support**: Add complete HTTP cookie parsing and serialization with `req.cookies()`, `req.cookie()`, `res.setCookie()`, and `res.clearCookie()` APIs
+  - **Security Headers**: Make `xssProtection` configurable and standardize `frameOptions` to lowercase values
+  - **Documentation**: Fix installation commands and improve header value documentation
+
+- 2a1b032: Initial release of security headers plugin for Kori framework
+
+  - Adds common security headers to HTTP responses with secure, modern defaults:
+    - `content-security-policy` (defaults to `frame-ancestors 'none'` for clickjacking protection)
+    - `x-frame-options` (defaults to `deny` for legacy browser compatibility)
+    - `x-content-type-options`
+    - `x-xss-protection` (fixed to `0` and not configurable)
+    - `strict-transport-security`
+    - `referrer-policy`
+    - `x-permitted-cross-domain-policies`
+    - `x-download-options`
+    - `cross-origin-embedder-policy`
+    - `cross-origin-opener-policy`
+    - `cross-origin-resource-policy`
+  - Support for custom headers
+  - Path-based header skipping with string and regex patterns
+  - Configurable header values with secure defaults
+  - CSP-first approach for modern web security best practices
+
+- Updated dependencies [f18a452]
+- Updated dependencies [42ed758]
+- Updated dependencies [f496d82]
+- Updated dependencies [d008f26]
+- Updated dependencies [0d13f42]
+- Updated dependencies [8cc10fa]
+  - @korix/kori@0.1.0
+
 ## 0.1.0-alpha.2
 
 ### Patch Changes
