@@ -1,6 +1,6 @@
 {
   "name": "@korix/openapi-scalar-ui-plugin",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.6",
   "description": "Scalar UI plugin for OpenAPI documentation in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

@@ -1,5 +1,15 @@
 # @korix/kori
 
+## 0.1.0-alpha.6
+
+### Patch Changes
+
+- 6c7ae5a: Add HTTP cookie support and improve security headers plugin
+
+  - **Cookie Support**: Add complete HTTP cookie parsing and serialization with `req.cookies()`, `req.cookie()`, `res.setCookie()`, and `res.clearCookie()` APIs
+  - **Security Headers**: Make `xssProtection` configurable and standardize `frameOptions` to lowercase values
+  - **Documentation**: Fix installation commands and improve header value documentation
+
 ## 0.1.0-alpha.5
 
 ### Patch Changes

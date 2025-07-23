@@ -20,6 +20,7 @@
   "changesets": [
     "add-curly-rule",
     "add-lint-staged-command",
+    "cookie-support-and-security-improvements",
     "cors-plugin-performance-refactor",
     "dev-tooling-updates",
     "eslint-config-updates",

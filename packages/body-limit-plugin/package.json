@@ -1,6 +1,6 @@
 {
   "name": "@korix/body-limit-plugin",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.6",
   "description": "Request body size limit plugin for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
