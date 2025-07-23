@@ -107,9 +107,7 @@ function validateCookieName(name: string): void {
   }
 
   if (!RFC_6265_TOKEN_REGEX.test(name)) {
-    throw new Error(
-      `Invalid cookie name: "${name}". Cookie names must contain only RFC 6265 compliant characters (letters, numbers, and: - . _ ~ ! # $ & ' * + ^ \` |).`,
-    );
+    throw new Error(`Invalid cookie name: "${name}". Cookie names must contain only RFC 6265 compliant characters.`);
   }
 }
 
