@@ -1,5 +1,5 @@
 ---
-'@korix/kori': minor
+'@korix/kori': patch
 '@korix/security-headers-plugin': patch
 ---
 

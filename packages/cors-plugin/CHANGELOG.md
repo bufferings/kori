@@ -1,5 +1,12 @@
 # @korix/cors-plugin
 
+## 0.1.0-alpha.8
+
+### Patch Changes
+
+- Updated dependencies [6c7ae5a]
+  - @korix/kori@0.1.0-alpha.6
+
 ## 0.1.0-alpha.7
 
 ### Patch Changes
