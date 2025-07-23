@@ -42,6 +42,14 @@ export type SecurityHeadersOptions = {
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
 
+  /**
+   * x-xss-protection header control
+   * When true: sets 'X-XSS-Protection: 0' to disable dangerous browser XSS auditor
+   * When false: header is not set (allows manual configuration)
+   * Note: This header is deprecated, but setting it to '0' prevents XSS vulnerabilities in older browsers
+   */
+  xssProtection?: boolean;
+
   /** strict-transport-security header */
   strictTransportSecurity?: string | false;
 
@@ -90,6 +98,7 @@ export type SecurityHeadersOptions = {
 const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | 'skipPaths'>> = {
   frameOptions: 'deny',
   contentTypeOptions: 'nosniff',
+  xssProtection: true,
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   referrerPolicy: 'strict-origin-when-cross-origin',
   contentSecurityPolicy: { 'frame-ancestors': CSP_VALUES.FRAME_ANCESTORS.NONE },
@@ -133,10 +142,12 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
     res.setHeader('x-content-type-options', finalOptions.contentTypeOptions);
   }
 
-  // This header is deprecated, but it's important to set it to '0'
-  // to disable the browser's built-in XSS auditor in older browsers,
-  // which can introduce XSS vulnerabilities. It is not configurable.
-  res.setHeader('x-xss-protection', '0');
+  if (finalOptions.xssProtection) {
+    // This header is deprecated, but it's important to set it to '0'
+    // to disable the browser's built-in XSS auditor in older browsers,
+    // which can introduce XSS vulnerabilities.
+    res.setHeader('x-xss-protection', '0');
+  }
 
   if (finalOptions.frameOptions !== false) {
     res.setHeader('x-frame-options', finalOptions.frameOptions);

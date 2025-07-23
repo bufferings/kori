@@ -1,3 +1,4 @@
+import { parseCookies } from '../http/index.js';
 import {
   type ContentTypeValue,
   ContentType,
@@ -24,6 +25,9 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   header(name: HttpRequestHeaderName): string | undefined;
   fullContentType(): string | undefined;
   contentType(): ContentTypeValue | undefined;
+
+  cookies(): Record<string, string>;
+  cookie(name: string): string | undefined;
 
   bodyJson(): Promise<unknown>;
   bodyText(): Promise<string>;
@@ -57,6 +61,7 @@ type ReqState<PathParams extends Record<string, string>> = {
   methodCache?: string;
   queriesCache?: Record<string, string | string[]>;
   headersCache?: Record<string, string>;
+  cookiesCache?: Record<string, string>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,6 +136,20 @@ function getFullContentTypeInternal(req: ReqStateAny): string | undefined {
 
 function getContentTypeInternal(req: ReqStateAny): ContentTypeValue | undefined {
   return getFullContentTypeInternal(req)?.split(';')[0]?.trim() as ContentTypeValue | undefined;
+}
+
+function getCookiesInternal(req: ReqStateAny): Record<string, string> {
+  if (req.cookiesCache) {
+    return req.cookiesCache;
+  }
+
+  const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
+  req.cookiesCache = parseCookies(cookieHeader);
+  return req.cookiesCache;
+}
+
+function getCookieInternal(req: ReqStateAny, name: string): string | undefined {
+  return getCookiesInternal(req)[name];
 }
 
 function getBodyJsonInternal(req: ReqStateAny): Promise<unknown> {
@@ -208,6 +227,13 @@ const sharedMethods = {
   },
   contentType(): ContentTypeValue | undefined {
     return getContentTypeInternal(this);
+  },
+
+  cookies(): Record<string, string> {
+    return getCookiesInternal(this);
+  },
+  cookie(name: string): string | undefined {
+    return getCookieInternal(this, name);
   },
 
   bodyJson(): Promise<unknown> {
