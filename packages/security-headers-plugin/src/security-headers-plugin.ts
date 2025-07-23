@@ -37,7 +37,7 @@ export type CspDirectives = Partial<Record<(typeof CSP_DIRECTIVES)[keyof typeof 
 
 export type SecurityHeadersOptions = {
   /** x-frame-options header (legacy support, use CSP frame-ancestors for modern browsers) */
-  frameOptions?: 'DENY' | 'SAMEORIGIN' | false;
+  frameOptions?: 'deny' | 'sameorigin' | false;
 
   /** x-content-type-options header */
   contentTypeOptions?: 'nosniff' | false;
@@ -96,7 +96,7 @@ export type SecurityHeadersOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<Omit<SecurityHeadersOptions, 'customHeaders' | 'skipPaths'>> = {
-  frameOptions: 'DENY',
+  frameOptions: 'deny',
   contentTypeOptions: 'nosniff',
   xssProtection: true,
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',

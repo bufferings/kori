@@ -12,7 +12,7 @@ const app1 = createKori()
 const app2 = createKori()
   .applyPlugin(
     securityHeadersPlugin({
-      frameOptions: 'SAMEORIGIN',
+      frameOptions: 'sameorigin',
       contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
       strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
       referrerPolicy: 'strict-origin',
@@ -33,7 +33,7 @@ const app2 = createKori()
 const app3 = createKori()
   .applyPlugin(
     securityHeadersPlugin({
-      frameOptions: 'DENY',
+      frameOptions: 'deny',
       contentTypeOptions: 'nosniff',
       skipPaths: ['/public', '/assets', /^\/docs/],
     }),
