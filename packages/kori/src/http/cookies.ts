@@ -107,16 +107,6 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
- * Helper function to capitalize the first letter of sameSite value
- *
- * @param sameSite - sameSite value ('strict', 'lax', 'none')
- * @returns Capitalized sameSite value ('Strict', 'Lax', 'None')
- */
-function capitalizeSameSite(sameSite: 'strict' | 'lax' | 'none'): 'Strict' | 'Lax' | 'None' {
-  return (sameSite.charAt(0).toUpperCase() + sameSite.slice(1)) as 'Strict' | 'Lax' | 'None';
-}
-
-/**
  * Generate Set-Cookie header value
  *
  * Note: If encoding fails, this function falls back to using the raw value
@@ -168,8 +158,7 @@ export function serializeCookie(name: string, value: CookieValue, options: Cooki
   }
 
   if (options.sameSite) {
-    const sameSiteValue = capitalizeSameSite(options.sameSite);
-    cookie += `; SameSite=${sameSiteValue}`;
+    cookie += `; SameSite=${options.sameSite}`;
   }
 
   return cookie;

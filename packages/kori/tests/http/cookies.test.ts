@@ -109,13 +109,13 @@ describe('Cookie utilities', () => {
 
     test('should include sameSite option', () => {
       const result1 = serializeCookie('sessionId', 'abc123', { sameSite: 'strict' });
-      expect(result1).toBe('sessionId=abc123; SameSite=Strict');
+      expect(result1).toBe('sessionId=abc123; SameSite=strict');
 
       const result2 = serializeCookie('sessionId', 'abc123', { sameSite: 'lax' });
-      expect(result2).toBe('sessionId=abc123; SameSite=Lax');
+      expect(result2).toBe('sessionId=abc123; SameSite=lax');
 
       const result3 = serializeCookie('sessionId', 'abc123', { sameSite: 'none' });
-      expect(result3).toBe('sessionId=abc123; SameSite=None');
+      expect(result3).toBe('sessionId=abc123; SameSite=none');
     });
 
     test('should include all options', () => {
@@ -131,7 +131,7 @@ describe('Cookie utilities', () => {
         sameSite: 'strict',
       });
       expect(result).toBe(
-        `sessionId=abc123; Expires=${expires.toUTCString()}; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=Strict`,
+        `sessionId=abc123; Expires=${expires.toUTCString()}; Max-Age=3600; Domain=example.com; Path=/api; Secure; HttpOnly; SameSite=strict`,
       );
     });
 
