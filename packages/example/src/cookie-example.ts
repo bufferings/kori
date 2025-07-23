@@ -35,12 +35,9 @@ app.get('/read-cookies', ({ req, res }) => {
 });
 
 // Example of setting cookies
-app.post('/login', ({ req: _req, res }) => {
+app.post('/login', ({ res }) => {
   // Basic cookie setting
   res.setCookie('session_id', 'abc123def456');
-
-  // Note: If you need to log cookie encoding failures, you can use:
-  // _req.log().info('Setting session cookie', { sessionId: 'abc123def456' });
 
   // Setting cookie with options
   res.setCookie('username', 'user123', {
