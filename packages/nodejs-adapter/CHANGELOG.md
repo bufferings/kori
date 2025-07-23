@@ -1,5 +1,19 @@
 # @korix/nodejs-adapter
 
+## 0.1.0
+
+### Patch Changes
+
+- 0d13f42: Refactor the logger to be accessed via a `log()` method instead of a property. This improves consistency and prepares for future enhancements where logger instances might be dynamically created or configured.
+- 647356f: Refactor nodejs-adapter to move server logic out of index.ts
+- Updated dependencies [f18a452]
+- Updated dependencies [42ed758]
+- Updated dependencies [f496d82]
+- Updated dependencies [d008f26]
+- Updated dependencies [0d13f42]
+- Updated dependencies [8cc10fa]
+  - @korix/kori@0.1.0
+
 ## 0.1.0-alpha.7
 
 ### Patch Changes

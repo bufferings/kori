@@ -1,5 +1,18 @@
 # @korix/pino-adapter
 
+## 0.1.0
+
+### Patch Changes
+
+- 647356f: Refactor pino-adapter to move logger factory logic out of index.ts
+- Updated dependencies [f18a452]
+- Updated dependencies [42ed758]
+- Updated dependencies [f496d82]
+- Updated dependencies [d008f26]
+- Updated dependencies [0d13f42]
+- Updated dependencies [8cc10fa]
+  - @korix/kori@0.1.0
+
 ## 0.1.0-alpha.7
 
 ### Patch Changes
