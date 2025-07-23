@@ -27,15 +27,17 @@ const app = createKori()
 
 ```typescript
 const app = createKori()
-  .applyPlugin(securityHeadersPlugin({
-    frameOptions: 'SAMEORIGIN',
-    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
-    strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
-    customHeaders: {
-      'X-Custom-Header': 'custom-value'
-    },
-    skipPaths: ['/public', /^\/assets/]
-  }))
+  .applyPlugin(
+    securityHeadersPlugin({
+      frameOptions: 'sameorigin',
+      contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
+      strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
+      customHeaders: {
+        'X-Custom-Header': 'custom-value',
+      },
+      skipPaths: ['/public', /^\/assets/],
+    }),
+  )
   .get('/api/data', (ctx) => {
     return ctx.res.json({ data: 'secure' });
   });
@@ -45,7 +47,7 @@ const app = createKori()
 
 The plugin sets the following headers by default:
 
-- **x-frame-options**: `DENY`
+- **x-frame-options**: `deny`
 - **x-content-type-options**: `nosniff`
 - **x-xss-protection**: `1; mode=block`
 - **strict-transport-security**: `max-age=31536000; includeSubDomains`
