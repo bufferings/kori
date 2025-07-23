@@ -49,13 +49,28 @@ The plugin sets the following headers by default:
 
 - **x-frame-options**: `deny`
 - **x-content-type-options**: `nosniff`
-- **x-xss-protection**: `0` (disabled by default)
+- **x-xss-protection**: `0` (explicitly disabled - this header is deprecated and can introduce vulnerabilities)
 - **strict-transport-security**: `max-age=31536000; includeSubDomains`
 - **referrer-policy**: `strict-origin-when-cross-origin`
 - **x-permitted-cross-domain-policies**: `none`
 - **x-download-options**: `noopen`
 
 Additional headers can be enabled through configuration.
+
+## Important Notes
+
+### X-XSS-Protection Header
+
+The `x-xss-protection` header is **deprecated** and modern browsers (Chrome, Edge, Firefox) have removed support for it. When enabled (`xssProtection: true`), this plugin sets the header to `0` to explicitly disable the legacy XSS auditor in older browsers, as it can introduce security vulnerabilities.
+
+**Recommendation**: Use Content Security Policy (CSP) instead for modern XSS protection:
+
+```typescript
+securityHeadersPlugin({
+  contentSecurityPolicy: "default-src 'self'; script-src 'self'",
+  xssProtection: true, // Sets X-XSS-Protection: 0
+});
+```
 
 ## License
 

@@ -1,7 +1,8 @@
 import { createKori } from '@korix/kori';
-import { securityHeadersPlugin } from '@korix/security-headers-plugin';
+import { securityHeadersPlugin, type SecurityHeadersOptions } from '@korix/security-headers-plugin';
 
 // Basic security headers setup
+// This sets default headers including x-xss-protection: 0 to disable legacy XSS auditor
 const app1 = createKori()
   .applyPlugin(securityHeadersPlugin())
   .get('/api/basic', (ctx) => {
@@ -56,13 +57,28 @@ const app4 = createKori()
   .applyPlugin(
     securityHeadersPlugin({
       frameOptions: false, // Disable x-frame-options
-      xssProtection: false, // Disable x-xss-protection (modern browsers don't need it)
+      xssProtection: false, // Don't set x-xss-protection header (when enabled, automatically sets to '0')
       strictTransportSecurity: false, // Disable HSTS (for development)
-      contentSecurityPolicy: "default-src 'self'",
+      contentSecurityPolicy: "default-src 'self'", // Use CSP for modern XSS protection instead
     }),
   )
   .get('/api/minimal', (ctx) => {
-    return ctx.res.json({ message: 'Minimal security headers' });
+    return ctx.res.json({ message: 'Minimal security headers with CSP-based XSS protection' });
   });
 
-export { app1, app2, app3, app4 };
+// Explicitly enable X-XSS-Protection (sets to '0' to disable legacy XSS auditor)
+const xssProtectionOptions: SecurityHeadersOptions = {
+  xssProtection: true, // This will set X-XSS-Protection: 0
+  contentSecurityPolicy: "default-src 'self'; script-src 'self'", // Use CSP for modern XSS protection
+};
+
+const app5 = createKori()
+  .applyPlugin(securityHeadersPlugin(xssProtectionOptions))
+  .get('/api/xss-safe', (ctx) => {
+    return ctx.res.json({
+      message: 'XSS protection via CSP, legacy auditor disabled',
+      note: 'X-XSS-Protection header is set to 0 for safety',
+    });
+  });
+
+export { app1, app2, app3, app4, app5 };
