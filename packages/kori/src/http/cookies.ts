@@ -90,6 +90,14 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 }
 
 /**
+ * RFC 6265 compliant cookie name token characters
+ * - ALPHA: a-z, A-Z (letters)
+ * - DIGIT: 0-9 (numbers)
+ * - Special characters: - . _ ~ ! # $ & ' * + ^ ` |
+ */
+const RFC_6265_TOKEN_REGEX = /^[a-zA-Z0-9\-._~!#$&'*+^`|]+$/;
+
+/**
  * Validates a cookie name according to RFC 6265.
  * Cookie names must contain only valid token characters.
  */
@@ -98,8 +106,7 @@ function validateCookieName(name: string): void {
     throw new Error('Cookie name cannot be empty');
   }
 
-  // RFC 6265 token characters: ALPHA / DIGIT / "-" / "." / "_" / "~" / "!" / "#" / "$" / "&" / "'" / "*" / "+" / "^" / "`" / "|"
-  if (!/^[a-zA-Z0-9\-._~!#$&'*+^`|]+$/.test(name)) {
+  if (!RFC_6265_TOKEN_REGEX.test(name)) {
     throw new Error(
       `Invalid cookie name: "${name}". Cookie names must contain only RFC 6265 compliant characters (letters, numbers, and: - . _ ~ ! # $ & ' * + ^ \` |).`,
     );
