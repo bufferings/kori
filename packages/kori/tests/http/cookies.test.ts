@@ -186,6 +186,7 @@ describe('Cookie name validation', () => {
       expect(() => serializeCookie('token!', 'value')).not.toThrow();
       expect(() => serializeCookie('id#123', 'value')).not.toThrow();
       expect(() => serializeCookie('session$', 'value')).not.toThrow();
+      expect(() => serializeCookie('data%encoded', 'value')).not.toThrow();
       expect(() => serializeCookie('user&app', 'value')).not.toThrow();
       expect(() => serializeCookie("auth'token", 'value')).not.toThrow();
       expect(() => serializeCookie('data*', 'value')).not.toThrow();

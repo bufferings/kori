@@ -93,9 +93,9 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
  * RFC 6265 compliant cookie name token characters
  * - ALPHA: a-z, A-Z (letters)
  * - DIGIT: 0-9 (numbers)
- * - Special characters: - . _ ~ ! # $ & ' * + ^ ` |
+ * - Special characters: - . _ ~ ! # $ % & ' * + ^ ` |
  */
-const RFC_6265_TOKEN_REGEX = /^[a-zA-Z0-9\-._~!#$&'*+^`|]+$/;
+const RFC_6265_TOKEN_REGEX = /^[a-zA-Z0-9\-._~!#$%&'*+^`|]+$/;
 
 /**
  * Validates a cookie name according to RFC 6265.
