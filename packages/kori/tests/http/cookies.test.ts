@@ -159,3 +159,99 @@ describe('Cookie utilities', () => {
     });
   });
 });
+
+describe('Cookie name validation', () => {
+  describe('Valid cookie names (RFC 6265 compliant)', () => {
+    test('should accept letters and numbers', () => {
+      expect(() => serializeCookie('sessionId123', 'value')).not.toThrow();
+      expect(() => serializeCookie('ABC', 'value')).not.toThrow();
+      expect(() => serializeCookie('abc', 'value')).not.toThrow();
+      expect(() => serializeCookie('test123', 'value')).not.toThrow();
+    });
+
+    test('should accept underscore and hyphen', () => {
+      expect(() => serializeCookie('session_id', 'value')).not.toThrow();
+      expect(() => serializeCookie('user-token', 'value')).not.toThrow();
+      expect(() => serializeCookie('_private', 'value')).not.toThrow();
+      expect(() => serializeCookie('test-123_abc', 'value')).not.toThrow();
+    });
+
+    test('should accept dot and tilde', () => {
+      expect(() => serializeCookie('my.app', 'value')).not.toThrow();
+      expect(() => serializeCookie('version~1', 'value')).not.toThrow();
+      expect(() => serializeCookie('app.session.v1', 'value')).not.toThrow();
+    });
+
+    test('should accept special RFC 6265 characters', () => {
+      expect(() => serializeCookie('token!', 'value')).not.toThrow();
+      expect(() => serializeCookie('id#123', 'value')).not.toThrow();
+      expect(() => serializeCookie('session$', 'value')).not.toThrow();
+      expect(() => serializeCookie('data%encoded', 'value')).not.toThrow();
+      expect(() => serializeCookie('user&app', 'value')).not.toThrow();
+      expect(() => serializeCookie("auth'token", 'value')).not.toThrow();
+      expect(() => serializeCookie('data*', 'value')).not.toThrow();
+      expect(() => serializeCookie('version+1', 'value')).not.toThrow();
+      expect(() => serializeCookie('meta^data', 'value')).not.toThrow();
+      expect(() => serializeCookie('config`test', 'value')).not.toThrow();
+      expect(() => serializeCookie('type|user', 'value')).not.toThrow();
+    });
+
+    test('should accept complex valid names', () => {
+      expect(() => serializeCookie('my-app.session_id#123', 'value')).not.toThrow();
+      expect(() => serializeCookie('user~token$auth+v1', 'value')).not.toThrow();
+    });
+  });
+
+  describe('Invalid cookie names', () => {
+    test('should reject empty name', () => {
+      expect(() => serializeCookie('', 'value')).toThrow('Cookie name cannot be empty');
+    });
+
+    test('should reject names with spaces', () => {
+      expect(() => serializeCookie('session id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie(' session', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session ', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+    });
+
+    test('should reject names with control characters', () => {
+      expect(() => serializeCookie('session\t', 'value')).toThrow(/Invalid cookie name/);
+      expect(() => serializeCookie('session\n', 'value')).toThrow(/Invalid cookie name/);
+      expect(() => serializeCookie('session\r', 'value')).toThrow(/Invalid cookie name/);
+    });
+
+    test('should reject names with separators', () => {
+      expect(() => serializeCookie('session()', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session<>', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session@', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session,id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session;id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session:id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session\\id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session"id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session/id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session[id]', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session?id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session=id', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('session{id}', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+    });
+
+    test('should reject Unicode and extended ASCII characters', () => {
+      // Using escape sequences to avoid non-ASCII characters in source
+      expect(() => serializeCookie('\u30bb\u30c3\u30b7\u30e7\u30f3', 'value')).toThrow(
+        /Invalid cookie name.*RFC 6265 compliant/,
+      );
+      expect(() => serializeCookie('session\u2122', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => serializeCookie('caf\u00e9', 'value')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+    });
+  });
+
+  describe('deleteCookie validation', () => {
+    test('should validate cookie name in deleteCookie', () => {
+      expect(() => deleteCookie('validName')).not.toThrow();
+      expect(() => deleteCookie('valid_name-123')).not.toThrow();
+      expect(() => deleteCookie('')).toThrow('Cookie name cannot be empty');
+      expect(() => deleteCookie('invalid name')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+      expect(() => deleteCookie('invalid;name')).toThrow(/Invalid cookie name.*RFC 6265 compliant/);
+    });
+  });
+});
