@@ -5,7 +5,7 @@ Security headers plugin for Kori framework that adds common security headers to 
 ## Installation
 
 ```bash
-npm install @korix/security-headers-plugin
+pnpm add @korix/security-headers-plugin
 ```
 
 ## Usage
@@ -49,7 +49,7 @@ The plugin sets the following headers by default:
 
 - **x-frame-options**: `deny`
 - **x-content-type-options**: `nosniff`
-- **x-xss-protection**: `1; mode=block`
+- **x-xss-protection**: `0` (disabled by default)
 - **strict-transport-security**: `max-age=31536000; includeSubDomains`
 - **referrer-policy**: `strict-origin-when-cross-origin`
 - **x-permitted-cross-domain-policies**: `none`

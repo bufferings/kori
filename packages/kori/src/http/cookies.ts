@@ -42,16 +42,12 @@ export type Cookie = {
 };
 
 /**
- * Internal helper function for parsing cookies with optional logging
+ * Parse Cookie header and return Record<string, string>
  *
  * @param cookieHeader - Cookie header value
- * @param onDecodeError - Callback for decode errors (name, value, error)
  * @returns Parsed cookies
  */
-function parseCookiesInternal(
-  cookieHeader: string | undefined,
-  onDecodeError?: (name: string, value: string, error: URIError) => void,
-): Record<string, string> {
+export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
   if (!cookieHeader) {
     return {};
   }
@@ -81,9 +77,6 @@ function parseCookiesInternal(
       } catch (error) {
         // If decoding fails (URIError for malformed encoding), use the raw value
         if (error instanceof URIError) {
-          if (onDecodeError) {
-            onDecodeError(name, value, error);
-          }
           cookies[name] = value;
         } else {
           // Re-throw unexpected errors
@@ -94,16 +87,6 @@ function parseCookiesInternal(
   }
 
   return cookies;
-}
-
-/**
- * Parse Cookie header and return Record<string, string>
- *
- * @param cookieHeader - Cookie header value
- * @returns Parsed cookies
- */
-export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
-  return parseCookiesInternal(cookieHeader);
 }
 
 /**
