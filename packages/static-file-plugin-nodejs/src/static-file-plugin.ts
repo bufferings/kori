@@ -120,7 +120,6 @@ function serveFile(
 
   const fileStream = createFileStream(fileInfo.path);
   res.status(HttpStatus.OK).stream(fileStream);
-  res.setHeader('content-type', mimeType);
   return res;
 }
 
