@@ -17,7 +17,7 @@ import {
   generateETag,
   formatLastModified,
   createFileStream,
-  type FileInfo,
+  type ExistingFileInfo,
 } from './file-utils.js';
 import { detectMimeType } from './mime-types.js';
 import { type StaticFileOptions } from './static-file-options.js';
@@ -69,7 +69,7 @@ function removeMountPrefix(pathname: string, mountAt: string): string {
 
 function setCacheHeaders(
   res: KoriResponse,
-  fileInfo: FileInfo,
+  fileInfo: ExistingFileInfo,
   options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
 ): void {
   if (options.maxAge > 0) {
@@ -87,7 +87,7 @@ function setCacheHeaders(
   }
 }
 
-function checkConditionalRequest(req: KoriRequest, fileInfo: FileInfo): boolean {
+function checkConditionalRequest(req: KoriRequest, fileInfo: ExistingFileInfo): boolean {
   const ifNoneMatch = req.header('if-none-match');
   if (ifNoneMatch) {
     const etag = generateETag(fileInfo.stats);
@@ -99,7 +99,7 @@ function checkConditionalRequest(req: KoriRequest, fileInfo: FileInfo): boolean 
 function serveFile(
   req: KoriRequest,
   res: KoriResponse,
-  fileInfo: FileInfo,
+  fileInfo: ExistingFileInfo,
   options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
   log: KoriLogger,
 ): KoriResponse {

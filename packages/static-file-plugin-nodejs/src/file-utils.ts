@@ -8,11 +8,18 @@ import { type KoriLogger } from '@korix/kori';
 
 import { type StaticFileOptions } from './static-file-options.js';
 
-export type FileInfo = {
+export type ExistingFileInfo = {
+  exists: true;
   path: string;
   stats: Stats;
-  exists: boolean;
 };
+
+export type NonExistentFileInfo = {
+  exists: false;
+  path: string;
+};
+
+export type FileInfo = ExistingFileInfo | NonExistentFileInfo;
 
 export type ResolvedPath = {
   safePath: string;
@@ -72,7 +79,6 @@ export async function getFileInfo(filePath: string): Promise<FileInfo> {
   } catch {
     return {
       path: filePath,
-      stats: {} as Stats,
       exists: false,
     };
   }
@@ -85,7 +91,7 @@ export async function resolveIndexFile(
   dirPath: string,
   indexFiles: string[],
   log: KoriLogger,
-): Promise<FileInfo | null> {
+): Promise<ExistingFileInfo | null> {
   for (const indexFile of indexFiles) {
     const indexPath = join(dirPath, indexFile);
     const fileInfo = await getFileInfo(indexPath);
