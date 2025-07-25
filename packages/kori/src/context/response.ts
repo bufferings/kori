@@ -214,7 +214,7 @@ function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: 
 
 function getFinalStatusCode(res: ResState): HttpStatusCode {
   if (res.statusCode === null) {
-    if (res.bodyKind === 'none' || res.bodyKind === 'empty') {
+    if (res.bodyKind === 'empty') {
       return HttpStatus.NO_CONTENT;
     } else {
       return HttpStatus.OK;
