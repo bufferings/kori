@@ -3,6 +3,7 @@ import {
   createKori,
   defineKoriPlugin,
   HttpRequestHeader,
+  HttpStatus,
   type KoriEnvironment,
   type KoriRequest,
   type KoriResponse,
@@ -158,7 +159,7 @@ app.post('/products', {
       requestId: ctx.req.requestId,
     });
 
-    return ctx.res.status(201).json(newProduct);
+    return ctx.res.status(HttpStatus.CREATED).json(newProduct);
   },
 });
 
@@ -232,8 +233,7 @@ app.createChild({
       .onError((ctx, err) => {
         const error = err instanceof Error ? err : new Error(String(err));
         if (error.message === 'Unauthorized' && !ctx.res.isReady()) {
-          ctx.res.status(401).json({
-            error: 'Unauthorized',
+          ctx.res.unauthorized({
             message: 'Admin access required. Use Authorization: Bearer admin-secret-token',
           });
         }

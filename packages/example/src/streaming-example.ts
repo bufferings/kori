@@ -48,7 +48,7 @@ app.post('/upload-stream', {
     // Check if request has a body stream
     const bodyStream = koriReq.bodyStream();
     if (!bodyStream) {
-      return res.status(400).json({ error: 'No request body' });
+      return res.badRequest({ message: 'No request body' });
     }
 
     // Process the stream without loading it entirely into memory
@@ -86,7 +86,7 @@ app.post('/upload-stream', {
       });
     } catch (error) {
       ctx.req.log().error('Upload error', { error });
-      return res.status(500).json({ error: 'Upload failed' });
+      return res.internalError({ message: 'Upload failed' });
     }
   },
 });
