@@ -277,7 +277,65 @@ export function generateBoundary(): string {
 }
 
 /**
- * Create a multipart byterange stream for multiple ranges
+ * Generate content for a single range
+ */
+async function* generateRangeContent(filePath: string, range: ParsedRange): AsyncGenerator<Uint8Array> {
+  const stream = createReadStream(filePath, {
+    start: range.start,
+    end: range.end,
+  });
+
+  try {
+    for await (const chunk of stream) {
+      yield new Uint8Array(chunk);
+    }
+  } finally {
+    stream.destroy();
+  }
+}
+
+/**
+ * Generate multipart chunks using async generator
+ */
+async function* generateMultipartChunks(
+  filePath: string,
+  ranges: ParsedRange[],
+  totalSize: number,
+  mimeType: string,
+  boundary: string,
+): AsyncGenerator<Uint8Array> {
+  const encoder = new TextEncoder();
+
+  for (let i = 0; i < ranges.length; i++) {
+    const range = ranges[i];
+    if (!range) {
+      continue;
+    }
+
+    // Yield boundary headers
+    const boundaryData =
+      `--${boundary}\r\n` +
+      `Content-Type: ${mimeType}\r\n` +
+      `Content-Range: bytes ${range.start}-${range.end}/${totalSize}\r\n` +
+      `Content-Length: ${range.end - range.start + 1}\r\n\r\n`;
+
+    yield encoder.encode(boundaryData);
+
+    // Yield file content for this range
+    yield* generateRangeContent(filePath, range);
+
+    // Add line break before next boundary (except for last range)
+    if (i < ranges.length - 1) {
+      yield encoder.encode('\r\n');
+    }
+  }
+
+  // Yield closing boundary
+  yield encoder.encode(`\r\n--${boundary}--\r\n`);
+}
+
+/**
+ * Create a multipart byterange stream using generators
  */
 export function createMultipartStream(
   filePath: string,
@@ -286,88 +344,25 @@ export function createMultipartStream(
   mimeType: string,
   boundary: string,
 ): ReadableStream {
-  let currentRangeIndex = 0;
-  let currentFileStream: NodeJS.ReadableStream | null = null;
-  let boundaryWritten = false;
-
-  const encoder = new TextEncoder();
+  const generator = generateMultipartChunks(filePath, ranges, totalSize, mimeType, boundary);
 
   return new ReadableStream({
-    start() {
-      // Initialize multipart stream - no action needed at start
-    },
-
-    pull(controller) {
+    async pull(controller) {
       try {
-        // If we haven't written the boundary for current range, write it
-        if (!boundaryWritten) {
-          if (currentRangeIndex < ranges.length) {
-            const range = ranges[currentRangeIndex];
-            if (!range) {
-              controller.error(new Error('Invalid range at index ' + currentRangeIndex));
-              return;
-            }
+        const result = await generator.next();
 
-            const contentLength = range.end - range.start + 1;
-
-            // Write boundary and headers
-            const boundaryData =
-              `--${boundary}\r\n` +
-              `Content-Type: ${mimeType}\r\n` +
-              `Content-Range: bytes ${range.start}-${range.end}/${totalSize}\r\n` +
-              `Content-Length: ${contentLength}\r\n\r\n`;
-
-            controller.enqueue(encoder.encode(boundaryData));
-
-            // Create stream for this range
-            currentFileStream = createReadStream(filePath, {
-              start: range.start,
-              end: range.end,
-            });
-
-            boundaryWritten = true;
-            return;
-          } else {
-            // All ranges processed, write closing boundary
-            controller.enqueue(encoder.encode(`\r\n--${boundary}--\r\n`));
-            controller.close();
-            return;
-          }
-        }
-
-        // Read from current file stream
-        if (currentFileStream) {
-          const chunk = currentFileStream.read();
-          if (chunk !== null) {
-            controller.enqueue(chunk);
-          } else {
-            // Stream ended, move to next range
-            if (
-              currentFileStream &&
-              'destroy' in currentFileStream &&
-              typeof currentFileStream.destroy === 'function'
-            ) {
-              (currentFileStream.destroy as () => void)();
-            }
-            currentFileStream = null;
-            boundaryWritten = false;
-            currentRangeIndex++;
-
-            // Add line break before next boundary
-            if (currentRangeIndex < ranges.length) {
-              controller.enqueue(encoder.encode('\r\n'));
-            }
-          }
+        if (result.done) {
+          controller.close();
+        } else {
+          controller.enqueue(result.value);
         }
       } catch (error) {
         controller.error(error instanceof Error ? error : new Error(String(error)));
       }
     },
 
-    cancel() {
-      if (currentFileStream && 'destroy' in currentFileStream && typeof currentFileStream.destroy === 'function') {
-        (currentFileStream.destroy as () => void)();
-      }
+    async cancel() {
+      await generator.return(undefined);
     },
   });
 }
