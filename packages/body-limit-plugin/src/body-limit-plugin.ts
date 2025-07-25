@@ -95,68 +95,74 @@ function isValidContentLength(value: string): boolean {
 }
 
 /**
- * Creates a size-limiting ReadableStream wrapper for chunked transfer encoding
+ * Pre-validates chunked transfer encoding stream by reading it upfront
+ * Returns either an error response or buffered data for stream replacement
  */
-function createSizeLimitedStream({
+async function validateChunkedStream({
   originalStream,
   maxSize,
-  onSizeExceeded,
   requestLog,
 }: {
   originalStream: ReadableStream<Uint8Array>;
   maxSize: number;
-  onSizeExceeded: (totalSize: number) => void;
   requestLog: ReturnType<KoriRequest['log']>;
-}): ReadableStream<Uint8Array> {
+}): Promise<{ success: true; bufferedData: Uint8Array } | { success: false; totalSize: number }> {
+  const reader = originalStream.getReader();
+  const chunks: Uint8Array[] = [];
   let totalSize = 0;
-  let sizeExceeded = false;
 
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        requestLog.debug('Chunked stream validation completed', {
+          totalSize,
+          maxSize,
+          chunksCount: chunks.length,
+        });
+        break;
+      }
+
+      totalSize += value.length;
+
+      if (totalSize > maxSize) {
+        requestLog.debug('Chunked stream size limit exceeded during validation', {
+          totalSize,
+          maxSize,
+          currentChunkSize: value.length,
+        });
+        return { success: false, totalSize };
+      }
+
+      chunks.push(value);
+    }
+
+    // Combine all chunks into a single buffer
+    const bufferedData = new Uint8Array(totalSize);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bufferedData.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return { success: true, bufferedData };
+  } catch (error) {
+    requestLog.error('Error during chunked stream validation', { error, totalSize });
+    throw error;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+/**
+ * Creates a ReadableStream from buffered data
+ */
+function createBufferedStream(bufferedData: Uint8Array): ReadableStream<Uint8Array> {
   return new ReadableStream({
     start(controller) {
-      const reader = originalStream.getReader();
-
-      const pump = async (): Promise<void> => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              requestLog.debug('Chunked stream processing completed', {
-                totalSize,
-                maxSize,
-                sizeExceeded,
-              });
-              controller.close();
-              return;
-            }
-
-            totalSize += value.length;
-
-            if (totalSize > maxSize && !sizeExceeded) {
-              sizeExceeded = true;
-              onSizeExceeded(totalSize);
-              controller.error(new Error('Chunked body size limit exceeded'));
-              return;
-            }
-
-            controller.enqueue(value);
-          }
-        } catch (error) {
-          requestLog.error('Error in chunked stream processing', { error });
-          controller.error(error);
-        } finally {
-          reader.releaseLock();
-        }
-      };
-
-      pump().catch((error) => {
-        requestLog.error('Pump error in chunked stream', { error });
-        controller.error(error);
-      });
-    },
-
-    cancel(reason) {
-      requestLog.debug('Chunked stream cancelled', { reason, totalSize });
+      controller.enqueue(bufferedData);
+      controller.close();
     },
   });
 }
@@ -207,7 +213,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
       const log = kori.log().child(LOGGER_NAME);
       log.info(`Plugin initialized with max size: ${maxSize} bytes, chunked support: ${enableChunkedSupport}`);
 
-      return kori.onRequest((ctx) => {
+      return kori.onRequest(async (ctx) => {
         const { req, res } = ctx;
 
         // Request-level logger with request tracing
@@ -308,45 +314,85 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             maxSize,
           });
 
-          // Store the original bodyStream method
+          // Pre-validate the chunked stream
           const originalBodyStream = req.bodyStream.bind(req);
+          const stream = originalBodyStream();
 
-          // Override the bodyStream method to wrap the stream with size monitoring
-          Object.defineProperty(req, 'bodyStream', {
-            value: () => {
-              const stream = originalBodyStream();
-              if (!stream) {
-                requestLog.debug('No body stream available for chunked request');
-                return null;
+          if (!stream) {
+            requestLog.debug('No body stream available for chunked request');
+            return;
+          }
+
+          try {
+            const validationResult = await validateChunkedStream({
+              originalStream: stream,
+              maxSize,
+              requestLog,
+            });
+
+            if (!validationResult.success) {
+              const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
+              requestLog.warn('Chunked request body size exceeds limit', {
+                path: req.url().pathname,
+                method: req.method(),
+                totalSize: validationResult.totalSize,
+                maxSize,
+                transferEncoding: transferEncodingHeader,
+                userAgent: req.headers()['user-agent'],
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
+              });
+
+              // Use custom error handler if provided
+              if (options.onError) {
+                const result = options.onError({
+                  req,
+                  res,
+                  maxSize,
+                  receivedSize: validationResult.totalSize,
+                });
+                if (result) {
+                  return result;
+                }
               }
 
-              return createSizeLimitedStream({
-                originalStream: stream,
+              // Default error response
+              return res.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
+                error: 'Payload Too Large',
+                message: 'Request body size exceeds the maximum allowed limit',
                 maxSize,
-                onSizeExceeded: (totalSize) => {
-                  const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
-                  requestLog.warn('Chunked request body size exceeds limit', {
-                    path: req.url().pathname,
-                    method: req.method(),
-                    totalSize,
-                    maxSize,
-                    transferEncoding: transferEncodingHeader,
-                    userAgent: req.headers()['user-agent'],
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                    remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
-                  });
-                },
-                requestLog,
+                receivedSize: validationResult.totalSize,
+                code: ERROR_CODES.CHUNKED_SIZE_LIMIT_EXCEEDED,
               });
-            },
-            writable: true,
-            configurable: true,
-          });
+            }
 
-          requestLog.debug('Chunked transfer encoding support enabled for request', {
-            path: req.url().pathname,
-            method: req.method(),
-          });
+            // Size validation passed - replace bodyStream with buffered stream
+            Object.defineProperty(req, 'bodyStream', {
+              value: () => createBufferedStream(validationResult.bufferedData),
+              writable: true,
+              configurable: true,
+            });
+
+            requestLog.debug('Chunked transfer encoding validation completed successfully', {
+              path: req.url().pathname,
+              method: req.method(),
+              totalSize: validationResult.bufferedData.length,
+              maxSize,
+            });
+          } catch (error) {
+            requestLog.error('Error during chunked stream validation', {
+              path: req.url().pathname,
+              method: req.method(),
+              error,
+            });
+
+            // Return internal server error for unexpected validation failures
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+              error: 'Internal Server Error',
+              message: 'Failed to validate request body',
+            });
+          }
+
           return;
         }
 
