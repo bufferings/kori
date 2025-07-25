@@ -95,7 +95,8 @@ function isValidContentLength(value: string): boolean {
 }
 
 /**
- * Pre-validates chunked transfer encoding stream by reading it upfront
+ * Validates chunked transfer encoding stream by buffering the entire stream in memory.
+ * Note: This approach defeats the purpose of chunked encoding and may not be suitable for large payloads.
  * Returns either an error response or buffered data for stream replacement
  */
 async function validateChunkedStream({
