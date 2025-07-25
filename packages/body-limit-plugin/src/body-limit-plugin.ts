@@ -4,6 +4,7 @@ import {
   type KoriResponse,
   type KoriRequest,
   type KoriEnvironment,
+  type KoriHandlerContext,
   HttpStatus,
 } from '@korix/kori';
 
@@ -12,13 +13,8 @@ import { PLUGIN_VERSION } from './version.js';
 export type BodyLimitOptions = {
   /** Maximum request body size in bytes (default: 1MB) */
   maxSize?: number;
-  /** Custom error handler */
-  onError?: (ctx: {
-    req: KoriRequest;
-    res: KoriResponse;
-    maxSize: number;
-    receivedSize: number;
-  }) => KoriResponse | undefined;
+  /** Custom error handler for body size limit exceeded */
+  onError?: (ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>, error: BodySizeLimitError) => void;
   /** Skip body limit check for certain paths (regex patterns) */
   skipPaths?: (string | RegExp)[];
   /** Enable chunked transfer encoding support (default: false) */
@@ -37,7 +33,6 @@ const METHODS_WITH_BODY = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const ERROR_CODES = {
   BODY_SIZE_LIMIT_EXCEEDED: 'BODY_SIZE_LIMIT_EXCEEDED',
   INVALID_CONTENT_LENGTH: 'INVALID_CONTENT_LENGTH',
-  CHUNKED_SIZE_LIMIT_EXCEEDED: 'CHUNKED_SIZE_LIMIT_EXCEEDED',
 } as const;
 
 // Compiled skip path patterns for performance
@@ -95,11 +90,25 @@ function isValidContentLength(value: string): boolean {
 }
 
 /**
- * Validates chunked transfer encoding stream by buffering the entire stream in memory.
- * Note: This approach defeats the purpose of chunked encoding and may not be suitable for large payloads.
- * Returns either an error response or buffered data for stream replacement
+ * Custom error class for body size limit exceeded
  */
-async function validateChunkedStream({
+class BodySizeLimitError extends Error {
+  constructor(
+    public readonly actualSize: number,
+    public readonly maxSize: number,
+    message?: string,
+  ) {
+    super(message ?? `Body size ${actualSize} exceeds limit ${maxSize}`);
+    this.name = 'BodySizeLimitError';
+    Object.setPrototypeOf(this, BodySizeLimitError.prototype);
+  }
+}
+
+/**
+ * Creates a monitored stream that validates chunk sizes in real-time without buffering.
+ * This maintains the memory efficiency and streaming benefits of chunked transfer encoding.
+ */
+function createMonitoredStream({
   originalStream,
   maxSize,
   requestLog,
@@ -107,65 +116,39 @@ async function validateChunkedStream({
   originalStream: ReadableStream<Uint8Array>;
   maxSize: number;
   requestLog: ReturnType<KoriRequest['log']>;
-}): Promise<{ success: true; bufferedData: Uint8Array } | { success: false; totalSize: number }> {
-  const reader = originalStream.getReader();
-  const chunks: Uint8Array[] = [];
+}): ReadableStream<Uint8Array> {
   let totalSize = 0;
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        requestLog.debug('Chunked stream validation completed', {
-          totalSize,
-          maxSize,
-          chunksCount: chunks.length,
-        });
-        break;
-      }
-
-      totalSize += value.length;
+  const monitorTransform = new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      totalSize += chunk.length;
 
       if (totalSize > maxSize) {
-        requestLog.debug('Chunked stream size limit exceeded during validation', {
+        requestLog.warn('Chunked stream size limit exceeded during processing', {
           totalSize,
           maxSize,
-          currentChunkSize: value.length,
+          currentChunkSize: chunk.length,
         });
-        return { success: false, totalSize };
+
+        // Throw custom error that can be caught and converted to HTTP response
+        const error = new BodySizeLimitError(totalSize, maxSize);
+        controller.error(error);
+        return;
       }
 
-      chunks.push(value);
-    }
+      // Pass the chunk through unchanged - true streaming
+      controller.enqueue(chunk);
+    },
 
-    // Combine all chunks into a single buffer
-    const bufferedData = new Uint8Array(totalSize);
-    let offset = 0;
-    for (const chunk of chunks) {
-      bufferedData.set(chunk, offset);
-      offset += chunk.length;
-    }
-
-    return { success: true, bufferedData };
-  } catch (error) {
-    requestLog.error('Error during chunked stream validation', { error, totalSize });
-    throw error;
-  } finally {
-    reader.releaseLock();
-  }
-}
-
-/**
- * Creates a ReadableStream from buffered data
- */
-function createBufferedStream(bufferedData: Uint8Array): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(bufferedData);
-      controller.close();
+    flush() {
+      requestLog.debug('Chunked stream processing completed', {
+        totalSize,
+        maxSize,
+      });
     },
   });
+
+  return originalStream.pipeThrough(monitorTransform);
 }
 
 /**
@@ -214,7 +197,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
       const log = kori.log().child(LOGGER_NAME);
       log.info(`Plugin initialized with max size: ${maxSize} bytes, chunked support: ${enableChunkedSupport}`);
 
-      return kori.onRequest(async (ctx) => {
+      // Setup request monitoring for chunked transfer encoding
+      kori.onRequest((ctx) => {
         const { req, res } = ctx;
 
         // Request-level logger with request tracing
@@ -274,137 +258,81 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
               remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
             });
 
-            // Use custom error handler if provided
-            if (options.onError) {
-              const result = options.onError({
-                req,
-                res,
-                maxSize,
-                receivedSize: contentLength,
-              });
-              if (result) {
-                return result;
-              }
-            }
-
-            // Default error response
-            return res.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
-              error: 'Payload Too Large',
-              message: 'Request body size exceeds the maximum allowed limit',
-              maxSize,
-              receivedSize: contentLength,
-              code: ERROR_CODES.BODY_SIZE_LIMIT_EXCEEDED,
-            });
+            throw new BodySizeLimitError(contentLength, maxSize);
           }
 
-          requestLog.debug('Body size check passed', {
-            path: req.url().pathname,
-            method: req.method(),
-            contentLength,
-            maxSize,
-          });
           return;
         }
 
         // Handle chunked transfer encoding if enabled
         if (enableChunkedSupport && isChunkedTransferEncoding(transferEncodingHeader)) {
-          requestLog.debug('Detected chunked transfer encoding, enabling stream monitoring', {
+          requestLog.debug('Detected chunked transfer encoding, enabling real-time stream monitoring', {
             path: req.url().pathname,
             method: req.method(),
             transferEncoding: transferEncodingHeader,
             maxSize,
           });
 
-          // Pre-validate the chunked stream
-          const stream = req.bodyStream();
+          // Store original bodyStream function with proper binding
+          const originalBodyStream = req.bodyStream.bind(req);
 
-          if (!stream) {
-            requestLog.debug('No body stream available for chunked request');
-            return;
-          }
+          // Replace bodyStream with monitored version (direct function replacement)
+          req.bodyStream = () => {
+            const stream = originalBodyStream();
+            if (!stream) {
+              requestLog.debug('No body stream available for chunked request');
+              return null;
+            }
 
-          try {
-            const validationResult = await validateChunkedStream({
+            return createMonitoredStream({
               originalStream: stream,
               maxSize,
               requestLog,
             });
-
-            if (!validationResult.success) {
-              const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
-              requestLog.warn('Chunked request body size exceeds limit', {
-                path: req.url().pathname,
-                method: req.method(),
-                totalSize: validationResult.totalSize,
-                maxSize,
-                transferEncoding: transferEncodingHeader,
-                userAgent: req.headers()['user-agent'],
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
-              });
-
-              // Use custom error handler if provided
-              if (options.onError) {
-                const result = options.onError({
-                  req,
-                  res,
-                  maxSize,
-                  receivedSize: validationResult.totalSize,
-                });
-                if (result) {
-                  return result;
-                }
-              }
-
-              // Default error response
-              return res.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
-                error: 'Payload Too Large',
-                message: 'Request body size exceeds the maximum allowed limit',
-                maxSize,
-                receivedSize: validationResult.totalSize,
-                code: ERROR_CODES.CHUNKED_SIZE_LIMIT_EXCEEDED,
-              });
-            }
-
-            // Size validation passed - replace bodyStream with buffered stream
-            Object.defineProperty(req, 'bodyStream', {
-              value: () => createBufferedStream(validationResult.bufferedData),
-              writable: true,
-              configurable: true,
-            });
-
-            requestLog.debug('Chunked transfer encoding validation completed successfully', {
-              path: req.url().pathname,
-              method: req.method(),
-              totalSize: validationResult.bufferedData.length,
-              maxSize,
-            });
-          } catch (error) {
-            requestLog.error('Error during chunked stream validation', {
-              path: req.url().pathname,
-              method: req.method(),
-              error,
-            });
-
-            // Return internal server error for unexpected validation failures
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-              error: 'Internal Server Error',
-              message: 'Failed to validate request body',
-            });
-          }
+          };
 
           return;
         }
 
         // No Content-Length and either chunked support is disabled or not chunked encoding
-        requestLog.debug('No Content-Length header found, cannot pre-check body size', {
-          path: req.url().pathname,
-          method: req.method(),
-          transferEncoding: transferEncodingHeader,
-          chunkedSupportEnabled: enableChunkedSupport,
-          isChunked: isChunkedTransferEncoding(transferEncodingHeader),
-        });
       });
+
+      // Handle BodySizeLimitError and convert to HTTP response
+      kori.onError((ctx, error) => {
+        if (error instanceof BodySizeLimitError) {
+          const { req } = ctx;
+          const requestLog = req.log().child(LOGGER_NAME);
+          const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
+
+          requestLog.warn('Request body size exceeds limit', {
+            path: req.url().pathname,
+            method: req.method(),
+            actualSize: error.actualSize,
+            maxSize: error.maxSize,
+            transferEncoding: req.headers()['transfer-encoding'],
+            userAgent: req.headers()['user-agent'],
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
+          });
+
+          // Use custom error handler if provided
+          if (options.onError) {
+            options.onError(ctx, error);
+            return;
+          }
+
+          // Default error response - set status and body directly on context response
+          ctx.res.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
+            error: 'Payload Too Large',
+            message: 'Request body size exceeds the maximum allowed limit',
+            maxSize: error.maxSize,
+            receivedSize: error.actualSize,
+            code: ERROR_CODES.BODY_SIZE_LIMIT_EXCEEDED,
+          });
+        }
+      });
+
+      return kori;
     },
   });
 }
