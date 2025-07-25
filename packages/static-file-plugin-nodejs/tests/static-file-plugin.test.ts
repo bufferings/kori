@@ -671,6 +671,93 @@ describe('static-file-plugin-nodejs', () => {
 
       expect(secondResponse.status).toBe(304);
     });
+
+    it('should handle If-Modified-Since conditional requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          lastModified: true,
+        }),
+      );
+
+      // First request to get Last-Modified header
+      const firstResponse = await fetchFromApp(app, 'http://localhost/static/index.html');
+      const lastModified = firstResponse.headers.get('last-modified');
+
+      expect(firstResponse.status).toBe(200);
+      expect(lastModified).toBeTruthy();
+
+      // Second request with If-Modified-Since header (same timestamp)
+      const generated = app.generate();
+      const { fetchHandler } = await generated.onInit();
+      const secondResponse = await fetchHandler(
+        new Request('http://localhost/static/index.html', {
+          headers: {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            'if-modified-since': lastModified!,
+          },
+        }),
+      );
+
+      expect(secondResponse.status).toBe(304);
+    });
+
+    it('should return file when If-Modified-Since is older than file', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          lastModified: true,
+        }),
+      );
+
+      // Request with old If-Modified-Since date
+      const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString();
+      const response = await fetchFromApp(app, 'http://localhost/static/index.html', {
+        'If-Modified-Since': oldDate,
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('last-modified')).toBeTruthy();
+      expect(await response.text()).toBe('<html><body>Index</body></html>');
+    });
+
+    it('should prioritize ETag over Last-Modified when both present', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          etag: true,
+          lastModified: true,
+        }),
+      );
+
+      // First request to get both ETag and Last-Modified
+      const firstResponse = await fetchFromApp(app, 'http://localhost/static/index.html');
+      const etag = firstResponse.headers.get('etag');
+      const lastModified = firstResponse.headers.get('last-modified');
+
+      expect(firstResponse.status).toBe(200);
+      expect(etag).toBeTruthy();
+      expect(lastModified).toBeTruthy();
+
+      // Request with both headers - ETag should take priority
+      const generated = app.generate();
+      const { fetchHandler } = await generated.onInit();
+      const secondResponse = await fetchHandler(
+        new Request('http://localhost/static/index.html', {
+          headers: {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            'if-none-match': etag!,
+            // Use old date for If-Modified-Since to test ETag priority
+            'if-modified-since': new Date('2020-01-01T00:00:00.000Z').toUTCString(),
+          },
+        }),
+      );
+
+      expect(secondResponse.status).toBe(304);
+    });
   });
 
   describe('security', () => {
