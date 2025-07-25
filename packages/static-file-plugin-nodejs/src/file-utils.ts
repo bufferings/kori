@@ -161,10 +161,12 @@ export function createFileStream(filePath: string): ReadableStream {
 
 /**
  * Parse Range header and return parsed ranges
+ * According to HTTP RFC 7233, if at least one range is satisfiable,
+ * the server should ignore unsatisfiable ranges and return 206.
+ * Only return 416 if all ranges are unsatisfiable.
  */
 export function parseRangeHeader(rangeHeader: string | undefined, fileSize: number): RangeResult {
   const ranges: ParsedRange[] = [];
-  let isSatisfiable = true;
 
   // Check if range header exists and is valid
   if (!rangeHeader?.startsWith('bytes=')) {
@@ -183,8 +185,7 @@ export function parseRangeHeader(rangeHeader: string | undefined, fileSize: numb
       // Suffix range: -500 (last 500 bytes)
       const suffixLength = parseInt(trimmedSpec.substring(1), 10);
       if (isNaN(suffixLength) || suffixLength <= 0) {
-        isSatisfiable = false;
-        continue;
+        continue; // Skip invalid range, don't mark entire request as unsatisfiable
       }
       start = Math.max(0, fileSize - suffixLength);
       end = fileSize - 1;
@@ -192,8 +193,7 @@ export function parseRangeHeader(rangeHeader: string | undefined, fileSize: numb
       // Start range: 500- (from 500 to end)
       start = parseInt(trimmedSpec.slice(0, -1), 10);
       if (isNaN(start) || start < 0) {
-        isSatisfiable = false;
-        continue;
+        continue; // Skip invalid range, don't mark entire request as unsatisfiable
       }
       end = fileSize - 1;
     } else {
@@ -206,14 +206,12 @@ export function parseRangeHeader(rangeHeader: string | undefined, fileSize: numb
         parts[1] === undefined ||
         parts[1] === ''
       ) {
-        isSatisfiable = false;
-        continue;
+        continue; // Skip invalid range, don't mark entire request as unsatisfiable
       }
       start = parseInt(parts[0], 10);
       end = parseInt(parts[1], 10);
       if (isNaN(start) || isNaN(end) || start < 0 || end < start) {
-        isSatisfiable = false;
-        continue;
+        continue; // Skip invalid range, don't mark entire request as unsatisfiable
       }
     }
 
@@ -222,17 +220,14 @@ export function parseRangeHeader(rangeHeader: string | undefined, fileSize: numb
 
     // Check if range is satisfiable
     if (start >= fileSize) {
-      isSatisfiable = false;
-      continue;
+      continue; // Skip unsatisfiable range, don't mark entire request as unsatisfiable
     }
 
     ranges.push({ start, end });
   }
 
-  // If no valid ranges found, mark as unsatisfiable
-  if (ranges.length === 0) {
-    isSatisfiable = false;
-  }
+  // RFC 7233: Only mark as unsatisfiable if no valid ranges found
+  const isSatisfiable = ranges.length > 0;
 
   return {
     ranges,

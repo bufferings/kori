@@ -356,11 +356,21 @@ describe('static-file-plugin-nodejs', () => {
       );
 
       const response = await fetchFromApp(app, 'http://localhost/static/large-file.txt', {
-        Range: 'bytes=0-99,5000-6000', // Second range is invalid
+        Range: 'bytes=0-99,5000-6000', // Second range is invalid (beyond file size)
       });
 
-      // Should return 416 because at least one range is not satisfiable
-      expect(response.status).toBe(416);
+      // Should return 206 with only valid ranges per HTTP RFC 7233
+      // Invalid ranges should be ignored if at least one range is satisfiable
+      expect(response.status).toBe(206);
+
+      // Since only one valid range remains, it should be a single range response
+      expect(response.headers.get('Content-Type')).toBe('text/plain');
+      expect(response.headers.get('Content-Range')).toBe('bytes 0-99/3000');
+      expect(response.headers.get('Content-Length')).toBe('100');
+
+      const content = await response.text();
+      // Should contain only the valid range content (first 100 bytes)
+      expect(content).toBe('A'.repeat(100));
     });
 
     it('should support custom maxRanges for multipart requests', async () => {
