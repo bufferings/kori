@@ -54,7 +54,7 @@ type StaticFileOptions = {
   etag?: boolean; // ETag header (default: true)
   lastModified?: boolean; // Last-Modified header (default: true)
   ranges?: boolean; // Range Request support (default: true)
-  maxRanges?: number; // Maximum ranges per request (default: 1)
+  maxRanges?: number; // Maximum ranges per request for multipart (default: 1)
 };
 ```
 
@@ -69,7 +69,7 @@ type StaticFileOptions = {
   etag: true,
   lastModified: true,
   ranges: true,
-  maxRanges: 1
+  maxRanges: 1,
 }
 ```
 
@@ -98,11 +98,51 @@ const app = createKori().applyPlugin(
 
 ### Supported Range Formats
 
+#### Single Range Requests
+
 | Range Header   | Description           | Example Response                      |
 | -------------- | --------------------- | ------------------------------------- |
 | `bytes=0-1023` | First 1024 bytes      | `Content-Range: bytes 0-1023/5000`    |
 | `bytes=1024-`  | From byte 1024 to end | `Content-Range: bytes 1024-4999/5000` |
 | `bytes=-1024`  | Last 1024 bytes       | `Content-Range: bytes 3976-4999/5000` |
+
+#### Multipart Range Requests
+
+```typescript
+// Enable multipart range requests
+const app = createKori().applyPlugin(
+  staticFilePlugin({
+    serveFrom: './media',
+    mountAt: '/media',
+    maxRanges: 5, // Allow up to 5 ranges per request
+  }),
+);
+```
+
+| Range Header                      | Description           | Response Type                        |
+| --------------------------------- | --------------------- | ------------------------------------ |
+| `bytes=0-999,5000-5999`           | Multiple byte ranges  | `multipart/byteranges; boundary=...` |
+| `bytes=0-499,1000-1499,2000-2499` | Three separate ranges | `multipart/byteranges; boundary=...` |
+
+**Multipart Response Example:**
+
+```http
+HTTP/1.1 206 Partial Content
+Content-Type: multipart/byteranges; boundary=----kori-boundary-123456
+Accept-Ranges: bytes
+
+------kori-boundary-123456
+Content-Type: video/mp4
+Content-Range: bytes 0-999/50000
+
+[First 1000 bytes of content]
+------kori-boundary-123456
+Content-Type: video/mp4
+Content-Range: bytes 5000-5999/50000
+
+[Next 1000 bytes of content]
+------kori-boundary-123456--
+```
 
 ### Response Headers
 

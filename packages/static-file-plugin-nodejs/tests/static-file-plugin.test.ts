@@ -298,6 +298,97 @@ describe('static-file-plugin-nodejs', () => {
       const content = await response.text();
       expect(content).toBe('A');
     });
+
+    it('should handle multipart range requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          maxRanges: 5, // Allow multiple ranges
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/large-file.txt', {
+        Range: 'bytes=0-99,500-599',
+      });
+
+      expect(response.status).toBe(206);
+      expect(response.headers.get('Content-Type')).toMatch(/^multipart\/byteranges; boundary=/);
+      expect(response.headers.get('Accept-Ranges')).toBe('bytes');
+
+      const content = await response.text();
+
+      // Should contain multipart boundary structure
+      expect(content).toMatch(/----kori-boundary-/);
+      expect(content).toMatch(/Content-Type: text\/plain/);
+      expect(content).toMatch(/Content-Range: bytes 0-99\/3000/);
+      expect(content).toMatch(/Content-Range: bytes 500-599\/3000/);
+    });
+
+    it('should handle multipart range requests with maxRanges limit', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          ranges: true,
+          maxRanges: 2,
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/large-file.txt', {
+        Range: 'bytes=0-99,200-299,400-499', // 3 ranges, limit is 2
+      });
+
+      expect(response.status).toBe(416);
+      expect(response.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+
+      const errorData = (await response.json()) as { error: { type: string; message: string } };
+      expect(errorData.error.type).toBe('TOO_MANY_RANGES');
+      expect(errorData.error.message).toContain('Maximum allowed: 2');
+    });
+
+    it('should handle mixed valid and invalid ranges in multipart request', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/large-file.txt', {
+        Range: 'bytes=0-99,5000-6000', // Second range is invalid
+      });
+
+      // Should return 416 because at least one range is not satisfiable
+      expect(response.status).toBe(416);
+    });
+
+    it('should support custom maxRanges for multipart requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+          ranges: true,
+          maxRanges: 5,
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/large-file.txt', {
+        Range: 'bytes=0-99,200-299,400-499,600-699,800-899', // 5 ranges
+      });
+
+      expect(response.status).toBe(206);
+      expect(response.headers.get('Content-Type')).toMatch(/^multipart\/byteranges; boundary=/);
+
+      const content = await response.text();
+      expect(content).toMatch(/----kori-boundary-/);
+      // Should contain all 5 ranges
+      expect(content).toMatch(/Content-Range: bytes 0-99\/3000/);
+      expect(content).toMatch(/Content-Range: bytes 200-299\/3000/);
+      expect(content).toMatch(/Content-Range: bytes 400-499\/3000/);
+      expect(content).toMatch(/Content-Range: bytes 600-699\/3000/);
+      expect(content).toMatch(/Content-Range: bytes 800-899\/3000/);
+    });
   });
 
   describe('basic functionality', () => {

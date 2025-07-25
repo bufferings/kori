@@ -275,3 +275,106 @@ export function generateContentRangeHeader(start: number, end: number, totalSize
 export function isRangeRequest(rangeHeader: string | undefined): boolean {
   return Boolean(rangeHeader?.startsWith('bytes='));
 }
+
+/**
+ * Generate a unique boundary for multipart responses
+ */
+export function generateBoundary(): string {
+  return `----kori-boundary-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+}
+
+/**
+ * Create a multipart byterange stream for multiple ranges
+ */
+export function createMultipartStream(
+  filePath: string,
+  ranges: ParsedRange[],
+  totalSize: number,
+  mimeType: string,
+  boundary: string,
+): ReadableStream {
+  let currentRangeIndex = 0;
+  let currentFileStream: NodeJS.ReadableStream | null = null;
+  let boundaryWritten = false;
+
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    start() {
+      // Initialize multipart stream - no action needed at start
+    },
+
+    pull(controller) {
+      try {
+        // If we haven't written the boundary for current range, write it
+        if (!boundaryWritten) {
+          if (currentRangeIndex < ranges.length) {
+            const range = ranges[currentRangeIndex];
+            if (!range) {
+              controller.error(new Error('Invalid range at index ' + currentRangeIndex));
+              return;
+            }
+
+            const contentLength = range.end - range.start + 1;
+
+            // Write boundary and headers
+            const boundaryData =
+              `--${boundary}\r\n` +
+              `Content-Type: ${mimeType}\r\n` +
+              `Content-Range: bytes ${range.start}-${range.end}/${totalSize}\r\n` +
+              `Content-Length: ${contentLength}\r\n\r\n`;
+
+            controller.enqueue(encoder.encode(boundaryData));
+
+            // Create stream for this range
+            currentFileStream = createReadStream(filePath, {
+              start: range.start,
+              end: range.end,
+            });
+
+            boundaryWritten = true;
+            return;
+          } else {
+            // All ranges processed, write closing boundary
+            controller.enqueue(encoder.encode(`\r\n--${boundary}--\r\n`));
+            controller.close();
+            return;
+          }
+        }
+
+        // Read from current file stream
+        if (currentFileStream) {
+          const chunk = currentFileStream.read();
+          if (chunk !== null) {
+            controller.enqueue(chunk);
+          } else {
+            // Stream ended, move to next range
+            if (
+              currentFileStream &&
+              'destroy' in currentFileStream &&
+              typeof currentFileStream.destroy === 'function'
+            ) {
+              (currentFileStream.destroy as () => void)();
+            }
+            currentFileStream = null;
+            boundaryWritten = false;
+            currentRangeIndex++;
+
+            // Add line break before next boundary
+            if (currentRangeIndex < ranges.length) {
+              controller.enqueue(encoder.encode('\r\n'));
+            }
+          }
+        }
+      } catch (error) {
+        controller.error(error instanceof Error ? error : new Error(String(error)));
+      }
+    },
+
+    cancel() {
+      if (currentFileStream && 'destroy' in currentFileStream && typeof currentFileStream.destroy === 'function') {
+        (currentFileStream.destroy as () => void)();
+      }
+    },
+  });
+}
