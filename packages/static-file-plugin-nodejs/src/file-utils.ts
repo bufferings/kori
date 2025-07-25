@@ -32,7 +32,9 @@ export function resolveSafePath(requestPath: string, rootDir: string): ResolvedP
     // Normalize and resolve paths
     const normalizedPath = normalize(cleanPath);
     const resolvedRoot = resolve(rootDir);
-    const resolvedPath = resolve(resolvedRoot, normalizedPath.slice(1)); // Remove leading slash
+    // Remove leading slash if present
+    const pathWithoutLeadingSlash = normalizedPath.replace(/^\//, '');
+    const resolvedPath = resolve(resolvedRoot, pathWithoutLeadingSlash);
 
     // Check if resolved path is within root directory
     const relativePath = relative(resolvedRoot, resolvedPath);
