@@ -13,6 +13,7 @@
     "@korix/pino-adapter": "0.1.0",
     "@korix/script": "0.1.0",
     "@korix/security-headers-plugin": "0.1.0",
+    "@korix/static-file-plugin-nodejs": "0.1.0",
     "@korix/zod-openapi-plugin": "0.1.0",
     "@korix/zod-schema": "0.1.0",
     "@korix/zod-validator": "0.1.0"
