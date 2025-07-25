@@ -189,17 +189,9 @@ function serveRangeRequest(
 
   // Handle single vs multiple range requests
   if (rangeResult.ranges.length === 1) {
-    // Single range request
-    const range = rangeResult.ranges[0];
-    if (!range) {
-      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-        error: {
-          type: 'RANGE_NOT_SATISFIABLE',
-          message: 'No valid range found',
-        },
-      });
-    }
-
+    // Single range request - ranges[0] is guaranteed to exist since length === 1
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const range = rangeResult.ranges[0]!;
     return serveSingleRange(req, res, fileInfo, options, log, range, mimeType, fileSize);
   } else {
     // Multiple range request - use multipart response
