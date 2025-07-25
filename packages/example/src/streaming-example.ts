@@ -1,4 +1,4 @@
-import { createKori } from '@korix/kori';
+import { createKori, HttpResponseHeader } from '@korix/kori';
 import { type KoriRequest } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 
@@ -29,10 +29,10 @@ app.get('/events', {
 
     // Return streaming response with SSE headers
     return ctx.res
-      .setHeader('Content-Type', 'text/event-stream')
-      .setHeader('Cache-Control', 'no-cache')
-      .setHeader('Connection', 'keep-alive')
-      .setHeader('Access-Control-Allow-Origin', '*')
+      .setHeader(HttpResponseHeader.CONTENT_TYPE, 'text/event-stream')
+      .setHeader(HttpResponseHeader.CACHE_CONTROL, 'no-cache')
+      .setHeader(HttpResponseHeader.CONNECTION, 'keep-alive')
+      .setHeader(HttpResponseHeader.ACCESS_CONTROL_ALLOW_ORIGIN, '*')
       .stream(transformStream.readable);
   },
 });
@@ -121,8 +121,8 @@ app.get('/download-stream', {
     });
 
     return ctx.res
-      .setHeader('Content-Type', 'text/plain')
-      .setHeader('Content-Disposition', 'attachment; filename="stream.txt"')
+      .setHeader(HttpResponseHeader.CONTENT_TYPE, 'text/plain')
+      .setHeader(HttpResponseHeader.CONTENT_DISPOSITION, 'attachment; filename="stream.txt"')
       .stream(stream);
   },
 });

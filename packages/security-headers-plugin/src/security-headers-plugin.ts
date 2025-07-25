@@ -4,6 +4,7 @@ import {
   type KoriResponse,
   type KoriRequest,
   type KoriEnvironment,
+  HttpResponseHeader,
 } from '@korix/kori';
 
 import { PLUGIN_VERSION } from './version.js';
@@ -139,26 +140,26 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
   const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
   if (finalOptions.contentTypeOptions !== false) {
-    res.setHeader('x-content-type-options', finalOptions.contentTypeOptions);
+    res.setHeader(HttpResponseHeader.X_CONTENT_TYPE_OPTIONS, finalOptions.contentTypeOptions);
   }
 
   if (finalOptions.xssProtection) {
     // This header is deprecated, but it's important to set it to '0'
     // to disable the browser's built-in XSS auditor in older browsers,
     // which can introduce XSS vulnerabilities.
-    res.setHeader('x-xss-protection', '0');
+    res.setHeader(HttpResponseHeader.X_XSS_PROTECTION, '0');
   }
 
   if (finalOptions.frameOptions !== false) {
-    res.setHeader('x-frame-options', finalOptions.frameOptions);
+    res.setHeader(HttpResponseHeader.X_FRAME_OPTIONS, finalOptions.frameOptions);
   }
 
   if (finalOptions.strictTransportSecurity !== false) {
-    res.setHeader('strict-transport-security', finalOptions.strictTransportSecurity);
+    res.setHeader(HttpResponseHeader.STRICT_TRANSPORT_SECURITY, finalOptions.strictTransportSecurity);
   }
 
   if (finalOptions.referrerPolicy !== false) {
-    res.setHeader('referrer-policy', finalOptions.referrerPolicy);
+    res.setHeader(HttpResponseHeader.REFERRER_POLICY, finalOptions.referrerPolicy);
   }
 
   if (finalOptions.contentSecurityPolicy !== false) {
@@ -169,27 +170,27 @@ function setSecurityHeaders(res: KoriResponse, options: SecurityHeadersOptions):
     } else {
       cspString = buildCspString(finalOptions.contentSecurityPolicy);
     }
-    res.setHeader('content-security-policy', cspString);
+    res.setHeader(HttpResponseHeader.CONTENT_SECURITY_POLICY, cspString);
   }
 
   if (finalOptions.permittedCrossDomainPolicies !== false) {
-    res.setHeader('x-permitted-cross-domain-policies', finalOptions.permittedCrossDomainPolicies);
+    res.setHeader(HttpResponseHeader.X_PERMITTED_CROSS_DOMAIN_POLICIES, finalOptions.permittedCrossDomainPolicies);
   }
 
   if (finalOptions.downloadOptions !== false) {
-    res.setHeader('x-download-options', finalOptions.downloadOptions);
+    res.setHeader(HttpResponseHeader.X_DOWNLOAD_OPTIONS, finalOptions.downloadOptions);
   }
 
   if (finalOptions.crossOriginEmbedderPolicy !== false) {
-    res.setHeader('cross-origin-embedder-policy', finalOptions.crossOriginEmbedderPolicy);
+    res.setHeader(HttpResponseHeader.CROSS_ORIGIN_EMBEDDER_POLICY, finalOptions.crossOriginEmbedderPolicy);
   }
 
   if (finalOptions.crossOriginOpenerPolicy !== false) {
-    res.setHeader('cross-origin-opener-policy', finalOptions.crossOriginOpenerPolicy);
+    res.setHeader(HttpResponseHeader.CROSS_ORIGIN_OPENER_POLICY, finalOptions.crossOriginOpenerPolicy);
   }
 
   if (finalOptions.crossOriginResourcePolicy !== false) {
-    res.setHeader('cross-origin-resource-policy', finalOptions.crossOriginResourcePolicy);
+    res.setHeader(HttpResponseHeader.CROSS_ORIGIN_RESOURCE_POLICY, finalOptions.crossOriginResourcePolicy);
   }
 
   if (options.customHeaders) {

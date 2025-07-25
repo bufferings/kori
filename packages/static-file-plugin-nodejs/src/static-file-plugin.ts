@@ -5,8 +5,9 @@ import {
   type KoriLogger,
   type KoriEnvironment,
   type KoriPlugin,
+  HttpStatus,
+  HttpResponseHeader,
 } from '@korix/kori';
-import { HttpStatus } from '@korix/kori';
 
 import {
   resolveSafePath,
@@ -72,17 +73,17 @@ function setCacheHeaders(
   options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
 ): void {
   if (options.maxAge > 0) {
-    res.setHeader('cache-control', `public, max-age=${options.maxAge}`);
+    res.setHeader(HttpResponseHeader.CACHE_CONTROL, `public, max-age=${options.maxAge}`);
   } else {
-    res.setHeader('cache-control', 'no-cache');
+    res.setHeader(HttpResponseHeader.CACHE_CONTROL, 'no-cache');
   }
   if (options.etag) {
     const etag = generateETag(fileInfo.stats);
-    res.setHeader('etag', etag);
+    res.setHeader(HttpResponseHeader.ETAG, etag);
   }
   if (options.lastModified) {
     const lastModified = formatLastModified(fileInfo.stats.mtime);
-    res.setHeader('last-modified', lastModified);
+    res.setHeader(HttpResponseHeader.LAST_MODIFIED, lastModified);
   }
 }
 
@@ -103,8 +104,8 @@ function serveFile(
   log: KoriLogger,
 ): KoriResponse {
   const mimeType = detectMimeType(fileInfo.path);
-  res.setHeader('content-type', mimeType);
-  res.setHeader('content-length', fileInfo.stats.size.toString());
+  res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+  res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
   setCacheHeaders(res, fileInfo, options);
 
   if (checkConditionalRequest(req, fileInfo)) {
@@ -133,16 +134,14 @@ async function handleStaticFileRequest(
 
   if (!resolvedPath.isValid) {
     log.warn('Invalid file path detected', { requestPath, resolvedPath: resolvedPath.safePath });
-    return res.status(HttpStatus.FORBIDDEN).json({
-      error: 'Forbidden',
+    return res.forbidden({
       message: 'Access denied',
     });
   }
 
   if (!isDotfileAllowed(resolvedPath.isDotfile, options.dotfiles)) {
     log.debug('Dotfile access denied', { path: resolvedPath.safePath });
-    return res.status(HttpStatus.NOT_FOUND).json({
-      error: 'Not Found',
+    return res.notFound({
       message: 'File not found',
     });
   }
@@ -151,8 +150,7 @@ async function handleStaticFileRequest(
 
   if (!fileInfo.exists) {
     log.debug('File not found', { path: resolvedPath.safePath });
-    return res.status(HttpStatus.NOT_FOUND).json({
-      error: 'Not Found',
+    return res.notFound({
       message: 'File not found',
     });
   }
@@ -160,8 +158,7 @@ async function handleStaticFileRequest(
   if (fileInfo.stats.isDirectory()) {
     if (options.index === false) {
       log.debug('Directory listing disabled', { path: resolvedPath.safePath });
-      return res.status(HttpStatus.FORBIDDEN).json({
-        error: 'Forbidden',
+      return res.forbidden({
         message: 'Directory listing is disabled',
       });
     }
@@ -169,8 +166,7 @@ async function handleStaticFileRequest(
     const indexFile = await resolveIndexFile(resolvedPath.safePath, options.index, log);
     if (!indexFile) {
       log.debug('No index file found in directory', { path: resolvedPath.safePath });
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: 'Not Found',
+      return res.notFound({
         message: 'No index file found',
       });
     }
@@ -179,8 +175,7 @@ async function handleStaticFileRequest(
 
   if (!fileInfo.stats.isFile()) {
     log.debug('Path is not a regular file', { path: fileInfo.path });
-    return res.status(HttpStatus.NOT_FOUND).json({
-      error: 'Not Found',
+    return res.notFound({
       message: 'File not found',
     });
   }
