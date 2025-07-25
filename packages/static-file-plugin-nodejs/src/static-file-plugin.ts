@@ -263,17 +263,10 @@ function serveMultipartRange(
     boundary,
   });
 
-  // Calculate total content length for multipart response
-  // This is approximate - actual size depends on boundary and headers
-  const approximateContentLength = ranges.reduce((total: number, range: { start: number; end: number }) => {
-    const rangeSize = range.end - range.start + 1;
-    const boundaryOverhead = boundary.length + mimeType.length + 200; // Rough estimate for headers
-    return total + rangeSize + boundaryOverhead;
-  }, boundary.length + 50); // Closing boundary overhead
-
   // Set response headers for multipart content
+  // Note: Content-Length is omitted for multipart responses as per HTTP spec
+  // since calculating exact length is complex and not required
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, `multipart/byteranges; boundary=${boundary}`);
-  res.setHeader(HttpResponseHeader.CONTENT_LENGTH, approximateContentLength.toString());
   res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
 
   // Set cache headers
