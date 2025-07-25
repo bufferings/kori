@@ -160,6 +160,66 @@ export function createFileStream(filePath: string): ReadableStream {
 }
 
 /**
+ * Parse suffix range (e.g., "-500" for last 500 bytes)
+ */
+function parseSuffixRange(spec: string, fileSize: number): ParsedRange | null {
+  const suffixLength = parseInt(spec.substring(1), 10);
+  if (isNaN(suffixLength) || suffixLength <= 0) {
+    return null;
+  }
+
+  const start = Math.max(0, fileSize - suffixLength);
+  const end = fileSize - 1;
+
+  if (start >= fileSize) {
+    return null;
+  }
+
+  return { start, end };
+}
+
+/**
+ * Parse start range (e.g., "500-" from byte 500 to end)
+ */
+function parseStartRange(spec: string, fileSize: number): ParsedRange | null {
+  const start = parseInt(spec.slice(0, -1), 10);
+  if (isNaN(start) || start < 0) {
+    return null;
+  }
+
+  if (start >= fileSize) {
+    return null;
+  }
+
+  const end = fileSize - 1;
+  return { start, end };
+}
+
+/**
+ * Parse full range (e.g., "0-499" from byte 0 to 499)
+ */
+function parseFullRange(spec: string, fileSize: number): ParsedRange | null {
+  const parts = spec.split('-');
+  if (parts.length !== 2 || parts[0] === undefined || parts[0] === '' || parts[1] === undefined || parts[1] === '') {
+    return null;
+  }
+
+  const start = parseInt(parts[0], 10);
+  const end = parseInt(parts[1], 10);
+
+  if (isNaN(start) || isNaN(end) || start < 0 || end < start) {
+    return null;
+  }
+
+  // Ensure end doesn't exceed file size and start is satisfiable
+  if (start >= fileSize) {
+    return null;
+  }
+
+  return { start, end: Math.min(end, fileSize - 1) };
+}
+
+/**
  * Parse Range header and return parsed ranges
  * According to HTTP RFC 7233, if at least one range is satisfiable,
  * the server should ignore unsatisfiable ranges and return 206.
@@ -178,52 +238,19 @@ export function parseRangeHeader(rangeHeader: string | undefined, fileSize: numb
 
   for (const spec of rangeSpecs) {
     const trimmedSpec = spec.trim();
-    let start: number;
-    let end: number;
+    let parsedRange: ParsedRange | null = null;
 
     if (trimmedSpec.startsWith('-')) {
-      // Suffix range: -500 (last 500 bytes)
-      const suffixLength = parseInt(trimmedSpec.substring(1), 10);
-      if (isNaN(suffixLength) || suffixLength <= 0) {
-        continue; // Skip invalid range, don't mark entire request as unsatisfiable
-      }
-      start = Math.max(0, fileSize - suffixLength);
-      end = fileSize - 1;
+      parsedRange = parseSuffixRange(trimmedSpec, fileSize);
     } else if (trimmedSpec.endsWith('-')) {
-      // Start range: 500- (from 500 to end)
-      start = parseInt(trimmedSpec.slice(0, -1), 10);
-      if (isNaN(start) || start < 0) {
-        continue; // Skip invalid range, don't mark entire request as unsatisfiable
-      }
-      end = fileSize - 1;
+      parsedRange = parseStartRange(trimmedSpec, fileSize);
     } else {
-      // Full range: 0-499
-      const parts = trimmedSpec.split('-');
-      if (
-        parts.length !== 2 ||
-        parts[0] === undefined ||
-        parts[0] === '' ||
-        parts[1] === undefined ||
-        parts[1] === ''
-      ) {
-        continue; // Skip invalid range, don't mark entire request as unsatisfiable
-      }
-      start = parseInt(parts[0], 10);
-      end = parseInt(parts[1], 10);
-      if (isNaN(start) || isNaN(end) || start < 0 || end < start) {
-        continue; // Skip invalid range, don't mark entire request as unsatisfiable
-      }
+      parsedRange = parseFullRange(trimmedSpec, fileSize);
     }
 
-    // Ensure end doesn't exceed file size
-    end = Math.min(end, fileSize - 1);
-
-    // Check if range is satisfiable
-    if (start >= fileSize) {
-      continue; // Skip unsatisfiable range, don't mark entire request as unsatisfiable
+    if (parsedRange) {
+      ranges.push(parsedRange);
     }
-
-    ranges.push({ start, end });
   }
 
   // RFC 7233: Only mark as unsatisfiable if no valid ranges found
