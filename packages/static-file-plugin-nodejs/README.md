@@ -176,7 +176,7 @@ Automatic content-type detection for common file types:
 The plugin prevents directory traversal attacks:
 
 ```typescript
-// These requests are blocked with 403 Forbidden
+// These requests are blocked with 404 Not Found
 GET /static/../../../etc/passwd
 GET /static/%2e%2e%2f%2e%2e%2fetc%2fpasswd
 GET /static/..%5c..%5cetc%5cpasswd
@@ -225,8 +225,8 @@ The plugin returns appropriate HTTP status codes:
 
 - **200 OK**: File served successfully
 - **304 Not Modified**: Conditional request, content unchanged
-- **403 Forbidden**: Path traversal attempt or denied dotfile
-- **404 Not Found**: File not found or ignored dotfile
+- **403 Forbidden**: Directory listing disabled
+- **404 Not Found**: File not found, path traversal attempt, or denied dotfile
 
 Error responses include JSON body:
 

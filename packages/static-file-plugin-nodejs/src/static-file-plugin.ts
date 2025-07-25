@@ -133,9 +133,9 @@ async function handleStaticFileRequest(
   const resolvedPath = resolveSafePath(requestPath, options.serveFrom);
 
   if (!resolvedPath.isValid) {
-    log.warn('Invalid file path detected', { requestPath, resolvedPath: resolvedPath.safePath });
-    return res.forbidden({
-      message: 'Access denied',
+    log.warn('Invalid file path detected', { requestPath });
+    return res.notFound({
+      message: 'File not found',
     });
   }
 
