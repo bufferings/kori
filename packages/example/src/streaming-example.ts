@@ -1,4 +1,4 @@
-import { createKori } from '@korix/kori';
+import { createKori, HttpResponseHeader } from '@korix/kori';
 import { type KoriRequest } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 
@@ -29,10 +29,10 @@ app.get('/events', {
 
     // Return streaming response with SSE headers
     return ctx.res
-      .setHeader('Content-Type', 'text/event-stream')
-      .setHeader('Cache-Control', 'no-cache')
-      .setHeader('Connection', 'keep-alive')
-      .setHeader('Access-Control-Allow-Origin', '*')
+      .setHeader(HttpResponseHeader.CONTENT_TYPE, 'text/event-stream')
+      .setHeader(HttpResponseHeader.CACHE_CONTROL, 'no-cache')
+      .setHeader(HttpResponseHeader.CONNECTION, 'keep-alive')
+      .setHeader(HttpResponseHeader.ACCESS_CONTROL_ALLOW_ORIGIN, '*')
       .stream(transformStream.readable);
   },
 });
@@ -48,7 +48,7 @@ app.post('/upload-stream', {
     // Check if request has a body stream
     const bodyStream = koriReq.bodyStream();
     if (!bodyStream) {
-      return res.status(400).json({ error: 'No request body' });
+      return res.badRequest({ message: 'No request body' });
     }
 
     // Process the stream without loading it entirely into memory
@@ -86,7 +86,7 @@ app.post('/upload-stream', {
       });
     } catch (error) {
       ctx.req.log().error('Upload error', { error });
-      return res.status(500).json({ error: 'Upload failed' });
+      return res.internalError({ message: 'Upload failed' });
     }
   },
 });
@@ -121,8 +121,8 @@ app.get('/download-stream', {
     });
 
     return ctx.res
-      .setHeader('Content-Type', 'text/plain')
-      .setHeader('Content-Disposition', 'attachment; filename="stream.txt"')
+      .setHeader(HttpResponseHeader.CONTENT_TYPE, 'text/plain')
+      .setHeader(HttpResponseHeader.CONTENT_DISPOSITION, 'attachment; filename="stream.txt"')
       .stream(stream);
   },
 });

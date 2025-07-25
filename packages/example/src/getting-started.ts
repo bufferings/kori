@@ -1,4 +1,4 @@
-import { createKori } from '@korix/kori';
+import { createKori, HttpStatus } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
@@ -65,7 +65,7 @@ app.post('/users', {
       email,
       createdAt: new Date().toISOString(),
     };
-    return ctx.res.status(201).json(newUser);
+    return ctx.res.status(HttpStatus.CREATED).json(newUser);
   },
 });
 

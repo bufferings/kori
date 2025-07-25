@@ -3,8 +3,8 @@ import {
   type HttpStatusCode,
   type HttpResponseHeaderName,
   HttpResponseHeader,
-  ContentTypeUtf8,
   ContentType,
+  ContentTypeUtf8,
   type CookieOptions,
   type CookieValue,
   serializeCookie,
@@ -13,9 +13,22 @@ import {
 
 const KoriResponseBrand = Symbol('kori-response');
 
-const DefaultJsonHeaders = new Headers({
-  [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
-});
+const DefaultHeaders = {
+  json: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
+  }),
+  text: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_PLAIN,
+  }),
+  html: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
+  }),
+  stream: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
+  }),
+  empty: new Headers(), // No Content-Type for empty responses
+  none: new Headers(), // No Content-Type for uninitialized responses
+} as const;
 
 export type KoriResponse = {
   [KoriResponseBrand]: typeof KoriResponseBrand;
@@ -29,11 +42,11 @@ export type KoriResponse = {
   setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
   clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
 
-  json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
-  text(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  html(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  empty(statusCode?: HttpStatusCode): KoriResponse;
-  stream(body: ReadableStream, statusCode?: HttpStatusCode): KoriResponse;
+  json<T>(body: T): KoriResponse;
+  text(body: string): KoriResponse;
+  html(body: string): KoriResponse;
+  empty(): KoriResponse;
+  stream(body: ReadableStream): KoriResponse;
 
   badRequest(options?: ErrorResponseOptions): KoriResponse;
   unauthorized(options?: ErrorResponseOptions): KoriResponse;
@@ -58,47 +71,31 @@ export type KoriResponse = {
 type ResState = {
   [KoriResponseBrand]: typeof KoriResponseBrand;
 
-  statusCode: HttpStatusCode;
+  statusCode: HttpStatusCode | null;
   headers: Headers | undefined;
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
-  headersShared: boolean;
 };
 
 export function isKoriResponse(value: unknown): value is KoriResponse {
   return typeof value === 'object' && value !== null && KoriResponseBrand in value;
 }
 
-function ensureHeaders(res: ResState): void {
-  if (res.headersShared) {
-    res.headers = new Headers(res.headers);
-    res.headersShared = false;
-  }
-  res.headers ??= new Headers();
-}
-
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  ensureHeaders(res);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.set(name, value);
+  res.headers ??= new Headers();
+  res.headers.set(name, value);
 }
 
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  ensureHeaders(res);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.append(name, value);
+  res.headers ??= new Headers();
+  res.headers.append(name, value);
 }
 
 function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void {
   if (!res.headers) {
     return;
   }
-  ensureHeaders(res);
   res.headers.delete(name);
-}
-
-function setStatusInternal(res: ResState, code: HttpStatusCode): void {
-  res.statusCode = code;
 }
 
 function setCookieInternal(res: ResState, name: string, value: CookieValue, options?: CookieOptions): void {
@@ -114,59 +111,35 @@ function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieO
 type BodyConfig<T> = {
   res: ResState;
   body: T;
-  code?: HttpStatusCode;
 };
 
-function setBodyJsonInternal<T>({ res, body, code }: BodyConfig<T>): void {
+function setBodyJsonInternal<T>({ res, body }: BodyConfig<T>): void {
   res.bodyKind = 'json';
   res.bodyValue = JSON.stringify(body);
-  if (code) {
-    res.statusCode = code;
-  }
-  if (!res.headers) {
-    res.headers = DefaultJsonHeaders;
-    res.headersShared = true;
-  } else {
-    setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.APPLICATION_JSON);
-  }
 }
 
-function setBodyTextInternal({ res, body, code }: BodyConfig<string>): void {
+function setBodyTextInternal({ res, body }: BodyConfig<string>): void {
   res.bodyKind = 'text';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_PLAIN);
 }
 
-function setBodyHtmlInternal({ res, body, code }: BodyConfig<string>): void {
+function setBodyHtmlInternal({ res, body }: BodyConfig<string>): void {
   res.bodyKind = 'html';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_HTML);
 }
 
 type EmptyBodyConfig = {
   res: ResState;
-  code?: HttpStatusCode;
 };
 
-function setBodyEmptyInternal({ res, code = HttpStatus.NO_CONTENT }: EmptyBodyConfig): void {
+function setBodyEmptyInternal({ res }: EmptyBodyConfig): void {
   res.bodyKind = 'empty';
   res.bodyValue = undefined;
-  res.statusCode = code;
 }
 
-function setBodyStreamInternal({ res, body, code }: BodyConfig<ReadableStream>): void {
+function setBodyStreamInternal({ res, body }: BodyConfig<ReadableStream>): void {
   res.bodyKind = 'stream';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentType.APPLICATION_OCTET_STREAM);
 }
 
 type ErrorType =
@@ -228,20 +201,62 @@ type ErrorConfig = {
 
 function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
   const msg = options.message ?? defaultMsg;
+  res.statusCode = status;
   if (options.type === 'text') {
-    setBodyTextInternal({ res, body: msg, code: status });
+    setBodyTextInternal({ res, body: msg });
   } else {
     setBodyJsonInternal({
       res,
       body: createErrorResponseBodyJson({ errorType, message: msg, details: options.details }),
-      code: status,
     });
+  }
+}
+
+function getFinalStatusCode(res: ResState): HttpStatusCode {
+  if (res.statusCode === null) {
+    if (res.bodyKind === 'empty') {
+      return HttpStatus.NO_CONTENT;
+    } else {
+      return HttpStatus.OK;
+    }
+  } else {
+    return res.statusCode;
+  }
+}
+
+function getFinalHeaders(res: ResState): Headers {
+  if (!res.headers) {
+    const defaultHeaders = DefaultHeaders[res.bodyKind];
+    return defaultHeaders ?? new Headers();
+  } else if (!res.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+    const finalHeaders = new Headers(res.headers);
+    const getDefaultContentType = (): string | null => {
+      switch (res.bodyKind) {
+        case 'json':
+          return ContentTypeUtf8.APPLICATION_JSON;
+        case 'text':
+          return ContentTypeUtf8.TEXT_PLAIN;
+        case 'html':
+          return ContentTypeUtf8.TEXT_HTML;
+        case 'stream':
+          return ContentType.APPLICATION_OCTET_STREAM;
+        default:
+          return null;
+      }
+    };
+    const defaultContentType = getDefaultContentType();
+    if (defaultContentType) {
+      finalHeaders.set(HttpResponseHeader.CONTENT_TYPE, defaultContentType);
+    }
+    return finalHeaders;
+  } else {
+    return res.headers;
   }
 }
 
 const sharedMethods = {
   status(code: HttpStatusCode): KoriResponse {
-    setStatusInternal(this, code);
+    this.statusCode = code;
     return this as unknown as KoriResponse;
   },
 
@@ -267,24 +282,24 @@ const sharedMethods = {
     return this as unknown as KoriResponse;
   },
 
-  json<T>(body: T, code?: HttpStatusCode): KoriResponse {
-    setBodyJsonInternal({ res: this, body, code });
+  json<T>(body: T): KoriResponse {
+    setBodyJsonInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  text(body: string, code?: HttpStatusCode): KoriResponse {
-    setBodyTextInternal({ res: this, body, code });
+  text(body: string): KoriResponse {
+    setBodyTextInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  html(body: string, code?: HttpStatusCode): KoriResponse {
-    setBodyHtmlInternal({ res: this, body, code });
+  html(body: string): KoriResponse {
+    setBodyHtmlInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  empty(code: HttpStatusCode = HttpStatus.NO_CONTENT): KoriResponse {
-    setBodyEmptyInternal({ res: this, code });
+  empty(): KoriResponse {
+    setBodyEmptyInternal({ res: this });
     return this as unknown as KoriResponse;
   },
-  stream(body: ReadableStream, code?: HttpStatusCode): KoriResponse {
-    setBodyStreamInternal({ res: this, body, code });
+  stream(body: ReadableStream): KoriResponse {
+    setBodyStreamInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
 
@@ -383,23 +398,24 @@ const sharedMethods = {
       default:
         body = null;
     }
+
     return new Response(body, {
-      status: this.statusCode,
-      headers: this.headers,
+      status: getFinalStatusCode(this),
+      headers: getFinalHeaders(this),
     });
   },
 
   getStatus(): HttpStatusCode {
-    return this.statusCode;
+    return getFinalStatusCode(this);
   },
   getHeadersCopy(): Headers {
-    return new Headers(this.headers);
+    return new Headers(getFinalHeaders(this));
   },
   getHeader(name: HttpResponseHeaderName): string | undefined {
-    return this.headers?.get(name) ?? undefined;
+    return getFinalHeaders(this).get(name) ?? undefined;
   },
   getContentType(): string | undefined {
-    return this.headers?.get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+    return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
   },
   getBody(): unknown {
     return this.bodyValue;
@@ -416,9 +432,8 @@ export function createKoriResponse(): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 
   obj[KoriResponseBrand] = KoriResponseBrand;
-  obj.statusCode = HttpStatus.OK;
+  obj.statusCode = null;
   obj.headers = undefined;
-  obj.headersShared = false;
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
 
