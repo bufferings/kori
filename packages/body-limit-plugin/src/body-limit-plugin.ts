@@ -316,8 +316,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
           });
 
           // Pre-validate the chunked stream
-          const originalBodyStream = req.bodyStream.bind(req);
-          const stream = originalBodyStream();
+          const stream = req.bodyStream();
 
           if (!stream) {
             requestLog.debug('No body stream available for chunked request');
