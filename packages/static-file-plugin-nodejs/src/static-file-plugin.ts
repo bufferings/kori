@@ -147,7 +147,7 @@ function serveFile(
 
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
   res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
-  res.setHeader('Accept-Ranges', options.ranges ? RangeConstants.BYTES : RangeConstants.NONE);
+  res.setHeader(HttpResponseHeader.ACCEPT_RANGES, options.ranges ? RangeConstants.BYTES : RangeConstants.NONE);
   setCacheHeaders(res, fileInfo, options);
 
   log.debug('Serving complete file', {
