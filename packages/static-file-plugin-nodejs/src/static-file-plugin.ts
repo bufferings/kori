@@ -24,7 +24,7 @@ import {
   type ExistingFileInfo,
 } from './file-utils.js';
 import { detectMimeType } from './mime-types.js';
-import { type StaticFileOptions } from './static-file-options.js';
+import { type StaticFileOptions, RangeConstants } from './static-file-options.js';
 import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'static-file-plugin-nodejs';
@@ -133,7 +133,7 @@ function serveFile(
   // Serve full file (existing logic)
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
   res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
-  res.setHeader('Accept-Ranges', options.ranges ? 'bytes' : 'none');
+  res.setHeader('Accept-Ranges', options.ranges ? RangeConstants.BYTES : RangeConstants.NONE);
   setCacheHeaders(res, fileInfo, options);
 
   log.debug('Serving complete file', {
@@ -168,10 +168,10 @@ function serveRangeRequest(
     });
 
     // Set headers for 416 response
-    res.setHeader('Content-Range', `bytes */${fileSize}`);
+    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileSize}`);
     res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
 
-    return res.status(416).json({
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
       error: {
         type: 'RANGE_NOT_SATISFIABLE',
         message: 'Requested range not satisfiable',
@@ -187,7 +187,7 @@ function serveRangeRequest(
       maxRanges: options.maxRanges,
     });
 
-    return res.status(416).json({
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
       error: {
         type: 'TOO_MANY_RANGES',
         message: `Too many ranges requested. Maximum allowed: ${options.maxRanges}`,
@@ -199,7 +199,7 @@ function serveRangeRequest(
   // TODO: Implement multipart range responses later
   const range = rangeResult.ranges[0];
   if (!range) {
-    return res.status(416).json({
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
       error: {
         type: 'RANGE_NOT_SATISFIABLE',
         message: 'No valid range found',
@@ -220,8 +220,8 @@ function serveRangeRequest(
   // Set response headers for partial content
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
   res.setHeader(HttpResponseHeader.CONTENT_LENGTH, contentLength.toString());
-  res.setHeader('Content-Range', generateContentRangeHeader(range.start, range.end, fileSize));
-  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader(HttpResponseHeader.CONTENT_RANGE, generateContentRangeHeader(range.start, range.end, fileSize));
+  res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
 
   // Set cache headers
   setCacheHeaders(res, fileInfo, options);
@@ -229,7 +229,7 @@ function serveRangeRequest(
   // Create partial file stream
   const partialStream = createPartialFileStream(fileInfo.path, range.start, range.end);
 
-  return res.status(206).stream(partialStream);
+  return res.status(HttpStatus.PARTIAL_CONTENT).stream(partialStream);
 }
 
 async function handleStaticFileRequest(
