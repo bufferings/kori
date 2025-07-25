@@ -135,7 +135,7 @@ staticFilePlugin({
 
 The plugin handles URL-to-file mapping as follows:
 
-```
+```text
 URL: /static/admin/dashboard.html
 Source: ./public
 Result: ./public/admin/dashboard.html
@@ -175,7 +175,7 @@ Automatic content-type detection for common file types:
 
 The plugin prevents directory traversal attacks:
 
-```typescript
+```text
 // These requests are blocked with 404 Not Found
 GET /static/../../../etc/passwd
 GET /static/%2e%2e%2f%2e%2e%2fetc%2fpasswd
