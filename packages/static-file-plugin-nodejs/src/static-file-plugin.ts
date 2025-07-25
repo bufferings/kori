@@ -1,0 +1,239 @@
+import {
+  defineKoriPlugin,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriLogger,
+  type KoriEnvironment,
+  type KoriPlugin,
+} from '@korix/kori';
+import { HttpStatus } from '@korix/kori';
+
+import {
+  resolveSafePath,
+  getFileInfo,
+  resolveIndexFile,
+  isDotfileAllowed,
+  generateETag,
+  formatLastModified,
+  createFileStream,
+  type FileInfo,
+} from './file-utils.js';
+import { detectMimeType } from './mime-types.js';
+import { type StaticFileOptions } from './static-file-options.js';
+import { PLUGIN_VERSION } from './version.js';
+
+const PLUGIN_NAME = 'static-file-plugin-nodejs';
+
+/**
+ * Default configuration for static file serving
+ */
+const defaultOptions: Required<Omit<StaticFileOptions, 'root'>> = {
+  prefix: '/static',
+  index: ['index.html'],
+  dotfiles: 'deny',
+  maxAge: 0,
+  etag: true,
+  lastModified: true,
+};
+
+/**
+ * Validates plugin options
+ */
+function validateOptions(options: StaticFileOptions, log: KoriLogger): void {
+  if (!options.root) {
+    const errorMessage = 'Static file plugin requires a root directory';
+    log.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  if (options.maxAge !== undefined && options.maxAge < 0) {
+    const errorMessage = 'maxAge must be a non-negative number';
+    log.error(errorMessage, { maxAge: options.maxAge });
+    throw new Error(errorMessage);
+  }
+
+  if (options.prefix && !options.prefix.startsWith('/')) {
+    const errorMessage = 'prefix must start with "/"';
+    log.error(errorMessage, { prefix: options.prefix });
+    throw new Error(errorMessage);
+  }
+}
+
+function removePrefix(pathname: string, prefix: string): string {
+  if (pathname === prefix) {
+    return '/';
+  }
+  return pathname.slice(prefix.length);
+}
+
+function setCacheHeaders(
+  res: KoriResponse,
+  fileInfo: FileInfo,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
+): void {
+  if (options.maxAge > 0) {
+    res.setHeader('cache-control', `public, max-age=${options.maxAge}`);
+  } else {
+    res.setHeader('cache-control', 'no-cache');
+  }
+  if (options.etag) {
+    const etag = generateETag(fileInfo.stats);
+    res.setHeader('etag', etag);
+  }
+  if (options.lastModified) {
+    const lastModified = formatLastModified(fileInfo.stats.mtime);
+    res.setHeader('last-modified', lastModified);
+  }
+}
+
+function checkConditionalRequest(req: KoriRequest, fileInfo: FileInfo): boolean {
+  const ifNoneMatch = req.header('if-none-match');
+  if (ifNoneMatch) {
+    const etag = generateETag(fileInfo.stats);
+    return ifNoneMatch === etag;
+  }
+  return false;
+}
+
+function serveFile(
+  req: KoriRequest,
+  res: KoriResponse,
+  fileInfo: FileInfo,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
+  log: KoriLogger,
+): KoriResponse {
+  const mimeType = detectMimeType(fileInfo.path);
+  res.setHeader('content-type', mimeType);
+  res.setHeader('content-length', fileInfo.stats.size.toString());
+  setCacheHeaders(res, fileInfo, options);
+
+  if (checkConditionalRequest(req, fileInfo)) {
+    log.debug('Serving 304 Not Modified', { path: fileInfo.path });
+    return res.empty(HttpStatus.NOT_MODIFIED);
+  }
+
+  log.debug('Serving static file', {
+    path: fileInfo.path,
+    size: fileInfo.stats.size,
+    mimeType,
+  });
+
+  const fileStream = createFileStream(fileInfo.path);
+  res.status(HttpStatus.OK).stream(fileStream);
+  res.setHeader('content-type', mimeType);
+  return res;
+}
+
+async function handleStaticFileRequest(
+  req: KoriRequest,
+  res: KoriResponse,
+  requestPath: string,
+  options: Required<StaticFileOptions>,
+  log: KoriLogger,
+): Promise<KoriResponse> {
+  const resolvedPath = resolveSafePath(requestPath, options.root);
+
+  if (!resolvedPath.isValid) {
+    log.warn('Invalid file path detected', { requestPath, resolvedPath: resolvedPath.safePath });
+    return res.status(HttpStatus.FORBIDDEN).json({
+      error: 'Forbidden',
+      message: 'Access denied',
+    });
+  }
+
+  if (!isDotfileAllowed(resolvedPath.isDotfile, options.dotfiles)) {
+    log.debug('Dotfile access denied', { path: resolvedPath.safePath });
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
+  }
+
+  let fileInfo = await getFileInfo(resolvedPath.safePath);
+
+  if (!fileInfo.exists) {
+    log.debug('File not found', { path: resolvedPath.safePath });
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
+  }
+
+  if (fileInfo.stats.isDirectory()) {
+    if (options.index === false) {
+      log.debug('Directory listing disabled', { path: resolvedPath.safePath });
+      return res.status(HttpStatus.FORBIDDEN).json({
+        error: 'Forbidden',
+        message: 'Directory listing is disabled',
+      });
+    }
+
+    const indexFile = await resolveIndexFile(resolvedPath.safePath, options.index, log);
+    if (!indexFile) {
+      log.debug('No index file found in directory', { path: resolvedPath.safePath });
+      return res.status(HttpStatus.NOT_FOUND).json({
+        error: 'Not Found',
+        message: 'No index file found',
+      });
+    }
+    fileInfo = indexFile;
+  }
+
+  if (!fileInfo.stats.isFile()) {
+    log.debug('Path is not a regular file', { path: fileInfo.path });
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
+  }
+
+  return serveFile(req, res, fileInfo, options, log);
+}
+
+/**
+ * Static file serving plugin for Node.js
+ *
+ * Features:
+ * - Secure file serving with path traversal protection
+ * - Streaming file delivery for efficient memory usage
+ * - MIME type detection for proper Content-Type headers
+ * - Caching support with ETag and Last-Modified headers
+ * - Configurable cache max-age
+ * - Index file resolution for directory requests
+ * - Dotfiles handling
+ */
+export function staticFilePlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
+  userOptions: StaticFileOptions,
+): KoriPlugin<Env, Req, Res> {
+  const options = {
+    ...defaultOptions,
+    ...userOptions,
+  };
+
+  return defineKoriPlugin({
+    name: PLUGIN_NAME,
+    version: PLUGIN_VERSION,
+    apply: (kori) => {
+      const log = kori.log().child(PLUGIN_NAME);
+
+      validateOptions(options, log);
+
+      log.info('Static file plugin initialized', {
+        root: options.root,
+        prefix: options.prefix,
+        index: options.index,
+        dotfiles: options.dotfiles,
+        maxAge: options.maxAge,
+        etag: options.etag,
+        lastModified: options.lastModified,
+      });
+
+      return kori.get(`${options.prefix}/*`, async ({ req, res }) => {
+        const pathname = req.url().pathname;
+        const requestPath = removePrefix(pathname, options.prefix);
+
+        return await handleStaticFileRequest(req, res, requestPath, options, log);
+      });
+    },
+  });
+}

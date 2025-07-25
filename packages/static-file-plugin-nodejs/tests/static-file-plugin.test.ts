@@ -1,0 +1,341 @@
+import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { createKori } from '@korix/kori';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+import { staticFilePlugin, type StaticFileOptions } from '../src/index.js';
+
+describe('static-file-plugin-nodejs', () => {
+  let tempDir: string;
+  let publicDir: string;
+
+  async function fetchFromApp(app: ReturnType<typeof createKori>, url: string): Promise<Response> {
+    const generated = app.generate();
+    const { fetchHandler } = await generated.onInit();
+    return fetchHandler(new Request(url));
+  }
+
+  beforeEach(async () => {
+    // Create temporary directory for tests
+    tempDir = join(tmpdir(), `kori-static-test-${Date.now()}`);
+    publicDir = join(tempDir, 'public');
+
+    await mkdir(publicDir, { recursive: true });
+
+    // Create test files
+    await writeFile(join(publicDir, 'index.html'), '<html><body>Index</body></html>');
+    await writeFile(join(publicDir, 'style.css'), 'body { margin: 0; }');
+    await writeFile(join(publicDir, 'script.js'), 'console.log("test");');
+    await writeFile(join(publicDir, 'image.png'), new Uint8Array(Buffer.from('fake-png-data')));
+    await writeFile(join(publicDir, '.env'), 'SECRET=test');
+
+    // Create subdirectory with index
+    await mkdir(join(publicDir, 'admin'), { recursive: true });
+    await writeFile(join(publicDir, 'admin', 'index.html'), '<html><body>Admin</body></html>');
+
+    // Create subdirectory without index
+    await mkdir(join(publicDir, 'assets'), { recursive: true });
+    await writeFile(join(publicDir, 'assets', 'logo.png'), new Uint8Array(Buffer.from('fake-logo-data')));
+  });
+
+  afterEach(async () => {
+    // Clean up temp directory
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  describe('basic functionality', () => {
+    it('should serve static files', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const generated = app.generate();
+      const { fetchHandler } = await generated.onInit();
+
+      const response = await fetchHandler(new Request('http://localhost/static/index.html'));
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('text/html');
+      expect(await response.text()).toBe('<html><body>Index</body></html>');
+    });
+
+    it('should detect correct MIME types', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      // Test CSS file
+      const cssResponse = await fetchFromApp(app, 'http://localhost/static/style.css');
+      expect(cssResponse.headers.get('content-type')).toBe('text/css');
+
+      // Test JavaScript file
+      const jsResponse = await fetchFromApp(app, 'http://localhost/static/script.js');
+      expect(jsResponse.headers.get('content-type')).toBe('text/javascript');
+
+      // Test PNG file
+      const pngResponse = await fetchFromApp(app, 'http://localhost/static/image.png');
+      expect(pngResponse.headers.get('content-type')).toBe('image/png');
+    });
+
+    it('should return 404 for non-existent files', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/nonexistent.txt');
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get('content-type')).toBe('application/json;charset=utf-8');
+    });
+
+    it('should ignore requests that do not match prefix', async () => {
+      const app = createKori()
+        .applyPlugin(
+          staticFilePlugin({
+            root: publicDir,
+            prefix: '/assets',
+          }),
+        )
+        .get('/api/test', (ctx) => ctx.res.json({ message: 'API works' }));
+
+      const apiResponse = await fetchFromApp(app, 'http://localhost/api/test');
+      expect(apiResponse.status).toBe(200);
+      expect(await apiResponse.json()).toEqual({ message: 'API works' });
+
+      const staticResponse = await fetchFromApp(app, 'http://localhost/static/index.html');
+      expect(staticResponse.status).toBe(404); // Should be handled by default 404, not static plugin
+    });
+  });
+
+  describe('index file resolution', () => {
+    it('should serve index.html for directory requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/');
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('text/html');
+      expect(await response.text()).toBe('<html><body>Index</body></html>');
+    });
+
+    it('should serve index.html for subdirectory requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/admin/');
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('text/html');
+      expect(await response.text()).toBe('<html><body>Admin</body></html>');
+    });
+
+    it('should return 404 for directories without index files', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/assets/');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should respect index: false option', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+          index: false,
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/');
+
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({
+        error: 'Forbidden',
+        message: 'Directory listing is disabled',
+      });
+    });
+  });
+
+  describe('dotfiles handling', () => {
+    it('should deny dotfiles by default', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/.env');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should deny dotfiles when configured', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+          dotfiles: 'deny',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/.env');
+
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({
+        error: 'Not Found',
+        message: 'File not found',
+      });
+    });
+
+    it('should allow dotfiles when configured', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+          dotfiles: 'allow',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/.env');
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe('SECRET=test');
+    });
+  });
+
+  describe('caching headers', () => {
+    it('should set cache headers', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+          maxAge: 3600,
+          etag: true,
+          lastModified: true,
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/index.html');
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('cache-control')).toBe('public, max-age=3600');
+      expect(response.headers.get('etag')).toBeTruthy();
+      expect(response.headers.get('last-modified')).toBeTruthy();
+    });
+
+    it('should handle conditional requests', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+          etag: true,
+        }),
+      );
+
+      // First request to get ETag
+      const firstResponse = await fetchFromApp(app, 'http://localhost/static/index.html');
+      const etag = firstResponse.headers.get('etag');
+
+      expect(firstResponse.status).toBe(200);
+      expect(etag).toBeTruthy();
+
+      // Second request with If-None-Match header
+      const generated = app.generate();
+      const { fetchHandler } = await generated.onInit();
+      const secondResponse = await fetchHandler(
+        new Request('http://localhost/static/index.html', {
+          headers: {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            'if-none-match': etag!,
+          },
+        }),
+      );
+
+      expect(secondResponse.status).toBe(304);
+    });
+  });
+
+  describe('security', () => {
+    it('should prevent directory traversal attacks', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/../../../etc/passwd');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should handle encoded path traversal attempts', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          root: publicDir,
+          prefix: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static/%2e%2e%2f%2e%2e%2fetc%2fpasswd');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('validation', () => {
+    it('should require root directory', () => {
+      expect(() => {
+        createKori().applyPlugin(staticFilePlugin({} as StaticFileOptions));
+      }).toThrow('Static file plugin requires a root directory');
+    });
+
+    it('should validate maxAge', () => {
+      expect(() => {
+        createKori().applyPlugin(
+          staticFilePlugin({
+            root: publicDir,
+            maxAge: -1,
+          }),
+        );
+      }).toThrow('maxAge must be a non-negative number');
+    });
+
+    it('should validate prefix format', () => {
+      expect(() => {
+        createKori().applyPlugin(
+          staticFilePlugin({
+            root: publicDir,
+            prefix: 'invalid-prefix',
+          }),
+        );
+      }).toThrow('prefix must start with "/"');
+    });
+  });
+});
