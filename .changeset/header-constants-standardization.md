@@ -2,7 +2,6 @@
 '@korix/kori': patch
 '@korix/static-file-plugin-nodejs': patch
 '@korix/security-headers-plugin': patch
-'@korix/example': patch
 ---
 
 Standardize HTTP header names using constants

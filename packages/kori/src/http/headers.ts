@@ -30,11 +30,13 @@ export type HttpRequestHeaderName = (typeof HttpRequestHeader)[keyof typeof Http
  */
 export const HttpResponseHeader = {
   ACCESS_CONTROL_ALLOW_ORIGIN: 'access-control-allow-origin',
+  ACCEPT_RANGES: 'accept-ranges',
   CACHE_CONTROL: 'cache-control',
   CONNECTION: 'connection',
   CONTENT_DISPOSITION: 'content-disposition',
   CONTENT_ENCODING: 'content-encoding',
   CONTENT_LENGTH: 'content-length',
+  CONTENT_RANGE: 'content-range',
   CONTENT_SECURITY_POLICY: 'content-security-policy',
   CONTENT_TYPE: 'content-type',
   CROSS_ORIGIN_EMBEDDER_POLICY: 'cross-origin-embedder-policy',

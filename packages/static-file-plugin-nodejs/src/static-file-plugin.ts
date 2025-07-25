@@ -17,17 +17,19 @@ import {
   generateETag,
   formatLastModified,
   createFileStream,
+  createPartialFileStream,
+  parseRangeHeader,
+  generateContentRangeHeader,
+  generateBoundary,
+  createMultipartStream,
   type ExistingFileInfo,
 } from './file-utils.js';
 import { detectMimeType } from './mime-types.js';
-import { type StaticFileOptions } from './static-file-options.js';
+import { type StaticFileOptions, RangeConstants, type RangeResult } from './static-file-options.js';
 import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'static-file-plugin-nodejs';
 
-/**
- * Default configuration for static file serving
- */
 const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   mountAt: '/static',
   index: ['index.html'],
@@ -35,11 +37,10 @@ const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   maxAge: 0,
   etag: true,
   lastModified: true,
+  ranges: true,
+  maxRanges: 1,
 };
 
-/**
- * Validates plugin options
- */
 function validateOptions(options: StaticFileOptions, log: KoriLogger): void {
   if (!options.serveFrom) {
     const errorMessage = 'Static file plugin requires a serveFrom directory';
@@ -107,20 +108,49 @@ function serveFile(
   req: KoriRequest,
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
 ): KoriResponse {
   const mimeType = detectMimeType(fileInfo.path);
-  res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
-  res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
-  setCacheHeaders(res, fileInfo, options);
 
+  // Check for conditional request first
   if (checkConditionalRequest(req, fileInfo)) {
     log.debug('Serving 304 Not Modified', { path: fileInfo.path });
     return res.status(HttpStatus.NOT_MODIFIED).empty();
   }
 
-  log.debug('Serving static file', {
+  // Check if this is a range request and ranges are enabled
+  const rangeHeader = req.header('range');
+  if (options.ranges && rangeHeader) {
+    const rangeResult = parseRangeHeader(rangeHeader, fileInfo.stats.size);
+    if (rangeResult.isSatisfiable && rangeResult.ranges.length > 0) {
+      return serveRangeRequest(req, res, fileInfo, options, log, rangeResult);
+    } else {
+      // Handle unsatisfiable ranges
+      log.debug('Range not satisfiable', {
+        path: fileInfo.path,
+        rangeHeader,
+        fileSize: fileInfo.stats.size,
+      });
+
+      res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileInfo.stats.size}`);
+      res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+
+      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
+        error: {
+          type: 'RANGE_NOT_SATISFIABLE',
+          message: 'Requested range not satisfiable',
+        },
+      });
+    }
+  }
+
+  res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+  res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
+  res.setHeader(HttpResponseHeader.ACCEPT_RANGES, options.ranges ? RangeConstants.BYTES : RangeConstants.NONE);
+  setCacheHeaders(res, fileInfo, options);
+
+  log.debug('Serving complete file', {
     path: fileInfo.path,
     size: fileInfo.stats.size,
     mimeType,
@@ -128,6 +158,116 @@ function serveFile(
 
   const fileStream = createFileStream(fileInfo.path);
   return res.status(HttpStatus.OK).stream(fileStream);
+}
+
+function serveRangeRequest(
+  req: KoriRequest,
+  res: KoriResponse,
+  fileInfo: ExistingFileInfo,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  log: KoriLogger,
+  rangeResult: RangeResult,
+): KoriResponse {
+  const mimeType = detectMimeType(fileInfo.path);
+  const fileSize = fileInfo.stats.size;
+
+  // Check if requesting too many ranges
+  if (rangeResult.ranges.length > options.maxRanges) {
+    log.warn('Too many ranges requested', {
+      path: fileInfo.path,
+      requestedRanges: rangeResult.ranges.length,
+      maxRanges: options.maxRanges,
+    });
+
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
+      error: {
+        type: 'TOO_MANY_RANGES',
+        message: `Too many ranges requested. Maximum allowed: ${options.maxRanges}`,
+      },
+    });
+  }
+
+  // Handle single vs multiple range requests
+  if (rangeResult.ranges.length === 1) {
+    // Single range request - ranges[0] is guaranteed to exist since length === 1
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const range = rangeResult.ranges[0]!;
+    return serveSingleRange(req, res, fileInfo, options, log, range, mimeType, fileSize);
+  } else {
+    // Multiple range request - use multipart response
+    return serveMultipartRange(req, res, fileInfo, options, log, rangeResult.ranges, mimeType, fileSize);
+  }
+}
+
+function serveSingleRange(
+  req: KoriRequest,
+  res: KoriResponse,
+  fileInfo: ExistingFileInfo,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  log: KoriLogger,
+  range: { start: number; end: number },
+  mimeType: string,
+  fileSize: number,
+): KoriResponse {
+  const contentLength = range.end - range.start + 1;
+
+  log.debug('Serving single range request', {
+    path: fileInfo.path,
+    range: `${range.start}-${range.end}`,
+    contentLength,
+    totalSize: fileSize,
+    mimeType,
+  });
+
+  // Set response headers for partial content
+  res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+  res.setHeader(HttpResponseHeader.CONTENT_LENGTH, contentLength.toString());
+  res.setHeader(HttpResponseHeader.CONTENT_RANGE, generateContentRangeHeader(range.start, range.end, fileSize));
+  res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+
+  // Set cache headers
+  setCacheHeaders(res, fileInfo, options);
+
+  // Create partial file stream
+  const partialStream = createPartialFileStream(fileInfo.path, range.start, range.end);
+
+  return res.status(HttpStatus.PARTIAL_CONTENT).stream(partialStream);
+}
+
+function serveMultipartRange(
+  req: KoriRequest,
+  res: KoriResponse,
+  fileInfo: ExistingFileInfo,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  log: KoriLogger,
+  ranges: { start: number; end: number }[],
+  mimeType: string,
+  fileSize: number,
+): KoriResponse {
+  const boundary = generateBoundary();
+
+  log.debug('Serving multipart range request', {
+    path: fileInfo.path,
+    rangeCount: ranges.length,
+    ranges: ranges.map((r: { start: number; end: number }) => `${r.start}-${r.end}`),
+    totalSize: fileSize,
+    mimeType,
+    boundary,
+  });
+
+  // Set response headers for multipart content
+  // Note: Content-Length is omitted for multipart responses as per HTTP spec
+  // since calculating exact length is complex and not required
+  res.setHeader(HttpResponseHeader.CONTENT_TYPE, `multipart/byteranges; boundary=${boundary}`);
+  res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+
+  // Set cache headers
+  setCacheHeaders(res, fileInfo, options);
+
+  // Create multipart stream
+  const multipartStream = createMultipartStream(fileInfo.path, ranges, fileSize, mimeType, boundary);
+
+  return res.status(HttpStatus.PARTIAL_CONTENT).stream(multipartStream);
 }
 
 async function handleStaticFileRequest(

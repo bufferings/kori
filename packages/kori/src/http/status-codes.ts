@@ -197,6 +197,12 @@ export const HttpStatus = {
   UNSUPPORTED_MEDIA_TYPE: 415,
 
   /**
+   * **416 Range Not Satisfiable**
+   * The range specified by the Range header field in the request cannot be fulfilled.
+   */
+  RANGE_NOT_SATISFIABLE: 416,
+
+  /**
    * **422 Unprocessable Content**
    * The request was well-formed but was unable to be followed due to semantic errors.
    */
