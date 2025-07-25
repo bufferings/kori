@@ -64,6 +64,13 @@ function removeMountPrefix(pathname: string, mountAt: string): string {
   if (pathname === mountAt) {
     return '/';
   }
+
+  if (!pathname.startsWith(mountAt)) {
+    throw new Error(
+      `[INTERNAL] Pathname "${pathname}" does not start with mount prefix "${mountAt}". This indicates a routing system bug.`,
+    );
+  }
+
   return pathname.slice(mountAt.length);
 }
 
