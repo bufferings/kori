@@ -91,8 +91,10 @@ describe('static-file-plugin-nodejs', () => {
 
       expect(response.status).toBe(404);
       expect(await response.json()).toEqual({
-        error: 'Not Found',
-        message: 'File not found',
+        error: {
+          type: 'NOT_FOUND',
+          message: 'File not found',
+        },
       });
     });
 
@@ -167,8 +169,10 @@ describe('static-file-plugin-nodejs', () => {
 
       expect(response.status).toBe(403);
       expect(await response.json()).toEqual({
-        error: 'Forbidden',
-        message: 'Directory listing is disabled',
+        error: {
+          type: 'FORBIDDEN',
+          message: 'Directory listing is disabled',
+        },
       });
     });
   });
@@ -200,8 +204,10 @@ describe('static-file-plugin-nodejs', () => {
 
       expect(response.status).toBe(404);
       expect(await response.json()).toEqual({
-        error: 'Not Found',
-        message: 'File not found',
+        error: {
+          type: 'NOT_FOUND',
+          message: 'File not found',
+        },
       });
     });
 
