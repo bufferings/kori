@@ -334,10 +334,7 @@ async function* generateMultipartChunks(
 ): AsyncGenerator<Uint8Array> {
   const encoder = new TextEncoder();
 
-  for (let i = 0; i < ranges.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const range = ranges[i]!;
-
+  for (const [i, range] of ranges.entries()) {
     // Yield boundary headers
     const boundaryData =
       `--${boundary}\r\n` +
