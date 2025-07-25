@@ -29,9 +29,6 @@ import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'static-file-plugin-nodejs';
 
-/**
- * Default configuration for static file serving
- */
 const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   mountAt: '/static',
   index: ['index.html'],
@@ -43,9 +40,6 @@ const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   maxRanges: 1,
 };
 
-/**
- * Validates plugin options
- */
 function validateOptions(options: StaticFileOptions, log: KoriLogger): void {
   if (!options.serveFrom) {
     const errorMessage = 'Static file plugin requires a serveFrom directory';
@@ -130,7 +124,6 @@ function serveFile(
     return serveRangeRequest(req, res, fileInfo, options, log, rangeHeader);
   }
 
-  // Serve full file (existing logic)
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
   res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileInfo.stats.size.toString());
   res.setHeader('Accept-Ranges', options.ranges ? RangeConstants.BYTES : RangeConstants.NONE);
