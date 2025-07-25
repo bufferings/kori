@@ -412,10 +412,10 @@ const sharedMethods = {
     return new Headers(getFinalHeaders(this));
   },
   getHeader(name: HttpResponseHeaderName): string | undefined {
-    return this.headers?.get(name) ?? undefined;
+    return getFinalHeaders(this).get(name) ?? undefined;
   },
   getContentType(): string | undefined {
-    return this.headers?.get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+    return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
   },
   getBody(): unknown {
     return this.bodyValue;
