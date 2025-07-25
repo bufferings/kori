@@ -3,8 +3,8 @@ import {
   type HttpStatusCode,
   type HttpResponseHeaderName,
   HttpResponseHeader,
-  ContentTypeUtf8,
   ContentType,
+  ContentTypeUtf8,
   type CookieOptions,
   type CookieValue,
   serializeCookie,
@@ -13,9 +13,22 @@ import {
 
 const KoriResponseBrand = Symbol('kori-response');
 
-const DefaultJsonHeaders = new Headers({
-  [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
-});
+const DefaultHeaders = {
+  json: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
+  }),
+  text: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_PLAIN,
+  }),
+  html: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
+  }),
+  stream: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
+  }),
+  empty: new Headers(), // No Content-Type for empty responses
+  none: new Headers(), // No Content-Type for uninitialized responses
+} as const;
 
 export type KoriResponse = {
   [KoriResponseBrand]: typeof KoriResponseBrand;
@@ -62,7 +75,6 @@ type ResState = {
   headers: Headers | undefined;
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
-  headersShared: boolean;
 };
 
 export function isKoriResponse(value: unknown): value is KoriResponse {
@@ -70,10 +82,6 @@ export function isKoriResponse(value: unknown): value is KoriResponse {
 }
 
 function ensureHeaders(res: ResState): void {
-  if (res.headersShared) {
-    res.headers = new Headers(res.headers);
-    res.headersShared = false;
-  }
   res.headers ??= new Headers();
 }
 
@@ -123,12 +131,6 @@ function setBodyJsonInternal<T>({ res, body, code }: BodyConfig<T>): void {
   if (code) {
     res.statusCode = code;
   }
-  if (!res.headers) {
-    res.headers = DefaultJsonHeaders;
-    res.headersShared = true;
-  } else {
-    setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.APPLICATION_JSON);
-  }
 }
 
 function setBodyTextInternal({ res, body, code }: BodyConfig<string>): void {
@@ -137,7 +139,6 @@ function setBodyTextInternal({ res, body, code }: BodyConfig<string>): void {
   if (code) {
     res.statusCode = code;
   }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_PLAIN);
 }
 
 function setBodyHtmlInternal({ res, body, code }: BodyConfig<string>): void {
@@ -146,7 +147,6 @@ function setBodyHtmlInternal({ res, body, code }: BodyConfig<string>): void {
   if (code) {
     res.statusCode = code;
   }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentTypeUtf8.TEXT_HTML);
 }
 
 type EmptyBodyConfig = {
@@ -166,7 +166,6 @@ function setBodyStreamInternal({ res, body, code }: BodyConfig<ReadableStream>):
   if (code) {
     res.statusCode = code;
   }
-  setHeaderInternal(res, HttpResponseHeader.CONTENT_TYPE, ContentType.APPLICATION_OCTET_STREAM);
 }
 
 type ErrorType =
@@ -383,9 +382,42 @@ const sharedMethods = {
       default:
         body = null;
     }
+
+    let finalHeaders: Headers;
+
+    if (!this.headers) {
+      // No custom headers - use shared default headers for performance
+      const defaultHeaders = DefaultHeaders[this.bodyKind];
+      finalHeaders = defaultHeaders ?? new Headers();
+    } else if (!this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+      // Custom headers exist but no Content-Type - clone and add default
+      finalHeaders = new Headers(this.headers);
+      const getDefaultContentType = (): string | null => {
+        switch (this.bodyKind) {
+          case 'json':
+            return ContentTypeUtf8.APPLICATION_JSON;
+          case 'text':
+            return ContentTypeUtf8.TEXT_PLAIN;
+          case 'html':
+            return ContentTypeUtf8.TEXT_HTML;
+          case 'stream':
+            return ContentType.APPLICATION_OCTET_STREAM;
+          default:
+            return null;
+        }
+      };
+      const defaultContentType = getDefaultContentType();
+      if (defaultContentType) {
+        finalHeaders.set(HttpResponseHeader.CONTENT_TYPE, defaultContentType);
+      }
+    } else {
+      // Content-Type already specified - use headers as-is
+      finalHeaders = this.headers;
+    }
+
     return new Response(body, {
       status: this.statusCode,
-      headers: this.headers,
+      headers: finalHeaders,
     });
   },
 
@@ -418,7 +450,6 @@ export function createKoriResponse(): KoriResponse {
   obj[KoriResponseBrand] = KoriResponseBrand;
   obj.statusCode = HttpStatus.OK;
   obj.headers = undefined;
-  obj.headersShared = false;
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
 
