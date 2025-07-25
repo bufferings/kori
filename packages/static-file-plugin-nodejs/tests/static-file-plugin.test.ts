@@ -128,6 +128,44 @@ describe('static-file-plugin-nodejs', () => {
       expect(await response.text()).toBe('<html><body>Index</body></html>');
     });
 
+    it('should serve index.html for mount point without trailing slash', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+        }),
+      );
+
+      const response = await fetchFromApp(app, 'http://localhost/static');
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('text/html');
+      expect(await response.text()).toBe('<html><body>Index</body></html>');
+    });
+
+    it('should handle various path patterns correctly', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/static',
+        }),
+      );
+
+      // Test various path patterns
+      const testCases = [
+        { path: 'http://localhost/static', expectedStatus: 200 },
+        { path: 'http://localhost/static/', expectedStatus: 200 },
+        { path: 'http://localhost/static/index.html', expectedStatus: 200 },
+        { path: 'http://localhost/static/admin', expectedStatus: 200 },
+        { path: 'http://localhost/static/admin/', expectedStatus: 200 },
+      ];
+
+      for (const { path, expectedStatus } of testCases) {
+        const response = await fetchFromApp(app, path);
+        expect(response.status).toBe(expectedStatus);
+      }
+    });
+
     it('should serve index.html for subdirectory requests', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
