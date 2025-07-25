@@ -109,7 +109,7 @@ function serveFile(
 
   if (checkConditionalRequest(req, fileInfo)) {
     log.debug('Serving 304 Not Modified', { path: fileInfo.path });
-    return res.empty(HttpStatus.NOT_MODIFIED);
+    return res.status(HttpStatus.NOT_MODIFIED).empty();
   }
 
   log.debug('Serving static file', {
@@ -119,7 +119,7 @@ function serveFile(
   });
 
   const fileStream = createFileStream(fileInfo.path);
-  return res.stream(fileStream, HttpStatus.OK);
+  return res.status(HttpStatus.OK).stream(fileStream);
 }
 
 async function handleStaticFileRequest(
@@ -133,74 +133,56 @@ async function handleStaticFileRequest(
 
   if (!resolvedPath.isValid) {
     log.warn('Invalid file path detected', { requestPath, resolvedPath: resolvedPath.safePath });
-    return res.json(
-      {
-        error: 'Forbidden',
-        message: 'Access denied',
-      },
-      HttpStatus.FORBIDDEN,
-    );
+    return res.status(HttpStatus.FORBIDDEN).json({
+      error: 'Forbidden',
+      message: 'Access denied',
+    });
   }
 
   if (!isDotfileAllowed(resolvedPath.isDotfile, options.dotfiles)) {
     log.debug('Dotfile access denied', { path: resolvedPath.safePath });
-    return res.json(
-      {
-        error: 'Not Found',
-        message: 'File not found',
-      },
-      HttpStatus.NOT_FOUND,
-    );
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
   }
 
   let fileInfo = await getFileInfo(resolvedPath.safePath);
 
   if (!fileInfo.exists) {
     log.debug('File not found', { path: resolvedPath.safePath });
-    return res.json(
-      {
-        error: 'Not Found',
-        message: 'File not found',
-      },
-      HttpStatus.NOT_FOUND,
-    );
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
   }
 
   if (fileInfo.stats.isDirectory()) {
     if (options.index === false) {
       log.debug('Directory listing disabled', { path: resolvedPath.safePath });
-      return res.json(
-        {
-          error: 'Forbidden',
-          message: 'Directory listing is disabled',
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      return res.status(HttpStatus.FORBIDDEN).json({
+        error: 'Forbidden',
+        message: 'Directory listing is disabled',
+      });
     }
 
     const indexFile = await resolveIndexFile(resolvedPath.safePath, options.index, log);
     if (!indexFile) {
       log.debug('No index file found in directory', { path: resolvedPath.safePath });
-      return res.json(
-        {
-          error: 'Not Found',
-          message: 'No index file found',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      return res.status(HttpStatus.NOT_FOUND).json({
+        error: 'Not Found',
+        message: 'No index file found',
+      });
     }
     fileInfo = indexFile;
   }
 
   if (!fileInfo.stats.isFile()) {
     log.debug('Path is not a regular file', { path: fileInfo.path });
-    return res.json(
-      {
-        error: 'Not Found',
-        message: 'File not found',
-      },
-      HttpStatus.NOT_FOUND,
-    );
+    return res.status(HttpStatus.NOT_FOUND).json({
+      error: 'Not Found',
+      message: 'File not found',
+    });
   }
 
   return serveFile(req, res, fileInfo, options, log);

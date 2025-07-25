@@ -42,11 +42,11 @@ export type KoriResponse = {
   setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
   clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
 
-  json<T>(body: T, statusCode?: HttpStatusCode): KoriResponse;
-  text(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  html(body: string, statusCode?: HttpStatusCode): KoriResponse;
-  empty(statusCode?: HttpStatusCode): KoriResponse;
-  stream(body: ReadableStream, statusCode?: HttpStatusCode): KoriResponse;
+  json<T>(body: T): KoriResponse;
+  text(body: string): KoriResponse;
+  html(body: string): KoriResponse;
+  empty(): KoriResponse;
+  stream(body: ReadableStream): KoriResponse;
 
   badRequest(options?: ErrorResponseOptions): KoriResponse;
   unauthorized(options?: ErrorResponseOptions): KoriResponse;
@@ -81,32 +81,21 @@ export function isKoriResponse(value: unknown): value is KoriResponse {
   return typeof value === 'object' && value !== null && KoriResponseBrand in value;
 }
 
-function ensureHeaders(res: ResState): void {
-  res.headers ??= new Headers();
-}
-
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  ensureHeaders(res);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.set(name, value);
+  res.headers ??= new Headers();
+  res.headers.set(name, value);
 }
 
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  ensureHeaders(res);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  res.headers!.append(name, value);
+  res.headers ??= new Headers();
+  res.headers.append(name, value);
 }
 
 function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void {
   if (!res.headers) {
     return;
   }
-  ensureHeaders(res);
   res.headers.delete(name);
-}
-
-function setStatusInternal(res: ResState, code: HttpStatusCode): void {
-  res.statusCode = code;
 }
 
 function setCookieInternal(res: ResState, name: string, value: CookieValue, options?: CookieOptions): void {
@@ -122,52 +111,35 @@ function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieO
 type BodyConfig<T> = {
   res: ResState;
   body: T;
-  code?: HttpStatusCode;
 };
 
-function setBodyJsonInternal<T>({ res, body, code }: BodyConfig<T>): void {
+function setBodyJsonInternal<T>({ res, body }: BodyConfig<T>): void {
   res.bodyKind = 'json';
   res.bodyValue = JSON.stringify(body);
-  if (code) {
-    res.statusCode = code;
-  }
 }
 
-function setBodyTextInternal({ res, body, code }: BodyConfig<string>): void {
+function setBodyTextInternal({ res, body }: BodyConfig<string>): void {
   res.bodyKind = 'text';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
 }
 
-function setBodyHtmlInternal({ res, body, code }: BodyConfig<string>): void {
+function setBodyHtmlInternal({ res, body }: BodyConfig<string>): void {
   res.bodyKind = 'html';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
 }
 
 type EmptyBodyConfig = {
   res: ResState;
-  code?: HttpStatusCode;
 };
 
-function setBodyEmptyInternal({ res, code }: EmptyBodyConfig): void {
+function setBodyEmptyInternal({ res }: EmptyBodyConfig): void {
   res.bodyKind = 'empty';
   res.bodyValue = undefined;
-  if (code) {
-    res.statusCode = code;
-  }
 }
 
-function setBodyStreamInternal({ res, body, code }: BodyConfig<ReadableStream>): void {
+function setBodyStreamInternal({ res, body }: BodyConfig<ReadableStream>): void {
   res.bodyKind = 'stream';
   res.bodyValue = body;
-  if (code) {
-    res.statusCode = code;
-  }
 }
 
 type ErrorType =
@@ -229,13 +201,13 @@ type ErrorConfig = {
 
 function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
   const msg = options.message ?? defaultMsg;
+  res.statusCode = status;
   if (options.type === 'text') {
-    setBodyTextInternal({ res, body: msg, code: status });
+    setBodyTextInternal({ res, body: msg });
   } else {
     setBodyJsonInternal({
       res,
       body: createErrorResponseBodyJson({ errorType, message: msg, details: options.details }),
-      code: status,
     });
   }
 }
@@ -284,7 +256,7 @@ function getFinalHeaders(res: ResState): Headers {
 
 const sharedMethods = {
   status(code: HttpStatusCode): KoriResponse {
-    setStatusInternal(this, code);
+    this.statusCode = code;
     return this as unknown as KoriResponse;
   },
 
@@ -310,24 +282,24 @@ const sharedMethods = {
     return this as unknown as KoriResponse;
   },
 
-  json<T>(body: T, code?: HttpStatusCode): KoriResponse {
-    setBodyJsonInternal({ res: this, body, code });
+  json<T>(body: T): KoriResponse {
+    setBodyJsonInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  text(body: string, code?: HttpStatusCode): KoriResponse {
-    setBodyTextInternal({ res: this, body, code });
+  text(body: string): KoriResponse {
+    setBodyTextInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  html(body: string, code?: HttpStatusCode): KoriResponse {
-    setBodyHtmlInternal({ res: this, body, code });
+  html(body: string): KoriResponse {
+    setBodyHtmlInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
-  empty(code?: HttpStatusCode): KoriResponse {
-    setBodyEmptyInternal({ res: this, code });
+  empty(): KoriResponse {
+    setBodyEmptyInternal({ res: this });
     return this as unknown as KoriResponse;
   },
-  stream(body: ReadableStream, code?: HttpStatusCode): KoriResponse {
-    setBodyStreamInternal({ res: this, body, code });
+  stream(body: ReadableStream): KoriResponse {
+    setBodyStreamInternal({ res: this, body });
     return this as unknown as KoriResponse;
   },
 
