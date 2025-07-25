@@ -21,6 +21,7 @@ yarn add @korix/static-file-plugin-nodejs
 - 📁 **Index Files**: Automatic index.html resolution for directories
 - 🎯 **Flexible Configuration**: Customizable prefix, dotfiles policy, and more
 - 🛡️ **Conditional Requests**: 304 Not Modified support for efficient caching
+- 🎬 **Range Requests**: HTTP 206 Partial Content support for streaming media and large files
 
 ## Quick Start
 
@@ -52,6 +53,8 @@ type StaticFileOptions = {
   maxAge?: number; // Cache max-age in seconds (default: 0)
   etag?: boolean; // ETag header (default: true)
   lastModified?: boolean; // Last-Modified header (default: true)
+  ranges?: boolean; // Range Request support (default: true)
+  maxRanges?: number; // Maximum ranges per request (default: 1)
 };
 ```
 
@@ -64,8 +67,82 @@ type StaticFileOptions = {
   dotfiles: 'deny',
   maxAge: 0,
   etag: true,
-  lastModified: true
+  lastModified: true,
+  ranges: true,
+  maxRanges: 1
 }
+```
+
+## Range Requests (HTTP 206 Partial Content)
+
+The plugin supports **HTTP Range Requests** for efficient streaming of large files, enabling:
+
+- 📹 **Video/Audio Seeking**: Timeline navigation in media players
+- ⬇️ **Resumable Downloads**: Download managers can resume interrupted transfers
+- 📱 **Progressive Loading**: Mobile-friendly partial file loading
+- 🎯 **Bandwidth Efficiency**: Only transfer needed portions of files
+
+### Range Request Examples
+
+```typescript
+// Enable range requests (default)
+const app = createKori().applyPlugin(
+  staticFilePlugin({
+    serveFrom: './media',
+    mountAt: '/media',
+    ranges: true, // Enable range requests
+    maxRanges: 1, // Allow single range per request
+  }),
+);
+```
+
+### Supported Range Formats
+
+| Range Header   | Description           | Example Response                      |
+| -------------- | --------------------- | ------------------------------------- |
+| `bytes=0-1023` | First 1024 bytes      | `Content-Range: bytes 0-1023/5000`    |
+| `bytes=1024-`  | From byte 1024 to end | `Content-Range: bytes 1024-4999/5000` |
+| `bytes=-1024`  | Last 1024 bytes       | `Content-Range: bytes 3976-4999/5000` |
+
+### Response Headers
+
+Range requests automatically set appropriate headers:
+
+```http
+HTTP/1.1 206 Partial Content
+Accept-Ranges: bytes
+Content-Range: bytes 0-1023/5000
+Content-Length: 1024
+Content-Type: video/mp4
+```
+
+### Browser Integration
+
+Range requests work automatically with HTML5 media elements:
+
+```html
+<!-- Video players automatically use range requests for seeking -->
+<video controls>
+  <source src="/media/video.mp4" type="video/mp4" />
+</video>
+
+<!-- Audio players support timeline navigation -->
+<audio controls>
+  <source src="/media/audio.mp3" type="audio/mpeg" />
+</audio>
+```
+
+### Disabling Range Requests
+
+```typescript
+// Disable range requests for all files
+staticFilePlugin({
+  serveFrom: './public',
+  ranges: false, // Disable range requests
+});
+
+// Response headers will include:
+// Accept-Ranges: none
 ```
 
 ## Usage Examples
@@ -85,6 +162,22 @@ const app = createKori().applyPlugin(
 // Serves files from ./public/ at /static/*
 ```
 
+### Media Streaming with Range Support
+
+```typescript
+const app = createKori().applyPlugin(
+  staticFilePlugin({
+    serveFrom: './media',
+    mountAt: '/stream',
+    ranges: true, // Enable range requests for video/audio
+    maxAge: 3600, // Cache for 1 hour
+    etag: true, // Enable ETag for conditional requests
+  }),
+);
+
+// Perfect for video/audio streaming with seeking support
+```
+
 ### Custom Prefix and Caching
 
 ```typescript
@@ -95,11 +188,12 @@ const app = createKori().applyPlugin(
     maxAge: 3600, // 1 hour cache
     etag: true,
     lastModified: true,
+    ranges: true, // Support partial downloads
   }),
 );
 
 // Serves files from ./assets/ at /assets/*
-// With 1-hour caching and ETag support
+// With 1-hour caching, ETag support, and range requests
 ```
 
 ### Multiple Index Files

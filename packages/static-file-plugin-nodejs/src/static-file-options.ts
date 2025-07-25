@@ -19,4 +19,27 @@ export type StaticFileOptions = {
 
   /** Last-Modified header generation (default: true) */
   lastModified?: boolean;
+
+  /** Range Request support (default: true) */
+  ranges?: boolean;
+
+  /** Maximum number of ranges per request (default: 1) */
+  maxRanges?: number;
+};
+
+/**
+ * Parsed range information
+ */
+export type ParsedRange = {
+  start: number;
+  end: number;
+};
+
+/**
+ * Range request result
+ */
+export type RangeResult = {
+  ranges: ParsedRange[];
+  totalSize: number;
+  isSatisfiable: boolean;
 };
