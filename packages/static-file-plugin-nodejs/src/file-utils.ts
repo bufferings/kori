@@ -270,13 +270,6 @@ export function generateContentRangeHeader(start: number, end: number, totalSize
 }
 
 /**
- * Check if the request is a range request
- */
-export function isRangeRequest(rangeHeader: string | undefined): boolean {
-  return Boolean(rangeHeader?.startsWith('bytes='));
-}
-
-/**
  * Generate a unique boundary for multipart responses
  */
 export function generateBoundary(): string {

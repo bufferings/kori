@@ -20,13 +20,12 @@ import {
   createPartialFileStream,
   parseRangeHeader,
   generateContentRangeHeader,
-  isRangeRequest,
   generateBoundary,
   createMultipartStream,
   type ExistingFileInfo,
 } from './file-utils.js';
 import { detectMimeType } from './mime-types.js';
-import { type StaticFileOptions, RangeConstants } from './static-file-options.js';
+import { type StaticFileOptions, RangeConstants, type RangeResult } from './static-file-options.js';
 import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'static-file-plugin-nodejs';
@@ -122,8 +121,28 @@ function serveFile(
 
   // Check if this is a range request and ranges are enabled
   const rangeHeader = req.header('range');
-  if (options.ranges && isRangeRequest(rangeHeader)) {
-    return serveRangeRequest(req, res, fileInfo, options, log, rangeHeader);
+  if (options.ranges && rangeHeader) {
+    const rangeResult = parseRangeHeader(rangeHeader, fileInfo.stats.size);
+    if (rangeResult.isSatisfiable && rangeResult.ranges.length > 0) {
+      return serveRangeRequest(req, res, fileInfo, options, log, rangeResult);
+    } else {
+      // Handle unsatisfiable ranges
+      log.debug('Range not satisfiable', {
+        path: fileInfo.path,
+        rangeHeader,
+        fileSize: fileInfo.stats.size,
+      });
+
+      res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileInfo.stats.size}`);
+      res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+
+      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
+        error: {
+          type: 'RANGE_NOT_SATISFIABLE',
+          message: 'Requested range not satisfiable',
+        },
+      });
+    }
   }
 
   res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
@@ -147,32 +166,10 @@ function serveRangeRequest(
   fileInfo: ExistingFileInfo,
   options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
-  rangeHeader: string | undefined,
+  rangeResult: RangeResult,
 ): KoriResponse {
   const mimeType = detectMimeType(fileInfo.path);
   const fileSize = fileInfo.stats.size;
-
-  // Parse range header
-  const rangeResult = parseRangeHeader(rangeHeader, fileSize);
-
-  if (!rangeResult.isSatisfiable || rangeResult.ranges.length === 0) {
-    log.debug('Range not satisfiable', {
-      path: fileInfo.path,
-      rangeHeader,
-      fileSize,
-    });
-
-    // Set headers for 416 response
-    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileSize}`);
-    res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
-
-    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-      error: {
-        type: 'RANGE_NOT_SATISFIABLE',
-        message: 'Requested range not satisfiable',
-      },
-    });
-  }
 
   // Check if requesting too many ranges
   if (rangeResult.ranges.length > options.maxRanges) {
