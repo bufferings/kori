@@ -27,8 +27,8 @@ const PLUGIN_NAME = 'static-file-plugin-nodejs';
 /**
  * Default configuration for static file serving
  */
-const defaultOptions: Required<Omit<StaticFileOptions, 'root'>> = {
-  prefix: '/static',
+const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
+  mountAt: '/static',
   index: ['index.html'],
   dotfiles: 'deny',
   maxAge: 0,
@@ -40,8 +40,8 @@ const defaultOptions: Required<Omit<StaticFileOptions, 'root'>> = {
  * Validates plugin options
  */
 function validateOptions(options: StaticFileOptions, log: KoriLogger): void {
-  if (!options.root) {
-    const errorMessage = 'Static file plugin requires a root directory';
+  if (!options.serveFrom) {
+    const errorMessage = 'Static file plugin requires a serveFrom directory';
     log.error(errorMessage);
     throw new Error(errorMessage);
   }
@@ -52,18 +52,18 @@ function validateOptions(options: StaticFileOptions, log: KoriLogger): void {
     throw new Error(errorMessage);
   }
 
-  if (options.prefix && !options.prefix.startsWith('/')) {
-    const errorMessage = 'prefix must start with "/"';
-    log.error(errorMessage, { prefix: options.prefix });
+  if (options.mountAt && !options.mountAt.startsWith('/')) {
+    const errorMessage = 'mountAt must start with "/"';
+    log.error(errorMessage, { mountAt: options.mountAt });
     throw new Error(errorMessage);
   }
 }
 
-function removePrefix(pathname: string, prefix: string): string {
-  if (pathname === prefix) {
+function removeMountPrefix(pathname: string, mountAt: string): string {
+  if (pathname === mountAt) {
     return '/';
   }
-  return pathname.slice(prefix.length);
+  return pathname.slice(mountAt.length);
 }
 
 function setCacheHeaders(
@@ -131,7 +131,7 @@ async function handleStaticFileRequest(
   options: Required<StaticFileOptions>,
   log: KoriLogger,
 ): Promise<KoriResponse> {
-  const resolvedPath = resolveSafePath(requestPath, options.root);
+  const resolvedPath = resolveSafePath(requestPath, options.serveFrom);
 
   if (!resolvedPath.isValid) {
     log.warn('Invalid file path detected', { requestPath, resolvedPath: resolvedPath.safePath });
@@ -219,8 +219,8 @@ export function staticFilePlugin<Env extends KoriEnvironment, Req extends KoriRe
       validateOptions(options, log);
 
       log.info('Static file plugin initialized', {
-        root: options.root,
-        prefix: options.prefix,
+        serveFrom: options.serveFrom,
+        mountAt: options.mountAt,
         index: options.index,
         dotfiles: options.dotfiles,
         maxAge: options.maxAge,
@@ -228,9 +228,9 @@ export function staticFilePlugin<Env extends KoriEnvironment, Req extends KoriRe
         lastModified: options.lastModified,
       });
 
-      return kori.get(`${options.prefix}/*`, async ({ req, res }) => {
+      return kori.get(`${options.mountAt}/*`, async ({ req, res }) => {
         const pathname = req.url().pathname;
-        const requestPath = removePrefix(pathname, options.prefix);
+        const requestPath = removeMountPrefix(pathname, options.mountAt);
 
         return await handleStaticFileRequest(req, res, requestPath, options, log);
       });

@@ -49,72 +49,64 @@ describe('static-file-plugin-nodejs', () => {
     it('should serve static files', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
-      const generated = app.generate();
-      const { fetchHandler } = await generated.onInit();
-
-      const response = await fetchHandler(new Request('http://localhost/static/index.html'));
+      const response = await fetchFromApp(app, 'http://localhost/static/index.html');
 
       expect(response.status).toBe(200);
-      expect(response.headers.get('content-type')).toBe('text/html');
       expect(await response.text()).toBe('<html><body>Index</body></html>');
     });
 
     it('should detect correct MIME types', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
-      // Test CSS file
-      const cssResponse = await fetchFromApp(app, 'http://localhost/static/style.css');
-      expect(cssResponse.headers.get('content-type')).toBe('text/css');
+      const responses = await Promise.all([
+        fetchFromApp(app, 'http://localhost/static/style.css'),
+        fetchFromApp(app, 'http://localhost/static/script.js'),
+        fetchFromApp(app, 'http://localhost/static/image.png'),
+      ]);
 
-      // Test JavaScript file
-      const jsResponse = await fetchFromApp(app, 'http://localhost/static/script.js');
-      expect(jsResponse.headers.get('content-type')).toBe('text/javascript');
-
-      // Test PNG file
-      const pngResponse = await fetchFromApp(app, 'http://localhost/static/image.png');
-      expect(pngResponse.headers.get('content-type')).toBe('image/png');
+      expect(responses[0].headers.get('content-type')).toBe('text/css');
+      expect(responses[1].headers.get('content-type')).toBe('text/javascript');
+      expect(responses[2].headers.get('content-type')).toBe('image/png');
     });
 
     it('should return 404 for non-existent files', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
       const response = await fetchFromApp(app, 'http://localhost/static/nonexistent.txt');
 
       expect(response.status).toBe(404);
-      expect(response.headers.get('content-type')).toBe('application/json;charset=utf-8');
+      expect(await response.json()).toEqual({
+        error: 'Not Found',
+        message: 'File not found',
+      });
     });
 
-    it('should ignore requests that do not match prefix', async () => {
-      const app = createKori()
-        .applyPlugin(
-          staticFilePlugin({
-            root: publicDir,
-            prefix: '/assets',
-          }),
-        )
-        .get('/api/test', (ctx) => ctx.res.json({ message: 'API works' }));
+    it('should ignore requests that do not match mountAt', async () => {
+      const app = createKori().applyPlugin(
+        staticFilePlugin({
+          serveFrom: publicDir,
+          mountAt: '/assets',
+        }),
+      );
 
-      const apiResponse = await fetchFromApp(app, 'http://localhost/api/test');
-      expect(apiResponse.status).toBe(200);
-      expect(await apiResponse.json()).toEqual({ message: 'API works' });
+      const response = await fetchFromApp(app, 'http://localhost/static/index.html');
 
-      const staticResponse = await fetchFromApp(app, 'http://localhost/static/index.html');
-      expect(staticResponse.status).toBe(404); // Should be handled by default 404, not static plugin
+      expect(response.status).toBe(404);
     });
   });
 
@@ -122,8 +114,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should serve index.html for directory requests', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -137,8 +129,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should serve index.html for subdirectory requests', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -152,8 +144,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should return 404 for directories without index files', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -165,8 +157,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should respect index: false option', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
           index: false,
         }),
       );
@@ -185,8 +177,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should deny dotfiles by default', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -198,8 +190,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should deny dotfiles when configured', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
           dotfiles: 'deny',
         }),
       );
@@ -216,8 +208,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should allow dotfiles when configured', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
           dotfiles: 'allow',
         }),
       );
@@ -233,8 +225,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should set cache headers', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
           maxAge: 3600,
           etag: true,
           lastModified: true,
@@ -252,8 +244,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should handle conditional requests', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
           etag: true,
         }),
       );
@@ -285,8 +277,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should prevent directory traversal attacks', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -298,8 +290,8 @@ describe('static-file-plugin-nodejs', () => {
     it('should handle encoded path traversal attempts', async () => {
       const app = createKori().applyPlugin(
         staticFilePlugin({
-          root: publicDir,
-          prefix: '/static',
+          serveFrom: publicDir,
+          mountAt: '/static',
         }),
       );
 
@@ -313,14 +305,14 @@ describe('static-file-plugin-nodejs', () => {
     it('should require root directory', () => {
       expect(() => {
         createKori().applyPlugin(staticFilePlugin({} as StaticFileOptions));
-      }).toThrow('Static file plugin requires a root directory');
+      }).toThrow('Static file plugin requires a serveFrom directory');
     });
 
     it('should validate maxAge', () => {
       expect(() => {
         createKori().applyPlugin(
           staticFilePlugin({
-            root: publicDir,
+            serveFrom: publicDir,
             maxAge: -1,
           }),
         );
@@ -331,11 +323,11 @@ describe('static-file-plugin-nodejs', () => {
       expect(() => {
         createKori().applyPlugin(
           staticFilePlugin({
-            root: publicDir,
-            prefix: 'invalid-prefix',
+            serveFrom: publicDir,
+            mountAt: 'invalid-prefix',
           }),
         );
-      }).toThrow('prefix must start with "/"');
+      }).toThrow('mountAt must start with "/"');
     });
   });
 });

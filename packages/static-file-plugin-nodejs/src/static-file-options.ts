@@ -1,9 +1,9 @@
 export type StaticFileOptions = {
-  /** Required: Root directory path for serving static files */
-  root: string;
+  /** Required: Source directory path to serve static files from */
+  serveFrom: string;
 
   /** URL prefix for static files (default: '/static') */
-  prefix?: string;
+  mountAt?: string;
 
   /** Index files to serve when accessing directories (default: ['index.html']) */
   index?: string[] | false;

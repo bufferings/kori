@@ -30,8 +30,8 @@ import { staticFilePlugin } from '@korix/static-file-plugin-nodejs';
 
 const app = createKori().applyPlugin(
   staticFilePlugin({
-    root: './public',
-    prefix: '/static',
+    serveFrom: './public',
+    mountAt: '/static',
   }),
 );
 
@@ -45,8 +45,8 @@ const app = createKori().applyPlugin(
 
 ```typescript
 type StaticFileOptions = {
-  root: string; // Required: Root directory path
-  prefix?: string; // URL prefix (default: '/static')
+  serveFrom: string; // Required: Source directory path
+  mountAt?: string; // URL prefix (default: '/static')
   index?: string[] | false; // Index files (default: ['index.html'])
   dotfiles?: 'allow' | 'deny'; // Dotfiles handling (default: 'deny')
   maxAge?: number; // Cache max-age in seconds (default: 0)
@@ -59,7 +59,7 @@ type StaticFileOptions = {
 
 ```typescript
 {
-  prefix: '/static',
+  mountAt: '/static',
   index: ['index.html'],
   dotfiles: 'deny',
   maxAge: 0,
@@ -78,7 +78,7 @@ import { staticFilePlugin } from '@korix/static-file-plugin-nodejs';
 
 const app = createKori().applyPlugin(
   staticFilePlugin({
-    root: './public',
+    serveFrom: './public',
   }),
 );
 
@@ -90,8 +90,8 @@ const app = createKori().applyPlugin(
 ```typescript
 const app = createKori().applyPlugin(
   staticFilePlugin({
-    root: './assets',
-    prefix: '/assets',
+    serveFrom: './assets',
+    mountAt: '/assets',
     maxAge: 3600, // 1 hour cache
     etag: true,
     lastModified: true,
@@ -107,7 +107,7 @@ const app = createKori().applyPlugin(
 ```typescript
 const app = createKori().applyPlugin(
   staticFilePlugin({
-    root: './public',
+    serveFrom: './public',
     index: ['index.html', 'index.htm', 'default.html'],
   }),
 );
@@ -120,13 +120,13 @@ const app = createKori().applyPlugin(
 ```typescript
 // Deny dotfiles (default)
 staticFilePlugin({
-  root: './public',
+  serveFrom: './public',
   dotfiles: 'deny', // .env, .git/ → 404 Not Found
 });
 
 // Allow dotfiles
 staticFilePlugin({
-  root: './public',
+  serveFrom: './public',
   dotfiles: 'allow', // .env, .git/ → served normally
 });
 ```
@@ -137,16 +137,16 @@ The plugin handles URL-to-file mapping as follows:
 
 ```
 URL: /static/admin/dashboard.html
-Root: ./public
+Source: ./public
 Result: ./public/admin/dashboard.html
 
 URL: /static/admin/
-Root: ./public
+Source: ./public
 Index: ['index.html']
 Result: ./public/admin/index.html (if exists)
 
 URL: /static/
-Root: ./public
+Source: ./public
 Index: ['index.html']
 Result: ./public/index.html (if exists)
 ```
@@ -191,7 +191,7 @@ Control access to dotfiles (files/directories starting with `.`):
 
 ### Safe Path Resolution
 
-All paths are resolved and validated to ensure they remain within the configured root directory.
+All paths are resolved and validated to ensure they remain within the configured source directory.
 
 ## Caching
 
@@ -199,7 +199,7 @@ All paths are resolved and validated to ensure they remain within the configured
 
 ```typescript
 staticFilePlugin({
-  root: './public',
+  serveFrom: './public',
   maxAge: 3600, // Cache-Control: public, max-age=3600
   etag: true, // ETag: "1234567890abcdef"
   lastModified: true, // Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT
@@ -269,7 +269,7 @@ const app = createKori()
   .applyPlugin(securityHeadersPlugin())
   .applyPlugin(
     staticFilePlugin({
-      root: './public',
+      serveFrom: './public',
       maxAge: 3600,
     }),
   )
