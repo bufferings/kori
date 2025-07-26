@@ -71,9 +71,9 @@ describe('Content-Disposition utilities', () => {
       expect(result).toBe('file.doc');
     });
 
-    it('should return empty string when empty user filename provided', () => {
+    it('should fallback to basename when empty user filename provided', () => {
       const result = resolveFilename('/path/to/test.js', '');
-      expect(result).toBe('');
+      expect(result).toBe('test.js');
     });
   });
 });

@@ -24,5 +24,6 @@ export function createContentDisposition({ disposition = 'attachment', filename 
  * Extract filename from file path if not provided
  */
 export function resolveFilename(filePath: string, userFilename?: string): string {
-  return userFilename ?? basename(filePath);
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  return userFilename || basename(filePath);
 }
