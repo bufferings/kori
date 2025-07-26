@@ -11,6 +11,8 @@ function wrapLogger(logger: KoriLogger, name: string): KoriLogger {
     error: (message: string, data?: KoriLogData) => logger.error(message, data),
     fatal: (message: string, data?: KoriLogData) => logger.fatal(message, data),
 
+    isLevelEnabled: (level) => logger.isLevelEnabled(level),
+
     child(childName: string, bindings?: Record<string, unknown>): KoriLogger {
       const combinedName = `${name}.${childName}`;
       return wrapLogger(logger.child(combinedName, bindings), combinedName);

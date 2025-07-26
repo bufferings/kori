@@ -66,6 +66,11 @@ function createPinoLoggerImpl(pinoLogger: pino.Logger): KoriLogger {
       }
     },
 
+    isLevelEnabled(level: KoriLogLevel): boolean {
+      const pinoLevel = PINO_LEVEL_MAP[level];
+      return pinoLogger.isLevelEnabled(pinoLevel);
+    },
+
     child(name: string, bindings: Record<string, unknown> = {}): KoriLogger {
       const childPino = pinoLogger.child({ name, ...bindings });
       return createPinoLoggerImpl(childPino);

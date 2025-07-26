@@ -74,14 +74,16 @@ function serveMultipartRange(
 ): KoriResponse {
   const boundary = generateBoundary();
 
-  log.debug('Serving multipart range request', {
-    path: fileInfo.path,
-    rangeCount: ranges.length,
-    ranges: ranges.map((r: { start: number; end: number }) => `${r.start}-${r.end}`),
-    totalSize: fileSize,
-    mimeType,
-    boundary,
-  });
+  if (log.isLevelEnabled('debug')) {
+    log.debug('Serving multipart range request', {
+      path: fileInfo.path,
+      rangeCount: ranges.length,
+      ranges: ranges.map((r: { start: number; end: number }) => `${r.start}-${r.end}`),
+      totalSize: fileSize,
+      mimeType,
+      boundary,
+    });
+  }
 
   // Set response headers for multipart content
   // Note: Content-Length is omitted for multipart responses as per HTTP spec
