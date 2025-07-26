@@ -6,8 +6,8 @@ export {
 } from './content-disposition.js';
 export {
   detectMimeType,
-  type DownloadOptions,
-  downloadPlugin,
-  type DownloadResponseExtension,
-} from './download-plugin.js';
+  type SendFileOptions,
+  sendFilePlugin,
+  type SendFileResponseExtension,
+} from './send-file-plugin.js';
 export { PLUGIN_VERSION } from './version.js';

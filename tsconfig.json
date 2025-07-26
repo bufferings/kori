@@ -4,7 +4,6 @@
   "references": [
     { "path": "./packages/body-limit-plugin" },
     { "path": "./packages/cors-plugin" },
-    { "path": "./packages/download-plugin-nodejs" },
     { "path": "./packages/eslint-config" },
     { "path": "./packages/example" },
     { "path": "./packages/kori" },
@@ -14,6 +13,7 @@
     { "path": "./packages/pino-adapter" },
     { "path": "./packages/script" },
     { "path": "./packages/security-headers-plugin" },
+    { "path": "./packages/send-file-plugin-nodejs" },
     { "path": "./packages/static-file-plugin-nodejs" },
     { "path": "./packages/zod-openapi-plugin" },
     { "path": "./packages/zod-schema" },

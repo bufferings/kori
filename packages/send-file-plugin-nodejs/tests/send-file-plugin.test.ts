@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { createContentDisposition, resolveFilename } from '../src/content-disposition.js';
-import { downloadPlugin, detectMimeType } from '../src/download-plugin.js';
+import { sendFilePlugin, detectMimeType } from '../src/send-file-plugin.js';
 
 describe('Content-Disposition utilities', () => {
   describe('createContentDisposition', () => {
@@ -76,38 +76,48 @@ describe('Content-Disposition utilities', () => {
   });
 });
 
-describe('Download Plugin', () => {
+describe('Send File Plugin', () => {
   describe('plugin creation', () => {
     it('should create plugin with correct name and version', () => {
-      const plugin = downloadPlugin();
+      const plugin = sendFilePlugin();
 
-      expect(plugin.name).toBe('download-plugin-nodejs');
+      expect(plugin.name).toBe('send-file-plugin-nodejs');
       expect(plugin.version).toBe('0.1.0');
       expect(plugin.apply).toBeDefined();
     });
   });
 
-  describe('download functionality', () => {
-    it('should handle basic file download concepts', () => {
+  describe('file sending functionality', () => {
+    it('should handle basic file sending concepts', () => {
       // Test basic plugin structure without complex mocking
-      const plugin = downloadPlugin();
-      expect(plugin.name).toBe('download-plugin-nodejs');
+      const plugin = sendFilePlugin();
+      expect(plugin.name).toBe('send-file-plugin-nodejs');
       expect(typeof plugin.apply).toBe('function');
     });
 
     it('should handle file path resolution', () => {
-      // Test downloadFilename resolution logic
-      const downloadFilename = resolveFilename('/uploads/test.pdf', 'custom.pdf');
-      expect(downloadFilename).toBe('custom.pdf');
+      // Test filename resolution logic
+      const filename = resolveFilename('/uploads/test.pdf', 'custom.pdf');
+      expect(filename).toBe('custom.pdf');
     });
 
-    it('should create proper content disposition headers', () => {
-      // Test content disposition creation
+    it('should create proper content disposition headers for downloads', () => {
+      // Test content disposition creation for downloads
       const header = createContentDisposition({
         filename: 'test.pdf',
         disposition: 'attachment',
       });
       expect(header).toContain('attachment');
+      expect(header).toContain('filename');
+    });
+
+    it('should create proper content disposition headers for inline display', () => {
+      // Test content disposition creation for inline display
+      const header = createContentDisposition({
+        filename: 'image.jpg',
+        disposition: 'inline',
+      });
+      expect(header).toContain('inline');
       expect(header).toContain('filename');
     });
   });
