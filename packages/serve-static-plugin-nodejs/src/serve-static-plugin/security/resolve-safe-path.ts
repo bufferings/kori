@@ -28,12 +28,18 @@ export function resolveSafePath(requestPath: string, rootDir: string): ResolvedP
     const relativePath = relative(resolvedRoot, resolvedPath);
     const isValid = !relativePath.startsWith('..') && !relativePath.startsWith('/');
 
+    if (!isValid) {
+      return {
+        isValid: false,
+      };
+    }
+
     // Check if it's a dotfile
     const isDotfile = normalizedPath.split(sep).some((segment) => segment.startsWith('.'));
 
     return {
+      isValid: true,
       safePath: resolvedPath,
-      isValid,
       isDotfile,
     };
   } catch {
