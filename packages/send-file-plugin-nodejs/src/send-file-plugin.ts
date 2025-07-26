@@ -81,7 +81,7 @@ async function handleSendFile<Env extends KoriEnvironment, Req extends KoriReque
     }
 
     // Resolve filename
-    const resolvedFilename = filename ?? resolveFilename(filePath);
+    const resolvedFilename = resolveFilename(filePath, filename);
 
     // Set headers
     const mimeType = detectMimeType(filePath);
