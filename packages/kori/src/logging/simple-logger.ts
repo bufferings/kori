@@ -62,6 +62,10 @@ function createSimpleLogger(options: {
     console.log(JSON.stringify(logEntry));
   }
 
+  function isLevelEnabled(level: KoriLogLevel): boolean {
+    return LOG_LEVELS[level] >= LOG_LEVELS[options.level];
+  }
+
   return {
     trace: (message: string, data?: KoriLogData) => log('trace', message, data),
     debug: (message: string, data?: KoriLogData) => log('debug', message, data),
@@ -69,6 +73,8 @@ function createSimpleLogger(options: {
     warn: (message: string, data?: KoriLogData) => log('warn', message, data),
     error: (message: string, data?: KoriLogData) => log('error', message, data),
     fatal: (message: string, data?: KoriLogData) => log('fatal', message, data),
+
+    isLevelEnabled,
 
     child: (childName: string, childBindings: Record<string, unknown> = {}) => {
       return createSimpleLogger({

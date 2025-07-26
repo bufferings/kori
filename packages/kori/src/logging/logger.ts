@@ -17,5 +17,7 @@ export type KoriLogger = {
   error(message: string, data?: KoriLogData): void;
   fatal(message: string, data?: KoriLogData): void;
 
+  isLevelEnabled(level: KoriLogLevel): boolean;
+
   child(name: string, bindings?: Record<string, unknown>): KoriLogger;
 };

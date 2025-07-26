@@ -264,12 +264,14 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
 
           // Handle chunked transfer encoding
           if (isChunkedTransferEncoding(transferEncodingHeader)) {
-            requestLog.debug('Detected chunked transfer encoding, enabling real-time stream monitoring', {
-              path: req.url().pathname,
-              method: req.method(),
-              transferEncoding: transferEncodingHeader,
-              maxSize,
-            });
+            if (requestLog.isLevelEnabled('debug')) {
+              requestLog.debug('Detected chunked transfer encoding, enabling real-time stream monitoring', {
+                path: req.url().pathname,
+                method: req.method(),
+                transferEncoding: transferEncodingHeader,
+                maxSize,
+              });
+            }
 
             // Store original bodyStream function with proper binding
             const originalBodyStream = req.bodyStream.bind(req);
