@@ -16,8 +16,9 @@ function formatLastModified(mtime: Date): string {
 }
 
 export function setCacheHeaders(res: KoriResponse, options: CacheOptions): void {
-  if (options.maxAge > 0) {
-    let cacheControl = `public, max-age=${options.maxAge}`;
+  if (typeof options.maxAge === 'number' && options.maxAge >= 0) {
+    const maxAge = Math.floor(options.maxAge);
+    let cacheControl = `public, max-age=${maxAge}`;
     if (options.immutable) {
       cacheControl += ', immutable';
     }
