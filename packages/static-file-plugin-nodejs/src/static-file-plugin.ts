@@ -8,6 +8,7 @@ import {
   HttpStatus,
   HttpResponseHeader,
 } from '@korix/kori';
+import mime from 'mime-types';
 
 import {
   resolveSafePath,
@@ -24,11 +25,18 @@ import {
   createMultipartStream,
   type ExistingFileInfo,
 } from './file-utils.js';
-import { detectMimeType } from './mime-types.js';
 import { type StaticFileOptions, RangeConstants, type RangeResult } from './static-file-options.js';
 import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'static-file-plugin-nodejs';
+
+/**
+ * MIME type detection using mime-types library for comprehensive coverage
+ */
+function detectMimeType(filePath: string): string {
+  const mimeType = mime.lookup(filePath);
+  return mimeType || 'application/octet-stream';
+}
 
 const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   mountAt: '/static',

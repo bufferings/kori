@@ -55,6 +55,9 @@
     "test:watch": "vitest",
     "sync:version": "ks sync-version && prettier --write src/version.ts"
   },
+  "dependencies": {
+    "mime-types": "3.0.1"
+  },
   "peerDependencies": {
     "@korix/kori": "workspace:*"
   },
@@ -62,6 +65,7 @@
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
     "@korix/script": "workspace:*",
+    "@types/mime-types": "3.0.1",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
