@@ -58,14 +58,14 @@
   "peerDependencies": {
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@scalar/api-reference": "^1.25.62"
+    "@scalar/api-reference": "^1.32.10"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/script": "workspace:*",
-    "@scalar/api-reference": "1.25.62",
+    "@scalar/api-reference": "1.32.10",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
