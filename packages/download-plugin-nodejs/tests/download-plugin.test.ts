@@ -98,9 +98,9 @@ describe('Download Plugin', () => {
     });
 
     it('should handle file path resolution', () => {
-      // Test filename resolution logic
-      const filename = resolveFilename('/uploads/test.pdf', 'custom.pdf');
-      expect(filename).toBe('custom.pdf');
+      // Test downloadFilename resolution logic
+      const downloadFilename = resolveFilename('/uploads/test.pdf', 'custom.pdf');
+      expect(downloadFilename).toBe('custom.pdf');
     });
 
     it('should create proper content disposition headers', () => {

@@ -21,7 +21,7 @@ const PLUGIN_NAME = 'download-plugin-nodejs';
 
 export type DownloadOptions = {
   filePath: string;
-  filename?: string;
+  downloadFilename?: string;
   disposition?: ContentDisposition;
 };
 
@@ -91,7 +91,7 @@ async function handleDownload<Env extends KoriEnvironment, Req extends KoriReque
   log: KoriLogger,
   options: DownloadOptions,
 ): Promise<KoriResponse> {
-  const { filePath, filename, disposition = 'attachment' } = options;
+  const { filePath, downloadFilename, disposition = 'attachment' } = options;
 
   try {
     // Check if file exists and get stats
@@ -103,7 +103,7 @@ async function handleDownload<Env extends KoriEnvironment, Req extends KoriReque
     }
 
     // Resolve filename
-    const resolvedFilename = resolveFilename(filePath, filename);
+    const resolvedFilename = resolveFilename(filePath, downloadFilename);
 
     // Set headers
     const mimeType = detectMimeType(filePath);
@@ -121,7 +121,7 @@ async function handleDownload<Env extends KoriEnvironment, Req extends KoriReque
 
     log.debug('Serving file download', {
       filePath,
-      filename: resolvedFilename,
+      downloadFilename: resolvedFilename,
       disposition,
       mimeType,
       size: fileStats.size,
