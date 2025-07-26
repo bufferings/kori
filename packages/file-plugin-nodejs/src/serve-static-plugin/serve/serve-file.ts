@@ -1,10 +1,16 @@
 import { HttpStatus, HttpResponseHeader, type KoriRequest, type KoriResponse, type KoriLogger } from '@korix/kori';
 
-import { createFileStream, detectMimeType } from '../../share/index.js';
-import { setCacheHeaders, isNotModified } from '../cache/index.js';
+import {
+  createFileStream,
+  detectMimeType,
+  isNotModified,
+  parseRangeHeader,
+  RangeConstants,
+  setCacheHeaders,
+} from '../../share/index.js';
 import { type FileInfo } from '../file/index.js';
 import { type ServeStaticOptions } from '../index.js';
-import { parseRangeHeader, serveRangeRequest, RangeConstants } from '../serve-range/index.js';
+import { serveRangeRequest } from '../serve-range/index.js';
 
 export function serveFile(
   req: KoriRequest,
@@ -44,14 +50,9 @@ export function serveFile(
       });
 
       res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileInfo.stats.size}`);
-      res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+      res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
 
-      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-        error: {
-          type: 'RANGE_NOT_SATISFIABLE',
-          message: 'Requested range not satisfiable',
-        },
-      });
+      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
     }
   }
 

@@ -8,8 +8,12 @@ Add comprehensive file plugin package for Node.js with dual functionality
 
 - `res.sendFile()` - Send files for browser display with proper Content-Type
 - `res.download()` - Force file download with attachment disposition header
+- Range requests support for streaming and partial content delivery
+- ETag and Last-Modified headers for efficient caching
+- 304 Not Modified responses to reduce bandwidth usage
+- Multipart byte ranges for multiple range requests
 - Secure path resolution and validation
-- Configurable root directory and caching options
+- Configurable root directory and advanced caching options
 
 **Static File Serving (`serveStaticPlugin`):**
 

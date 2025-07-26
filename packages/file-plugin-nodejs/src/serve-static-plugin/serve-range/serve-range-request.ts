@@ -1,17 +1,17 @@
 import { HttpResponseHeader, HttpStatus } from '@korix/kori';
 import { type KoriLogger, type KoriRequest, type KoriResponse } from '@korix/kori';
 
-import { detectMimeType } from '../../share/index.js';
-import { type FileInfo } from '../file/index.js';
-import { type ServeStaticOptions } from '../index.js';
-
 import {
   createMultipartStream,
   createPartialFileStream,
+  detectMimeType,
   generateBoundary,
   generateContentRangeHeader,
-} from './stream.js';
-import { RangeConstants, type RangeResult } from './types.js';
+  RangeConstants,
+  type RangeResult,
+} from '../../share/index.js';
+import { type FileInfo } from '../file/index.js';
+import { type ServeStaticOptions } from '../index.js';
 
 function serveSingleRange(
   req: KoriRequest,
@@ -124,12 +124,9 @@ export function serveRangeRequest(
       maxRanges: options.maxRanges,
     });
 
-    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-      error: {
-        type: 'TOO_MANY_RANGES',
-        message: `Too many ranges requested. Maximum allowed: ${options.maxRanges}`,
-      },
-    });
+    res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
   }
 
   // Handle single vs multiple range requests

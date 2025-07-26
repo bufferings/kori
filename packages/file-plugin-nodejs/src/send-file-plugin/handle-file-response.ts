@@ -7,20 +7,34 @@ import {
   type KoriResponse,
 } from '@korix/kori';
 
-import { createFileStream, detectMimeType, getFileStats } from '../share/index.js';
+import {
+  createFileStream,
+  createMultipartStream,
+  createPartialFileStream,
+  detectMimeType,
+  generateBoundary,
+  generateContentRangeHeader,
+  getFileStats,
+  isNotModified,
+  parseRangeHeader,
+  RangeConstants,
+  setCacheHeaders,
+} from '../share/index.js';
 
 import { resolveFilename, resolveFilePath } from './file/index.js';
-import { createCacheControlHeader, createContentDispositionHeader } from './header/index.js';
+import { createContentDispositionHeader } from './header/index.js';
 
 export type SendFileOptions = {
   maxAge?: number;
   immutable?: boolean;
+  etag?: boolean;
+  lastModified?: boolean;
+  ranges?: boolean;
+  maxRanges?: number;
 };
 
-export type DownloadOptions = {
+export type DownloadOptions = SendFileOptions & {
   filename?: string;
-  maxAge?: number;
-  immutable?: boolean;
 };
 
 export async function handleFileResponse<
@@ -70,15 +84,151 @@ export async function handleFileResponse<
       return ctx.res.notFound({ message: 'File not found' });
     }
 
-    const mimeType = detectMimeType(resolvedPath);
+    // Set default options
+    const finalOptions = {
+      maxAge: options?.maxAge ?? 0,
+      immutable: options?.immutable ?? false,
+      etag: options?.etag ?? true,
+      lastModified: options?.lastModified ?? true,
+      ranges: options?.ranges ?? true,
+      maxRanges: options?.maxRanges ?? 1,
+    };
 
+    // Check for conditional requests (304 Not Modified)
+    if ((finalOptions.etag || finalOptions.lastModified) && isNotModified(ctx.req, stats)) {
+      log.debug('File not modified, returning 304', { filePath: resolvedPath });
+      return ctx.res.status(HttpStatus.NOT_MODIFIED).empty();
+    }
+
+    const mimeType = detectMimeType(resolvedPath);
+    const fileSize = stats.size;
+
+    // Handle Range requests
+    if (finalOptions.ranges) {
+      const rangeHeader = ctx.req.header('range');
+      if (rangeHeader) {
+        const rangeResult = parseRangeHeader(rangeHeader, fileSize);
+
+        if (!rangeResult.isSatisfiable || rangeResult.ranges.length === 0) {
+          log.warn('Range not satisfiable', { filePath: resolvedPath, rangeHeader });
+          ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
+          return ctx.res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
+        }
+
+        // Check if requesting too many ranges
+        if (rangeResult.ranges.length > finalOptions.maxRanges) {
+          log.warn('Too many ranges requested', {
+            path: resolvedPath,
+            requestedRanges: rangeResult.ranges.length,
+            maxRanges: finalOptions.maxRanges,
+          });
+          ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
+          return ctx.res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
+        }
+
+        // Handle range requests
+        if (rangeResult.ranges.length === 1) {
+          // Single range request
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const range = rangeResult.ranges[0]!;
+          const contentLength = range.end - range.start + 1;
+
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_LENGTH, contentLength.toString());
+          ctx.res.setHeader(
+            HttpResponseHeader.CONTENT_RANGE,
+            generateContentRangeHeader(range.start, range.end, fileSize),
+          );
+          ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+
+          // Set cache headers
+          setCacheHeaders(ctx.res, {
+            maxAge: finalOptions.maxAge,
+            etag: finalOptions.etag,
+            lastModified: finalOptions.lastModified,
+            immutable: finalOptions.immutable,
+            fileStats: stats,
+          });
+
+          const partialStream = createPartialFileStream(resolvedPath, range.start, range.end);
+
+          if (mode === 'download') {
+            const finalFilename = resolveFilename(resolvedPath, options?.filename);
+            const contentDisposition = createContentDispositionHeader({
+              disposition: 'attachment',
+              filename: finalFilename,
+            });
+            ctx.res.setHeader(HttpResponseHeader.CONTENT_DISPOSITION, contentDisposition);
+          }
+
+          log.debug(`Sending partial file (${mode})`, {
+            filePath: resolvedPath,
+            range: `${range.start}-${range.end}`,
+            contentLength,
+            totalSize: fileSize,
+            mimeType,
+          });
+
+          return ctx.res.status(HttpStatus.PARTIAL_CONTENT).stream(partialStream);
+        } else {
+          // Multiple range request - use multipart response
+          const boundary = generateBoundary();
+
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_TYPE, `multipart/byteranges; boundary=${boundary}`);
+          ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+
+          // Set cache headers
+          setCacheHeaders(ctx.res, {
+            maxAge: finalOptions.maxAge,
+            etag: finalOptions.etag,
+            lastModified: finalOptions.lastModified,
+            immutable: finalOptions.immutable,
+            fileStats: stats,
+          });
+
+          const multipartStream = createMultipartStream(resolvedPath, rangeResult.ranges, fileSize, mimeType, boundary);
+
+          if (mode === 'download') {
+            const finalFilename = resolveFilename(resolvedPath, options?.filename);
+            const contentDisposition = createContentDispositionHeader({
+              disposition: 'attachment',
+              filename: finalFilename,
+            });
+            ctx.res.setHeader(HttpResponseHeader.CONTENT_DISPOSITION, contentDisposition);
+          }
+
+          log.debug(`Sending multipart file (${mode})`, {
+            filePath: resolvedPath,
+            rangeCount: rangeResult.ranges.length,
+            ranges: rangeResult.ranges.map((r) => `${r.start}-${r.end}`),
+            totalSize: fileSize,
+            mimeType,
+            boundary,
+          });
+
+          return ctx.res.status(HttpStatus.PARTIAL_CONTENT).stream(multipartStream);
+        }
+      }
+    }
+
+    // Regular file response (no range request)
     ctx.res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
     ctx.res.setHeader(HttpResponseHeader.CONTENT_LENGTH, stats.size.toString());
 
-    const cacheControl = createCacheControlHeader(options?.maxAge, options?.immutable);
-    if (cacheControl) {
-      ctx.res.setHeader(HttpResponseHeader.CACHE_CONTROL, cacheControl);
+    if (finalOptions.ranges) {
+      ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
     }
+
+    // Set cache headers
+    setCacheHeaders(ctx.res, {
+      maxAge: finalOptions.maxAge,
+      etag: finalOptions.etag,
+      lastModified: finalOptions.lastModified,
+      immutable: finalOptions.immutable,
+      fileStats: stats,
+    });
 
     const fileStream = createFileStream(resolvedPath);
 
@@ -94,18 +244,17 @@ export async function handleFileResponse<
         filePath: resolvedPath,
         mimeType,
         size: stats.size,
-        maxAge: options?.maxAge,
-        immutable: options?.immutable,
+        maxAge: finalOptions.maxAge,
+        immutable: finalOptions.immutable,
         filename: finalFilename,
       });
     } else {
-      // For sendFile: no Content-Disposition header (browser decides)
       log.debug(`Sending file`, {
         filePath: resolvedPath,
         mimeType,
         size: stats.size,
-        maxAge: options?.maxAge,
-        immutable: options?.immutable,
+        maxAge: finalOptions.maxAge,
+        immutable: finalOptions.immutable,
       });
     }
 
