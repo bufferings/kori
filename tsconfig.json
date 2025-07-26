@@ -4,6 +4,7 @@
   "references": [
     { "path": "./packages/body-limit-plugin" },
     { "path": "./packages/cors-plugin" },
+    { "path": "./packages/download-plugin-nodejs" },
     { "path": "./packages/eslint-config" },
     { "path": "./packages/example" },
     { "path": "./packages/kori" },
