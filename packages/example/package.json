@@ -35,7 +35,7 @@
     "@korix/zod-openapi-plugin": "workspace:*",
     "@korix/zod-schema": "workspace:*",
     "@korix/zod-validator": "workspace:*",
-    "@scalar/api-reference": "1.25.62",
+    "@scalar/api-reference": "1.32.10",
     "openapi3-ts": "4.4.0",
     "pino": "9.7.0",
     "zod": "3.25.67"
