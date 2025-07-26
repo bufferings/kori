@@ -10,6 +10,6 @@ export function resolveFilePath(filePath: string, root?: string): string {
   } else if (root) {
     return join(root, filePath);
   } else {
-    throw new Error('Relative path requires root option');
+    throw new Error(`Relative path '${filePath}' requires root option`);
   }
 }
