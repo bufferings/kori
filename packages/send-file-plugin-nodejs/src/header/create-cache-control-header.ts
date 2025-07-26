@@ -1,8 +1,9 @@
 export function createCacheControlHeader(maxAge?: number, immutable?: boolean): string | null {
   const parts: string[] = [];
 
-  if (typeof maxAge === 'number') {
-    parts.push(`max-age=${maxAge}`);
+  if (typeof maxAge === 'number' && maxAge >= 0) {
+    const maxAgeValue = Math.floor(maxAge);
+    parts.push(`max-age=${maxAgeValue}`);
   }
 
   if (immutable === true) {
