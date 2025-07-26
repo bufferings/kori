@@ -337,8 +337,31 @@ staticFilePlugin({
   maxAge: 3600, // Cache-Control: public, max-age=3600
   etag: true, // ETag: "1234567890abcdef"
   lastModified: true, // Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT
+  immutable: true, // Cache-Control: public, max-age=3600, immutable
 });
 ```
+
+### Immutable Caching
+
+The `immutable` directive tells browsers not to revalidate cached resources even on reload:
+
+```typescript
+// For assets with cache-busting filenames
+staticFilePlugin({
+  serveFrom: './dist/assets',
+  maxAge: 31536000, // 1 year
+  immutable: true, // Safe for versioned files like app.abc123.js
+});
+
+// For regular files that may change
+staticFilePlugin({
+  serveFrom: './public',
+  maxAge: 3600, // 1 hour
+  immutable: false, // Default - will revalidate on reload
+});
+```
+
+**Important**: Only use `immutable: true` with files that have cache-busting filenames (e.g., `app.abc123.js`). Files that might change should use the default `immutable: false`.
 
 ### Conditional Requests
 

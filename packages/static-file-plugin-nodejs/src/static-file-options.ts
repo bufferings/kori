@@ -20,6 +20,9 @@ export type StaticFileOptions = {
   /** Last-Modified header generation (default: true) */
   lastModified?: boolean;
 
+  /** Enable immutable Cache-Control directive (default: false) */
+  immutable?: boolean;
+
   /** Range Request support (default: true) */
   ranges?: boolean;
 
