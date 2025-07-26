@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "content-disposition": "0.5.4",
-    "mime-types": "^3.0.1"
+    "mime-types": "3.0.1"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*"
@@ -67,7 +67,7 @@
     "@korix/kori": "workspace:*",
     "@korix/script": "workspace:*",
     "@types/content-disposition": "0.5.9",
-    "@types/mime-types": "^3.0.1",
+    "@types/mime-types": "3.0.1",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
