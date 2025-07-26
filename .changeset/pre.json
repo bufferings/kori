@@ -18,5 +18,13 @@
     "@korix/zod-schema": "0.1.0",
     "@korix/zod-validator": "0.1.0"
   },
-  "changesets": []
+  "changesets": [
+    "body-limit-chunked-encoding",
+    "cookie-name-validation",
+    "file-plugin-nodejs",
+    "header-constants-standardization",
+    "method-chaining-api-standardization",
+    "response-content-type-optimization",
+    "status-code-constants-improvement"
+  ]
 }
