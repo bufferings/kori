@@ -25,28 +25,26 @@ describe('Content-Disposition utilities', () => {
 
     it('should handle non-ASCII filenames using RFC 6266', () => {
       const result = createContentDisposition({
-        filename: 'report.pdf',
+        // eslint-disable-next-line kori/ascii-only-source
+        filename: 'レポート.pdf',
       });
-      // content-disposition library handles RFC 6266 encoding automatically
-      expect(result).toContain('attachment');
-      expect(result).toContain('filename');
+      expect(result).toBe(
+        'attachment; filename="????.pdf"; filename*=UTF-8\'\'%E3%83%AC%E3%83%9D%E3%83%BC%E3%83%88.pdf',
+      );
     });
 
     it('should handle filenames with quotes using RFC 6266', () => {
       const result = createContentDisposition({
-        filename: 'file-with-quotes.pdf',
+        filename: 'file"with"quotes.pdf',
       });
-      // content-disposition library handles RFC 6266 encoding automatically
-      expect(result).toContain('attachment');
-      expect(result).toContain('filename');
+      expect(result).toBe('attachment; filename="file\\"with\\"quotes.pdf"');
     });
 
     it('should handle filenames with special characters', () => {
       const result = createContentDisposition({
         filename: 'file with spaces & symbols.txt',
       });
-      expect(result).toContain('attachment');
-      expect(result).toContain('filename');
+      expect(result).toBe('attachment; filename="file with spaces & symbols.txt"');
     });
   });
 

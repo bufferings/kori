@@ -128,7 +128,12 @@ async function handleDownload<Env extends KoriEnvironment, Req extends KoriReque
     });
 
     return ctx.res.status(HttpStatus.OK).stream(fileStream);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      log.warn('File not found', { filePath });
+      return ctx.res.notFound({ message: 'File not found' });
+    }
+
     log.error('Download failed', { filePath, error });
     return ctx.res.internalError({ message: 'Download failed' });
   }
