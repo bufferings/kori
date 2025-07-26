@@ -561,11 +561,11 @@ describe('serve-static-plugin-nodejs', () => {
 
       const response = await fetchFromApp(app, 'http://localhost/static/');
 
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(404);
       expect(await response.json()).toEqual({
         error: {
-          type: 'FORBIDDEN',
-          message: 'Directory listing is disabled',
+          type: 'NOT_FOUND',
+          message: 'File not found',
         },
       });
     });
