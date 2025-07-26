@@ -4,7 +4,7 @@ import { type KoriEnvironment, type KoriPlugin, type KoriRequest, type KoriRespo
 import { handleFileResponse, type DownloadOptions, type SendFileOptions } from './handle-file-response.js';
 import { PLUGIN_VERSION } from './version.js';
 
-const PLUGIN_NAME = 'file-response-plugin-nodejs';
+const PLUGIN_NAME = 'send-file-plugin-nodejs';
 
 export type SendFileOption = {
   root?: string;
