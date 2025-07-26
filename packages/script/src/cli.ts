@@ -5,7 +5,7 @@ import { lintStaged, syncVersion } from './command/index.js';
 function printUsage(): void {
   console.log('Usage: ks <command>');
   console.log('Commands:');
-  console.log('  sync-version');
+  console.log('  sync-version [file-path]    Sync version to src/version.ts (default) or src/<file-path>');
   console.log('  lint-staged');
 }
 
@@ -13,9 +13,11 @@ async function main(): Promise<void> {
   const command = process.argv[2];
 
   switch (command) {
-    case 'sync-version':
-      await syncVersion();
+    case 'sync-version': {
+      const filePath = process.argv[3];
+      await syncVersion(filePath);
       break;
+    }
 
     case 'lint-staged': {
       const files = process.argv.slice(3);

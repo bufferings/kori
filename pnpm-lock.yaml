@@ -248,6 +248,55 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@20.11.17)
 
+  packages/file-plugin-nodejs:
+    dependencies:
+      content-disposition:
+        specifier: 0.5.4
+        version: 0.5.4
+      etag:
+        specifier: 1.8.1
+        version: 1.8.1
+      mime-types:
+        specifier: 3.0.1
+        version: 3.0.1
+    devDependencies:
+      '@korix/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@korix/kori':
+        specifier: workspace:*
+        version: link:../kori
+      '@korix/script':
+        specifier: workspace:*
+        version: link:../script
+      '@types/content-disposition':
+        specifier: 0.5.9
+        version: 0.5.9
+      '@types/etag':
+        specifier: 1.8.4
+        version: 1.8.4
+      '@types/mime-types':
+        specifier: 3.0.1
+        version: 3.0.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.11.17
+      eslint:
+        specifier: 'catalog:'
+        version: 9.16.0(jiti@2.4.2)
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.0.1
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.12.9(typescript@5.8.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@20.11.17)
+
   packages/kori:
     dependencies:
       hono:
@@ -448,92 +497,6 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.11.17
-      eslint:
-        specifier: 'catalog:'
-        version: 9.16.0(jiti@2.4.2)
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.0.1
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.12.9(typescript@5.8.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vitest:
-        specifier: 'catalog:'
-        version: 2.1.9(@types/node@20.11.17)
-
-  packages/send-file-plugin-nodejs:
-    dependencies:
-      content-disposition:
-        specifier: 0.5.4
-        version: 0.5.4
-      mime-types:
-        specifier: 3.0.1
-        version: 3.0.1
-    devDependencies:
-      '@korix/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@korix/kori':
-        specifier: workspace:*
-        version: link:../kori
-      '@korix/script':
-        specifier: workspace:*
-        version: link:../script
-      '@types/content-disposition':
-        specifier: 0.5.9
-        version: 0.5.9
-      '@types/mime-types':
-        specifier: 3.0.1
-        version: 3.0.1
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.11.17
-      eslint:
-        specifier: 'catalog:'
-        version: 9.16.0(jiti@2.4.2)
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.0.1
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.12.9(typescript@5.8.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vitest:
-        specifier: 'catalog:'
-        version: 2.1.9(@types/node@20.11.17)
-
-  packages/serve-static-plugin-nodejs:
-    dependencies:
-      etag:
-        specifier: 1.8.1
-        version: 1.8.1
-      mime-types:
-        specifier: 3.0.1
-        version: 3.0.1
-    devDependencies:
-      '@korix/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@korix/kori':
-        specifier: workspace:*
-        version: link:../kori
-      '@korix/script':
-        specifier: workspace:*
-        version: link:../script
-      '@types/etag':
-        specifier: 1.8.4
-        version: 1.8.4
-      '@types/mime-types':
-        specifier: 3.0.1
-        version: 3.0.1
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17

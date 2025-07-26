@@ -1,7 +1,7 @@
 {
-  "name": "@korix/send-file-plugin-nodejs",
+  "name": "@korix/file-plugin-nodejs",
   "version": "0.1.0",
-  "description": "Send file plugin for Kori framework (Node.js)",
+  "description": "File plugin for Kori framework (Node.js)",
   "type": "module",
   "author": "mitz (@bufferings)",
   "license": "MIT",
@@ -53,10 +53,11 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:version": "ks sync-version && prettier --write src/version.ts"
+    "sync:version": "ks sync-version version/version.ts && prettier --write src/version/version.ts"
   },
   "dependencies": {
     "content-disposition": "0.5.4",
+    "etag": "1.8.1",
     "mime-types": "3.0.1"
   },
   "peerDependencies": {
@@ -67,6 +68,7 @@
     "@korix/kori": "workspace:*",
     "@korix/script": "workspace:*",
     "@types/content-disposition": "0.5.9",
+    "@types/etag": "1.8.4",
     "@types/mime-types": "3.0.1",
     "@types/node": "catalog:",
     "eslint": "catalog:",

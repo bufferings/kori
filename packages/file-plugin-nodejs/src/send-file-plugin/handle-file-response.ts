@@ -7,8 +7,10 @@ import {
   type KoriResponse,
 } from '@korix/kori';
 
-import { createFileStream, getFileStats, resolveFilename, resolveFilePath } from './file/index.js';
-import { createCacheControlHeader, createContentDispositionHeader, detectMimeType } from './header/index.js';
+import { createFileStream, detectMimeType, getFileStats } from '../share/index.js';
+
+import { resolveFilename, resolveFilePath } from './file/index.js';
+import { createCacheControlHeader, createContentDispositionHeader } from './header/index.js';
 
 export type SendFileOptions = {
   maxAge?: number;
