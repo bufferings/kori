@@ -1,13 +1,5 @@
 export {
-  type ContentDisposition,
-  type ContentDispositionOptions,
-  createContentDisposition,
-  resolveFilename,
-} from './content-disposition.js';
-export {
-  detectMimeType,
-  type SendFileOptions,
+  type SendFileExtension as FileResponseExtension,
+  type SendFileOption as FileResponseOptions,
   sendFilePlugin,
-  type SendFileResponseExtension,
 } from './send-file-plugin.js';
-export { PLUGIN_VERSION } from './version.js';

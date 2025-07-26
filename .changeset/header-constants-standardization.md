@@ -1,6 +1,5 @@
 ---
 '@korix/kori': patch
-'@korix/static-file-plugin-nodejs': patch
 '@korix/security-headers-plugin': patch
 ---
 

@@ -15,6 +15,8 @@ export const HttpRequestHeader = {
   FORWARDED: 'forwarded',
   FROM: 'from',
   HOST: 'host',
+  IF_MODIFIED_SINCE: 'if-modified-since',
+  IF_NONE_MATCH: 'if-none-match',
   USER_AGENT: 'user-agent',
   X_FORWARDED_FOR: 'x-forwarded-for',
   X_FORWARDED_HOST: 'x-forwarded-host',

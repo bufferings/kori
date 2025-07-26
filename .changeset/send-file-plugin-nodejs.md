@@ -2,9 +2,9 @@
 '@korix/send-file-plugin-nodejs': patch
 ---
 
-Add send-file-plugin-nodejs package for file sending with intuitive API
+Add send-file-plugin-nodejs package with sendFile() and download() API
 
-- New plugin with res.sendFile() method for easy file sending
-- Simple API: res.sendFile(path) for inline display, res.sendFile(path, {download: true}) for downloads
-- Type-safe options with discriminated union: {download?: boolean, filename?: string}
-- Node.js specific implementation maintaining core package platform independence
+- `sendFile()` - Send files for browser display
+- `download()` - Force file download with attachment header
+- Secure path resolution and MIME type detection
+- Stream-based delivery with proper error handling
