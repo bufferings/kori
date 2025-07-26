@@ -1,17 +1,17 @@
 import { HttpResponseHeader, HttpStatus } from '@korix/kori';
 import { type KoriLogger, type KoriRequest, type KoriResponse } from '@korix/kori';
 
-import { detectMimeType } from '../../share/index.js';
-import { type FileInfo } from '../file/index.js';
-import { type ServeStaticOptions } from '../index.js';
-
 import {
   createMultipartStream,
   createPartialFileStream,
+  detectMimeType,
   generateBoundary,
   generateContentRangeHeader,
-} from './stream.js';
-import { RangeConstants, type RangeResult } from './types.js';
+  RangeConstants,
+  type RangeResult,
+} from '../../share/index.js';
+import { type FileInfo } from '../file/index.js';
+import { type ServeStaticOptions } from '../index.js';
 
 function serveSingleRange(
   req: KoriRequest,
