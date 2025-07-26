@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: false,
   sourcemap: true,
-  external: ['@korix/kori'],
+  external: ['@korix/kori', '@hono/node-server'],
 });
