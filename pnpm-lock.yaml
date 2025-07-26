@@ -510,8 +510,11 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@20.11.17)
 
-  packages/static-file-plugin-nodejs:
+  packages/serve-static-plugin-nodejs:
     dependencies:
+      etag:
+        specifier: 1.8.1
+        version: 1.8.1
       mime-types:
         specifier: 3.0.1
         version: 3.0.1
@@ -525,6 +528,9 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
+      '@types/etag':
+        specifier: 1.8.4
+        version: 1.8.4
       '@types/mime-types':
         specifier: 3.0.1
         version: 3.0.1
@@ -1534,6 +1540,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/etag@1.8.4':
+    resolution: {integrity: sha512-f1z/UMth8gQ6636NBqhFmJ3zES7EuDcUnV6K1gl1osHp+85KPKX+VixYWUpqLkw1fftCagyHJjJOZjZkEi2rHw==}
+
   '@types/har-format@1.2.16':
     resolution: {integrity: sha512-fluxdy7ryD3MV6h8pTfTYpy/xQzCFC7m89nOH9y94cNqJ1mDIDPut7MnRHI3F6qRmh/cT2fUjG1MLdCNb4hE9A==}
 
@@ -2271,6 +2280,10 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
+
+  etag@1.8.1:
+    resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
+    engines: {node: '>= 0.6'}
 
   execa@9.6.0:
     resolution: {integrity: sha512-jpWzZ1ZhwUmeWRhS7Qv3mhpOhLfwI+uAX4e5fOcXqwMR7EcJ0pj2kV1CVzHVMX/LphnKWD3LObjZCoJ71lKpHw==}
@@ -4776,6 +4789,10 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/etag@1.8.4':
+    dependencies:
+      '@types/node': 20.11.17
+
   '@types/har-format@1.2.16': {}
 
   '@types/hast@3.0.4':
@@ -5550,6 +5567,8 @@ snapshots:
       '@types/estree': 1.0.8
 
   esutils@2.0.3: {}
+
+  etag@1.8.1: {}
 
   execa@9.6.0:
     dependencies:

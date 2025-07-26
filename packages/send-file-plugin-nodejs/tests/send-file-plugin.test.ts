@@ -1,22 +1,24 @@
 import { describe, it, expect } from 'vitest';
 
-import { createContentDisposition, resolveFilename } from '../src/content-disposition.js';
-import { sendFilePlugin, detectMimeType } from '../src/send-file-plugin.js';
+import { resolveFilename } from '../src/file/resolve-file-name.js';
+import { createContentDispositionHeader } from '../src/header/create-content-disposition-header.js';
+import { detectMimeType } from '../src/header/detect-mime-type.js';
+import { sendFilePlugin } from '../src/send-file-plugin.js';
 
 describe('Content-Disposition utilities', () => {
   describe('createContentDisposition', () => {
     it('should create attachment disposition without filename', () => {
-      const result = createContentDisposition({});
+      const result = createContentDispositionHeader({});
       expect(result).toBe('attachment');
     });
 
     it('should create attachment disposition with simple filename', () => {
-      const result = createContentDisposition({ filename: 'document.pdf' });
+      const result = createContentDispositionHeader({ filename: 'document.pdf' });
       expect(result).toBe('attachment; filename="document.pdf"');
     });
 
     it('should create inline disposition with filename', () => {
-      const result = createContentDisposition({
+      const result = createContentDispositionHeader({
         disposition: 'inline',
         filename: 'image.jpg',
       });
@@ -24,7 +26,7 @@ describe('Content-Disposition utilities', () => {
     });
 
     it('should handle non-ASCII filenames using RFC 6266', () => {
-      const result = createContentDisposition({
+      const result = createContentDispositionHeader({
         // eslint-disable-next-line kori/ascii-only-source
         filename: 'レポート.pdf',
       });
@@ -34,14 +36,14 @@ describe('Content-Disposition utilities', () => {
     });
 
     it('should handle filenames with quotes using RFC 6266', () => {
-      const result = createContentDisposition({
+      const result = createContentDispositionHeader({
         filename: 'file"with"quotes.pdf',
       });
       expect(result).toBe('attachment; filename="file\\"with\\"quotes.pdf"');
     });
 
     it('should handle filenames with special characters', () => {
-      const result = createContentDisposition({
+      const result = createContentDispositionHeader({
         filename: 'file with spaces & symbols.txt',
       });
       expect(result).toBe('attachment; filename="file with spaces & symbols.txt"');
@@ -103,7 +105,7 @@ describe('Send File Plugin', () => {
 
     it('should create proper content disposition headers for downloads', () => {
       // Test content disposition creation for downloads
-      const header = createContentDisposition({
+      const header = createContentDispositionHeader({
         filename: 'test.pdf',
         disposition: 'attachment',
       });
@@ -113,7 +115,7 @@ describe('Send File Plugin', () => {
 
     it('should create proper content disposition headers for inline display', () => {
       // Test content disposition creation for inline display
-      const header = createContentDisposition({
+      const header = createContentDispositionHeader({
         filename: 'image.jpg',
         disposition: 'inline',
       });

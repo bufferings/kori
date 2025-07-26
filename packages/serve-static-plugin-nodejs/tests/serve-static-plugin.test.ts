@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { createKori } from '@korix/kori';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import { staticFilePlugin, type StaticFileOptions } from '../src/index.js';
+import { serveStaticPlugin, type ServeStaticOptions } from '../src/index.js';
 
-describe('static-file-plugin-nodejs', () => {
+describe('serve-static-plugin-nodejs', () => {
   let tempDir: string;
   let publicDir: string;
 
@@ -56,7 +56,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('Range Request support', () => {
     it('should include Accept-Ranges header by default', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -70,7 +70,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should serve partial content for valid range requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -92,7 +92,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle suffix range requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -113,7 +113,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle start range requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -134,7 +134,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should return 416 for unsatisfiable ranges', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -154,7 +154,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should return 416 for invalid range format', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -171,7 +171,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should reject multiple ranges when maxRanges is 1', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           maxRanges: 1,
@@ -191,7 +191,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should disable range requests when ranges option is false', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           ranges: false,
@@ -213,7 +213,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should work with conditional requests and ranges', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           etag: true,
@@ -238,7 +238,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle range requests for different MIME types', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -259,7 +259,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle edge cases with range boundaries', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -280,7 +280,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle zero-length range requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -301,7 +301,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle multipart range requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           maxRanges: 5, // Allow multiple ranges
@@ -327,7 +327,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle multipart range requests with maxRanges limit', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           ranges: true,
@@ -349,7 +349,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle mixed valid and invalid ranges in multipart request', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -375,7 +375,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should support custom maxRanges for multipart requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           ranges: true,
@@ -404,7 +404,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('basic functionality', () => {
     it('should serve static files', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -418,7 +418,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should detect correct MIME types', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -437,7 +437,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should return 404 for non-existent files', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -456,7 +456,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should ignore requests that do not match mountAt', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/assets',
         }),
@@ -471,7 +471,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('index file resolution', () => {
     it('should serve index.html for directory requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -486,7 +486,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should serve index.html for mount point without trailing slash', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -501,7 +501,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle various path patterns correctly', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -524,7 +524,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should serve index.html for subdirectory requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -539,7 +539,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should return 404 for directories without index files', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -552,7 +552,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should respect index: false option', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           index: false,
@@ -574,7 +574,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('dotfiles handling', () => {
     it('should deny dotfiles by default', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -587,7 +587,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should deny dotfiles when configured', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           dotfiles: 'deny',
@@ -607,7 +607,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should allow dotfiles when configured', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           dotfiles: 'allow',
@@ -624,7 +624,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('caching headers', () => {
     it('should set cache headers', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           maxAge: 3600,
@@ -643,7 +643,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle conditional requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           etag: true,
@@ -674,7 +674,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle If-Modified-Since conditional requests', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           lastModified: true,
@@ -705,7 +705,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should return file when If-Modified-Since is older than file', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           lastModified: true,
@@ -725,7 +725,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should prioritize ETag over Last-Modified when both present', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
           etag: true,
@@ -763,7 +763,7 @@ describe('static-file-plugin-nodejs', () => {
   describe('security', () => {
     it('should prevent directory traversal attacks', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -776,7 +776,7 @@ describe('static-file-plugin-nodejs', () => {
 
     it('should handle encoded path traversal attempts', async () => {
       const app = createKori().applyPlugin(
-        staticFilePlugin({
+        serveStaticPlugin({
           serveFrom: publicDir,
           mountAt: '/static',
         }),
@@ -791,14 +791,14 @@ describe('static-file-plugin-nodejs', () => {
   describe('validation', () => {
     it('should require root directory', () => {
       expect(() => {
-        createKori().applyPlugin(staticFilePlugin({} as StaticFileOptions));
+        createKori().applyPlugin(serveStaticPlugin({} as ServeStaticOptions));
       }).toThrow('Static file plugin requires a serveFrom directory');
     });
 
     it('should validate maxAge', () => {
       expect(() => {
         createKori().applyPlugin(
-          staticFilePlugin({
+          serveStaticPlugin({
             serveFrom: publicDir,
             maxAge: -1,
           }),
@@ -809,7 +809,7 @@ describe('static-file-plugin-nodejs', () => {
     it('should validate prefix format', () => {
       expect(() => {
         createKori().applyPlugin(
-          staticFilePlugin({
+          serveStaticPlugin({
             serveFrom: publicDir,
             mountAt: 'invalid-prefix',
           }),

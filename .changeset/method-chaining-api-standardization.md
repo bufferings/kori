@@ -1,6 +1,5 @@
 ---
 '@korix/kori': patch
-'@korix/static-file-plugin-nodejs': patch
 ---
 
 Standardize response methods to use method chaining pattern
