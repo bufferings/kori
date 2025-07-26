@@ -1,8 +1,9 @@
 import { defineKoriPlugin } from '@korix/kori';
 import { type KoriEnvironment, type KoriPlugin, type KoriRequest, type KoriResponse } from '@korix/kori';
 
+import { PLUGIN_VERSION } from '../index.js';
+
 import { handleFileResponse, type DownloadOptions, type SendFileOptions } from './handle-file-response.js';
-import { PLUGIN_VERSION } from './version.js';
 
 const PLUGIN_NAME = 'send-file-plugin-nodejs';
 

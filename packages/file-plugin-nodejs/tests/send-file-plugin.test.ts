@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { resolveFilename } from '../src/file/resolve-file-name.js';
-import { createContentDispositionHeader } from '../src/header/create-content-disposition-header.js';
-import { detectMimeType } from '../src/header/detect-mime-type.js';
-import { sendFilePlugin } from '../src/send-file-plugin.js';
+import { resolveFilename } from '../src/send-file-plugin/file/resolve-file-name.js';
+import { createContentDispositionHeader } from '../src/send-file-plugin/header/create-content-disposition-header.js';
+import { sendFilePlugin } from '../src/send-file-plugin/send-file-plugin.js';
+import { detectMimeType } from '../src/share/detect-mime-type.js';
 
 describe('Content-Disposition utilities', () => {
   describe('createContentDisposition', () => {

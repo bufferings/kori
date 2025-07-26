@@ -6,6 +6,7 @@
     { "path": "./packages/cors-plugin" },
     { "path": "./packages/eslint-config" },
     { "path": "./packages/example" },
+    { "path": "./packages/file-plugin-nodejs" },
     { "path": "./packages/kori" },
     { "path": "./packages/nodejs-adapter" },
     { "path": "./packages/openapi-plugin" },
@@ -13,8 +14,6 @@
     { "path": "./packages/pino-adapter" },
     { "path": "./packages/script" },
     { "path": "./packages/security-headers-plugin" },
-    { "path": "./packages/send-file-plugin-nodejs" },
-    { "path": "./packages/serve-static-plugin-nodejs" },
     { "path": "./packages/zod-openapi-plugin" },
     { "path": "./packages/zod-schema" },
     { "path": "./packages/zod-validator" }

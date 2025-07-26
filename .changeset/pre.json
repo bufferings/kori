@@ -6,6 +6,7 @@
     "@korix/cors-plugin": "0.1.0",
     "@korix/eslint-config": "0.1.0",
     "@korix/example": "0.1.0",
+    "@korix/file-plugin-nodejs": "0.1.0",
     "@korix/kori": "0.1.0",
     "@korix/nodejs-adapter": "0.1.0",
     "@korix/openapi-plugin": "0.1.0",
@@ -13,8 +14,6 @@
     "@korix/pino-adapter": "0.1.0",
     "@korix/script": "0.1.0",
     "@korix/security-headers-plugin": "0.1.0",
-    "@korix/send-file-plugin-nodejs": "0.1.0",
-    "@korix/serve-static-plugin-nodejs": "0.1.0",
     "@korix/zod-openapi-plugin": "0.1.0",
     "@korix/zod-schema": "0.1.0",
     "@korix/zod-validator": "0.1.0"
