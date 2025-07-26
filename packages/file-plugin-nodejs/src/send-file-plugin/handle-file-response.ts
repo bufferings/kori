@@ -109,7 +109,7 @@ export async function handleFileResponse<
       if (rangeHeader) {
         const rangeResult = parseRangeHeader(rangeHeader, fileSize);
 
-        if (!rangeResult.isSatisfiable) {
+        if (!rangeResult.isSatisfiable || rangeResult.ranges.length === 0) {
           log.warn('Range not satisfiable', { filePath: resolvedPath, rangeHeader });
           ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
           ctx.res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
@@ -123,9 +123,9 @@ export async function handleFileResponse<
             requestedRanges: rangeResult.ranges.length,
             maxRanges: finalOptions.maxRanges,
           });
-          return ctx.res
-            .status(HttpStatus.BAD_REQUEST)
-            .text(`Too many ranges requested. Maximum allowed: ${finalOptions.maxRanges}`);
+          ctx.res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+          ctx.res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
+          return ctx.res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
         }
 
         // Handle range requests

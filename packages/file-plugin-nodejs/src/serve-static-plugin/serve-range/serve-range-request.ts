@@ -124,7 +124,9 @@ export function serveRangeRequest(
       maxRanges: options.maxRanges,
     });
 
-    return res.status(HttpStatus.BAD_REQUEST).text(`Too many ranges requested. Maximum allowed: ${options.maxRanges}`);
+    res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
+    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${rangeResult.totalSize}`);
+    return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
   }
 
   // Handle single vs multiple range requests
