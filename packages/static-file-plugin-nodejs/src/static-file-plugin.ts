@@ -96,11 +96,29 @@ function setCacheHeaders(
 }
 
 function checkConditionalRequest(req: KoriRequest, fileInfo: ExistingFileInfo): boolean {
+  // ETag-based conditional request (priority)
   const ifNoneMatch = req.header('if-none-match');
   if (ifNoneMatch) {
     const etag = generateETag(fileInfo.stats);
     return ifNoneMatch === etag;
   }
+
+  // Last-Modified-based conditional request (fallback)
+  const ifModifiedSince = req.header('if-modified-since');
+  if (ifModifiedSince) {
+    try {
+      // HTTP dates have second precision, so truncate to seconds for comparison
+      const fileModifiedTime = Math.floor(fileInfo.stats.mtime.getTime() / 1000);
+      const clientModifiedTime = Math.floor(new Date(ifModifiedSince).getTime() / 1000);
+
+      // If file hasn't been modified since client's timestamp, return 304
+      return fileModifiedTime <= clientModifiedTime;
+    } catch {
+      // Invalid date format in If-Modified-Since header, ignore
+      return false;
+    }
+  }
+
   return false;
 }
 

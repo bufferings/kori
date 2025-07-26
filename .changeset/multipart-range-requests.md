@@ -1,5 +1,5 @@
 ---
-'@korix/static-file-plugin-nodejs': minor
+'@korix/static-file-plugin-nodejs': patch
 ---
 
 Add multipart range request support for HTTP 206 Partial Content
