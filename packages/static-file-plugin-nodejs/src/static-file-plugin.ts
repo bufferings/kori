@@ -45,6 +45,7 @@ const defaultOptions: Required<Omit<StaticFileOptions, 'serveFrom'>> = {
   maxAge: 0,
   etag: true,
   lastModified: true,
+  immutable: false,
   ranges: true,
   maxRanges: 1,
 };
@@ -86,10 +87,14 @@ function removeMountPrefix(pathname: string, mountAt: string): string {
 function setCacheHeaders(
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'immutable'>>,
 ): void {
   if (options.maxAge > 0) {
-    res.setHeader(HttpResponseHeader.CACHE_CONTROL, `public, max-age=${options.maxAge}`);
+    let cacheControl = `public, max-age=${options.maxAge}`;
+    if (options.immutable) {
+      cacheControl += ', immutable';
+    }
+    res.setHeader(HttpResponseHeader.CACHE_CONTROL, cacheControl);
   } else {
     res.setHeader(HttpResponseHeader.CACHE_CONTROL, 'no-cache');
   }
@@ -134,7 +139,7 @@ function serveFile(
   req: KoriRequest,
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'immutable' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
 ): KoriResponse {
   const mimeType = detectMimeType(fileInfo.path);
@@ -190,7 +195,7 @@ function serveRangeRequest(
   req: KoriRequest,
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'immutable' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
   rangeResult: RangeResult,
 ): KoriResponse {
@@ -229,7 +234,7 @@ function serveSingleRange(
   req: KoriRequest,
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'immutable' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
   range: { start: number; end: number },
   mimeType: string,
@@ -264,7 +269,7 @@ function serveMultipartRange(
   req: KoriRequest,
   res: KoriResponse,
   fileInfo: ExistingFileInfo,
-  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'ranges' | 'maxRanges'>>,
+  options: Required<Pick<StaticFileOptions, 'maxAge' | 'etag' | 'lastModified' | 'immutable' | 'ranges' | 'maxRanges'>>,
   log: KoriLogger,
   ranges: { start: number; end: number }[],
   mimeType: string,

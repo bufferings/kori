@@ -4,4 +4,10 @@
 
 Add static file serving plugin for Node.js
 
-Provides secure static file serving with streaming, MIME type detection, and caching headers.
+- Secure static file serving with path traversal protection
+- Streaming file delivery without buffering
+- MIME type detection and proper Content-Type headers
+- ETag and Last-Modified support for conditional requests
+- Range request support for partial content delivery
+- Cache-Control headers with optional immutable directive
+- Comprehensive README with usage examples and best practices
