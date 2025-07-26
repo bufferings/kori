@@ -120,7 +120,7 @@ importers:
         specifier: 0.5.4
         version: 0.5.4
       mime-types:
-        specifier: ^3.0.1
+        specifier: 3.0.1
         version: 3.0.1
     devDependencies:
       '@korix/eslint-config':
@@ -136,7 +136,7 @@ importers:
         specifier: 0.5.9
         version: 0.5.9
       '@types/mime-types':
-        specifier: ^3.0.1
+        specifier: 3.0.1
         version: 3.0.1
       '@types/node':
         specifier: 'catalog:'
@@ -511,6 +511,10 @@ importers:
         version: 2.1.9(@types/node@20.11.17)
 
   packages/static-file-plugin-nodejs:
+    dependencies:
+      mime-types:
+        specifier: 3.0.1
+        version: 3.0.1
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -521,6 +525,9 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
+      '@types/mime-types':
+        specifier: 3.0.1
+        version: 3.0.1
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17

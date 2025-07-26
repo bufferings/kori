@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: false,
   sourcemap: true,
-  external: ['@korix/kori', 'node:fs', 'node:fs/promises', 'node:path', 'node:crypto'],
+  external: ['@korix/kori', 'node:fs', 'node:fs/promises', 'node:path', 'node:crypto', 'mime-types'],
 });
