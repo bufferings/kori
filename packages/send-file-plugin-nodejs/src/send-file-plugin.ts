@@ -17,16 +17,12 @@ import mime from 'mime-types';
 import { createContentDisposition, resolveFilename, type ContentDisposition } from './content-disposition.js';
 import { PLUGIN_VERSION } from './version.js';
 
-const PLUGIN_NAME = 'download-plugin-nodejs';
+const PLUGIN_NAME = 'send-file-plugin-nodejs';
 
-export type DownloadOptions = {
-  filePath: string;
-  downloadFilename?: string;
-  disposition?: ContentDisposition;
-};
+export type SendFileOptions = { download?: false; filename?: string } | { download: true; filename?: string };
 
-export type DownloadResponseExtension = {
-  download(options: DownloadOptions): Promise<KoriResponse>;
+export type SendFileResponseExtension = {
+  sendFile(filePath: string, options?: SendFileOptions): Promise<KoriResponse>;
 };
 
 /**
@@ -65,45 +61,51 @@ export function detectMimeType(filePath: string): string {
 }
 
 /**
- * Handle file download logic (extracted for performance)
+ * Handle file sending logic (extracted for performance)
  */
-async function handleDownload<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
+async function handleSendFile<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   ctx: KoriHandlerContext<Env, Req, Res>,
   log: KoriLogger,
-  options: DownloadOptions,
+  filePath: string,
+  options: SendFileOptions = {},
 ): Promise<KoriResponse> {
-  const { filePath, downloadFilename, disposition = 'attachment' } = options;
+  const { download = false, filename } = options;
 
   try {
     // Check if file exists and get stats
     const fileStats = await stat(filePath);
 
     if (!fileStats.isFile()) {
-      log.warn('Attempted to download non-file', { filePath });
+      log.warn('Attempted to send non-file', { filePath });
       return ctx.res.notFound({ message: 'File not found' });
     }
 
     // Resolve filename
-    const resolvedFilename = resolveFilename(filePath, downloadFilename);
+    const resolvedFilename = filename ?? resolveFilename(filePath);
 
     // Set headers
     const mimeType = detectMimeType(filePath);
-    const contentDisposition = createContentDisposition({
-      disposition,
-      filename: resolvedFilename,
-    });
 
     ctx.res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
-    ctx.res.setHeader(HttpResponseHeader.CONTENT_DISPOSITION, contentDisposition);
     ctx.res.setHeader(HttpResponseHeader.CONTENT_LENGTH, fileStats.size.toString());
+
+    // Set Content-Disposition header based on download flag
+    if (download || filename) {
+      const disposition: ContentDisposition = download ? 'attachment' : 'inline';
+      const contentDisposition = createContentDisposition({
+        disposition,
+        filename: resolvedFilename,
+      });
+      ctx.res.setHeader(HttpResponseHeader.CONTENT_DISPOSITION, contentDisposition);
+    }
 
     // Create file stream
     const fileStream = createFileStream(filePath);
 
-    log.debug('Serving file download', {
+    log.debug('Sending file', {
       filePath,
-      downloadFilename: resolvedFilename,
-      disposition,
+      filename: resolvedFilename,
+      download,
       mimeType,
       size: fileStats.size,
     });
@@ -115,33 +117,33 @@ async function handleDownload<Env extends KoriEnvironment, Req extends KoriReque
       return ctx.res.notFound({ message: 'File not found' });
     }
 
-    log.error('Download failed', { filePath, error });
-    return ctx.res.internalError({ message: 'Download failed' });
+    log.error('File sending failed', { filePath, error });
+    return ctx.res.internalError({ message: 'File sending failed' });
   }
 }
 
 /**
- * Download plugin for Node.js
+ * Send file plugin for Node.js
  *
- * Adds a `download` method to the response object for file downloads
- * with proper Content-Disposition headers.
+ * Adds a `sendFile` method to the response object for file sending
+ * with configurable Content-Disposition headers.
  */
-export function downloadPlugin<
+export function sendFilePlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
->(): KoriPlugin<Env, Req, Res, unknown, unknown, DownloadResponseExtension> {
+>(): KoriPlugin<Env, Req, Res, unknown, unknown, SendFileResponseExtension> {
   return defineKoriPlugin({
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
       const log = kori.log().child(PLUGIN_NAME);
 
-      log.info('Download plugin initialized');
+      log.info('Send file plugin initialized');
 
       return kori.onRequest((ctx) => {
-        const download = (options: DownloadOptions) => handleDownload(ctx, log, options);
-        return ctx.withRes({ download });
+        const sendFile = (filePath: string, options?: SendFileOptions) => handleSendFile(ctx, log, filePath, options);
+        return ctx.withRes({ sendFile });
       });
     },
   });

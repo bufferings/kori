@@ -1,7 +1,7 @@
 {
-  "name": "@korix/download-plugin-nodejs",
+  "name": "@korix/send-file-plugin-nodejs",
   "version": "0.1.0",
-  "description": "Download plugin for Kori framework (Node.js)",
+  "description": "Send file plugin for Kori framework (Node.js)",
   "type": "module",
   "author": "mitz (@bufferings)",
   "license": "MIT",
