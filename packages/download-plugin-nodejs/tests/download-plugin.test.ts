@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { createContentDisposition, resolveFilename } from '../src/content-disposition.js';
-import { downloadPlugin } from '../src/download-plugin.js';
+import { downloadPlugin, detectMimeType } from '../src/download-plugin.js';
 
 describe('Content-Disposition utilities', () => {
   describe('createContentDisposition', () => {
@@ -109,6 +109,39 @@ describe('Download Plugin', () => {
       });
       expect(header).toContain('attachment');
       expect(header).toContain('filename');
+    });
+  });
+
+  describe('MIME type detection with mime-types library', () => {
+    it('should detect common file types correctly', () => {
+      // Test basic file types
+      expect(detectMimeType('document.pdf')).toBe('application/pdf');
+      expect(detectMimeType('image.jpg')).toBe('image/jpeg');
+      expect(detectMimeType('image.png')).toBe('image/png');
+      expect(detectMimeType('script.js')).toBe('text/javascript'); // mime-types returns text/javascript
+      expect(detectMimeType('data.json')).toBe('application/json');
+    });
+
+    it('should detect modern web file types', () => {
+      // Test file types that weren't in our old hardcoded list
+      expect(detectMimeType('image.webp')).toBe('image/webp');
+      expect(detectMimeType('icon.svg')).toBe('image/svg+xml');
+      expect(detectMimeType('video.mp4')).toBe('application/mp4'); // mime-types returns application/mp4
+      expect(detectMimeType('video.webm')).toBe('video/webm');
+      expect(detectMimeType('font.woff2')).toBe('font/woff2');
+    });
+
+    it('should handle unknown file types with fallback', () => {
+      // Test unknown extension
+      expect(detectMimeType('file.unknownext')).toBe('application/octet-stream');
+      expect(detectMimeType('noextension')).toBe('application/octet-stream');
+    });
+
+    it('should handle file paths correctly', () => {
+      // Test with full paths
+      expect(detectMimeType('/path/to/document.pdf')).toBe('application/pdf');
+      expect(detectMimeType('./relative/path/image.webp')).toBe('image/webp');
+      expect(detectMimeType('C:\\Windows\\file.txt')).toBe('text/plain');
     });
   });
 });

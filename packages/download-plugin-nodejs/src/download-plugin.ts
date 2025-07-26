@@ -1,6 +1,5 @@
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import { extname } from 'node:path';
 
 import {
   defineKoriPlugin,
@@ -13,6 +12,7 @@ import {
   HttpResponseHeader,
   HttpStatus,
 } from '@korix/kori';
+import mime from 'mime-types';
 
 import { createContentDisposition, resolveFilename, type ContentDisposition } from './content-disposition.js';
 import { PLUGIN_VERSION } from './version.js';
@@ -57,30 +57,11 @@ function createFileStream(filePath: string): ReadableStream {
 }
 
 /**
- * Basic MIME type detection based on file extension
+ * MIME type detection using mime-types library for comprehensive coverage
  */
-function detectMimeType(filePath: string): string {
-  const ext = extname(filePath).toLowerCase();
-
-  const mimeTypes: Record<string, string> = {
-    '.pdf': 'application/pdf',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.txt': 'text/plain',
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.zip': 'application/zip',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  };
-
-  return mimeTypes[ext] ?? 'application/octet-stream';
+export function detectMimeType(filePath: string): string {
+  const mimeType = mime.lookup(filePath);
+  return mimeType || 'application/octet-stream';
 }
 
 /**
