@@ -125,7 +125,7 @@ export function serveRangeRequest(
     });
 
     res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
-    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${rangeResult.totalSize}`);
+    res.setHeader(HttpResponseHeader.CONTENT_RANGE, `bytes */${fileSize}`);
     return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
   }
 
