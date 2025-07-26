@@ -28,23 +28,23 @@ export function sendFilePlugin<Env extends KoriEnvironment, Req extends KoriRequ
       log.info('Send file plugin initialized', { root });
 
       return kori.onRequest((ctx) => {
-        const sendFile = (filePath: string, options?: SendFileOptions) =>
+        const sendFile = (filePath: string, sendFileOptions?: SendFileOptions) =>
           handleFileResponse({
             ctx,
             log,
             filePath,
             mode: 'sendFile',
-            options,
+            options: sendFileOptions,
             pluginRoot: root,
           });
 
-        const download = (filePath: string, options?: DownloadOptions) =>
+        const download = (filePath: string, downloadOptions?: DownloadOptions) =>
           handleFileResponse({
             ctx,
             log,
             filePath,
             mode: 'download',
-            options,
+            options: downloadOptions,
             pluginRoot: root,
           });
 
