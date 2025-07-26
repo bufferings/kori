@@ -7,7 +7,7 @@ import {
   type KoriPlugin,
 } from '@korix/kori';
 
-import { PLUGIN_VERSION } from '../index.js';
+import { PLUGIN_VERSION } from '../version/index.js';
 
 import { handleStaticFileRequest } from './serve/index.js';
 
