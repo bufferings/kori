@@ -712,8 +712,8 @@ describe('static-file-plugin-nodejs', () => {
         }),
       );
 
-      // Request with old If-Modified-Since date
-      const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString();
+      // Request with old If-Modified-Since date (1 year ago)
+      const oldDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toUTCString();
       const response = await fetchFromApp(app, 'http://localhost/static/index.html', {
         'If-Modified-Since': oldDate,
       });
@@ -750,8 +750,8 @@ describe('static-file-plugin-nodejs', () => {
           headers: {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             'if-none-match': etag!,
-            // Use old date for If-Modified-Since to test ETag priority
-            'if-modified-since': new Date('2020-01-01T00:00:00.000Z').toUTCString(),
+            // Use old date for If-Modified-Since to test ETag priority (1 year ago)
+            'if-modified-since': new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toUTCString(),
           },
         }),
       );
