@@ -1,5 +1,36 @@
 # @korix/kori
 
+## 0.1.1-alpha.0
+
+### Patch Changes
+
+- e10a8ce: Add RFC 6265 compliant cookie name validation
+
+  Cookie names are now validated to ensure they contain only valid characters according to RFC 6265 specification. The validation prevents cookie parsing issues by rejecting names with spaces, semicolons, control characters, and other problematic characters. This improves security and compatibility with other frameworks like Express, Fastify, and Hono.
+
+- 4783d3b: Standardize HTTP header names using constants
+
+  Replace hardcoded header strings with HttpResponseHeader constants for better consistency and type safety:
+
+  - Add missing header constants to HttpResponseHeader (cache-control, content-length, etag, etc.)
+  - Replace hardcoded strings like 'cache-control', 'etag' with HttpResponseHeader.CACHE_CONTROL, HttpResponseHeader.ETAG
+  - Apply standardization across all plugins and examples
+  - Improve typo prevention and code maintainability
+
+- 5f0249e: Standardize response methods to use method chaining pattern
+
+  Response body methods now require method chaining for setting status codes:
+
+  - `res.json(body, 404)` → `res.status(404).json(body)`
+  - `res.text(body, 201)` → `res.status(201).text(body)`
+  - `res.empty(304)` → `res.status(304).empty()`
+  - `res.stream(data, 200)` → `res.status(200).stream(data)`
+
+- 066741f: Fix header and status code preservation in KoriResponse
+
+  - Fix: `setHeader('content-type', 'custom')` now preserved when calling body methods like `stream()` or `json()`
+  - Fix: `status(400).empty()` now preserves the status code instead of overwriting with 204
+
 ## 0.1.0
 
 ### Patch Changes

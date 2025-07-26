@@ -1,5 +1,22 @@
 # @korix/body-limit-plugin
 
+## 0.1.1-alpha.0
+
+### Patch Changes
+
+- 34733db: Add automatic chunked transfer encoding support to body-limit-plugin
+
+  - Implement automatic chunked transfer encoding detection and monitoring
+  - Add real-time stream size validation without buffering for chunked requests
+  - Maintain backward compatibility with existing Content-Length validation
+  - Unify error handling for both Content-Length and chunked encoding violations
+
+- Updated dependencies [e10a8ce]
+- Updated dependencies [4783d3b]
+- Updated dependencies [5f0249e]
+- Updated dependencies [066741f]
+  - @korix/kori@0.1.1-alpha.0
+
 ## 0.1.0
 
 ### Patch Changes
