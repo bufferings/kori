@@ -123,12 +123,9 @@ export async function handleFileResponse<
             requestedRanges: rangeResult.ranges.length,
             maxRanges: finalOptions.maxRanges,
           });
-          return ctx.res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-            error: {
-              type: 'TOO_MANY_RANGES',
-              message: `Too many ranges requested. Maximum allowed: ${finalOptions.maxRanges}`,
-            },
-          });
+          return ctx.res
+            .status(HttpStatus.BAD_REQUEST)
+            .text(`Too many ranges requested. Maximum allowed: ${finalOptions.maxRanges}`);
         }
 
         // Handle range requests

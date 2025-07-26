@@ -50,14 +50,9 @@ export function serveFile(
       });
 
       res.setHeader(HttpResponseHeader.CONTENT_RANGE, `${RangeConstants.BYTES} */${fileInfo.stats.size}`);
-      res.setHeader(HttpResponseHeader.CONTENT_TYPE, mimeType);
+      res.setHeader(HttpResponseHeader.ACCEPT_RANGES, RangeConstants.BYTES);
 
-      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).json({
-        error: {
-          type: 'RANGE_NOT_SATISFIABLE',
-          message: 'Requested range not satisfiable',
-        },
-      });
+      return res.status(HttpStatus.RANGE_NOT_SATISFIABLE).empty();
     }
   }
 
