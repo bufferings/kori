@@ -10,7 +10,7 @@ import { asciiOnlySource, noDuplicateExportFrom, noIndexImports } from './rules/
 export const baseConfig = tseslint.config(
   // Ignore patterns
   {
-    ignores: ['**/dist/', '*.config.js'],
+    ignores: ['**/dist/', '*.config.js', '**/config.js'],
   },
 
   // Extend recommended configs
