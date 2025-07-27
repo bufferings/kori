@@ -49,11 +49,13 @@ export function createKori<
     : wrapKoriLogger({ loggerFactory: createKoriSimpleLoggerFactory(options?.loggerOptions) });
 
   const applicationLogger = rootLogger.child('application');
+  const systemLogger = applicationLogger.child('system');
 
   const shared = {
     router,
     rootLogger,
     applicationLogger,
+    systemLogger,
   } as unknown as KoriInternalShared;
 
   const root = createKoriInternal<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator>({

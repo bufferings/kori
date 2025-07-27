@@ -47,6 +47,7 @@ export type KoriInternalShared = {
   router: KoriRouter;
   rootLogger: KoriLogger;
   applicationLogger: KoriLogger;
+  systemLogger: KoriLogger;
 };
 
 export type KoriInternal<
