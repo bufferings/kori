@@ -40,14 +40,16 @@ export function createFetchHandler({
         return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
       }
 
+      const req = createKoriRequest({
+        rawRequest: request,
+        pathParams: routeResult.pathParams,
+        rootLogger,
+      });
+
       const handlerCtx = createKoriHandlerContext({
         env: instanceCtx.env,
-        req: createKoriRequest({
-          rawRequest: request,
-          pathParams: routeResult.pathParams,
-          rootLogger,
-        }),
-        res: createKoriResponse(),
+        req,
+        res: createKoriResponse(req),
       });
 
       const res = await routeResult.handler(handlerCtx);
