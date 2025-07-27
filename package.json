@@ -16,7 +16,10 @@
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm sync:version",
     "changeset:publish": "changeset publish",
-    "sync:version": "turbo run sync:version"
+    "sync:version": "turbo run sync:version",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
@@ -26,6 +29,7 @@
     "lefthook": "1.10.1",
     "prettier": "3.4.2",
     "rimraf": "catalog:",
-    "turbo": "2.5.4"
+    "turbo": "2.5.4",
+    "vitepress": "1.6.3"
   }
 }
