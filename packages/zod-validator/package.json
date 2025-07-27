@@ -1,6 +1,6 @@
 {
   "name": "@korix/zod-validator",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.0",
   "description": "Zod validator for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

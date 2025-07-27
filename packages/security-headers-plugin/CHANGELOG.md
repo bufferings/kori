@@ -1,5 +1,28 @@
 # @korix/security-headers-plugin
 
+## 0.1.1-alpha.0
+
+### Patch Changes
+
+- 4783d3b: Standardize HTTP header names using constants
+
+  Replace hardcoded header strings with HttpResponseHeader constants for better consistency and type safety:
+
+  - Add missing header constants to HttpResponseHeader (cache-control, content-length, etag, etc.)
+  - Replace hardcoded strings like 'cache-control', 'etag' with HttpResponseHeader.CACHE_CONTROL, HttpResponseHeader.ETAG
+  - Apply standardization across all plugins and examples
+  - Improve typo prevention and code maintainability
+
+- Updated dependencies [e10a8ce]
+- Updated dependencies [816f76e]
+- Updated dependencies [8ab7c31]
+- Updated dependencies [4783d3b]
+- Updated dependencies [040994a]
+- Updated dependencies [5f0249e]
+- Updated dependencies [066741f]
+- Updated dependencies [6b5ded8]
+  - @korix/kori@0.1.1-alpha.0
+
 ## 0.1.0
 
 ### Patch Changes
