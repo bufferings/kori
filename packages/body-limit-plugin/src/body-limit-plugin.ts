@@ -323,9 +323,6 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             ctx.res.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
               error: 'Payload Too Large',
               message: 'Request body size exceeds the maximum allowed limit',
-              maxSize: error.maxSize,
-              receivedSize: error.actualSize,
-              code: ERROR_CODES.BODY_SIZE_LIMIT_EXCEEDED,
             });
           }
         });

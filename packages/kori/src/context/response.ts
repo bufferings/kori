@@ -75,6 +75,7 @@ type ResState = {
   headers: Headers | undefined;
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
+  built: boolean;
 };
 
 export function isKoriResponse(value: unknown): value is KoriResponse {
@@ -156,40 +157,22 @@ type ErrorResponseBodyJson = {
   error: {
     type: ErrorType;
     message: string;
-    details?: unknown;
   };
 };
 
-function createErrorResponseBodyJson(options: {
-  errorType: ErrorType;
-  message: string;
-  details?: unknown;
-}): ErrorResponseBodyJson {
+function createErrorResponseBodyJson(options: { errorType: ErrorType; message: string }): ErrorResponseBodyJson {
   return {
     error: {
       type: options.errorType,
       message: options.message,
-      details: options.details,
     },
   };
 }
 
-type ErrorResponseOptions =
-  | {
-      type: 'json';
-      message?: string;
-      details?: unknown;
-    }
-  | {
-      type: 'text';
-      message?: string;
-    }
-  | {
-      // Default (treated as JSON)
-      type?: undefined;
-      message?: string;
-      details?: unknown;
-    };
+type ErrorResponseOptions = {
+  type?: 'json' | 'text';
+  message?: string;
+};
 
 type ErrorConfig = {
   res: ResState;
@@ -207,7 +190,7 @@ function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: 
   } else {
     setBodyJsonInternal({
       res,
-      body: createErrorResponseBodyJson({ errorType, message: msg, details: options.details }),
+      body: createErrorResponseBodyJson({ errorType, message: msg }),
     });
   }
 }
@@ -385,6 +368,11 @@ const sharedMethods = {
   },
 
   build(): Response {
+    if (this.built) {
+      throw new Error('Response can only be built once.');
+    }
+    this.built = true;
+
     let body: BodyInit | null = null;
     switch (this.bodyKind) {
       case 'json':
@@ -436,6 +424,7 @@ export function createKoriResponse(): KoriResponse {
   obj.headers = undefined;
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
+  obj.built = false;
 
   return obj as unknown as KoriResponse;
 }
