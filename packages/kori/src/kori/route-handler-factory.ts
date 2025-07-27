@@ -139,7 +139,7 @@ function createHookExecutor<
       try {
         await hook(ctx);
       } catch (e) {
-        ctx.req.log().error('Finally Hook Error', { err: e });
+        ctx.req.log().child('system').error('Finally Hook Error', { err: e });
       }
     }
   };
@@ -257,7 +257,7 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.req.log().warn('Response validation failed', { err });
+    ctx.req.log().child('system').warn('Response validation failed', { err });
     return undefined;
   };
 }
