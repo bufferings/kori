@@ -101,7 +101,7 @@ export function negotiateErrorContentType(acceptHeader?: string): 'application/j
 
       // Check for wildcard patterns
       if (acceptedType.mediaType === 'text/*' || acceptedType.mediaType === '*/*') {
-        return 'text/html'; // Default to HTML for text types
+        return 'text/html'; // Default to HTML for wildcards (browser-friendly)
       }
       if (acceptedType.mediaType === 'application/*') {
         return 'application/json';
