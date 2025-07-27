@@ -75,6 +75,7 @@ type ResState = {
   headers: Headers | undefined;
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
+  built: boolean;
 };
 
 export function isKoriResponse(value: unknown): value is KoriResponse {
@@ -385,6 +386,11 @@ const sharedMethods = {
   },
 
   build(): Response {
+    if (this.built) {
+      throw new Error('Response can only be built once.');
+    }
+    this.built = true;
+
     let body: BodyInit | null = null;
     switch (this.bodyKind) {
       case 'json':
@@ -436,6 +442,7 @@ export function createKoriResponse(): KoriResponse {
   obj.headers = undefined;
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
+  obj.built = false;
 
   return obj as unknown as KoriResponse;
 }
