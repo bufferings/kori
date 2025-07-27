@@ -1,5 +1,24 @@
 # @korix/openapi-scalar-ui-plugin
 
+## 0.1.1-alpha.0
+
+### Patch Changes
+
+- 2eae50b: Update @scalar/api-reference from 1.25.62 to 1.32.10
+
+  This update resolves the deprecated subdependency warning for node-domexception@1.0.0 and brings improved dependency management with modern packages.
+
+- Updated dependencies [e10a8ce]
+- Updated dependencies [816f76e]
+- Updated dependencies [8ab7c31]
+- Updated dependencies [4783d3b]
+- Updated dependencies [040994a]
+- Updated dependencies [5f0249e]
+- Updated dependencies [066741f]
+- Updated dependencies [6b5ded8]
+  - @korix/kori@0.1.1-alpha.0
+  - @korix/openapi-plugin@0.1.1-alpha.0
+
 ## 0.1.0
 
 ### Patch Changes
