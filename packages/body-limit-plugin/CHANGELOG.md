@@ -1,5 +1,54 @@
 # @korix/body-limit-plugin
 
+## 0.1.1
+
+### Patch Changes
+
+- 34733db: Add automatic chunked transfer encoding support to body-limit-plugin
+
+  - Implement automatic chunked transfer encoding detection and monitoring
+  - Add real-time stream size validation without buffering for chunked requests
+  - Maintain backward compatibility with existing Content-Length validation
+  - Unify error handling for both Content-Length and chunked encoding violations
+
+- 6b5ded8: Security: Remove error details from HTTP responses and framework logs
+
+  **Breaking Changes:**
+
+  - Remove `details` property from `ErrorResponseOptions` type
+  - Simplify `ErrorResponseOptions` to single object type instead of union types
+
+  **Security Improvements:**
+
+  - Remove error details from default HTTP error responses to prevent information disclosure
+  - Remove `{ err }` objects from framework internal logs to prevent personal information leakage
+  - Standardize all framework logs to use `.child('system')` namespace
+  - Update body-limit-plugin to remove internal details from error responses
+
+  **Migration:**
+
+  - Remove `details` property usage from custom error responses
+  - Use custom validation error handlers if detailed error information is needed:
+    ```typescript
+    app.onRequestValidationError((ctx, errors) => {
+      ctx.req.log().warn('Validation failed', { err: errors }); // User controlled
+      return ctx.res.badRequest({ message: 'Invalid input' });
+    });
+    ```
+
+  This change prevents potential information disclosure vulnerabilities while maintaining
+  error occurrence monitoring through internal logs.
+
+- Updated dependencies [e10a8ce]
+- Updated dependencies [816f76e]
+- Updated dependencies [8ab7c31]
+- Updated dependencies [4783d3b]
+- Updated dependencies [040994a]
+- Updated dependencies [5f0249e]
+- Updated dependencies [066741f]
+- Updated dependencies [6b5ded8]
+  - @korix/kori@0.1.1
+
 ## 0.1.1-alpha.0
 
 ### Patch Changes
