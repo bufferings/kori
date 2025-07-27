@@ -87,22 +87,24 @@ export function negotiateErrorContentType(acceptHeader?: string): 'application/j
   try {
     const accepted = parseAcceptHeader(acceptHeader);
 
-    const supportedTypes = ['application/json', 'text/html', 'text/plain', 'application/*', 'text/*', '*/*'];
-
     for (const acceptedType of accepted) {
-      for (const supportedType of supportedTypes) {
-        if (matchesMediaType(supportedType, acceptedType.mediaType)) {
-          if (supportedType === 'text/html' || (supportedType === 'text/*' && acceptedType.mediaType === 'text/html')) {
-            return 'text/html';
-          }
-          if (
-            supportedType === 'text/plain' ||
-            (supportedType === 'text/*' && acceptedType.mediaType === 'text/plain')
-          ) {
-            return 'text/plain';
-          }
-          return 'application/json';
-        }
+      // Check for specific supported types first
+      if (acceptedType.mediaType === 'text/html') {
+        return 'text/html';
+      }
+      if (acceptedType.mediaType === 'text/plain') {
+        return 'text/plain';
+      }
+      if (acceptedType.mediaType === 'application/json') {
+        return 'application/json';
+      }
+
+      // Check for wildcard patterns
+      if (acceptedType.mediaType === 'text/*' || acceptedType.mediaType === '*/*') {
+        return 'text/html'; // Default to HTML for text types
+      }
+      if (acceptedType.mediaType === 'application/*') {
+        return 'application/json';
       }
     }
 
