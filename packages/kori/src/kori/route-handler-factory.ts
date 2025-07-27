@@ -215,9 +215,16 @@ function createRequestValidationErrorHandler<
     }
 
     // 4. Default validation error handling with 400 status
+    // Log error details for debugging
+    ctx.req.log().warn('Request validation failed', {
+      err,
+      path: ctx.req.url().pathname,
+      method: ctx.req.method(),
+    });
+
+    // Return minimal error information to client
     return ctx.res.badRequest({
       message: 'Request validation failed',
-      details: err,
     });
   };
 }

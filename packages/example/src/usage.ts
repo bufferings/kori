@@ -343,12 +343,16 @@ app.post('/validation-demo', {
   }),
   // Route-level validation error handling
   onRequestValidationError: (ctx, errors) => {
+    // Log error details for debugging
+    ctx.req.log().warn('Validation demo failed', {
+      errors,
+      path: ctx.req.url().pathname,
+      method: ctx.req.method(),
+    });
+
+    // Return minimal error information to client
     return ctx.res.badRequest({
       message: 'Validation demo failed',
-      details: {
-        errors: errors,
-        hint: 'Check the required fields: email (valid email), age (18-120), preferences (newsletter: boolean, theme: light/dark)',
-      },
     });
   },
   handler: (ctx) => {
