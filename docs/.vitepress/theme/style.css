@@ -1,0 +1,4 @@
+/* Fix VPHome opacity issue in preview mode */
+.VPHome {
+  opacity: 1 !important;
+}
