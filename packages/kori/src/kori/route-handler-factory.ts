@@ -138,7 +138,7 @@ function createHookExecutor<
     for (const hook of reversedFinallyHooks) {
       try {
         await hook(ctx);
-      } catch (e) {
+      } catch {
         ctx.req.log().child('system').error('Finally Hook Error');
       }
     }
