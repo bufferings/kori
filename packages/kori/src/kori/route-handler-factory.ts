@@ -139,7 +139,7 @@ function createHookExecutor<
       try {
         await hook(ctx);
       } catch (e) {
-        ctx.req.log().child('system').error('Finally Hook Error', { err: e });
+        ctx.req.log().child('system').error('Finally Hook Error');
       }
     }
   };
@@ -215,12 +215,8 @@ function createRequestValidationErrorHandler<
     }
 
     // 4. Default validation error handling with 400 status
-    // Log error details for debugging
-    ctx.req.log().warn('Request validation failed', {
-      err,
-      path: ctx.req.url().pathname,
-      method: ctx.req.method(),
-    });
+    // Log error occurrence for monitoring
+    ctx.req.log().child('system').warn('Request validation failed');
 
     // Return minimal error information to client
     return ctx.res.badRequest({
@@ -264,7 +260,7 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.req.log().child('system').warn('Response validation failed', { err });
+    ctx.req.log().child('system').warn('Response validation failed');
     return undefined;
   };
 }
