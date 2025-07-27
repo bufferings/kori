@@ -100,9 +100,10 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
       });
 
       return kori.get(`${options.mountAt}/*`, async ({ req, res }) => {
+        const requestLog = req.log().child(PLUGIN_NAME);
         const pathname = req.url().pathname;
         const requestPath = removeMountPrefix(pathname, options.mountAt);
-        return await handleStaticFileRequest(req, res, requestPath, options, log);
+        return await handleStaticFileRequest(req, res, requestPath, options, requestLog);
       });
     },
   });
