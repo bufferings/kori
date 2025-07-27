@@ -38,3 +38,4 @@ Fixes #123
 ## Pull Requests
 
 - Write titles and descriptions in English for international collaboration
+- When creating PRs with GitHub CLI that have long descriptions, ALWAYS create a temporary file for the description instead of passing it directly as command line arguments. Use `gh pr create --body-file temp_file.md` to avoid zsh misinterpreting special characters
