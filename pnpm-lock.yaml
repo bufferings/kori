@@ -299,6 +299,9 @@ importers:
 
   packages/kori:
     dependencies:
+      entities:
+        specifier: 6.0.1
+        version: 6.0.1
       hono:
         specifier: 4.8.4
         version: 4.8.4

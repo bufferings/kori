@@ -9,7 +9,11 @@ import {
   type CookieValue,
   serializeCookie,
   deleteCookie,
+  negotiateErrorContentType,
+  createErrorHtmlPage,
 } from '../http/index.js';
+
+import { type KoriRequest } from './request.js';
 
 const KoriResponseBrand = Symbol('kori-response');
 
@@ -76,6 +80,7 @@ type ResState = {
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
   built: boolean;
+  req: KoriRequest;
 };
 
 export function isKoriResponse(value: unknown): value is KoriResponse {
@@ -170,7 +175,7 @@ function createErrorResponseBodyJson(options: { errorType: ErrorType; message: s
 }
 
 type ErrorResponseOptions = {
-  type?: 'json' | 'text';
+  type?: 'json' | 'text' | 'html';
   message?: string;
 };
 
@@ -185,13 +190,46 @@ type ErrorConfig = {
 function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
   const msg = options.message ?? defaultMsg;
   res.statusCode = status;
+
+  // 1. If type is explicitly specified, use it
   if (options.type === 'text') {
     setBodyTextInternal({ res, body: msg });
-  } else {
+    return;
+  }
+  if (options.type === 'json') {
     setBodyJsonInternal({
       res,
       body: createErrorResponseBodyJson({ errorType, message: msg }),
     });
+    return;
+  }
+  if (options.type === 'html') {
+    setBodyHtmlInternal({
+      res,
+      body: createErrorHtmlPage({ errorType, message: msg }),
+    });
+    return;
+  }
+
+  // 2. If no explicit type, use content negotiation based on Accept header
+  const negotiatedType = negotiateErrorContentType(res.req.header('accept'));
+
+  switch (negotiatedType) {
+    case 'text/html':
+      setBodyHtmlInternal({
+        res,
+        body: createErrorHtmlPage({ errorType, message: msg }),
+      });
+      break;
+    case 'text/plain':
+      setBodyTextInternal({ res, body: msg });
+      break;
+    default: // 'application/json'
+      setBodyJsonInternal({
+        res,
+        body: createErrorResponseBodyJson({ errorType, message: msg }),
+      });
+      break;
   }
 }
 
@@ -416,7 +454,7 @@ const sharedMethods = {
   },
 } satisfies Omit<KoriResponse, typeof KoriResponseBrand> & ThisType<ResState>;
 
-export function createKoriResponse(): KoriResponse {
+export function createKoriResponse(req: KoriRequest): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 
   obj[KoriResponseBrand] = KoriResponseBrand;
@@ -425,6 +463,7 @@ export function createKoriResponse(): KoriResponse {
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
   obj.built = false;
+  obj.req = req;
 
   return obj as unknown as KoriResponse;
 }

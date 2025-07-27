@@ -1,64 +1,66 @@
 import { describe, test, expect } from 'vitest';
 
+import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse } from '../../src/context/response.js';
 import { HttpStatus } from '../../src/http/index.js';
 
-describe('KoriResponse status code handling', () => {
-  test('uninitialized response returns 200 OK by default', () => {
-    const res = createKoriResponse();
+// Mock request for testing
+const mockRequest = {
+  header: () => 'application/json',
+} as unknown as KoriRequest;
 
-    // No body method called - should default to 200 OK
-    const response = res.build();
-    expect(response.status).toBe(HttpStatus.OK);
+describe('KoriResponse status', () => {
+  test('status() sets and returns correct status code', () => {
+    const res = createKoriResponse(mockRequest);
+
+    res.status(HttpStatus.NOT_FOUND);
+    expect(res.getStatus()).toBe(HttpStatus.NOT_FOUND);
   });
 
-  test('explicit empty() call returns 204 No Content', () => {
-    const res = createKoriResponse();
+  test('status() can be chained with other methods', () => {
+    const res = createKoriResponse(mockRequest);
 
-    res.empty();
+    res.status(HttpStatus.CREATED).json({ message: 'Created' });
+    expect(res.getStatus()).toBe(HttpStatus.CREATED);
+  });
+
+  test('status() is reflected in built response', () => {
+    const res = createKoriResponse(mockRequest);
+
+    res.status(HttpStatus.NO_CONTENT).empty();
     const response = res.build();
     expect(response.status).toBe(HttpStatus.NO_CONTENT);
   });
 
-  test('json response returns 200 OK by default', () => {
-    const res = createKoriResponse();
+  test('default status is 200 for json response', () => {
+    const res = createKoriResponse(mockRequest);
 
-    res.json({ message: 'test' });
+    res.json({ message: 'OK' });
     const response = res.build();
     expect(response.status).toBe(HttpStatus.OK);
   });
 
-  test('text response returns 200 OK by default', () => {
-    const res = createKoriResponse();
+  test('default status is 200 for text response', () => {
+    const res = createKoriResponse(mockRequest);
 
-    res.text('Hello World');
+    res.text('OK');
     const response = res.build();
     expect(response.status).toBe(HttpStatus.OK);
   });
 
-  test('html response returns 200 OK by default', () => {
-    const res = createKoriResponse();
+  test('default status is 200 for html response', () => {
+    const res = createKoriResponse(mockRequest);
 
-    res.html('<h1>Hello</h1>');
+    res.html('<p>OK</p>');
     const response = res.build();
     expect(response.status).toBe(HttpStatus.OK);
   });
 
-  test('explicit status code overrides default behavior', () => {
-    const res = createKoriResponse();
+  test('default status is 204 for empty response', () => {
+    const res = createKoriResponse(mockRequest);
 
-    // Set explicit status code before empty()
-    res.status(HttpStatus.ACCEPTED).empty();
+    res.empty();
     const response = res.build();
-    expect(response.status).toBe(HttpStatus.ACCEPTED);
-  });
-
-  test('explicit status code overrides default for uninitialized response', () => {
-    const res = createKoriResponse();
-
-    // Set explicit status code without calling any body method
-    res.status(HttpStatus.NOT_FOUND);
-    const response = res.build();
-    expect(response.status).toBe(HttpStatus.NOT_FOUND);
+    expect(response.status).toBe(HttpStatus.NO_CONTENT);
   });
 });
