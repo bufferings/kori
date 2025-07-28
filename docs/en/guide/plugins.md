@@ -573,5 +573,5 @@ describe('Request ID Plugin', () => {
 ## Next Steps
 
 - [Learn about request validation](/en/guide/validation)
-- [Set up application configuration](/en/guide/configuration)
+- [Get started with Kori](/en/guide/getting-started)
 - [Explore error handling patterns](/en/guide/error-handling)
