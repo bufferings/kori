@@ -392,4 +392,4 @@ app.onResponse((ctx) => {
 - [REST API Example](/en/examples/rest-api) - Build a complete REST API
 - [File Upload Example](/en/examples/file-upload) - Handle file uploads
 - [WebSocket Example](/en/examples/websocket) - Real-time communication
-- [Request & Response Guide](/en/guide/request-response) - Detailed API reference
+- [Context Guide](/en/guide/context) - Detailed API reference

@@ -234,7 +234,7 @@ const UserSchemaV2 = UserSchema.extend({
 
 - **[OpenAPI Integration](/en/guide/openapi)** - Turn your schemas into beautiful documentation
 - **[Error Handling](/en/guide/error-handling)** - Advanced error patterns and recovery
-- **[Request & Response](/en/guide/request-response)** - Master HTTP handling
+- **[Context](/en/guide/context)** - Master HTTP handling
 
 ### 💡 Real Examples
 
