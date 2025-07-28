@@ -19,13 +19,15 @@ app.get('/', (ctx) => {
 ## Add Schemas for More Power
 
 ```typescript
+import { zodRequestSchema } from '@korix/zod-schema';
+
 const UserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
 });
 
 app.post('/users', {
-  request: { body: UserSchema },
+  requestSchema: zodRequestSchema({ body: UserSchema }),
   handler: (ctx) => {
     // Validated and typed from schema
     const { name, email } = ctx.req.validated.body;
