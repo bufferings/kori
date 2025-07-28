@@ -1,121 +1,172 @@
 # Getting Started
 
-Ready to build your first type-safe API? Let's get you up and running in **under 5 minutes**! ⚡
+Ready to build your first type-safe API? Let's get you up and running!
 
-## Create Your First API
-
-### 1. Install Kori
+## Quick Setup (Coming Soon!)
 
 ```bash
-npm install @korix/kori @korix/nodejs-adapter
+npm create kori-app my-api  # 🚧 Coming Soon!
+cd my-api
+npm run dev
 ```
 
-### 2. Write Your API
+Your API is running at `http://localhost:3000`
 
-Create `app.ts` and add this code:
+## Basic API
+
+Create your first endpoint:
 
 ```typescript
-import { createKori, HttpStatus } from '@korix/kori';
-import { startNodeServer } from '@korix/nodejs-adapter';
+import { createKori } from '@korix/kori';
 
 const app = createKori();
 
-// Your first endpoint - that's it! 🎉
 app.get('/hello', (ctx) => {
-  return ctx.res.text('Hello, World! 🚀');
+  return ctx.res.text('Hello, Kori!');
 });
 
+export { app };
+```
+
+## Request & Response
+
+Handle different types of requests and responses:
+
+```typescript
+import { createKori } from '@korix/kori';
+
+const app = createKori();
+
 app.get('/users/:id', (ctx) => {
+  // Path parameters
   const { id } = ctx.req.pathParams;
   return ctx.res.json({
-    userId: id,
-    message: `Hello user ${id}!`,
-    timestamp: new Date().toISOString(),
+    id,
+    name: `User ${id}`,
+    active: true,
   });
 });
 
-// Start the server
-startNodeServer(app, { port: 3000 });
-```
-
-### 3. Start Your Server
-
-```bash
-npx tsx app.ts
-```
-
-**🎉 Done!** Your API is running at `http://localhost:3000`
-
-Test it:
-
-```bash
-curl http://localhost:3000/hello
-curl http://localhost:3000/users/123
-```
-
-## What Makes This Special?
-
-### Zero Configuration Required
-
-No config files, no setup - just write code and it works.
-
-### Type Safety Built-In
-
-Path parameters like `:id` are automatically typed and available in `ctx.req.pathParams`.
-
-### Production Ready
-
-This isn't just a toy - add plugins for CORS, validation, authentication, and more.
-
-## Level Up: Add Validation
-
-```typescript
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { z } from 'zod/v4';
-
-const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+app.get('/info', (ctx) => {
+  // Request/Response headers
+  const userAgent = ctx.req.header('user-agent');
+  return ctx.res.setHeader('x-custom', 'value').status(200).json({ userAgent });
 });
 
-const UserSchema = z.object({
+export { app };
+```
+
+## Hooks
+
+Add initialization and request lifecycle processing:
+
+```typescript
+import { createKori } from '@korix/kori';
+
+const app = createKori()
+  .onInit(async (ctx) => {
+    // Runs once when application starts
+    app.log().info('Application starting...');
+    return ctx.withEnv({ applicationStartTime: new Date() });
+  })
+  .onRequest((ctx) => {
+    // Runs before each request handler
+    ctx.req.log().info(`${ctx.req.method()} ${ctx.req.url().pathname}`);
+  })
+  .onResponse((ctx) => {
+    // Runs after each successful response
+    ctx.req.log().info(`Response: ${ctx.res.status()}`);
+  });
+
+app.get('/hello1', (ctx) => {
+  // Type-safe access to environment extensions
+  const uptime = Date.now() - ctx.env.applicationStartTime.getTime();
+  return ctx.res.text(`Hello from endpoint 1! Uptime: ${uptime}ms`);
+});
+
+app.get('/hello2', (ctx) => {
+  return ctx.res.text('Hello from endpoint 2!');
+});
+
+export { app };
+```
+
+## Plugins
+
+Extend functionality with reusable plugins:
+
+```typescript
+import { createKori } from '@korix/kori';
+import { corsPlugin } from '@korix/cors-plugin';
+
+const app = createKori().applyPlugin(
+  corsPlugin({
+    origin: ['http://localhost:3000', 'https://myapp.com'],
+    credentials: true,
+  }),
+);
+
+app.get('/api/data', (ctx) => {
+  return ctx.res.json({ message: 'CORS enabled!' });
+});
+
+export { app };
+```
+
+## Validation
+
+Type-safe validation with first-class Zod support:
+
+```typescript
+import { createKori } from '@korix/kori';
+import { zodRequestSchema } from '@korix/zod-schema';
+import { createKoriZodRequestValidator } from '@korix/zod-validator';
+import { z } from 'zod';
+
+const CreateUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   age: z.number().min(18).optional(),
 });
 
+const app = createKori({
+  requestValidator: createKoriZodRequestValidator(),
+});
+
 app.post('/users', {
-  requestSchema: zodRequestSchema({
-    body: UserSchema,
-  }),
+  requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
-    // ctx.req.validated.body is fully typed and validated! ✨
+    // Type-safe validated body access
     const { name, email, age } = ctx.req.validated.body;
 
-    return ctx.res.status(HttpStatus.CREATED).json({
-      user: { name, email, age },
-      message: 'User created successfully!',
+    // Your business logic here (save to database, etc.)
+
+    return ctx.res.status(201).json({
+      id: Math.random().toString(36),
+      name,
+      email,
+      age,
+      createdAt: new Date().toISOString(),
     });
   },
 });
+
+export { app };
 ```
 
-➡️ [Learn More About Validation](/en/guide/validation) - Turn your API into a type-safe fortress!
+## OpenAPI
 
-## Generate Beautiful Documentation
-
-Want automatic, interactive API documentation? Here's a complete example:
+Generate interactive API documentation:
 
 ```typescript
-import { createKori, HttpStatus } from '@korix/kori';
-import { startNodeServer } from '@korix/nodejs-adapter';
-import { zodRequestSchema } from '@korix/zod-schema';
+import { createKori } from '@korix/kori';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import { zodRequestSchema } from '@korix/zod-schema';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
-const UserSchema = z.object({
+const CreateUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   age: z.number().min(18).optional(),
@@ -124,78 +175,30 @@ const UserSchema = z.object({
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
 })
-  .applyPlugin(
-    zodOpenApiPlugin({
-      info: { title: 'My API', version: '1.0.0' },
-    }),
-  )
-  .applyPlugin(scalarUiPlugin({ path: '/docs' }));
+  // Generate OpenAPI specification from Zod schemas
+  .applyPlugin(zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }))
+  // Serve interactive documentation UI
+  .applyPlugin(scalarUiPlugin());
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({ body: UserSchema }),
-  pluginMetadata: openApiMeta({
-    summary: 'Create user',
-    tags: ['Users'],
-  }),
+  requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
+    // Type-safe validated body access
     const { name, email, age } = ctx.req.validated.body;
-    return ctx.res.status(HttpStatus.CREATED).json({
-      user: { name, email, age },
-      message: 'User created!',
+
+    // Your business logic here (save to database, etc.)
+
+    return ctx.res.status(201).json({
+      id: Math.random().toString(36),
+      name,
+      email,
+      age,
+      createdAt: new Date().toISOString(),
     });
   },
 });
 
-startNodeServer(app, { port: 3000 });
+export { app };
 ```
 
-Visit `http://localhost:3000/docs` for interactive documentation! 📖✨
-
-Features you get for free:
-
-- ✅ Full TypeScript type safety
-- ✅ Automatic request validation
-- ✅ Beautiful interactive documentation at `/docs`
-- ✅ Detailed error responses
-- ✅ Production-ready performance
-
-➡️ [Learn More About OpenAPI](/en/guide/openapi) - Advanced documentation features
-
-## CLI Tool (Coming Soon!)
-
-We're working on a CLI tool to make this even easier:
-
-```bash
-npm create kori-app my-api  # 🚧 Coming Soon!
-```
-
-For now, the manual setup above is quick and gives you full control.
-
-## What's Next?
-
-### 🎯 Essential Guides
-
-- [Validation](/en/guide/validation) - Master type-safe validation (highly recommended!)
-- [OpenAPI](/en/guide/openapi) - Auto-generate beautiful documentation
-- [Request & Response](/en/guide/request-response) - Handle HTTP like a pro
-
-### 🔧 Advanced Topics
-
-- [Plugins](/en/guide/plugins) - Extend Kori with reusable functionality
-- [Hooks](/en/guide/hooks) - Add middleware-like behavior
-- [Error Handling](/en/guide/error-handling) - Robust error management
-
-### 💡 Real Examples
-
-- [Basic Server](/en/examples/basic-server) - Complete server example
-- [REST API](/en/examples/rest-api) - Full REST API with validation
-- [File Upload](/en/examples/file-upload) - Handle file uploads
-
-### 📚 API Reference
-
-- [Core API](/en/core/kori) - Main Kori methods
-- [Context](/en/core/context) - Request context handling
-- [Request](/en/core/request) - Request object methods
-- [Response](/en/core/response) - Response building methods
-
-Ready to build something amazing? Start with [Validation](/en/guide/validation) or explore our [Examples](/en/examples/)! 🚀
+Visit `http://localhost:3000/docs` for interactive documentation!

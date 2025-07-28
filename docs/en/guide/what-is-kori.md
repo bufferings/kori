@@ -1,72 +1,45 @@
 # What is Kori?
 
-Kori is a modern TypeScript web framework that makes building APIs **safe, fast, and enjoyable**.
+Kori - means ice ❄️ (氷) in Japanese - is a TypeScript-first web application framework that brings cool, structured clarity to API development.
 
-Think of it as a framework that **prevents bugs before they happen** while automatically generating beautiful documentation for your APIs.
+Build type-safe APIs where your schemas define both validation and TypeScript types.
 
-## What Makes Kori Special?
+---
 
-### 🛡️ **Built-in Safety**
-
-Write your API once, and Kori ensures everything works correctly:
+## Start Simple
 
 ```typescript
-import { z } from 'zod/v4';
+app.get('/', (ctx) => {
+  return ctx.res.json({ message: 'Hello Kori!' });
+});
+```
 
-// Define your data structure
+---
+
+## Add Schemas for More Power
+
+```typescript
+import { zodRequestSchema } from '@korix/zod-schema';
+
 const UserSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   email: z.string().email(),
 });
 
-// Kori automatically:
-// ✅ Validates incoming requests
-// ✅ Generates TypeScript types
-// ✅ Creates API documentation
-// ✅ Handles errors gracefully
+app.post('/users', {
+  requestSchema: zodRequestSchema({ body: UserSchema }),
+  handler: (ctx) => {
+    // Validated and typed from schema
+    const { name, email } = ctx.req.validated.body;
+    return ctx.res.json({ id: '123', name, email });
+  },
+});
 ```
 
-### 🚀 **Zero Maintenance Documentation**
+One schema provides validation and TypeScript types. Add OpenAPI plugins to generate documentation from the same schemas.
 
-Your code **IS** your documentation. No more outdated docs:
+---
 
-- Write schemas → Get interactive API docs
-- Change your code → Documentation updates automatically
-- Share with frontend teams → They get exact TypeScript types
+## Powered by Hono Router
 
-### 🧩 **Start Small, Scale Smart**
-
-Kori grows with your project:
-
-- **Tiny core** - Only what you need
-- **Plugin ecosystem** - Add features when needed
-- **Runtime flexible** - Deploy anywhere (Node.js, Bun, Deno, Cloudflare)
-
-## How It Works
-
-Every Kori app follows a simple pattern:
-
-```
-Request → Validation → Your Code → Response
-```
-
-Kori handles the complex parts (validation, types, docs) so you focus on **building features**.
-
-## Perfect For
-
-- **API-first teams** who want bulletproof backends
-- **TypeScript lovers** who hate manual type casting
-- **Fast-moving projects** that need reliable documentation
-- **Full-stack developers** building modern web apps
-
-## The Kori Advantage
-
-Other frameworks make you choose: **fast development** OR **production safety**.
-
-Kori gives you both. Write TypeScript schemas once, get validation, types, and documentation automatically.
-
-## Ready to Try?
-
-Get your first API running in under 5 minutes with our [Getting Started Guide](/en/guide/getting-started).
-
-Or explore what's possible with our [examples](/en/examples/) and [interactive demos](/en/extensions/).
+Under the hood, Kori integrates Hono's battle-tested router while adding TypeScript-first schema validation and type safety on top.

@@ -1,89 +1,48 @@
 ---
 description: 'Guidelines for writing accurate, well-structured documentation'
-globs: ['**/docs/**/*.md', '**/README.md', '**/*.mdc']
+globs: ['**/docs/**/*.md', '**/README.md']
 alwaysApply: false
 ---
 
 # Documentation Writing Rules
 
-## Core Principle: Source Code First
+## Source Code First
 
-**NEVER use guesswork or assumptions when writing documentation.**
+**Never write documentation based on assumptions or guesswork.**
 
-### Mandatory Process
+Always read and understand the actual source code before writing documentation:
 
-1. **Read the Source Code**: Always read and understand the actual implementation before writing any documentation
-2. **Verify Examples**: All code examples must be based on real, working code from the codebase
-3. **Check API Usage**: Verify method signatures, parameter types, and return values from the actual source
-4. **Test Assumptions**: If unsure about any behavior, examine the code rather than guessing
-
-### What to Read
-
-- **Main API functions**: Understand how they work internally
-- **Type definitions**: Get accurate parameter and return types
-- **Example files**: Use patterns from existing examples in the codebase
-- **Plugin implementations**: Understand actual plugin architecture
-- **Test files**: See real usage patterns and edge cases
-
-### Prohibited Practices
-
-- ❌ Writing documentation based on common framework patterns
-- ❌ Assuming API behavior without checking source code
-- ❌ Copying examples from similar frameworks
-- ❌ Guessing method signatures or parameter types
-- ❌ Making up configuration options that don't exist
-
-### Required Practices
-
-- ✅ Read the actual source code before writing
-- ✅ Base all examples on real code from the repository
-- ✅ Verify all API calls against the implementation
-- ✅ Check type definitions for accuracy
-- ✅ Test examples against the actual codebase
-
-### When in Doubt
-
-- Read more source code
-- Look for existing examples in the codebase
+- Read main API functions, type definitions, and existing examples
+- Verify all code examples work with the actual implementation
+- Base method signatures and behaviors on real source code
 - Check test files for usage patterns
-- Never guess - always verify
 
-## Writing Style Guidelines
+Never guess API behavior, copy from other frameworks, or make up configuration options.
 
-### Clear Structure Over Bold Text
+## Writing Style
 
-**Write documents that convey importance through structure, not formatting.**
+### Structure Over Formatting
 
-### Mandatory Practices
+Use clear heading hierarchy and natural prose instead of bold text for emphasis:
 
-- ✅ Use heading hierarchy (h1, h2, h3) to show importance and organization
-- ✅ Write complete, flowing sentences instead of bullet-pointed fragments
-- ✅ Let content organization and natural language convey emphasis
-- ✅ Use section structure to guide readers through logical progression
+- ✅ Descriptive subheadings and logical organization
+- ✅ Complete sentences that flow naturally
+- ❌ Bold text for emphasis (except critical warnings)
 
-### Prohibited Practices
+### Simple and Direct
 
-- ❌ Using bold text (**text**) to emphasize importance
-- ❌ Relying on formatting instead of clear writing to convey meaning
-- ❌ Creating bullet lists where prose would be more natural
-- ❌ Bold text in navigation links and call-to-action elements
+- Start with the simplest working example
+- Focus on essential value proposition
+- Let code examples do the explaining
+- Keep explanatory text concise
 
-### Writing Approach
+### Honest Tone
 
-- Use descriptive subheadings instead of bold keywords
-- Write cohesive paragraphs that flow naturally
-- Let the information hierarchy speak for itself
-- Make important points clear through placement and context, not bold formatting
-
-### Exception
-
-Bold text may be used sparingly for:
-
-- ✅ True emphasis within technical explanations (very rare)
-- ✅ Highlighting critical warnings or errors
+- State capabilities factually without overselling
+- Avoid negative comparisons with other frameworks
+- Never fabricate testimonials or quotes
+- Be positive but realistic about limitations
 
 ## Remember
 
-Documentation that contains incorrect information is worse than no documentation at all. Accuracy is paramount.
-
-Quality documentation guides readers through natural flow and clear structure, not visual emphasis.
+Inaccurate documentation is worse than no documentation. Always verify against source code.

@@ -766,5 +766,4 @@ app.onError((ctx, error) => {
 
 - [File Upload Example](/en/examples/file-upload) - Handle file uploads in REST APIs
 - [Authentication with Plugins](/en/guide/plugins) - Implement JWT authentication plugins
-- [Database Configuration](/en/guide/configuration) - Configure database connections
 - [CORS Plugin](/en/extensions/cors-plugin) - Learn about CORS configuration

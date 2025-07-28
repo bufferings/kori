@@ -33,7 +33,6 @@ export default defineConfig({
           items: [
             { text: 'What is Kori?', link: '/en/guide/what-is-kori' },
             { text: 'Getting Started', link: '/en/guide/getting-started' },
-            { text: 'Configuration', link: '/en/guide/configuration' },
           ],
         },
         {
@@ -98,7 +97,6 @@ export default defineConfig({
           items: [
             { text: 'Koriとは？', link: '/ja/guide/what-is-kori' },
             { text: 'はじめかた', link: '/ja/guide/getting-started' },
-            { text: '設定', link: '/ja/guide/configuration' },
           ],
         },
         {
