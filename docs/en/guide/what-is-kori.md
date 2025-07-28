@@ -1,6 +1,6 @@
 # What is Kori?
 
-Kori is a TypeScript-first web application framework that makes building APIs feel natural.
+Kori - means ice❄️ in Japanese - is a TypeScript-first web application framework that brings cool, structured clarity to API development.
 
 Build type-safe APIs where your schemas define both validation and TypeScript types.
 
@@ -35,6 +35,12 @@ app.post('/users', {
 ```
 
 One schema provides validation and TypeScript types. Add OpenAPI plugins to generate documentation from the same schemas.
+
+---
+
+## Powered by Hono Router
+
+Under the hood, Kori integrates Hono's battle-tested router while adding TypeScript-first schema validation and type safety on top.
 
 ---
 
