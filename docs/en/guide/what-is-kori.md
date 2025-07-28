@@ -41,7 +41,3 @@ One schema provides validation and TypeScript types. Add OpenAPI plugins to gene
 ## Powered by Hono Router
 
 Under the hood, Kori integrates Hono's battle-tested router while adding TypeScript-first schema validation and type safety on top.
-
----
-
-[Getting Started →](/en/guide/getting-started)
