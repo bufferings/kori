@@ -1,6 +1,6 @@
 # What is Kori?
 
-Kori - means ice❄️ in Japanese - is a TypeScript-first web application framework that brings cool, structured clarity to API development.
+Kori - means ice ❄️ (氷) in Japanese - is a TypeScript-first web application framework that brings cool, structured clarity to API development.
 
 Build type-safe APIs where your schemas define both validation and TypeScript types.
 
