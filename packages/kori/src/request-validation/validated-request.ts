@@ -9,10 +9,6 @@ import {
 
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
-type IsNever<T> = [T] extends [never] ? true : false;
-
-type Validated<T> = IsNever<T> extends true ? unknown : T;
-
 type ExtractRequestSchemaParams<S> =
   S extends KoriRequestSchema<infer _P, infer Params, infer _H, infer _Q, infer _B> ? Params : never;
 
@@ -43,10 +39,8 @@ export type WithValidatedRequest<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
   RequestSchema extends KoriRequestSchemaDefault | undefined,
 > = Req &
-  Validated<
-    RequestValidator extends KoriRequestValidatorDefault
-      ? RequestSchema extends KoriRequestSchemaDefault
-        ? InferValidationOutput<RequestSchema>
-        : never
-      : never
-  >;
+  (RequestValidator extends KoriRequestValidatorDefault
+    ? RequestSchema extends KoriRequestSchemaDefault
+      ? InferValidationOutput<RequestSchema>
+      : unknown
+    : unknown);
