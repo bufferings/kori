@@ -39,7 +39,9 @@ export default defineConfig({
           text: 'Core Features',
           collapsed: false,
           items: [
-            { text: 'Context', link: '/en/guide/context' },
+            { text: 'Instance Context', link: '/en/guide/instance-context' },
+            { text: 'Handler Context', link: '/en/guide/handler-context' },
+            { text: 'Context Evolution', link: '/en/guide/context-evolution' },
             { text: 'Routing', link: '/en/guide/routing' },
             { text: 'Plugins', link: '/en/guide/plugins' },
             { text: 'Validation', link: '/en/guide/validation' },

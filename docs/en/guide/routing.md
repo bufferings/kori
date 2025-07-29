@@ -7,102 +7,51 @@ Learn how to define routes and handle different URL patterns in your Kori applic
 Kori provides intuitive methods for common HTTP verbs. All routes use the same handler structure with options object:
 
 ```typescript
-import { createKori, HttpStatus } from '@korix/kori';
+import { createKori } from '@korix/kori';
 
 const app = createKori();
 
 // GET route
-app.get('/users', {
-  handler: (ctx) => {
-    const users = [
-      { id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' },
-    ];
-    return ctx.res.json({ users });
-  },
+app.get('/users', (ctx) => {
+  const users = [
+    { id: 1, name: 'Alice' },
+    { id: 2, name: 'Bob' },
+  ];
+  return ctx.res.json({ users });
 });
 
 // POST route
-app.post('/users', {
-  handler: async (ctx) => {
-    const body = await ctx.req.bodyJson();
-    const newUser = createUser(body);
-    return ctx.res.status(HttpStatus.CREATED).json({ user: newUser });
-  },
+app.post('/users', async (ctx) => {
+  const body = await ctx.req.bodyJson();
+  const newUser = createUser(body);
+  return ctx.res.json({ user: newUser });
 });
 
 // PUT route
-app.put('/users/:id', {
-  handler: async (ctx) => {
-    const { id } = ctx.req.pathParams();
-    const body = await ctx.req.bodyJson();
-    const user = await updateUser(id, body);
-    return ctx.res.json({ user });
-  },
+app.put('/users/:id', async (ctx) => {
+  const { id } = ctx.req.pathParams();
+  const body = await ctx.req.bodyJson();
+  const user = await updateUser(id, body);
+  return ctx.res.json({ user });
 });
 
 // DELETE route
-app.delete('/users/:id', {
-  handler: async (ctx) => {
-    const { id } = ctx.req.pathParams();
-    await deleteUser(id);
-    return ctx.res.status(HttpStatus.NO_CONTENT).empty();
-  },
+app.delete('/users/:id', async (ctx) => {
+  const { id } = ctx.req.pathParams();
+  await deleteUser(id);
+  return ctx.res.empty();
 });
 
 // PATCH route
-app.patch('/users/:id', {
-  handler: async (ctx) => {
-    const { id } = ctx.req.pathParams();
-    const body = await ctx.req.bodyJson();
-    const user = await partialUpdateUser(id, body);
-    return ctx.res.json({ user });
-  },
+app.patch('/users/:id', async (ctx) => {
+  const { id } = ctx.req.pathParams();
+  const body = await ctx.req.bodyJson();
+  const user = await partialUpdateUser(id, body);
+  return ctx.res.json({ user });
 });
 ```
 
-## Available Route Methods
-
-Kori supports all standard HTTP methods:
-
-```typescript
-app.get('/resource', { handler }); // GET
-app.post('/resource', { handler }); // POST
-app.put('/resource', { handler }); // PUT
-app.delete('/resource', { handler }); // DELETE
-app.patch('/resource', { handler }); // PATCH
-app.head('/resource', { handler }); // HEAD
-app.options('/resource', { handler }); // OPTIONS
-```
-
-### Generic Route Handler
-
-Use `addRoute()` for dynamic method handling or when you need to handle multiple methods:
-
-```typescript
-app.addRoute({
-  method: 'GET',
-  path: '/dynamic',
-  handler: (ctx) => {
-    return ctx.res.json({ method: ctx.req.method() });
-  },
-});
-
-// Handle multiple methods in a single handler
-app.get('/webhook', {
-  handler: (ctx) => {
-    return ctx.res.json({ status: 'webhook active' });
-  },
-});
-
-app.post('/webhook', {
-  handler: async (ctx) => {
-    const body = await ctx.req.bodyJson();
-    const result = await processWebhook(body);
-    return ctx.res.json(result);
-  },
-});
-```
+Kori also supports `.head()` and `.options()` methods for handling HEAD and OPTIONS requests.
 
 ## Path Parameters
 
@@ -110,86 +59,21 @@ Define dynamic route segments using the `:parameter` syntax. Path parameters are
 
 ```typescript
 // Single parameter
-app.get('/users/:id', {
-  handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
-    return ctx.res.json({ userId: id });
-  },
+app.get('/users/:id', (ctx) => {
+  // TypeScript knows pathParams() has an id property
+  const { id } = ctx.req.pathParams();
+  return ctx.res.json({ userId: id });
 });
 
 // Multiple parameters
-app.get('/users/:userId/posts/:postId', {
-  handler: (ctx) => {
-    const { userId, postId } = ctx.req.pathParams();
-    return ctx.res.json({
-      userId,
-      postId,
-      message: `Post ${postId} by user ${userId}`,
-    });
-  },
-});
-
-// Nested parameters with validation
-app.get('/api/:version/users/:id', {
-  handler: (ctx) => {
-    const { version, id } = ctx.req.pathParams();
-
-    if (!['v1', 'v2'].includes(version)) {
-      return ctx.res.badRequest({ message: 'Invalid API version' });
-    }
-
-    const user = findUser(id);
-    return ctx.res.json({ user, version });
-  },
-});
-```
-
-### Type-Safe Path Parameters
-
-When using TypeScript, path parameters are automatically typed based on the route pattern:
-
-```typescript
-// TypeScript automatically infers the shape of pathParams()
-app.get('/posts/:postId/comments/:commentId', {
-  handler: (ctx) => {
-    // TypeScript knows pathParams() has postId and commentId as strings
-    const { postId, commentId } = ctx.req.pathParams();
-    // Both postId and commentId are typed as string
-
-    return ctx.res.json({ postId, commentId });
-  },
-});
-```
-
-## Query Parameters
-
-Access query parameters using `ctx.req.queryParams()`:
-
-```typescript
-// URL: /search?q=typescript&limit=10&sort=date&tags=web&tags=javascript
-app.get('/search', {
-  handler: (ctx) => {
-    const queries = ctx.req.queryParams();
-
-    // Single values are strings
-    const query = queries.q; // string | undefined
-    const limit = queries.limit; // string | undefined
-    const sort = queries.sort; // string | undefined
-
-    // Multiple values are string arrays
-    const tags = queries.tags; // string | string[] | undefined
-
-    // Convert and validate
-    const limitNum = limit ? parseInt(limit, 10) : 20;
-    const tagsArray = Array.isArray(tags) ? tags : tags ? [tags] : [];
-
-    return ctx.res.json({
-      query,
-      limit: limitNum,
-      sort: sort ?? 'relevance',
-      tags: tagsArray,
-    });
-  },
+app.get('/users/:userId/posts/:postId', (ctx) => {
+  // TypeScript knows pathParams() has userId and postId properties
+  const { userId, postId } = ctx.req.pathParams();
+  return ctx.res.json({
+    userId,
+    postId,
+    message: `Post ${postId} by user ${userId}`,
+  });
 });
 ```
 
@@ -199,28 +83,24 @@ Handle wildcard patterns for flexible routing:
 
 ```typescript
 // Catch-all route for static files
-app.get('/static/*', {
-  handler: (ctx) => {
-    const url = ctx.req.url();
-    const filePath = url.pathname.replace('/static/', '');
+app.get('/static/*', (ctx) => {
+  const url = ctx.req.url();
+  const filePath = url.pathname.replace('/static/', '');
 
-    // Handle static file serving
-    return ctx.res.text(`Serving: ${filePath}`);
-  },
+  // Handle static file serving
+  return ctx.res.text(`Serving: ${filePath}`);
 });
 
 // API versioning with wildcards
-app.get('/api/*/status', {
-  handler: (ctx) => {
-    const url = ctx.req.url();
-    const pathSegments = url.pathname.split('/');
-    const version = pathSegments[2]; // Extract version from /api/{version}/status
+app.get('/api/*/status', (ctx) => {
+  const url = ctx.req.url();
+  const pathSegments = url.pathname.split('/');
+  const version = pathSegments[2]; // Extract version from /api/{version}/status
 
-    return ctx.res.json({
-      version,
-      status: 'healthy',
-    });
-  },
+  return ctx.res.json({
+    version,
+    status: 'healthy',
+  });
 });
 ```
 
@@ -289,15 +169,11 @@ const apiV1 = app.createChild({
   prefix: '/api/v1',
   configure: (k) =>
     k
-      .get('/status', {
-        handler: (ctx) => {
-          return ctx.res.json({ version: 'v1', status: 'stable' });
-        },
+      .get('/status', (ctx) => {
+        return ctx.res.json({ version: 'v1', status: 'stable' });
       })
-      .get('/users', {
-        handler: (ctx) => {
-          return ctx.res.json({ users: getUsersV1() });
-        },
+      .get('/users', (ctx) => {
+        return ctx.res.json({ users: getUsersV1() });
       }),
 });
 
@@ -311,19 +187,15 @@ const apiV2 = app.createChild({
         ctx.req.log().info('API v2 request', { path: ctx.req.url().pathname });
         return ctx; // Must return context
       })
-      .get('/status', {
-        handler: (ctx) => {
-          return ctx.res.json({
-            version: 'v2',
-            status: 'beta',
-            features: ['enhanced-validation', 'better-errors'],
-          });
-        },
+      .get('/status', (ctx) => {
+        return ctx.res.json({
+          version: 'v2',
+          status: 'beta',
+          features: ['enhanced-validation', 'better-errors'],
+        });
       })
-      .get('/users', {
-        handler: (ctx) => {
-          return ctx.res.json({ users: getUsersV2() });
-        },
+      .get('/users', (ctx) => {
+        return ctx.res.json({ users: getUsersV2() });
       }),
 });
 
@@ -344,10 +216,8 @@ const adminRoutes = app.createChild({
           return ctx.res.unauthorized({ message: 'Admin access required' });
         }
       })
-      .get('/dashboard', {
-        handler: (ctx) => {
-          return ctx.res.json({ dashboard: 'admin data' });
-        },
+      .get('/dashboard', (ctx) => {
+        return ctx.res.json({ dashboard: 'admin data' });
       }),
 });
 ```
@@ -358,17 +228,13 @@ Routes are matched in the order they are registered. More specific routes should
 
 ```typescript
 // ✅ Correct: specific routes first
-app.get('/users/me', {
-  handler: (ctx) => {
-    return ctx.res.json({ user: getCurrentUser(ctx) });
-  },
+app.get('/users/me', (ctx) => {
+  return ctx.res.json({ user: getCurrentUser(ctx) });
 });
 
-app.get('/users/:id', {
-  handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
-    return ctx.res.json({ user: getUserById(id) });
-  },
+app.get('/users/:id', (ctx) => {
+  const { id } = ctx.req.pathParams();
+  return ctx.res.json({ user: getUserById(id) });
 });
 
 // ❌ Incorrect: this would never be reached
@@ -381,39 +247,35 @@ app.get('/users/:id', {
 ### Conditional Routing
 
 ```typescript
-app.get('/content/:type/:id', {
-  handler: async (ctx) => {
-    const { type, id } = ctx.req.pathParams();
+app.get('/content/:type/:id', async (ctx) => {
+  const { type, id } = ctx.req.pathParams();
 
-    switch (type) {
-      case 'post':
-        const post = await getPost(id);
-        return ctx.res.json({ post });
+  switch (type) {
+    case 'post':
+      const post = await getPost(id);
+      return ctx.res.json({ post });
 
-      case 'page':
-        const page = await getPage(id);
-        return ctx.res.json({ page });
+    case 'page':
+      const page = await getPage(id);
+      return ctx.res.json({ page });
 
-      case 'product':
-        const product = await getProduct(id);
-        return ctx.res.json({ product });
+    case 'product':
+      const product = await getProduct(id);
+      return ctx.res.json({ product });
 
-      default:
-        return ctx.res.notFound({ message: `Unknown content type: ${type}` });
-    }
-  },
+    default:
+      return ctx.res.notFound({ message: `Unknown content type: ${type}` });
+  }
 });
 ```
 
 ### Route-specific Middleware via Hooks
 
 ```typescript
-app.get('/protected/:resource', {
-  handler: (ctx) => {
-    // This runs after onRequest hooks
-    const { resource } = ctx.req.pathParams();
-    return ctx.res.json({ resource, authorized: true });
-  },
+app.get('/protected/:resource', (ctx) => {
+  // This runs after onRequest hooks
+  const { resource } = ctx.req.pathParams();
+  return ctx.res.json({ resource, authorized: true });
 });
 
 // Add authentication to specific routes by creating a child
@@ -440,10 +302,8 @@ const protectedRoutes = app.createChild({
       }),
 });
 
-protectedRoutes.get('/profile', {
-  handler: (ctx) => {
-    return ctx.res.json({ user: ctx.req.currentUser });
-  },
+protectedRoutes.get('/profile', (ctx) => {
+  return ctx.res.json({ user: ctx.req.currentUser });
 });
 ```
 
@@ -469,23 +329,21 @@ app.get('/api/*/users/*', handler); // Wildcards
 Handle route-specific errors gracefully:
 
 ```typescript
-app.get('/users/:id', {
-  handler: async (ctx) => {
-    const { id } = ctx.req.pathParams();
+app.get('/users/:id', async (ctx) => {
+  const { id } = ctx.req.pathParams();
 
-    try {
-      const user = await database.user.findById(id);
+  try {
+    const user = await database.user.findById(id);
 
-      if (!user) {
-        return ctx.res.notFound({ message: 'User not found' });
-      }
-
-      return ctx.res.json({ user });
-    } catch (error) {
-      ctx.req.log().error('Database error', { error, userId: id });
-      return ctx.res.internalError({ message: 'Database error' });
+    if (!user) {
+      return ctx.res.notFound({ message: 'User not found' });
     }
-  },
+
+    return ctx.res.json({ user });
+  } catch (error) {
+    ctx.req.log().error('Database error', { error, userId: id });
+    return ctx.res.internalError({ message: 'Database error' });
+  }
 });
 ```
 
