@@ -78,13 +78,20 @@ async function validateRequestHeaders({
   });
 }
 
+export type KoriRequestValidationResult = {
+  params: unknown;
+  queries: unknown;
+  headers: unknown;
+  body: unknown;
+};
+
 export function resolveRequestValidationFunction({
   requestValidator,
   requestSchema,
 }: {
   requestValidator?: KoriRequestValidatorDefault;
   requestSchema?: KoriRequestSchemaDefault;
-}): ((req: KoriRequest) => Promise<KoriResult<unknown, KoriRequestValidationError>>) | undefined {
+}): ((req: KoriRequest) => Promise<KoriResult<KoriRequestValidationResult, KoriRequestValidationError>>) | undefined {
   if (!requestValidator || !requestSchema) {
     return undefined;
   }

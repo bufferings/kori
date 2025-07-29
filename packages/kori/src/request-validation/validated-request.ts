@@ -11,7 +11,7 @@ import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 type IsNever<T> = [T] extends [never] ? true : false;
 
-type Validated<T> = IsNever<T> extends true ? unknown : { readonly validated: T };
+type Validated<T> = IsNever<T> extends true ? unknown : T;
 
 type ExtractRequestSchemaParams<S> =
   S extends KoriRequestSchema<infer _P, infer Params, infer _H, infer _Q, infer _B> ? Params : never;
@@ -32,10 +32,10 @@ type ExtractRequestSchemaBody<S> =
     : never;
 
 export type InferValidationOutput<S extends KoriRequestSchemaDefault> = {
-  params: InferSchemaOutput<ExtractRequestSchemaParams<S>>;
-  queries: InferSchemaOutput<ExtractRequestSchemaQueries<S>>;
-  headers: InferSchemaOutput<ExtractRequestSchemaHeaders<S>>;
-  body: InferSchemaOutput<ExtractRequestSchemaBody<S>>;
+  validatedParams(): InferSchemaOutput<ExtractRequestSchemaParams<S>>;
+  validatedQueries(): InferSchemaOutput<ExtractRequestSchemaQueries<S>>;
+  validatedHeaders(): InferSchemaOutput<ExtractRequestSchemaHeaders<S>>;
+  validatedBody(): InferSchemaOutput<ExtractRequestSchemaBody<S>>;
 };
 
 export type WithValidatedRequest<

@@ -10,7 +10,7 @@ import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
 
-export type KoriRequest<PathParams extends Record<string, string> = Record<string, string>> = {
+export type KoriRequest = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
 
   raw(): Request;
@@ -18,7 +18,7 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   log(): KoriLogger;
   url(): URL;
   method(): string;
-  pathParams(): PathParams;
+  pathParams(): Record<string, string>;
   queryParams(): Record<string, string | string[]>;
 
   headers(): Record<string, string>;
@@ -38,9 +38,6 @@ export type KoriRequest<PathParams extends Record<string, string> = Record<strin
   parseBody(): Promise<unknown>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KoriRequestAny = KoriRequest<any>;
-
 type BodyCache = {
   json?: Promise<unknown>;
   text?: Promise<string>;
@@ -48,11 +45,11 @@ type BodyCache = {
   arrayBuffer?: Promise<ArrayBuffer>;
 };
 
-type ReqState<PathParams extends Record<string, string>> = {
+type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
   raw: Request;
   rootLogger: KoriLogger;
-  pathParams: PathParams;
+  pathParams: Record<string, string>;
   bodyCache: BodyCache;
 
   clonedRawRequest?: Request;
@@ -64,29 +61,26 @@ type ReqState<PathParams extends Record<string, string>> = {
   cookiesCache?: Record<string, string>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ReqStateAny = ReqState<any>;
-
-function getLogInternal(req: ReqStateAny): KoriLogger {
+function getLogInternal(req: ReqState): KoriLogger {
   req.logCache ??= req.rootLogger.child('request');
   return req.logCache;
 }
 
-function getUrlInternal(req: ReqStateAny): URL {
+function getUrlInternal(req: ReqState): URL {
   req.urlCache ??= new URL(req.raw.url);
   return req.urlCache;
 }
 
-function getMethodInternal(req: ReqStateAny): string {
+function getMethodInternal(req: ReqState): string {
   req.methodCache ??= req.raw.method;
   return req.methodCache;
 }
 
-function getPathParamsInternal(req: ReqStateAny): Record<string, string> {
-  return req.pathParams as Record<string, string>;
+function getPathParamsInternal(req: ReqState): Record<string, string> {
+  return req.pathParams;
 }
 
-function getQueryParamsInternal(req: ReqStateAny): Record<string, string | string[]> {
+function getQueryParamsInternal(req: ReqState): Record<string, string | string[]> {
   if (req.queriesCache) {
     return req.queriesCache;
   }
@@ -112,7 +106,7 @@ function getQueryParamsInternal(req: ReqStateAny): Record<string, string | strin
  * Note: The keys are normalized to lowercase during the conversion process,
  * as `Headers.forEach` provides lowercase keys.
  */
-function getHeadersInternal(req: ReqStateAny): Record<string, string> {
+function getHeadersInternal(req: ReqState): Record<string, string> {
   if (req.headersCache) {
     return req.headersCache;
   }
@@ -126,19 +120,19 @@ function getHeadersInternal(req: ReqStateAny): Record<string, string> {
   return obj;
 }
 
-function getHeaderInternal(req: ReqStateAny, name: HttpRequestHeaderName): string | undefined {
+function getHeaderInternal(req: ReqState, name: HttpRequestHeaderName): string | undefined {
   return getHeadersInternal(req)[name.toLowerCase()];
 }
 
-function getFullContentTypeInternal(req: ReqStateAny): string | undefined {
+function getFullContentTypeInternal(req: ReqState): string | undefined {
   return getHeaderInternal(req, HttpRequestHeader.CONTENT_TYPE)?.trim().toLowerCase();
 }
 
-function getContentTypeInternal(req: ReqStateAny): ContentTypeValue | undefined {
+function getContentTypeInternal(req: ReqState): ContentTypeValue | undefined {
   return getFullContentTypeInternal(req)?.split(';')[0]?.trim() as ContentTypeValue | undefined;
 }
 
-function getCookiesInternal(req: ReqStateAny): Record<string, string> {
+function getCookiesInternal(req: ReqState): Record<string, string> {
   if (req.cookiesCache) {
     return req.cookiesCache;
   }
@@ -148,36 +142,36 @@ function getCookiesInternal(req: ReqStateAny): Record<string, string> {
   return req.cookiesCache;
 }
 
-function getCookieInternal(req: ReqStateAny, name: string): string | undefined {
+function getCookieInternal(req: ReqState, name: string): string | undefined {
   return getCookiesInternal(req)[name];
 }
 
-function getBodyJsonInternal(req: ReqStateAny): Promise<unknown> {
+function getBodyJsonInternal(req: ReqState): Promise<unknown> {
   req.bodyCache.json ??= req.raw.clone().json();
   return req.bodyCache.json;
 }
 
-function getBodyTextInternal(req: ReqStateAny): Promise<string> {
+function getBodyTextInternal(req: ReqState): Promise<string> {
   req.bodyCache.text ??= req.raw.clone().text();
   return req.bodyCache.text;
 }
 
-function getBodyFormDataInternal(req: ReqStateAny): Promise<FormData> {
+function getBodyFormDataInternal(req: ReqState): Promise<FormData> {
   req.bodyCache.formData ??= req.raw.clone().formData();
   return req.bodyCache.formData;
 }
 
-function getBodyArrayBufferInternal(req: ReqStateAny): Promise<ArrayBuffer> {
+function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
   req.bodyCache.arrayBuffer ??= req.raw.clone().arrayBuffer();
   return req.bodyCache.arrayBuffer;
 }
 
-function getBodyStreamInternal(req: ReqStateAny): ReadableStream | null {
+function getBodyStreamInternal(req: ReqState): ReadableStream | null {
   // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
   return req.raw.clone().body;
 }
 
-function parseBodyInternal(req: ReqStateAny): Promise<unknown> {
+function parseBodyInternal(req: ReqState): Promise<unknown> {
   const ct = getContentTypeInternal(req) ?? DEFAULT_CONTENT_TYPE;
   switch (ct) {
     case DEFAULT_CONTENT_TYPE:
@@ -255,23 +249,23 @@ const sharedMethods = {
   parseBody() {
     return parseBodyInternal(this);
   },
-} satisfies Omit<KoriRequestAny, typeof KoriRequestBrand> & ThisType<ReqStateAny>;
+} satisfies Omit<KoriRequest, typeof KoriRequestBrand> & ThisType<ReqState>;
 
-export function createKoriRequest<PathParams extends Record<string, string>>({
+export function createKoriRequest({
   rawRequest,
   pathParams,
   rootLogger,
 }: {
   rawRequest: Request;
-  pathParams: PathParams;
+  pathParams: Record<string, string>;
   rootLogger: KoriLogger;
-}): KoriRequest<PathParams> {
-  const obj = Object.create(sharedMethods) as ReqState<PathParams>;
+}): KoriRequest {
+  const obj = Object.create(sharedMethods) as ReqState;
 
   obj[KoriRequestBrand] = KoriRequestBrand;
   obj.raw = rawRequest;
   obj.rootLogger = rootLogger;
   obj.pathParams = pathParams;
   obj.bodyCache = {};
-  return obj as unknown as KoriRequest<PathParams>;
+  return obj as unknown as KoriRequest;
 }

@@ -31,7 +31,7 @@ type MergePathParams<A extends Record<string, string>, B extends Record<string, 
   [K in keyof A | keyof B]: K extends keyof B ? B[K] : K extends keyof A ? A[K] : never;
 };
 
-// Replace Req.pathParams with one inferred from Path while preserving other fields
-export type WithPathParams<Req extends KoriRequest, Path extends string> = Req & {
-  pathParams: ExtractPathParams<Path>;
+// Replace Req.pathParams() with one inferred from Path while preserving other fields
+export type WithPathParams<Req extends KoriRequest, Path extends string> = Omit<Req, 'pathParams'> & {
+  pathParams: () => ExtractPathParams<Path>;
 };
