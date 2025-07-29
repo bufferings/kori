@@ -9,7 +9,7 @@ Kori includes ready-to-use error response methods that automatically format base
 ```typescript
 app.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     // Validate input
     if (!id || isNaN(Number(id))) {
@@ -229,12 +229,12 @@ function createApiError(status: number, message: string, code?: string, details?
 
 app.get('/api/users/:id', {
   handler: async (ctx) => {
-    const user = await getUser(ctx.req.pathParams.id);
+    const user = await getUser(ctx.req.pathParams().id);
 
     if (!user) {
       return ctx.res.status(404).json(
         createApiError(404, 'User not found', 'USER_NOT_FOUND', {
-          userId: ctx.req.pathParams.id,
+          userId: ctx.req.pathParams().id,
         }),
       );
     }

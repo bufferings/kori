@@ -87,7 +87,7 @@ app.post('/users', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const user = ctx.req.validated.body;
+    const user = ctx.req.validatedBody();
     return ctx.res.status(201).json({
       user,
       message: 'User created successfully!',
@@ -179,8 +179,8 @@ app.get('/products/:id', {
     tags: ['Products'],
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.validated.pathParams; // Validated
-    const { include } = ctx.req.validated.queries; // Validated
+    const { id } = ctx.req.validatedParams(); // Validated
+    const { include } = ctx.req.validatedQueries(); // Validated
 
     // Your logic here...
   },

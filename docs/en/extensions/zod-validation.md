@@ -47,8 +47,8 @@ app.post('/users', {
     body: UserCreateSchema,
   }),
   handler: (ctx) => {
-    // ctx.req.validated.body is fully typed!
-    const { name, email, age } = ctx.req.validated.body;
+    // ctx.req.validatedBody() is fully typed!
+    const { name, email, age } = ctx.req.validatedBody();
 
     // TypeScript knows the exact types:
     // name: string
@@ -88,7 +88,7 @@ app.get('/products/search', {
     queries: SearchSchema,
   }),
   handler: (ctx) => {
-    const query = ctx.req.validated.queries;
+    const query = ctx.req.validatedQueries();
 
     // Automatic type conversion and defaults:
     // q: string
@@ -123,7 +123,7 @@ app.get('/users/:id', {
     pathParams: UserParamsSchema,
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.validated.pathParams;
+    const { id } = ctx.req.validatedParams();
     // id: number (transformed from string)
 
     return ctx.res.json({ userId: id });
@@ -146,7 +146,7 @@ app.get('/protected', {
     headers: AuthHeaderSchema,
   }),
   handler: (ctx) => {
-    const { authorization, 'x-api-version': apiVersion } = ctx.req.validated.headers;
+    const { authorization, 'x-api-version': apiVersion } = ctx.req.validatedHeaders();
     const token = authorization.replace('Bearer ', '');
 
     return ctx.res.json({ authenticated: true, apiVersion });
@@ -181,7 +181,7 @@ app.post('/users', {
     201: UserResponseSchema,
   }),
   handler: (ctx) => {
-    const userData = ctx.req.validated.body;
+    const userData = ctx.req.validatedBody();
 
     // Response will be validated in development
     return ctx.res.status(201).json({
@@ -233,7 +233,7 @@ app.post('/validation-demo', {
     });
   },
   handler: (ctx) => {
-    const { email, age, preferences } = ctx.req.validated.body;
+    const { email, age, preferences } = ctx.req.validatedBody();
     return ctx.res.json({ message: 'Success!', user: { email, age, preferences } });
   },
 });
@@ -316,7 +316,7 @@ const ConditionalSchema = z.object({
 app.post('/process', {
   requestSchema: zodRequestSchema({ body: ConditionalSchema }),
   handler: (ctx) => {
-    const { type, data } = ctx.req.validated.body;
+    const { type, data } = ctx.req.validatedBody();
 
     if (type === 'simple') {
       const simpleData = z.string().parse(data);

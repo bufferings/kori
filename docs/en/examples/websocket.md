@@ -65,7 +65,7 @@ app.get('/ws/chat', {
     }),
   }),
   handler: async (ctx) => {
-    const { name } = ctx.req.validated.queries;
+    const { name } = ctx.req.validatedQueries();
 
     // Check for WebSocket upgrade
     const upgrade = ctx.req.header('upgrade');
@@ -305,7 +305,7 @@ app.get('/ws/secure', {
     }),
   }),
   handler: async (ctx) => {
-    const { token } = ctx.req.validated.queries;
+    const { token } = ctx.req.validatedQueries();
 
     // Verify JWT token
     try {

@@ -77,7 +77,7 @@ Set the HTTP status code.
 ```typescript
 app.post('/users', {
   handler: async (ctx) => {
-    const user = await createUser(ctx.req.validated.body);
+    const user = await createUser(ctx.req.validatedBody());
 
     return ctx.res
       .status(201) // Created
@@ -87,7 +87,7 @@ app.post('/users', {
 
 app.delete('/users/:id', {
   handler: async (ctx) => {
-    await deleteUser(ctx.req.pathParams.id);
+    await deleteUser(ctx.req.pathParams().id);
 
     return ctx.res
       .status(204) // No Content
@@ -212,7 +212,7 @@ Set a cookie with optional configuration.
 ```typescript
 app.post('/login', {
   handler: async (ctx) => {
-    const user = await authenticateUser(ctx.req.validated.body);
+    const user = await authenticateUser(ctx.req.validatedBody());
     const sessionToken = generateSessionToken(user);
 
     return ctx.res
@@ -270,7 +270,7 @@ Send a JSON response with automatic Content-Type header.
 ```typescript
 app.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const user = await getUser(id);
 
     if (!user) {
@@ -350,7 +350,7 @@ Send an empty response (no body).
 ```typescript
 app.delete('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     await deleteUser(id);
 
     return ctx.res
@@ -425,7 +425,7 @@ Send a 400 Bad Request response.
 ```typescript
 app.post('/users', {
   handler: async (ctx) => {
-    const userData = ctx.req.validated.body;
+    const userData = ctx.req.validatedBody();
 
     if (await userExists(userData.email)) {
       return ctx.res.badRequest({
@@ -498,7 +498,7 @@ Send a 404 Not Found response.
 ```typescript
 app.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const user = await getUser(id);
 
     if (!user) {
@@ -567,7 +567,7 @@ app.post('/process', {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
 
     try {
-      const result = await Promise.race([processLongTask(ctx.req.validated.body), timeout]);
+      const result = await Promise.race([processLongTask(ctx.req.validatedBody()), timeout]);
 
       return ctx.res.json({ result });
     } catch (error) {
@@ -823,7 +823,7 @@ app.get('/static-data', {
 ```typescript
 app.get('/download/:filename', {
   handler: async (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     const filePath = await resolveSecureFilePath(filename);
     if (!filePath) {

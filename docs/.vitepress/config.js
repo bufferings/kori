@@ -39,7 +39,7 @@ export default defineConfig({
           text: 'Core Features',
           collapsed: false,
           items: [
-            { text: 'Request & Response', link: '/en/guide/request-response' },
+            { text: 'Context', link: '/en/guide/context' },
             { text: 'Routing', link: '/en/guide/routing' },
             { text: 'Plugins', link: '/en/guide/plugins' },
             { text: 'Validation', link: '/en/guide/validation' },

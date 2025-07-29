@@ -206,7 +206,7 @@ Add a route with any HTTP method.
 ```typescript
 app.addRoute('PATCH', '/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ id, updated: true });
   },
 });
@@ -221,7 +221,7 @@ Convenient methods for common HTTP verbs.
 ```typescript
 app.get('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ userId: id });
   },
 });
@@ -235,7 +235,7 @@ app.post('/users', {
     body: UserCreateSchema,
   }),
   handler: (ctx) => {
-    const userData = ctx.req.validated.body;
+    const userData = ctx.req.validatedBody();
     return ctx.res.status(201).json({ user: userData });
   },
 });
@@ -246,7 +246,7 @@ app.post('/users', {
 ```typescript
 app.put('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ userId: id, updated: true });
   },
 });
@@ -257,7 +257,7 @@ app.put('/users/:id', {
 ```typescript
 app.delete('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.status(204).empty();
   },
 });
@@ -268,7 +268,7 @@ app.delete('/users/:id', {
 ```typescript
 app.patch('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ userId: id, patched: true });
   },
 });
@@ -279,7 +279,7 @@ app.patch('/users/:id', {
 ```typescript
 app.head('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.setHeader('x-user-exists', 'true').empty();
   },
 });
@@ -351,7 +351,7 @@ app.post('/users', {
 
   // Main handler
   handler: async (ctx) => {
-    const { name, email } = ctx.req.validated.body;
+    const { name, email } = ctx.req.validatedBody();
 
     const user = await createUser({ name, email });
 

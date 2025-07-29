@@ -52,7 +52,7 @@ app.get('/health', {
 // Simple greeting
 app.get('/hello/:name?', {
   handler: (ctx) => {
-    const { name } = ctx.req.pathParams;
+    const { name } = ctx.req.pathParams();
     const greeting = name ? `Hello, ${name}!` : 'Hello, World!';
 
     return ctx.res.json({
@@ -145,7 +145,7 @@ app
 // GET route with optional path parameter
 app.get('/hello/:name?', {
   handler: (ctx) => {
-    const { name } = ctx.req.pathParams;
+    const { name } = ctx.req.pathParams();
     const message = name ? `Hello, ${name}!` : 'Hello, World!';
 
     return ctx.res.json({ message });
@@ -194,7 +194,7 @@ app.get('/info', {
       headers: ctx.req.headers(),
 
       // Path and query parameters
-      pathParams: ctx.req.pathParams,
+      pathParams: ctx.req.pathParams(),
       queryParams: ctx.req.queryParams(),
     });
   },
@@ -206,7 +206,7 @@ app.get('/info', {
 ```typescript
 app.get('/error-demo/:type', {
   handler: (ctx) => {
-    const { type } = ctx.req.pathParams;
+    const { type } = ctx.req.pathParams();
 
     switch (type) {
       case 'bad-request':
@@ -246,7 +246,7 @@ app.get('/html', {
 // Empty response
 app.delete('/item/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     // Delete item logic here
     return ctx.res.status(HttpStatus.NO_CONTENT).empty();
   },
@@ -392,4 +392,4 @@ app.onResponse((ctx) => {
 - [REST API Example](/en/examples/rest-api) - Build a complete REST API
 - [File Upload Example](/en/examples/file-upload) - Handle file uploads
 - [WebSocket Example](/en/examples/websocket) - Real-time communication
-- [Request & Response Guide](/en/guide/request-response) - Detailed API reference
+- [Context Guide](/en/guide/context) - Detailed API reference

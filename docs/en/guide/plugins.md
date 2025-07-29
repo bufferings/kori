@@ -164,7 +164,7 @@ app.get('/users/:id', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ user: getUserById(id) });
   },
 });
@@ -182,7 +182,7 @@ const appWithSendFile = app.applyPlugin(sendFilePlugin());
 
 appWithSendFile.get('/download/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
     return ctx.res.sendFile(`./uploads/${filename}`);
   },
 });
@@ -365,7 +365,7 @@ const appWithDb = app.applyPlugin(databasePlugin('postgresql://localhost:5432/my
 // Handlers can access the database
 appWithDb.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const user = await ctx.env.db.user.findById(id);
     return ctx.res.json({ user });
   },

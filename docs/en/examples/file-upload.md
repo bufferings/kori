@@ -124,7 +124,7 @@ app.post('/upload/image', {
     body: ImageFileSchema,
   }),
   handler: async (ctx) => {
-    const { file } = ctx.req.validated.body;
+    const { file } = ctx.req.validatedBody();
 
     try {
       const result = await saveFile(file, './uploads/images');
@@ -160,7 +160,7 @@ app.post('/upload/document', {
     body: DocumentFileSchema,
   }),
   handler: async (ctx) => {
-    const { file } = ctx.req.validated.body;
+    const { file } = ctx.req.validatedBody();
 
     try {
       const result = await saveFile(file, './uploads/documents');
@@ -188,7 +188,7 @@ app.post('/upload/multiple', {
     body: MultipleFilesSchema,
   }),
   handler: async (ctx) => {
-    const { files, description } = ctx.req.validated.body;
+    const { files, description } = ctx.req.validatedBody();
 
     const uploadResults = [];
     const errors = [];
@@ -289,7 +289,7 @@ app.post('/upload/chunked/start', {
     }),
   }),
   handler: (ctx) => {
-    const { filename, totalSize, chunkSize } = ctx.req.validated.body;
+    const { filename, totalSize, chunkSize } = ctx.req.validatedBody();
 
     // Validate total size
     if (totalSize > 100 * 1024 * 1024) {
@@ -326,7 +326,7 @@ app.post('/upload/chunked/start', {
 
 app.post('/upload/chunked/:sessionId/:chunkIndex', {
   handler: async (ctx) => {
-    const { sessionId, chunkIndex } = ctx.req.pathParams;
+    const { sessionId, chunkIndex } = ctx.req.pathParams();
     const session = uploadSessions.get(sessionId);
 
     if (!session) {
@@ -357,7 +357,7 @@ app.post('/upload/chunked/:sessionId/:chunkIndex', {
 
 app.post('/upload/chunked/:sessionId/complete', {
   handler: async (ctx) => {
-    const { sessionId } = ctx.req.pathParams;
+    const { sessionId } = ctx.req.pathParams();
     const session = uploadSessions.get(sessionId);
 
     if (!session) {
@@ -393,7 +393,7 @@ app.post('/upload/chunked/:sessionId/complete', {
 // Get file information
 app.get('/files/info/:category/:filename', {
   handler: async (ctx) => {
-    const { category, filename } = ctx.req.pathParams;
+    const { category, filename } = ctx.req.pathParams();
     const filePath = join('./uploads', category, filename);
 
     try {
@@ -417,7 +417,7 @@ app.get('/files/info/:category/:filename', {
 // Delete file
 app.delete('/files/:category/:filename', {
   handler: async (ctx) => {
-    const { category, filename } = ctx.req.pathParams;
+    const { category, filename } = ctx.req.pathParams();
     const filePath = join('./uploads', category, filename);
 
     try {
@@ -437,7 +437,7 @@ app.delete('/files/:category/:filename', {
 // List files
 app.get('/files/:category', {
   handler: async (ctx) => {
-    const { category } = ctx.req.pathParams;
+    const { category } = ctx.req.pathParams();
     const { readdir } = await import('fs/promises');
 
     try {

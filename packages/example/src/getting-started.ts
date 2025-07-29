@@ -40,7 +40,7 @@ app.get('/hello/:name', {
     tags: ['Basic'],
   }),
   handler: (ctx) => {
-    const { name } = ctx.req.pathParams;
+    const { name } = ctx.req.pathParams();
     return ctx.res.json({
       message: `Hello, ${name}!`,
       timestamp: new Date().toISOString(),
@@ -58,7 +58,7 @@ app.post('/users', {
     body: UserSchema,
   }),
   handler: (ctx) => {
-    const { name, email } = ctx.req.validated.body;
+    const { name, email } = ctx.req.validatedBody();
     const newUser = {
       id: Math.floor(Math.random() * 1000),
       name,

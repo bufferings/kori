@@ -34,7 +34,7 @@ app.post('/users', {
 // PUT route
 app.put('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const body = await ctx.req.bodyJson();
     const user = await updateUser(id, body);
     return ctx.res.json({ user });
@@ -44,7 +44,7 @@ app.put('/users/:id', {
 // DELETE route
 app.delete('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     await deleteUser(id);
     return ctx.res.status(HttpStatus.NO_CONTENT).empty();
   },
@@ -53,7 +53,7 @@ app.delete('/users/:id', {
 // PATCH route
 app.patch('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const body = await ctx.req.bodyJson();
     const user = await partialUpdateUser(id, body);
     return ctx.res.json({ user });
@@ -106,13 +106,13 @@ app.post('/webhook', {
 
 ## Path Parameters
 
-Define dynamic route segments using the `:parameter` syntax. Path parameters are available as properties on `ctx.req.pathParams`:
+Define dynamic route segments using the `:parameter` syntax. Path parameters are available as properties on `ctx.req.pathParams()`:
 
 ```typescript
 // Single parameter
 app.get('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ userId: id });
   },
 });
@@ -120,7 +120,7 @@ app.get('/users/:id', {
 // Multiple parameters
 app.get('/users/:userId/posts/:postId', {
   handler: (ctx) => {
-    const { userId, postId } = ctx.req.pathParams;
+    const { userId, postId } = ctx.req.pathParams();
     return ctx.res.json({
       userId,
       postId,
@@ -132,7 +132,7 @@ app.get('/users/:userId/posts/:postId', {
 // Nested parameters with validation
 app.get('/api/:version/users/:id', {
   handler: (ctx) => {
-    const { version, id } = ctx.req.pathParams;
+    const { version, id } = ctx.req.pathParams();
 
     if (!['v1', 'v2'].includes(version)) {
       return ctx.res.badRequest({ message: 'Invalid API version' });
@@ -149,11 +149,11 @@ app.get('/api/:version/users/:id', {
 When using TypeScript, path parameters are automatically typed based on the route pattern:
 
 ```typescript
-// TypeScript automatically infers the shape of pathParams
+// TypeScript automatically infers the shape of pathParams()
 app.get('/posts/:postId/comments/:commentId', {
   handler: (ctx) => {
-    // TypeScript knows pathParams has postId and commentId as strings
-    const { postId, commentId } = ctx.req.pathParams;
+    // TypeScript knows pathParams() has postId and commentId as strings
+    const { postId, commentId } = ctx.req.pathParams();
     // Both postId and commentId are typed as string
 
     return ctx.res.json({ postId, commentId });
@@ -266,8 +266,8 @@ app.post('/users', {
   // Main handler
   handler: (ctx) => {
     // ctx.req.validated contains validated data
-    const { name, email, age } = ctx.req.validated.body;
-    const clientVersion = ctx.req.validated.headers['x-client-version'];
+    const { name, email, age } = ctx.req.validatedBody();
+    const clientVersion = ctx.req.validatedHeaders()['x-client-version'];
 
     const user = createUser({ name, email, age });
 
@@ -366,7 +366,7 @@ app.get('/users/me', {
 
 app.get('/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     return ctx.res.json({ user: getUserById(id) });
   },
 });
@@ -383,7 +383,7 @@ app.get('/users/:id', {
 ```typescript
 app.get('/content/:type/:id', {
   handler: async (ctx) => {
-    const { type, id } = ctx.req.pathParams;
+    const { type, id } = ctx.req.pathParams();
 
     switch (type) {
       case 'post':
@@ -411,7 +411,7 @@ app.get('/content/:type/:id', {
 app.get('/protected/:resource', {
   handler: (ctx) => {
     // This runs after onRequest hooks
-    const { resource } = ctx.req.pathParams;
+    const { resource } = ctx.req.pathParams();
     return ctx.res.json({ resource, authorized: true });
   },
 });
@@ -471,7 +471,7 @@ Handle route-specific errors gracefully:
 ```typescript
 app.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     try {
       const user = await database.user.findById(id);

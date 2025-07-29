@@ -143,8 +143,8 @@ app.post('/products', {
     }),
   }),
   handler: (ctx) => {
-    const product = ctx.req.validated.body;
-    const headers = ctx.req.validated.headers;
+    const product = ctx.req.validatedBody();
+    const headers = ctx.req.validatedHeaders();
 
     const newProduct = {
       id: Math.floor(Math.random() * 10000),
@@ -189,7 +189,7 @@ app.get('/products/search', {
     }),
   }),
   handler: (ctx) => {
-    const query = ctx.req.validated.queries;
+    const query = ctx.req.validatedQueries();
 
     // Mock search results
     const results = [
@@ -268,7 +268,7 @@ app.createChild({
           }),
         }),
         handler: (ctx) => {
-          const { mode, reason } = ctx.req.validated.body;
+          const { mode, reason } = ctx.req.validatedBody();
 
           ctx.req.log().info('Maintenance mode changed', {
             mode,
@@ -309,7 +309,7 @@ app.get('/error/:type', {
     tags: ['Demo'],
   }),
   handler: (ctx) => {
-    const { type } = ctx.req.pathParams;
+    const { type } = ctx.req.pathParams();
 
     switch (type) {
       case 'validation':
@@ -356,7 +356,7 @@ app.post('/validation-demo', {
     });
   },
   handler: (ctx) => {
-    const { email, age, preferences } = ctx.req.validated.body;
+    const { email, age, preferences } = ctx.req.validatedBody();
 
     return ctx.res.json({
       message: 'Validation successful! New error handling is working.',

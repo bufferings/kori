@@ -39,7 +39,7 @@ const app = createKori();
 
 app.get('/users/:id', (ctx) => {
   // Path parameters
-  const { id } = ctx.req.pathParams;
+  const { id } = ctx.req.pathParams();
   return ctx.res.json({
     id,
     name: `User ${id}`,
@@ -137,7 +137,7 @@ app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
     // Type-safe validated body access
-    const { name, email, age } = ctx.req.validated.body;
+    const { name, email, age } = ctx.req.validatedBody();
 
     // Your business logic here (save to database, etc.)
 
@@ -184,7 +184,7 @@ app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
     // Type-safe validated body access
-    const { name, email, age } = ctx.req.validated.body;
+    const { name, email, age } = ctx.req.validatedBody();
 
     // Your business logic here (save to database, etc.)
 

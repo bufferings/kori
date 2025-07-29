@@ -198,7 +198,7 @@ function createRequestValidationErrorHandler<
 
     // 2. Try instance handler
     if (instanceHandler) {
-      const instanceResult = await instanceHandler(ctx, err);
+      const instanceResult = await instanceHandler(ctx as unknown as KoriHandlerContext<Env, Req, Res>, err);
       if (instanceResult) {
         return instanceResult;
       }
@@ -253,7 +253,7 @@ function createResponseValidationErrorHandler<
 
     // 2. Try instance handler
     if (instanceHandler) {
-      const instanceResult = await instanceHandler(ctx, err);
+      const instanceResult = await instanceHandler(ctx as unknown as KoriHandlerContext<Env, Req, Res>, err);
       if (instanceResult) {
         return instanceResult;
       }
@@ -322,7 +322,12 @@ export function createRouteHandler<
       }
 
       // Set validated data only when validation succeeds
-      ctx = ctx.withReq({ validated: validationResult.value });
+      ctx = ctx.withReq({
+        validatedBody: () => validationResult.value.body,
+        validatedParams: () => validationResult.value.params,
+        validatedQueries: () => validationResult.value.queries,
+        validatedHeaders: () => validationResult.value.headers,
+      });
     }
 
     const response = await routeParams.handler(ctx as ValidatedContext);

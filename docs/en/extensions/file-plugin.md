@@ -30,7 +30,7 @@ const app = createKori().applyPlugin(sendFilePlugin());
 
 app.get('/download/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
     return ctx.res.sendFile(`./uploads/${filename}`);
   },
 });
@@ -73,7 +73,7 @@ sendFilePlugin({
 ```typescript
 app.get('/files/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const file = await database.files.findById(id);
 
     if (!file) {
@@ -93,7 +93,7 @@ app.get('/files/:id', {
 ```typescript
 app.get('/images/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     // Validate file extension
     if (!/\.(jpg|jpeg|png|gif|webp)$/i.test(filename)) {
@@ -113,7 +113,7 @@ app.get('/images/:filename', {
 ```typescript
 app.get('/private/:filename', {
   handler: async (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
     const user = ctx.req.currentUser;
 
     if (!user) {
@@ -284,7 +284,7 @@ serveStaticPlugin({
 ```typescript
 app.get('/images/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     // Validate file extension
     const allowedExtensions = ['.jpg', '.png', '.gif', '.webp'];
@@ -320,7 +320,7 @@ serveStaticPlugin({
 // Automatic support for range requests
 app.get('/videos/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     return ctx.res.sendFile(`./videos/${filename}`, {
       acceptRanges: true, // Enable range requests
@@ -360,7 +360,7 @@ app.post('/upload', {
     }),
   }),
   handler: async (ctx) => {
-    const { file } = ctx.req.validated.body;
+    const { file } = ctx.req.validatedBody();
     const filename = `${Date.now()}-${file.name}`;
     const buffer = await file.arrayBuffer();
 
@@ -376,7 +376,7 @@ app.post('/upload', {
 // Serve uploaded files
 app.get('/files/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
     return ctx.res.sendFile(`./uploads/${filename}`);
   },
 });
@@ -387,7 +387,7 @@ app.get('/files/:filename', {
 ```typescript
 app.get('/downloads/:filename', {
   handler: async (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
     const user = ctx.req.currentUser;
 
     // Check if file exists
@@ -418,7 +418,7 @@ app.get('/downloads/:filename', {
 ```typescript
 app.get('/cdn/:filename', {
   handler: async (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     // Try local file first
     const localPath = `./cache/${filename}`;
@@ -504,7 +504,7 @@ import path from 'path';
 
 app.get('/files/:filename', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams;
+    const { filename } = ctx.req.pathParams();
 
     // Sanitize filename
     const safeName = path.basename(filename);
@@ -546,7 +546,7 @@ serveStaticPlugin({
 app.get('/files/:filename', {
   handler: async (ctx) => {
     try {
-      const { filename } = ctx.req.pathParams;
+      const { filename } = ctx.req.pathParams();
       return ctx.res.sendFile(`./files/${filename}`);
     } catch (error) {
       if (error.code === 'ENOENT') {
