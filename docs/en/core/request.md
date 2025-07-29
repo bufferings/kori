@@ -155,7 +155,7 @@ app.addRoute(['GET', 'POST'], '/flexible', {
 
 ### `req.pathParams()`
 
-**Note:** This is a **property**, not a method. Contains validated path parameters from the route.
+Returns path parameters extracted from the route.
 
 ```typescript
 app.get('/users/:id/posts/:postId', {
