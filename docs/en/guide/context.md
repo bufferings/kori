@@ -52,37 +52,36 @@ Use `app.onInit()` to set up your application environment:
 ```typescript
 import { createKori } from '@korix/kori';
 
-const app = createKori();
+const app = createKori()
+  // Initialize database and shared services
+  .onInit(async (ctx) => {
+    app.log().info('Initializing application...');
 
-// Initialize database and shared services
-app.onInit(async (ctx) => {
-  console.log('Initializing application...');
+    // Set up database connection
+    const db = await connectDatabase({
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+    });
 
-  // Set up database connection
-  const db = await connectDatabase({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    // Initialize Redis cache
+    const cache = await connectRedis({
+      url: process.env.REDIS_URL,
+    });
+
+    // Load configuration
+    const config = {
+      apiVersion: 'v1',
+      rateLimit: 1000,
+      environment: process.env.NODE_ENV,
+    };
+
+    // Return extended environment
+    return ctx.withEnv({
+      db,
+      cache,
+      config,
+    });
   });
-
-  // Initialize Redis cache
-  const cache = await connectRedis({
-    url: process.env.REDIS_URL,
-  });
-
-  // Load configuration
-  const config = {
-    apiVersion: 'v1',
-    rateLimit: 1000,
-    environment: process.env.NODE_ENV,
-  };
-
-  // Return extended environment
-  return ctx.withEnv({
-    db,
-    cache,
-    config,
-  });
-});
 ```
 
 ### Application Shutdown
@@ -90,17 +89,23 @@ app.onInit(async (ctx) => {
 Clean up resources when the application shuts down:
 
 ```typescript
-app.onClose(async (ctx) => {
-  console.log('Shutting down application...');
+import { createKori } from '@korix/kori';
 
-  // Close database connections
-  await ctx.env.db.close();
+const app = createKori()
+  .onInit(async (ctx) => {
+    // Setup database, cache, config (see details above)
+  })
+  .onClose(async (ctx) => {
+    app.log().info('Shutting down application...');
 
-  // Close cache connections
-  await ctx.env.cache.disconnect();
+    // Close database connections
+    await ctx.env.db.close();
 
-  console.log('Application shutdown complete');
-});
+    // Close cache connections
+    await ctx.env.cache.disconnect();
+
+    app.log().info('Application shutdown complete');
+  });
 ```
 
 ### Environment Type Safety
@@ -108,6 +113,8 @@ app.onClose(async (ctx) => {
 The environment is fully typed across your application:
 
 ```typescript
+import { createKori } from '@korix/kori';
+
 // Define your environment type
 type AppEnvironment = {
   db: Database;
@@ -115,22 +122,21 @@ type AppEnvironment = {
   config: AppConfig;
 };
 
-// TypeScript knows about your environment
-app.onInit(async (ctx): Promise<KoriInstanceContext<AppEnvironment>> => {
-  const db = await connectDatabase();
-  const cache = await connectRedis();
-  const config = loadConfig();
+const app = createKori()
+  // TypeScript knows about your environment
+  .onInit(async (ctx): Promise<KoriInstanceContext<AppEnvironment>> => {
+    const db = await connectDatabase();
+    const cache = await connectRedis();
+    const config = loadConfig();
 
-  return ctx.withEnv({ db, cache, config });
-});
+    return ctx.withEnv({ db, cache, config });
+  });
 
 // Environment is available in all handlers
-app.get('/users', {
-  handler: async (ctx) => {
-    // TypeScript knows ctx.env.db exists
-    const users = await ctx.env.db.query('SELECT * FROM users');
-    return ctx.res.json({ users });
-  },
+app.get('/users', async (ctx) => {
+  // TypeScript knows ctx.env.db exists
+  const users = await ctx.env.db.query('SELECT * FROM users');
+  return ctx.res.json({ users });
 });
 ```
 
@@ -139,17 +145,15 @@ app.get('/users', {
 Every route handler receives a `ctx` parameter containing request, response, and environment:
 
 ```typescript
-app.get('/api/users/:id', {
-  handler: (ctx) => {
-    // ctx.env - application environment
-    // ctx.req - request data and methods
-    // ctx.res - response building methods
+app.get('/api/users/:id', (ctx) => {
+  // ctx.env - application environment
+  // ctx.req - request data and methods
+  // ctx.res - response building methods
 
-    const { id } = ctx.req.pathParams;
-    const user = await ctx.env.db.findUser(id);
+  const { id } = ctx.req.pathParams();
+  const user = await ctx.env.db.findUser(id);
 
-    return ctx.res.json({ user });
-  },
+  return ctx.res.json({ user });
 });
 ```
 
@@ -161,7 +165,7 @@ Access all incoming request data with automatic caching:
 app.get('/users/:id/posts', {
   handler: (ctx) => {
     // Path parameters (object, not function!)
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     // Query parameters (function that returns object)
     const { limit, offset } = ctx.req.queryParams();
@@ -230,7 +234,7 @@ app.get('/page', {
 
 app.delete('/users/:id', {
   handler: (ctx) => {
-    await ctx.env.db.deleteUser(ctx.req.pathParams.id);
+    await ctx.env.db.deleteUser(ctx.req.pathParams().id);
     return ctx.res.status(204).empty();
   },
 });
@@ -387,8 +391,8 @@ app.post('/users', {
   }),
   handler: (ctx) => {
     // All validated and fully typed!
-    const { name, email, age } = ctx.req.validated.body;
-    const { 'x-client-version': clientVersion } = ctx.req.validated.headers;
+    const { name, email, age } = ctx.req.validatedBody();
+    const { 'x-client-version': clientVersion } = ctx.req.validatedHeaders();
 
     const user = {
       id: crypto.randomUUID(),
@@ -449,7 +453,7 @@ Kori optimizes context usage for performance:
 
 1. **Request data is cached**: Methods like `headers()`, `cookies()`, and `queryParams()` cache results
 2. **Body methods are cached**: Multiple calls to `bodyJson()` return the same Promise
-3. **Path params are pre-parsed**: `ctx.req.pathParams` is immediately available
+3. **Path params are pre-parsed**: `ctx.req.pathParams()` is immediately available
 4. **URL is cached**: `ctx.req.url()` caches the URL object
 5. **Lazy initialization**: Properties are computed only when accessed
 
@@ -460,8 +464,8 @@ Kori optimizes context usage for performance:
 Use instance context for application setup, handler context for request processing:
 
 ```typescript
-// ✅ Good: Application setup in onInit
-app.onInit(async (ctx) => {
+// ✅ Good: Application setup in onInit with chaining for type safety
+const app = createKori().onInit(async (ctx) => {
   const db = await connectDatabase();
   return ctx.withEnv({ db });
 });

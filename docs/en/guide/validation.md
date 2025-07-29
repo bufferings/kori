@@ -52,7 +52,7 @@ app.post('/users', {
   }),
   handler: (ctx) => {
     // Fully typed and validated! ✨
-    const { name, email, age } = ctx.req.validated.body;
+    const { name, email, age } = ctx.req.validatedBody();
 
     return ctx.res.status(HttpStatus.CREATED).json({
       user: { name, email, age },
@@ -103,9 +103,9 @@ app.get('/users/:id', {
   }),
   handler: (ctx) => {
     // All parts are validated and typed
-    const { id } = ctx.req.validated.pathParams; // number
-    const { include } = ctx.req.validated.queries; // string | undefined
-    const { authorization } = ctx.req.validated.headers; // string
+    const { id } = ctx.req.validatedParams(); // number
+    const { include } = ctx.req.validatedQueries(); // string | undefined
+    const { authorization } = ctx.req.validatedHeaders(); // string
   },
 });
 ```

@@ -121,7 +121,7 @@ app.get('/api/users', {
     queries: QueryParamsSchema,
   }),
   handler: (ctx) => {
-    const { page, limit, search } = ctx.req.validated.queries;
+    const { page, limit, search } = ctx.req.validatedQueries();
 
     let filteredUsers = users;
 
@@ -159,7 +159,7 @@ app.get('/api/users/:id', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const user = users.find((u) => u.id === id);
 
     if (!user) {
@@ -181,7 +181,7 @@ app.post('/api/users', {
     body: UserSchema,
   }),
   handler: (ctx) => {
-    const userData = ctx.req.validated.body;
+    const userData = ctx.req.validatedBody();
 
     // Check if email already exists
     const existingUser = users.find((u) => u.email === userData.email);
@@ -219,8 +219,8 @@ app.put('/api/users/:id', {
     body: UserSchema,
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
-    const userData = ctx.req.validated.body;
+    const { id } = ctx.req.pathParams();
+    const userData = ctx.req.validatedBody();
 
     const userIndex = users.findIndex((u) => u.id === id);
     if (userIndex === -1) {
@@ -260,8 +260,8 @@ app.patch('/api/users/:id', {
     body: UpdateUserSchema,
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
-    const updates = ctx.req.validated.body;
+    const { id } = ctx.req.pathParams();
+    const updates = ctx.req.validatedBody();
 
     const userIndex = users.findIndex((u) => u.id === id);
     if (userIndex === -1) {
@@ -300,7 +300,7 @@ app.delete('/api/users/:id', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     const userIndex = users.findIndex((u) => u.id === id);
     if (userIndex === -1) {
@@ -364,8 +364,8 @@ app.post('/api/users', {
     body: UserSchema,
   }),
   handler: (ctx) => {
-    // ctx.req.validated.body is fully typed and validated
-    const { name, email, age } = ctx.req.validated.body;
+    // ctx.req.validatedBody() is fully typed and validated
+    const { name, email, age } = ctx.req.validatedBody();
     // ...
   },
 });
@@ -377,7 +377,7 @@ app.post('/api/users', {
 // Not found
 app.get('/api/users/:id', {
   handler: (ctx) => {
-    const user = findUser(ctx.req.pathParams.id);
+    const user = findUser(ctx.req.pathParams().id);
     if (!user) {
       return ctx.res.notFound({ message: 'User not found' });
     }
@@ -412,7 +412,7 @@ app.get('/api/users', {
     }),
   }),
   handler: (ctx) => {
-    const { page, limit, search } = ctx.req.validated.queries;
+    const { page, limit, search } = ctx.req.validatedQueries();
 
     let results = users;
 
@@ -667,7 +667,7 @@ const cache = new Map<string, { data: any; expiry: number }>();
 
 app.get('/api/users/:id', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
     const cacheKey = `user:${id}`;
     const cached = cache.get(cacheKey);
 
@@ -708,7 +708,7 @@ const db = drizzle(connectionString);
 
 app.get('/api/users', {
   handler: async (ctx) => {
-    const { page, limit, search } = ctx.req.validated.queries;
+    const { page, limit, search } = ctx.req.validatedQueries();
 
     let query = db.select().from(usersTable);
 

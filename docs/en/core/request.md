@@ -13,7 +13,7 @@ type KoriRequest<PathParams extends Record<string, string> = Record<string, stri
   method(): string;
 
   // Parameters
-  pathParams: PathParams;
+  pathParams(): PathParams;
   queryParams(): Record<string, string | string[]>;
 
   // Headers
@@ -73,7 +73,7 @@ Returns a request-scoped logger with automatic context.
 ```typescript
 app.get('/users/:id', {
   handler: async (ctx) => {
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     ctx.req.log().info('Fetching user', { userId: id });
 
@@ -153,7 +153,7 @@ app.addRoute(['GET', 'POST'], '/flexible', {
 
 ## Parameters
 
-### `req.pathParams`
+### `req.pathParams()`
 
 **Note:** This is a **property**, not a method. Contains validated path parameters from the route.
 
@@ -161,7 +161,7 @@ app.addRoute(['GET', 'POST'], '/flexible', {
 app.get('/users/:id/posts/:postId', {
   handler: (ctx) => {
     // Type-safe access to path parameters
-    const { id, postId } = ctx.req.pathParams;
+    const { id, postId } = ctx.req.pathParams();
 
     // id and postId are typed as strings
     console.log('User ID:', id);
@@ -185,8 +185,8 @@ app.get('/users/:id/posts/:postId', {
     params: ParamsSchema,
   }),
   handler: (ctx) => {
-    // ctx.req.validated.params contains validated/transformed values
-    const { id, postId } = ctx.req.validated.params;
+    // ctx.req.validatedParams() contains validated/transformed values
+    const { id, postId } = ctx.req.validatedParams();
 
     // id is number, postId is string (validated as UUID)
     return ctx.res.json({ userId: id, postId });
@@ -243,7 +243,7 @@ app.get('/search', {
     queries: QuerySchema,
   }),
   handler: (ctx) => {
-    const { q, page, limit, tags } = ctx.req.validated.queries;
+    const { q, page, limit, tags } = ctx.req.validatedQueries();
 
     // q: string
     // page: number (transformed)
@@ -429,7 +429,7 @@ app.get('/preferences', {
     cookies: CookieSchema,
   }),
   handler: (ctx) => {
-    const { sessionId, theme, language } = ctx.req.validated.cookies;
+    const { sessionId, theme, language } = ctx.req.validatedCookies();
 
     return ctx.res.json({ sessionId, theme, language });
   },
@@ -473,7 +473,7 @@ app.post('/users', {
   }),
   handler: (ctx) => {
     // No need for bodyJson() - validation handles parsing
-    const userData = ctx.req.validated.body;
+    const userData = ctx.req.validatedBody();
 
     // userData is fully typed from schema
     return ctx.res.json({
@@ -555,7 +555,7 @@ app.post('/upload', {
     body: UploadSchema,
   }),
   handler: (ctx) => {
-    const { title, description, avatar, attachments } = ctx.req.validated.body;
+    const { title, description, avatar, attachments } = ctx.req.validatedBody();
 
     // All fields are properly typed and validated
     return ctx.res.json({
@@ -681,10 +681,10 @@ app.post('/users/:id', {
   requestSchema: RequestSchema,
   handler: (ctx) => {
     // All validated data is available
-    const { id } = ctx.req.validated.params; // number
-    const { include } = ctx.req.validated.queries; // string[] | undefined
-    const { authorization } = ctx.req.validated.headers; // string
-    const { name, email } = ctx.req.validated.body; // { name: string, email: string }
+    const { id } = ctx.req.validatedParams(); // number
+    const { include } = ctx.req.validatedQueries(); // string[] | undefined
+    const { authorization } = ctx.req.validatedHeaders(); // string
+    const { name, email } = ctx.req.validatedBody(); // { name: string, email: string }
 
     return ctx.res.json({
       userId: id,
@@ -825,7 +825,7 @@ app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserSchema }),
   handler: (ctx) => {
     // Type-safe, validated data
-    const user = ctx.req.validated.body;
+    const user = ctx.req.validatedBody();
     return ctx.res.json({ user });
   },
 });

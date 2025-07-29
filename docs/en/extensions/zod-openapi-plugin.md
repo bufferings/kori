@@ -85,7 +85,7 @@ app.post('/users', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const user = ctx.req.validated.body;
+    const user = ctx.req.validatedBody();
     return ctx.res.status(201).json({ user });
   },
 });
@@ -114,7 +114,7 @@ app.post('/users', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const user = ctx.req.validated.body;
+    const user = ctx.req.validatedBody();
     return ctx.res.status(201).json({
       user,
       createdAt: new Date().toISOString(),
@@ -157,8 +157,8 @@ app.get('/users/:id', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.validated.pathParams;
-    const { q, page } = ctx.req.validated.queries;
+    const { id } = ctx.req.validatedParams();
+    const { q, page } = ctx.req.validatedQueries();
 
     return ctx.res.json({ userId: id, search: { q, page } });
   },

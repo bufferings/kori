@@ -50,7 +50,7 @@ Request object containing all incoming HTTP request data.
 app.get('/users/:id', {
   handler: (ctx) => {
     // Path parameters
-    const { id } = ctx.req.pathParams;
+    const { id } = ctx.req.pathParams();
 
     // Query parameters
     const { include } = ctx.req.queryParams();
