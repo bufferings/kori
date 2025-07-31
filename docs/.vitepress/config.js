@@ -48,10 +48,9 @@ export default defineConfig({
             { text: 'Hook Execution', link: '/en/guide/hook-execution' },
             { text: 'Error Handling', link: '/en/guide/error-handling' },
             { text: 'Plugins', link: '/en/guide/plugins' },
-            { text: 'Validation', link: '/en/guide/validation' },
+            { text: 'Request Validation', link: '/en/guide/request-validation' },
+            { text: 'Response Validation', link: '/en/guide/response-validation' },
             { text: 'OpenAPI Integration', link: '/en/guide/openapi' },
-            { text: 'Custom Adapters', link: '/en/guide/adapters' },
-            { text: 'Testing', link: '/en/guide/testing' },
           ],
         },
         {

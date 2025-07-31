@@ -1,26 +1,16 @@
 # OpenAPI Integration
 
-OpenAPI integration is one of Kori's most powerful features. Generate beautiful, interactive API documentation automatically from your Zod schemas with zero maintenance overhead.
+Generate interactive API documentation automatically from your schemas. Kori's extensible OpenAPI system keeps your documentation perfectly synchronized with your validation schemas. While Kori's architecture is designed to support different schema libraries, we officially provide first-class Zod integration out of the box.
 
-> Coming from Validation? Perfect! Since you're already using schemas, adding documentation is just two lines of code. Your validation schemas become beautiful, interactive docs instantly! ✨
+## Setup
 
-## Why Kori's OpenAPI Stands Out
-
-🚀 **Zero Maintenance**: Documentation stays perfectly in sync with your code. Change your schema once, documentation updates automatically.
-
-🎯 **Beautiful Developer Experience**: Interactive documentation with modern UI. Test APIs directly in the browser with real request/response examples.
-
-💪 **Schema-Driven**: Your existing validation schemas power the documentation. No duplicate effort, no documentation drift.
-
-## Quick Start
-
-Install the OpenAPI plugins:
+Install the Zod OpenAPI integration plugins:
 
 ```bash
 npm install @korix/zod-openapi-plugin @korix/openapi-scalar-ui-plugin
 ```
 
-Add two plugins to your existing Kori app:
+Add two plugins to your Kori application:
 
 ```typescript
 import { createKori } from '@korix/kori';
@@ -32,7 +22,7 @@ import { createKoriZodRequestValidator } from '@korix/zod-validator';
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
 })
-  // 1. Generate OpenAPI spec from your schemas
+  // Generate OpenAPI specification from Zod schemas
   .applyPlugin(
     zodOpenApiPlugin({
       info: {
@@ -42,7 +32,7 @@ const app = createKori({
       },
     }),
   )
-  // 2. Serve interactive documentation UI
+  // Serve interactive documentation UI
   .applyPlugin(
     scalarUiPlugin({
       path: '/docs',
@@ -51,16 +41,16 @@ const app = createKori({
   );
 ```
 
-**That's it!** Now visit `http://localhost:3000/docs` for interactive documentation! 🎉
+Start your server and visit `http://localhost:3000/docs` to see the interactive documentation!
 
 ## Basic Example
 
-Here's how your existing validation schemas automatically become documentation:
+Your validation schemas automatically become documentation:
 
 ```typescript
 import { z } from 'zod/v4';
 
-// Your schema (same one from validation!)
+// Define schema with OpenAPI metadata
 const UserSchema = z.object({
   name: z.string().min(1).meta({
     description: 'User full name',
@@ -71,20 +61,20 @@ const UserSchema = z.object({
     example: 'john@example.com',
   }),
   age: z.number().min(18).optional().meta({
-    description: 'User age',
+    description: 'User age (18 or older)',
     example: 30,
   }),
 });
 
-// Your route (add just the metadata!)
+// Add to your route
 app.post('/users', {
-  requestSchema: zodRequestSchema({
-    body: UserSchema,
-  }),
   pluginMetadata: openApiMeta({
     summary: 'Create user',
     description: 'Creates a new user account',
     tags: ['Users'],
+  }),
+  requestSchema: zodRequestSchema({
+    body: UserSchema,
   }),
   handler: (ctx) => {
     const user = ctx.req.validatedBody();
@@ -96,171 +86,229 @@ app.post('/users', {
 });
 ```
 
-## What You Get Automatically
+## Schema Documentation
 
-### 📊 **Complete Request/Response Documentation**
+### Request Parameters
 
-- Request body schemas with examples
-- Query parameter documentation
-- Path parameter validation
-- Response schemas for all status codes
-- Error response documentation
-
-### 🎨 **Interactive Testing Interface**
-
-- Try API endpoints directly in the browser
-- Auto-generated request examples
-- Live response previews
-- Authentication testing support
-
-### 📱 **Modern, Responsive UI**
-
-- Beautiful Scalar UI interface
-- Dark/light theme support
-- Mobile-friendly design
-- Fast, modern performance
-
-## Documentation Workflow
-
-### 1. Schema-First Development
+Document all types of request parameters:
 
 ```typescript
-// Define your schema once
-const ProductSchema = z.object({
-  name: z.string().min(1),
-  price: z.number().positive(),
-  category: z.enum(['electronics', 'books', 'clothing']),
-});
-```
-
-### 2. Add Route Metadata
-
-```typescript
-app.post('/products', {
-  requestSchema: zodRequestSchema({ body: ProductSchema }),
-  pluginMetadata: openApiMeta({
-    summary: 'Create product',
-    tags: ['Products'],
-  }),
-  handler: (ctx) => {
-    /* your logic */
-  },
-});
-```
-
-### 3. Documentation Updates Automatically
-
-- Schema changes → Documentation updates
-- New routes → New documentation pages
-- Type changes → Updated examples
-- **Zero manual maintenance required!**
-
-## Integration with Validation
-
-OpenAPI works seamlessly with your existing validation setup:
-
-```typescript
-// This route provides BOTH validation AND documentation
 app.get('/products/:id', {
-  requestSchema: zodRequestSchema({
-    pathParams: z.object({
-      id: z.string().regex(/^\d+$/).transform(Number),
-    }),
-    queries: z.object({
-      include: z.array(z.string()).optional(),
-    }),
-  }),
-  responseSchema: zodResponseSchema({
-    200: ProductSchema,
-    404: z.object({ error: z.string() }),
-  }),
   pluginMetadata: openApiMeta({
     summary: 'Get product by ID',
+    description: 'Retrieve detailed product information',
     tags: ['Products'],
   }),
+  requestSchema: zodRequestSchema({
+    params: z.object({
+      id: z.string().regex(/^\d+$/).transform(Number).meta({
+        description: 'Product ID',
+        example: '123',
+      }),
+    }),
+    queries: z.object({
+      include: z
+        .array(z.string())
+        .optional()
+        .meta({
+          description: 'Fields to include in response',
+          example: ['reviews', 'images'],
+        }),
+      sort: z.enum(['name', 'price', 'created']).default('name').meta({
+        description: 'Sort order',
+        example: 'price',
+      }),
+    }),
+    headers: z.object({
+      'x-api-version': z.enum(['1.0', '2.0']).optional().meta({
+        description: 'API version to use',
+        example: '2.0',
+      }),
+    }),
+  }),
   handler: (ctx) => {
-    const { id } = ctx.req.validatedParams(); // Validated
-    const { include } = ctx.req.validatedQueries(); // Validated
+    const { id } = ctx.req.validatedParams();
+    const queries = ctx.req.validatedQueries();
+    const headers = ctx.req.validatedHeaders();
 
     // Your logic here...
   },
 });
 ```
 
-**Benefits:**
+### Response Documentation
 
-- ✅ Runtime validation ensures requests are valid
-- ✅ Documentation shows exact validation rules
-- ✅ Examples are always accurate
-- ✅ Type safety throughout your application
-
-## Advanced Features
-
-For complex documentation needs, Kori provides:
-
-- **Custom UI themes** and branding
-- **Multiple documentation endpoints** for different audiences
-- **Authentication documentation** with security schemes
-- **Rich metadata** with external links and examples
-- **Performance optimization** for large APIs
-
-## Best Practices
-
-### Start Simple
+Document different response scenarios:
 
 ```typescript
-// Begin with basic metadata
-pluginMetadata: openApiMeta({
-  summary: 'Short description',
-  tags: ['Category'],
+import { zodResponseSchema } from '@korix/zod-schema';
+
+const ProductSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  price: z.number(),
+  category: z.enum(['electronics', 'books', 'clothing']),
 });
-```
 
-### Add Details Progressively
-
-```typescript
-// Enhance with richer information
-pluginMetadata: openApiMeta({
-  summary: 'Create new user account',
-  description: 'Creates a user with email verification',
-  tags: ['Users', 'Authentication'],
-  operationId: 'createUser',
+const ErrorSchema = z.object({
+  error: z.string(),
+  message: z.string(),
 });
-```
 
-### Use Schema Metadata
-
-```typescript
-// Add examples and descriptions to schemas
-const UserSchema = z.object({
-  email: z.string().email().meta({
-    description: 'Must be unique across all users',
-    example: 'user@example.com',
+app.get('/products/:id', {
+  pluginMetadata: openApiMeta({
+    summary: 'Get product by ID',
+    tags: ['Products'],
   }),
+  requestSchema: zodRequestSchema({
+    params: z.object({
+      id: z.string().regex(/^\d+$/).transform(Number),
+    }),
+  }),
+  responseSchema: zodResponseSchema({
+    200: ProductSchema,
+    404: ErrorSchema,
+    500: ErrorSchema,
+  }),
+  handler: (ctx) => {
+    const { id } = ctx.req.validatedParams();
+
+    if (id === 999) {
+      return ctx.res.status(404).json({
+        error: 'Not Found',
+        message: 'Product not found',
+      });
+    }
+
+    return ctx.res.json({
+      id,
+      name: 'Sample Product',
+      price: 99.99,
+      category: 'electronics',
+    });
+  },
 });
 ```
 
-## Next Steps
+## Complete Integration Example
 
-### 🔧 Master OpenAPI Documentation
+Here's a comprehensive example showing validation and documentation working together:
 
-- **[Zod OpenAPI Plugin](/en/extensions/zod-openapi-plugin)** - Complete documentation API reference
-- **[Zod Schema](/en/extensions/zod-schema)** - Advanced schema design for better docs
+```typescript
+const ProductCreateSchema = z.object({
+  name: z.string().min(1).max(100).meta({
+    description: 'Product name',
+    example: 'Wireless Headphones',
+  }),
+  price: z.number().positive().meta({
+    description: 'Product price in USD',
+    example: 99.99,
+  }),
+  category: z.enum(['electronics', 'books', 'clothing']).meta({
+    description: 'Product category',
+    example: 'electronics',
+  }),
+  tags: z
+    .array(z.string())
+    .optional()
+    .meta({
+      description: 'Product tags',
+      example: ['wireless', 'audio', 'bluetooth'],
+    }),
+});
 
-### 📚 Related Guides
+app.post('/products', {
+  pluginMetadata: openApiMeta({
+    summary: 'Create product',
+    description: 'Create a new product with validation',
+    tags: ['Products'],
+    operationId: 'createProduct',
+  }),
+  requestSchema: zodRequestSchema({
+    body: ProductCreateSchema,
+    headers: z.object({
+      'x-client-id': z.string().min(1).meta({
+        description: 'Client identifier',
+        example: 'mobile-app-v1.2',
+      }),
+    }),
+  }),
+  responseSchema: zodResponseSchema({
+    201: z.object({
+      id: z.number(),
+      name: z.string(),
+      price: z.number(),
+      category: z.string(),
+      createdAt: z.string(),
+    }),
+    400: z.object({
+      error: z.string(),
+      details: z.array(z.string()),
+    }),
+  }),
+  handler: (ctx) => {
+    const product = ctx.req.validatedBody();
+    const headers = ctx.req.validatedHeaders();
 
-- **[Validation](/en/guide/validation)** - Create schemas that power your documentation
-- **[Error Handling](/en/guide/error-handling)** - Document error responses properly
+    const newProduct = {
+      id: Math.floor(Math.random() * 10000),
+      ...product,
+      createdAt: new Date().toISOString(),
+    };
 
-### 💡 Real Examples
+    return ctx.res.status(201).json(newProduct);
+  },
+});
+```
 
-- **[REST API Example](/en/examples/rest-api)** - Complete API with documentation
-- **[Basic Server Example](/en/examples/basic-server)** - Simple documentation setup
+## Plugin Configuration
 
-### ⚡ Advanced Documentation
+### Zod OpenAPI Plugin
 
-For detailed customization, UI theming, multiple endpoints, and production deployment, see the [Extensions documentation](/en/extensions/zod-openapi-plugin).
+This guide focuses on the official Zod integration. For other schema libraries, you can implement custom schema converters using the underlying `@korix/openapi-plugin`.
 
----
+Configure the OpenAPI specification:
 
-**Ready to create beautiful API docs?** Start with the [Zod OpenAPI Plugin](/en/extensions/zod-openapi-plugin) for comprehensive configuration options, or explore our [examples](/en/examples/) to see documentation in action!
+```typescript
+zodOpenApiPlugin({
+  info: {
+    title: 'My API',
+    version: '1.0.0',
+    description: 'API documentation',
+  },
+  servers: [
+    { url: 'https://api.example.com', description: 'Production' },
+    { url: 'http://localhost:3000', description: 'Development' },
+  ],
+  // Default endpoint for JSON spec
+  documentPath: '/openapi.json',
+});
+```
+
+### Scalar UI Plugin
+
+Configure the documentation interface:
+
+```typescript
+scalarUiPlugin({
+  // UI endpoint path
+  path: '/docs',
+  // Page title
+  title: 'API Documentation',
+  // Theme: 'light', 'dark', or 'auto'
+  theme: 'auto',
+  // Optional custom styling
+  customCss: 'body { font-family: "Custom Font"; }',
+});
+```
+
+## Integration with Validation
+
+OpenAPI documentation works seamlessly with your existing validation:
+
+- Runtime validation ensures requests match documentation
+- Type safety throughout your application
+- Documentation automatically updates when schemas change
+- Schema definitions are always in sync with validation rules
+
+The same schema powers both validation and documentation, eliminating the possibility of documentation drift.
