@@ -56,6 +56,37 @@ app.get('/info', (ctx) => {
 export { app };
 ```
 
+## Logging
+
+Monitor your application with built-in structured logging:
+
+```typescript
+import { createKori } from '@korix/kori';
+
+const app = createKori().onInit(async (ctx) => {
+  // Application-level logging (for system events)
+  app.log().info('Application initializing');
+});
+
+app.get('/hello', (ctx) => {
+  // Request-level logging (includes request context automatically)
+  ctx.req.log().info('Processing hello request');
+
+  return ctx.res.text('Hello, Kori!');
+});
+
+export { app };
+```
+
+Sample log output:
+
+```json
+{"level":"info","time":1704067200000,"name":"application","message":"Application initializing"}
+{"level":"info","time":1704067200100,"name":"request","message":"Processing hello request"}
+```
+
+Kori provides a simple console logger by default for quick development. For real applications, use high-performance loggers like Pino. We provide a Pino adapter for easy integration.
+
 ## Hooks
 
 Add initialization and request lifecycle processing:
@@ -66,7 +97,6 @@ import { createKori } from '@korix/kori';
 const app = createKori()
   .onInit(async (ctx) => {
     // Runs once when application starts
-    app.log().info('Application starting...');
     return ctx.withEnv({ applicationStartTime: new Date() });
   })
   .onRequest((ctx) => {
@@ -78,14 +108,10 @@ const app = createKori()
     ctx.req.log().info(`Response: ${ctx.res.status()}`);
   });
 
-app.get('/hello1', (ctx) => {
+app.get('/hello', (ctx) => {
   // Type-safe access to environment extensions
   const uptime = Date.now() - ctx.env.applicationStartTime.getTime();
-  return ctx.res.text(`Hello from endpoint 1! Uptime: ${uptime}ms`);
-});
-
-app.get('/hello2', (ctx) => {
-  return ctx.res.text('Hello from endpoint 2!');
+  return ctx.res.text(`Hello, Kori! Uptime: ${uptime}ms`);
 });
 
 export { app };
@@ -97,17 +123,14 @@ Extend functionality with reusable plugins:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { corsPlugin } from '@korix/cors-plugin';
+import { securityHeadersPlugin } from '@korix/security-headers-plugin';
 
-const app = createKori().applyPlugin(
-  corsPlugin({
-    origin: ['http://localhost:3000', 'https://myapp.com'],
-    credentials: true,
-  }),
-);
+const app = createKori()
+  // Add security headers to all responses
+  .applyPlugin(securityHeadersPlugin());
 
 app.get('/api/data', (ctx) => {
-  return ctx.res.json({ message: 'CORS enabled!' });
+  return ctx.res.json({ message: 'Secure API!' });
 });
 
 export { app };
@@ -156,7 +179,7 @@ export { app };
 
 ## OpenAPI
 
-Generate interactive API documentation:
+Generate interactive API documentation from your validation schemas:
 
 ```typescript
 import { createKori } from '@korix/kori';
@@ -176,7 +199,11 @@ const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
 })
   // Generate OpenAPI specification from Zod schemas
-  .applyPlugin(zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }))
+  .applyPlugin(
+    zodOpenApiPlugin({
+      info: { title: 'My API', version: '1.0.0' },
+    }),
+  )
   // Serve interactive documentation UI
   .applyPlugin(scalarUiPlugin());
 

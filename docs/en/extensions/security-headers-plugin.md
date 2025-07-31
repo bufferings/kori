@@ -70,7 +70,8 @@ Define Content Security Policy to prevent XSS and injection attacks.
 ```typescript
 // String format
 securityHeadersPlugin({
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
+  contentSecurityPolicy:
+    "default-src 'self'; script-src 'self' 'unsafe-inline'",
 });
 
 // Object format
@@ -79,7 +80,11 @@ securityHeadersPlugin({
     directives: {
       'default-src': ["'self'"],
       'script-src': ["'self'", "'unsafe-inline'"],
-      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'style-src': [
+        "'self'",
+        "'unsafe-inline'",
+        'https://fonts.googleapis.com',
+      ],
       'font-src': ["'self'", 'https://fonts.gstatic.com'],
       'img-src': ["'self'", 'data:', 'https:'],
     },
@@ -227,7 +232,8 @@ const app = createKori().applyPlugin(
     crossOriginOpenerPolicy: 'same-origin',
     crossOriginResourcePolicy: 'same-origin',
     customHeaders: {
-      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+      'Permissions-Policy':
+        'camera=(), microphone=(), geolocation=(), payment=()',
     },
   }),
 );
@@ -245,7 +251,11 @@ const app = createKori().applyPlugin(
       directives: {
         'default-src': ["'self'"],
         'script-src': ["'self'", "'unsafe-inline'"],
-        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'style-src': [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+        ],
         'font-src': ["'self'", 'https://fonts.gstatic.com'],
         'img-src': ["'self'", 'data:', 'https:'],
       },
@@ -272,7 +282,11 @@ securityHeadersPlugin({
     directives: {
       'default-src': ["'self'"],
       'script-src': ["'self'", 'https://cdn.jsdelivr.net'],
-      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'style-src': [
+        "'self'",
+        "'unsafe-inline'",
+        'https://fonts.googleapis.com',
+      ],
       'font-src': ["'self'", 'https://fonts.gstatic.com'],
       'img-src': ["'self'", 'data:', 'https:', 'https://images.unsplash.com'],
       'connect-src': ["'self'", 'https://api.myapp.com'],
@@ -357,7 +371,9 @@ const adminRoutes = appWithSecurity.createChild({
 // Only set HSTS if serving over HTTPS
 securityHeadersPlugin({
   strictTransportSecurity:
-    process.env.NODE_ENV === 'production' ? 'max-age=31536000; includeSubDomains; preload' : false,
+    process.env.NODE_ENV === 'production'
+      ? 'max-age=31536000; includeSubDomains; preload'
+      : false,
 });
 ```
 
@@ -368,7 +384,8 @@ securityHeadersPlugin({
 securityHeadersPlugin({
   contentSecurityPolicy: "default-src 'self'; report-uri /csp-report",
   customHeaders: {
-    'Content-Security-Policy-Report-Only': "default-src 'self'; report-uri /csp-report",
+    'Content-Security-Policy-Report-Only':
+      "default-src 'self'; report-uri /csp-report",
   },
 });
 ```
@@ -412,7 +429,9 @@ describe('Security Headers Plugin', () => {
       )
       .get('/public', { handler: (ctx) => ctx.res.json({ ok: true }) });
 
-    const response = await app.generate()(new Request('http://localhost/public'));
+    const response = await app.generate()(
+      new Request('http://localhost/public'),
+    );
 
     expect(response.headers.get('x-frame-options')).toBeNull();
   });

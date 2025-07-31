@@ -1,14 +1,12 @@
 # Routing
 
-Learn how to define routes and handle different URL patterns in your Kori application. Kori's routing system is built on Hono's high-performance router engine with a clean, type-safe API.
+Learn how to define routes and handle different URL patterns in your Kori application. Kori wraps [Hono's SmartRouter](https://hono.dev/docs/concepts/routers#smartrouter), so routing behavior is essentially the same as Hono's.
 
 ## Basic Routing
 
-Kori provides intuitive methods for common HTTP verbs. All routes use the same handler structure with options object:
+Kori provides intuitive methods for common HTTP verbs:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori();
 
 // GET route
@@ -55,109 +53,44 @@ Kori also supports `.head()` and `.options()` methods for handling HEAD and OPTI
 
 ## Path Parameters
 
-Define dynamic route segments using the `:parameter` syntax. Path parameters are available as properties on `ctx.req.pathParams()`:
+Kori automatically infers path parameter names at compile time for better IDE support:
 
 ```typescript
-// Single parameter
+// Single parameter - TypeScript infers { id: string }
 app.get('/users/:id', (ctx) => {
-  // TypeScript knows pathParams() has an id property
-  const { id } = ctx.req.pathParams();
+  // ctx.req.pathParams() is typed as { id: string }
+  const { id } = ctx.req.pathParams(); // id is string
   return ctx.res.json({ userId: id });
 });
 
-// Multiple parameters
+// Multiple parameters - automatically inferred
 app.get('/users/:userId/posts/:postId', (ctx) => {
-  // TypeScript knows pathParams() has userId and postId properties
+  // ctx.req.pathParams() is typed as { userId: string, postId: string }
   const { userId, postId } = ctx.req.pathParams();
   return ctx.res.json({
-    userId,
-    postId,
+    userId, // string
+    postId, // string
     message: `Post ${postId} by user ${userId}`,
   });
 });
-```
 
-## Wildcard Routes
-
-Handle wildcard patterns for flexible routing:
-
-```typescript
-// Catch-all route for static files
-app.get('/static/*', (ctx) => {
-  const url = ctx.req.url();
-  const filePath = url.pathname.replace('/static/', '');
-
-  // Handle static file serving
-  return ctx.res.text(`Serving: ${filePath}`);
+// Optional parameters (with ?)
+app.get('/search/:query/:page?', (ctx) => {
+  // ctx.req.pathParams() is typed as { query: string, page?: string }
+  const { query, page } = ctx.req.pathParams();
+  const pageNumber = page ? parseInt(page) : 1;
+  return ctx.res.json({ query, page: pageNumber });
 });
 
-// API versioning with wildcards
-app.get('/api/*/status', (ctx) => {
-  const url = ctx.req.url();
-  const pathSegments = url.pathname.split('/');
-  const version = pathSegments[2]; // Extract version from /api/{version}/status
-
-  return ctx.res.json({
-    version,
-    status: 'healthy',
-  });
+// Custom regex patterns
+app.get('/files/:id{[0-9]+}', (ctx) => {
+  // ctx.req.pathParams() is typed as { id: string }
+  const { id } = ctx.req.pathParams(); // id will match only digits
+  return ctx.res.json({ fileId: id });
 });
 ```
 
-## Route Options
-
-Routes can accept various options for validation, metadata, and error handling:
-
-```typescript
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { z } from 'zod/v4';
-
-const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
-});
-
-app.post('/users', {
-  // Request validation schema
-  requestSchema: zodRequestSchema({
-    body: z.object({
-      name: z.string().min(1).max(100),
-      email: z.string().email(),
-      age: z.number().min(18).max(120),
-    }),
-    headers: z.object({
-      'x-client-version': z.string().optional(),
-    }),
-  }),
-
-  // Route-specific validation error handler
-  onRequestValidationError: (ctx, errors) => {
-    ctx.req.log().warn('User creation validation failed', { errors });
-    return ctx.res.badRequest({ message: 'Invalid user data' });
-  },
-
-  // Plugin metadata (useful for OpenAPI, etc.)
-  pluginMetadata: {
-    summary: 'Create a new user',
-    description: 'Creates a new user account with validation',
-    tags: ['Users'],
-  },
-
-  // Main handler
-  handler: (ctx) => {
-    // ctx.req.validated contains validated data
-    const { name, email, age } = ctx.req.validatedBody();
-    const clientVersion = ctx.req.validatedHeaders()['x-client-version'];
-
-    const user = createUser({ name, email, age });
-
-    return ctx.res.status(HttpStatus.CREATED).json({
-      user,
-      clientVersion,
-    });
-  },
-});
-```
+The type inference works by parsing the route string at compile time and extracting parameter names, helping prevent typos and improve IDE autocompletion.
 
 ## Route Groups and Children
 
@@ -241,114 +174,3 @@ app.get('/users/:id', (ctx) => {
 // app.get('/users/:id', handler);
 // app.get('/users/me', handler); // Never matched!
 ```
-
-## Advanced Routing Patterns
-
-### Conditional Routing
-
-```typescript
-app.get('/content/:type/:id', async (ctx) => {
-  const { type, id } = ctx.req.pathParams();
-
-  switch (type) {
-    case 'post':
-      const post = await getPost(id);
-      return ctx.res.json({ post });
-
-    case 'page':
-      const page = await getPage(id);
-      return ctx.res.json({ page });
-
-    case 'product':
-      const product = await getProduct(id);
-      return ctx.res.json({ product });
-
-    default:
-      return ctx.res.notFound({ message: `Unknown content type: ${type}` });
-  }
-});
-```
-
-### Route-specific Middleware via Hooks
-
-```typescript
-app.get('/protected/:resource', (ctx) => {
-  // This runs after onRequest hooks
-  const { resource } = ctx.req.pathParams();
-  return ctx.res.json({ resource, authorized: true });
-});
-
-// Add authentication to specific routes by creating a child
-const protectedRoutes = app.createChild({
-  configure: (k) =>
-    k
-      .onRequest((ctx) => {
-        const token = ctx.req.header('authorization');
-        if (!token) {
-          throw new Error('No token provided');
-        }
-
-        const user = validateToken(token);
-        if (!user) {
-          throw new Error('Invalid token');
-        }
-
-        return ctx.withReq({ currentUser: user });
-      })
-      .onError((ctx, err) => {
-        if (err instanceof Error && err.message.includes('token')) {
-          return ctx.res.unauthorized({ message: 'Authentication required' });
-        }
-      }),
-});
-
-protectedRoutes.get('/profile', (ctx) => {
-  return ctx.res.json({ user: ctx.req.currentUser });
-});
-```
-
-## Performance Considerations
-
-1. **Route Order**: Define specific routes before generic ones
-2. **Parameter Extraction**: Path parameters are pre-parsed and cached
-3. **Router Engine**: Built on Hono's high-performance router
-4. **Pattern Matching**: Use simple patterns when possible for best performance
-
-```typescript
-// ✅ Efficient patterns
-app.get('/users/:id', handler); // Simple parameter
-app.get('/api/v1/users', handler); // Static segments
-
-// ⚠️ More complex (still fast, but slightly slower)
-app.get('/files/:category/:year/:month/:file', handler); // Many parameters
-app.get('/api/*/users/*', handler); // Wildcards
-```
-
-## Error Handling in Routes
-
-Handle route-specific errors gracefully:
-
-```typescript
-app.get('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
-
-  try {
-    const user = await database.user.findById(id);
-
-    if (!user) {
-      return ctx.res.notFound({ message: 'User not found' });
-    }
-
-    return ctx.res.json({ user });
-  } catch (error) {
-    ctx.req.log().error('Database error', { error, userId: id });
-    return ctx.res.internalError({ message: 'Database error' });
-  }
-});
-```
-
-## Next Steps
-
-- [Learn about the plugin system](/en/guide/plugins)
-- [Set up request validation](/en/guide/validation)
-- [Configure hooks and middleware](/en/guide/hooks)

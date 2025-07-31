@@ -1,0 +1,234 @@
+# Request Validation
+
+Request validation is at the heart of Kori's type-safe development experience. Kori's extensible validation system provides type-safe, runtime validation with automatic type generation - no casting required. While Kori's architecture is designed to support different validation libraries, we officially provide first-class Zod integration out of the box.
+
+## Setup
+
+Install the Zod integration packages:
+
+```bash
+npm install @korix/zod-validator @korix/zod-schema zod
+```
+
+Set up your Kori application with validation:
+
+```typescript
+import { createKori } from '@korix/kori';
+import { createKoriZodRequestValidator } from '@korix/zod-validator';
+import { zodRequestSchema } from '@korix/zod-schema';
+import { z } from 'zod/v4';
+
+const app = createKori({
+  requestValidator: createKoriZodRequestValidator(),
+});
+```
+
+## Basic Example
+
+Start with a simple request body validation to see how Kori transforms your API development:
+
+```typescript
+const UserSchema = z.object({
+  name: z.string().min(1),
+  email: z.email(),
+  age: z.number().min(18).optional(),
+});
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: UserSchema,
+  }),
+  handler: (ctx) => {
+    // Fully typed and validated!
+    const user = ctx.req.validatedBody();
+
+    return ctx.res.status(201).json({
+      message: 'User created',
+      user,
+    });
+  },
+});
+```
+
+Kori automatically handles:
+
+- Request body parsing and validation
+- TypeScript type inference from your schema
+- Rejecting invalid requests before reaching your handler
+
+## Validating All Request Parts
+
+Kori can validate every part of an HTTP request: path parameters, query parameters, headers, and request body.
+
+```typescript
+app.put('/users/:id', {
+  requestSchema: zodRequestSchema({
+    params: z.object({
+      id: z.string().regex(/^\d+$/).transform(Number),
+    }),
+    queries: z.object({
+      notify: z
+        .enum(['true', 'false'])
+        .transform((val) => val === 'true')
+        .optional(),
+      include: z.string().optional(),
+    }),
+    headers: z.object({
+      authorization: z.string().startsWith('Bearer '),
+    }),
+    body: z.object({
+      name: z.string().min(1).optional(),
+      email: z.email().optional(),
+    }),
+  }),
+  handler: (ctx) => {
+    // Everything is validated and properly typed
+    const { id } = ctx.req.validatedParams();
+    const { notify, include } = ctx.req.validatedQueries();
+    const { authorization } = ctx.req.validatedHeaders();
+    const updates = ctx.req.validatedBody();
+
+    return ctx.res.json({
+      userId: id,
+      updates,
+      willNotify: notify ?? false,
+      token: authorization,
+    });
+  },
+});
+```
+
+## Request Body Content Types
+
+By default, Kori supports JSON and form-encoded bodies. You can explicitly define schemas for different content types:
+
+```typescript
+const JsonUserSchema = z.object({
+  name: z.string(),
+  email: z.email(),
+  age: z.number().optional(),
+});
+
+const FormUserSchema = z.object({
+  name: z.string(),
+  email: z.email(),
+  // Form data values are strings, transform as needed
+  age: z.string().transform(Number),
+});
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: {
+      content: {
+        'application/json': JsonUserSchema,
+        'application/x-www-form-urlencoded': FormUserSchema,
+      },
+    },
+  }),
+  handler: (ctx) => {
+    const userData = ctx.req.validatedBody();
+
+    // Discriminated union allows type-safe handling
+    if (userData.mediaType === 'application/x-www-form-urlencoded') {
+      // userData.value is typed as FormUser (with number age)
+      const user = userData.value;
+      return ctx.res.json({ source: 'form', user });
+    } else {
+      // userData.value is typed as JsonUser (with optional age)
+      const user = userData.value;
+      return ctx.res.json({ source: 'json', user });
+    }
+  },
+});
+```
+
+## Error Handling
+
+Kori provides flexible error handling for validation failures with multiple levels of customization.
+
+### Default Behavior
+
+By default, validation failures return a `400 Bad Request` response:
+
+```json
+{
+  "message": "Request validation failed"
+}
+```
+
+Content type errors return a `415 Unsupported Media Type` response when the request content type doesn't match any defined schema. For example, if your schema only supports JSON and form data, but the client sends `text/plain`:
+
+```json
+{
+  "error": "Unsupported Media Type",
+  "message": "Expected application/json",
+  "supportedTypes": ["application/json", "application/x-www-form-urlencoded"],
+  "requestedType": "text/plain"
+}
+```
+
+### Custom Error Handlers
+
+You can provide custom error handlers at both the route and instance levels to customize validation error responses.
+
+#### Route-Level Error Handler
+
+Handle validation errors for a specific route:
+
+```typescript
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: UserCreateSchema,
+  }),
+  onRequestValidationError: (ctx, error) => {
+    // Access detailed Zod validation errors
+    if ('issues' in error) {
+      return ctx.res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+          code: issue.code,
+        })),
+      });
+    }
+
+    return ctx.res.status(400).json({
+      error: 'Validation failed',
+      message: error.message,
+    });
+  },
+  handler: (ctx) => {
+    // Handler logic
+  },
+});
+```
+
+#### Instance-Level Error Handler
+
+Set a global error handler for all routes:
+
+```typescript
+const app = createKori({
+  requestValidator: createKoriZodRequestValidator(),
+  onRequestValidationError: (ctx, error) => {
+    // Global validation error handling
+    ctx.req.log().warn('Validation failed', { error });
+
+    return ctx.res.status(400).json({
+      error: 'Invalid request data',
+      timestamp: new Date().toISOString(),
+    });
+  },
+});
+```
+
+#### Handler Priority
+
+Error handlers are called in this order:
+
+1. Route-level handler (if provided)
+2. Instance-level handler (if provided)
+3. Default behavior
+
+Each handler can choose to handle the error or pass it to the next handler by returning `undefined`. This allows specific handlers to only deal with certain error types.

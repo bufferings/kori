@@ -1,20 +1,10 @@
 # Plugins
 
-Learn how to use and create plugins to extend your Kori application's functionality. Kori's plugin system is powerful, type-safe, and allows for composable middleware-like behavior.
-
-## What are Plugins?
-
-Plugins in Kori are reusable pieces of functionality that can be applied to your application. They can:
-
-- Add new properties to request/response objects (type-safe extensions)
-- Add lifecycle hooks (`onRequest`, `onResponse`, `onError`, `onFinally`)
-- Modify request or response handling
-- Extend the application environment
-- Provide cross-cutting concerns like authentication, logging, CORS, etc.
+Plugins in Kori are reusable pieces of functionality that extend your application's capabilities. They provide type-safe extensions, lifecycle hooks, and endpoints. This enables cross-cutting concerns like authentication, logging, and CORS.
 
 ## Using Plugins
 
-Apply plugins to your Kori application using the `applyPlugin()` method:
+Apply plugins to your Kori application using the `applyPlugin()` method. This integrates the plugin's functionality into your application:
 
 ```typescript
 import { createKori } from '@korix/kori';
@@ -24,214 +14,213 @@ import { bodyLimitPlugin } from '@korix/body-limit-plugin';
 const app = createKori()
   .applyPlugin(
     corsPlugin({
-      origin: ['https://myapp.com', 'https://api.myapp.com'],
+      origin: ['https://myapp.com'],
       credentials: true,
     }),
   )
   .applyPlugin(
     bodyLimitPlugin({
-      maxSize: '10mb',
+      maxSize: 10 * 1024 * 1024, // 10MB in bytes
     }),
   );
 ```
 
-### Plugin Order Matters
+## How Plugins Work
 
-Plugins are applied in the order they are registered. Each plugin's hooks execute in the same order:
+A plugin is a collection of hooks and endpoints grouped together. When you apply a plugin, you're registering its hooks (like onRequest, onResponse) and any endpoints it defines to your application.
+
+For example, a logging plugin might use multiple hooks:
 
 ```typescript
-// Execution order: cors → bodyLimit → security → custom logic
-const appWithPlugins = createKori()
-  .applyPlugin(corsPlugin()) // 1st: Handle CORS
-  .applyPlugin(bodyLimitPlugin()) // 2nd: Check body size
-  .applyPlugin(securityHeadersPlugin()); // 3rd: Add security headers
+import {
+  defineKoriPlugin,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriPlugin,
+} from '@korix/kori';
 
-// Custom logic after plugin setup
-const app = appWithPlugins.onRequest((ctx) => {
-  // 4th: Custom request logic
-  ctx.req.log().info('Request received');
-  return ctx;
-});
+// Simple logging plugin structure
+export function loggingPlugin<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res, unknown, { startTime: number }, unknown> {
+  return defineKoriPlugin({
+    name: 'simple-logging',
+    apply: (kori) =>
+      kori
+        .onRequest((ctx) => {
+          // Log when request starts
+          ctx.req.log().info('Request started', {
+            method: ctx.req.method(),
+            path: ctx.req.url().pathname,
+          });
+          return ctx.withReq({ startTime: Date.now() });
+        })
+        .onResponse((ctx) => {
+          // Log when response is ready
+          const duration = Date.now() - ctx.req.startTime;
+          ctx.req.log().info('Request completed', {
+            status: ctx.res.getStatus(),
+            duration: `${duration}ms`,
+          });
+        }),
+  });
+}
 ```
 
-## Built-in Plugins
+## Plugin Order
 
-Kori provides several official plugins for common use cases:
-
-### CORS Plugin
-
-Handle Cross-Origin Resource Sharing:
+Plugins are applied in the order they are registered. Each plugin registers its hooks to the application:
 
 ```typescript
-import { corsPlugin } from '@korix/cors-plugin';
-
-const appWithCors = app.applyPlugin(
-  corsPlugin({
-    origin: ['https://myapp.com', 'https://api.myapp.com'],
-    credentials: true,
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowHeaders: ['content-type', 'authorization'],
-    exposeHeaders: ['x-request-id'],
-    maxAge: 86400, // 24 hours
-    optionsSuccessStatus: 204,
-  }),
-);
-
-// Or simple setup
-const appWithSimpleCors = app.applyPlugin(
-  corsPlugin({
-    origin: true, // Allow all origins (not recommended for production)
-    credentials: false,
-  }),
-);
+// Common order example:
+const app = createKori()
+  // 1st: Registers hooks for CORS preflight
+  .applyPlugin(corsPlugin({ origin: true }))
+  // 2nd: Registers hooks for body size check
+  .applyPlugin(bodyLimitPlugin())
+  // 3rd: Registers hooks for security headers
+  .applyPlugin(securityHeadersPlugin());
 ```
 
-### Body Limit Plugin
+For detailed hook execution behavior, see the [Hook Execution](./hook-execution.md) guide.
 
-Limit request body size:
+## Type Extensions
 
-```typescript
-import { bodyLimitPlugin } from '@korix/body-limit-plugin';
-
-const appWithBodyLimit = app.applyPlugin(
-  bodyLimitPlugin({
-    maxSize: '10mb',
-  }),
-);
-
-// The plugin will automatically reject requests with bodies larger than the limit
-```
-
-### Security Headers Plugin
-
-Add security headers to responses:
+Plugins can add new properties to context (environment, request, response):
 
 ```typescript
-import { securityHeadersPlugin } from '@korix/security-headers-plugin';
+import { createKori } from '@korix/kori';
+import { requestIdPlugin } from './my-plugins';
 
-const appWithSecurity = app.applyPlugin(
-  securityHeadersPlugin({
-    frameOptions: 'deny',
-    contentTypeOptions: 'nosniff',
-    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
-    strictTransportSecurity: 'max-age=63072000; includeSubDomains',
-    referrerPolicy: 'strict-origin',
-    crossOriginEmbedderPolicy: 'require-corp',
-    skipPaths: ['/public', '/assets'], // Skip security headers for these paths
-    customHeaders: {
-      'x-api-version': '1.0',
-      'x-custom-security': 'enabled',
-    },
-  }),
-);
-```
+// Before plugin: ctx.req has base KoriRequest type
+const baseApp = createKori();
+// ctx.req: KoriRequest
 
-### OpenAPI and Documentation Plugins
+// After plugin: ctx.req type is extended
+const app = baseApp.applyPlugin(requestIdPlugin());
+// ctx.req: KoriRequest & { requestId: string }
 
-Generate OpenAPI specs and serve documentation:
-
-```typescript
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
-
-app
-  .applyPlugin(
-    zodOpenApiPlugin({
-      info: {
-        title: 'My API',
-        version: '1.0.0',
-        description: 'A powerful API built with Kori',
-      },
-      servers: [
-        { url: 'https://api.myapp.com', description: 'Production' },
-        { url: 'http://localhost:3000', description: 'Development' },
-      ],
-    }),
-  )
-  .applyPlugin(
-    scalarUiPlugin({
-      path: '/docs',
-      title: 'My API Documentation',
-      theme: 'auto',
-    }),
-  );
-
-// Use OpenAPI metadata in routes
-app.get('/users/:id', {
-  pluginMetadata: openApiMeta({
-    summary: 'Get user by ID',
-    description: 'Retrieves a single user by their unique identifier',
-    tags: ['Users'],
-  }),
+app.get('/test', {
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
-    return ctx.res.json({ user: getUserById(id) });
+    // TypeScript now knows about requestId property
+    const id: string = ctx.req.requestId; // ✅ Fully typed
+    return ctx.res.json({ requestId: id });
   },
 });
 ```
 
-### File Serving Plugin (Node.js)
+### Chaining and Type Merging
 
-Serve static files and handle file downloads:
+When chaining multiple plugins with type extensions, their types are automatically merged:
+
+✅ Good: Chained calls preserve type information
 
 ```typescript
-import { sendFilePlugin, serveStaticPlugin } from '@korix/file-plugin-nodejs';
+import { createKori } from '@korix/kori';
+import { requestIdPlugin, timingPlugin } from './my-plugins';
 
-// Serve individual files
-const appWithSendFile = app.applyPlugin(sendFilePlugin());
+const app = createKori()
+  // Adds { requestId: string }
+  .applyPlugin(requestIdPlugin())
+  // Adds { startTime: number }
+  .applyPlugin(timingPlugin());
+// Final type: KoriRequest & { requestId: string } & { startTime: number }
 
-appWithSendFile.get('/download/:filename', {
+app.get('/test', {
   handler: (ctx) => {
-    const { filename } = ctx.req.pathParams();
-    return ctx.res.sendFile(`./uploads/${filename}`);
+    // TypeScript knows about both extensions
+    const id: string = ctx.req.requestId; // ✅ From requestIdPlugin
+    const time: number = ctx.req.startTime; // ✅ From timingPlugin
+
+    return ctx.res.json({
+      requestId: id,
+      processingTime: Date.now() - time,
+    });
   },
 });
+```
 
-// Serve static directory
-const appWithStatic = app.applyPlugin(
-  serveStaticPlugin({
-    root: './public',
-    prefix: '/static',
-  }),
-);
+❌ Avoid: Separate calls lose type information
+
+```typescript
+import { createKori } from '@korix/kori';
+import { requestIdPlugin, timingPlugin } from './my-plugins';
+
+const app2 = createKori();
+
+const withRequestId = app2.applyPlugin(requestIdPlugin());
+// Type extension is lost when stored in variable
+
+const withTiming = withRequestId.applyPlugin(timingPlugin());
+// TypeScript doesn't know about requestId anymore
+
+withTiming.get('/broken', {
+  handler: (ctx) => {
+    const id = ctx.req.requestId; // ❌ TypeScript error!
+  },
+});
 ```
 
 ## Creating Custom Plugins
 
-Define your own plugins using `defineKoriPlugin()`:
+Define your own plugins using `defineKoriPlugin()`.
 
-### Basic Plugin Structure
+TypeScript can automatically infer types from your context extensions, but explicit type definitions are useful for:
+
+- Creating reusable plugins that other files will import
+- Adding functions or methods to context objects
+- Documenting your plugin's interface clearly
+
+### Basic Plugin
 
 ```typescript
-import { defineKoriPlugin, type KoriEnvironment, type KoriRequest, type KoriResponse } from '@korix/kori';
+import {
+  defineKoriPlugin,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriPlugin,
+} from '@korix/kori';
 
-// Simple plugin that adds a timestamp to all responses
-const timestampPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res>({
+const timestampPlugin = <
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res> =>
+  defineKoriPlugin({
     name: 'timestamp',
-    version: '1.0.0',
     apply: (kori) =>
       kori.onResponse((ctx) => {
         ctx.res.setHeader('x-timestamp', new Date().toISOString());
       }),
   });
-
-// Apply the plugin
-const appWithTimestamp = app.applyPlugin(timestampPlugin());
 ```
 
 ### Plugin with Type Extensions
 
-Create plugins that extend request or response objects with new properties:
+Create plugins that extend context with new properties:
 
 ```typescript
-// Request ID plugin that adds requestId to the request
+import {
+  defineKoriPlugin,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriPlugin,
+} from '@korix/kori';
+
 type RequestIdExtension = { requestId: string };
 
-const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown>({
+const requestIdPlugin = <
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown> =>
+  defineKoriPlugin({
     name: 'requestId',
-    version: '1.0.0',
     apply: (kori) =>
       kori
         .onRequest((ctx) => {
@@ -242,336 +231,8 @@ const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, R
           ctx.res.setHeader('x-request-id', ctx.req.requestId);
         }),
   });
-
-// Timing plugin that measures request duration
-type TimingExtension = { startTime: number };
-
-const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown>({
-    name: 'timing',
-    apply: (kori) =>
-      kori
-        .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
-        .onResponse((ctx) => {
-          const duration = Date.now() - ctx.req.startTime;
-          ctx.res.setHeader('x-response-time', `${duration}ms`);
-        }),
-  });
-
-// Apply both plugins
-const app = createKori().applyPlugin(requestIdPlugin()).applyPlugin(timingPlugin());
-
-// Now you can access ctx.req.requestId and ctx.req.startTime in handlers!
-app.get('/test', {
-  handler: (ctx) => {
-    return ctx.res.json({
-      requestId: ctx.req.requestId, // TypeScript knows this exists!
-      processingTime: Date.now() - ctx.req.startTime,
-    });
-  },
-});
 ```
 
-### Authentication Plugin
+## Official Plugins
 
-Create a more complex plugin for authentication:
-
-```typescript
-type UserExtension = { currentUser?: { id: string; name: string; roles: string[] } };
-
-const authPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(options: {
-  secret: string;
-  skipPaths?: string[];
-}) =>
-  defineKoriPlugin<Env, Req, Res, unknown, UserExtension, unknown>({
-    name: 'auth',
-    apply: (kori) =>
-      kori
-        .onRequest((ctx) => {
-          const url = ctx.req.url();
-
-          // Skip authentication for certain paths
-          if (options.skipPaths?.some((path) => url.pathname.startsWith(path))) {
-            return ctx.withReq({ currentUser: undefined });
-          }
-
-          const token = ctx.req.header('authorization')?.replace('Bearer ', '');
-
-          if (!token) {
-            throw new Error('No authentication token provided');
-          }
-
-          try {
-            const user = verifyJWT(token, options.secret);
-            return ctx.withReq({ currentUser: user });
-          } catch (error) {
-            throw new Error('Invalid authentication token');
-          }
-        })
-        .onError((ctx, err) => {
-          if (err instanceof Error && err.message.includes('token')) {
-            return ctx.res.unauthorized({ message: err.message });
-          }
-        }),
-  });
-
-// Apply auth plugin
-const appWithAuth = app.applyPlugin(
-  authPlugin({
-    secret: process.env.JWT_SECRET!,
-    skipPaths: ['/auth', '/public'],
-  }),
-);
-
-// Protected routes automatically have access to currentUser
-appWithAuth.get('/profile', {
-  handler: (ctx) => {
-    if (!ctx.req.currentUser) {
-      return ctx.res.unauthorized({ message: 'Authentication required' });
-    }
-
-    return ctx.res.json({ user: ctx.req.currentUser });
-  },
-});
-```
-
-### Environment Extension Plugin
-
-Plugins can also extend the environment with shared resources:
-
-```typescript
-type DatabaseExtension = {
-  db: {
-    user: { findById: (id: string) => Promise<any> };
-    post: { findAll: () => Promise<any[]> };
-  };
-};
-
-const databasePlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
-  connectionString: string,
-) =>
-  defineKoriPlugin<Env, Req, Res, DatabaseExtension, unknown, unknown>({
-    name: 'database',
-    apply: (kori) =>
-      kori.onInit((env) => {
-        const db = createDatabase(connectionString);
-        return { ...env, db };
-      }),
-  });
-
-// Apply database plugin
-const appWithDb = app.applyPlugin(databasePlugin('postgresql://localhost:5432/myapp'));
-
-// Handlers can access the database
-appWithDb.get('/users/:id', {
-  handler: async (ctx) => {
-    const { id } = ctx.req.pathParams();
-    const user = await ctx.env.db.user.findById(id);
-    return ctx.res.json({ user });
-  },
-});
-```
-
-## Plugin Hooks
-
-Plugins can use various lifecycle hooks:
-
-### Lifecycle Hooks
-
-```typescript
-const fullLifecyclePlugin = () =>
-  defineKoriPlugin({
-    name: 'fullLifecycle',
-    apply: (kori) =>
-      kori
-        .onInit((env) => {
-          console.log('Application initializing');
-          return env;
-        })
-        .onClose((env) => {
-          console.log('Application closing');
-        })
-        .onRequest((ctx) => {
-          console.log('Request starting');
-          return ctx;
-        })
-        .onResponse((ctx) => {
-          console.log('Response ready');
-        })
-        .onError((ctx, error) => {
-          console.log('Error occurred:', error);
-        })
-        .onFinally((ctx) => {
-          console.log('Request completed');
-        }),
-  });
-```
-
-### Handler Hooks vs Instance Hooks
-
-```typescript
-// Instance hooks - apply to ALL requests
-app
-  .onRequest((ctx) => {
-    // Runs for every request
-    ctx.req.log().info('Global request log');
-    return ctx;
-  })
-  .applyPlugin(myPlugin());
-
-// Route-specific logic using child instances
-const apiRoutes = app.createChild({
-  prefix: '/api',
-  configure: (k) =>
-    k.onRequest((ctx) => {
-      // Only runs for /api/* requests
-      ctx.req.log().info('API request');
-      return ctx;
-    }),
-});
-```
-
-## Plugin Best Practices
-
-### 1. Use TypeScript for Type Safety
-
-```typescript
-// ✅ Good: Properly typed plugin
-const typedPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, { customProp: string }, unknown>({
-    name: 'typed',
-    apply: (kori) => kori.onRequest((ctx) => ctx.withReq({ customProp: 'value' })),
-  });
-
-// ❌ Avoid: Untyped plugins lose type safety
-```
-
-### 2. Handle Errors Gracefully
-
-```typescript
-const robustPlugin = () =>
-  defineKoriPlugin({
-    name: 'robust',
-    apply: (kori) =>
-      kori
-        .onRequest((ctx) => {
-          try {
-            // Plugin logic that might fail
-            return doSomethingRisky(ctx);
-          } catch (error) {
-            ctx.req.log().error('Plugin error', { error });
-            return ctx; // Continue without the plugin's functionality
-          }
-        })
-        .onError((ctx, err) => {
-          // Handle plugin-specific errors
-          if (err instanceof MyPluginError) {
-            return ctx.res.badRequest({ message: 'Plugin validation failed' });
-          }
-        }),
-  });
-```
-
-### 3. Make Plugins Configurable
-
-```typescript
-type PluginOptions = {
-  enabled?: boolean;
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
-  skipPaths?: string[];
-};
-
-const configurablePlugin = (options: PluginOptions = {}) =>
-  defineKoriPlugin({
-    name: 'configurable',
-    apply: (kori) => {
-      if (!options.enabled) {
-        return kori; // Plugin disabled
-      }
-
-      return kori.onRequest((ctx) => {
-        const url = ctx.req.url();
-
-        if (options.skipPaths?.some((path) => url.pathname.startsWith(path))) {
-          return ctx; // Skip for certain paths
-        }
-
-        ctx.req.log()[options.logLevel ?? 'info']('Plugin executed');
-        return ctx;
-      });
-    },
-  });
-```
-
-### 4. Use Descriptive Names and Versions
-
-```typescript
-const myPlugin = () =>
-  defineKoriPlugin({
-    name: 'my-company-auth-plugin', // Descriptive, unique name
-    version: '2.1.0', // Semantic versioning
-    apply: (kori) => {
-      // Plugin implementation
-      return kori;
-    },
-  });
-```
-
-## Plugin Composition
-
-Combine multiple plugins for complex functionality:
-
-```typescript
-// Create a "suite" of related plugins
-const securitySuite = () => [
-  corsPlugin({ origin: false }),
-  bodyLimitPlugin({ maxSize: '1mb' }),
-  securityHeadersPlugin(),
-  rateLimitPlugin({ windowMs: 15 * 60 * 1000, max: 100 }),
-];
-
-// Apply all security plugins at once (maintaining type safety)
-const appWithSecurity = securitySuite().reduce((currentApp, plugin) => currentApp.applyPlugin(plugin), app);
-
-// Or create a meta-plugin
-const securityMetaPlugin = () =>
-  defineKoriPlugin({
-    name: 'security-suite',
-    apply: (kori) => {
-      return securitySuite().reduce((k, plugin) => k.applyPlugin(plugin), kori);
-    },
-  });
-```
-
-## Testing Plugins
-
-Test your plugins in isolation:
-
-```typescript
-import { describe, it, expect } from '@jest/globals';
-import { createKori } from '@korix/kori';
-
-describe('Request ID Plugin', () => {
-  it('should add request ID to headers', async () => {
-    const app = createKori()
-      .applyPlugin(requestIdPlugin())
-      .get('/test', {
-        handler: (ctx) => ctx.res.json({ id: ctx.req.requestId }),
-      });
-
-    const response = await app.generate()(new Request('http://localhost/test'));
-    const requestId = response.headers.get('x-request-id');
-
-    expect(requestId).toMatch(/^req-\d+-[a-z0-9]+$/);
-
-    const body = await response.json();
-    expect(body.id).toBe(requestId);
-  });
-});
-```
-
-## Next Steps
-
-- [Learn about request validation](/en/guide/validation)
-- [Get started with Kori](/en/guide/getting-started)
-- [Explore error handling patterns](/en/guide/error-handling)
+Kori provides official plugins for common use cases. See the Extensions section for detailed documentation.

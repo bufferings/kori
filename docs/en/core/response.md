@@ -15,8 +15,15 @@ type KoriResponse = {
   removeHeader(name: HttpResponseHeaderName): KoriResponse;
 
   // Cookies
-  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
-  clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
+  setCookie(
+    name: string,
+    value: CookieValue,
+    options?: CookieOptions,
+  ): KoriResponse;
+  clearCookie(
+    name: string,
+    options?: Pick<CookieOptions, 'path' | 'domain'>,
+  ): KoriResponse;
 
   // Body Content
   json<T>(body: T): KoriResponse;
@@ -193,7 +200,9 @@ Get a copy of all headers.
 ```typescript
 app.get('/all-headers', {
   handler: (ctx) => {
-    ctx.res.setHeader('x-version', '1.0').setHeader('x-environment', 'development');
+    ctx.res
+      .setHeader('x-version', '1.0')
+      .setHeader('x-environment', 'development');
 
     const headers = ctx.res.getHeadersCopy();
     const headersObject = Object.fromEntries(headers.entries());
@@ -308,7 +317,9 @@ app.get('/csv', {
     const users = await getUsers();
     const csv = generateCSV(users);
 
-    return ctx.res.setHeader('content-disposition', 'attachment; filename="users.csv"').text(csv);
+    return ctx.res
+      .setHeader('content-disposition', 'attachment; filename="users.csv"')
+      .text(csv);
   },
 });
 ```
@@ -564,10 +575,15 @@ Send a 408 Request Timeout response.
 ```typescript
 app.post('/process', {
   handler: async (ctx) => {
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 5000),
+    );
 
     try {
-      const result = await Promise.race([processLongTask(ctx.req.validatedBody()), timeout]);
+      const result = await Promise.race([
+        processLongTask(ctx.req.validatedBody()),
+        timeout,
+      ]);
 
       return ctx.res.json({ result });
     } catch (error) {
@@ -752,7 +768,9 @@ app.get('/data', {
           .text(convertToCSV(data));
 
       case 'xml':
-        return ctx.res.setHeader('content-type', 'application/xml').text(convertToXML(data));
+        return ctx.res
+          .setHeader('content-type', 'application/xml')
+          .text(convertToXML(data));
 
       default:
         return ctx.res.json(data);
@@ -813,7 +831,10 @@ app.get('/static-data', {
         .empty();
     }
 
-    return ctx.res.setHeader('etag', etag).setHeader('cache-control', 'public, max-age=3600').json(data);
+    return ctx.res
+      .setHeader('etag', etag)
+      .setHeader('cache-control', 'public, max-age=3600')
+      .json(data);
   },
 });
 ```
@@ -848,7 +869,11 @@ app.get('/download/:filename', {
 
 ```typescript
 // Good: Single chain
-return ctx.res.status(201).setHeader('location', `/users/${user.id}`).setCookie('lastCreated', user.id).json({ user });
+return ctx.res
+  .status(201)
+  .setHeader('location', `/users/${user.id}`)
+  .setCookie('lastCreated', user.id)
+  .json({ user });
 
 // Avoid: Multiple separate calls
 ctx.res.status(201);

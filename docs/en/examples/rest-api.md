@@ -13,7 +13,10 @@ import { securityHeadersPlugin } from '@korix/security-headers-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
+import {
+  createKoriZodRequestValidator,
+  createKoriZodResponseValidator,
+} from '@korix/zod-validator';
 import { z } from 'zod/v4';
 
 // Data schemas
@@ -32,7 +35,11 @@ const QueryParamsSchema = z.object({
 });
 
 // In-memory database (use real database in production)
-type User = z.infer<typeof UserSchema> & { id: string; createdAt: string; updatedAt: string };
+type User = z.infer<typeof UserSchema> & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+};
 const users: User[] = [
   {
     id: '1',
@@ -76,7 +83,9 @@ const app = createKori({
         version: '1.0.0',
         description: 'A complete REST API example with CRUD operations',
       },
-      servers: [{ url: 'http://localhost:3000', description: 'Development server' }],
+      servers: [
+        { url: 'http://localhost:3000', description: 'Development server' },
+      ],
     }),
   )
   .applyPlugin(
@@ -129,7 +138,9 @@ app.get('/api/users', {
     if (search) {
       const searchLower = search.toLowerCase();
       filteredUsers = users.filter(
-        (user) => user.name.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower),
+        (user) =>
+          user.name.toLowerCase().includes(searchLower) ||
+          user.email.toLowerCase().includes(searchLower),
       );
     }
 
@@ -228,7 +239,9 @@ app.put('/api/users/:id', {
     }
 
     // Check email uniqueness (excluding current user)
-    const existingUser = users.find((u) => u.email === userData.email && u.id !== id);
+    const existingUser = users.find(
+      (u) => u.email === userData.email && u.id !== id,
+    );
     if (existingUser) {
       return ctx.res.badRequest({
         message: 'Email already exists',
@@ -270,7 +283,9 @@ app.patch('/api/users/:id', {
 
     // Check email uniqueness if email is being updated
     if (updates.email) {
-      const existingUser = users.find((u) => u.email === updates.email && u.id !== id);
+      const existingUser = users.find(
+        (u) => u.email === updates.email && u.id !== id,
+      );
       if (existingUser) {
         return ctx.res.badRequest({
           message: 'Email already exists',
@@ -418,7 +433,9 @@ app.get('/api/users', {
 
     // Apply search
     if (search) {
-      results = users.filter((user) => user.name.toLowerCase().includes(search.toLowerCase()));
+      results = users.filter((user) =>
+        user.name.toLowerCase().includes(search.toLowerCase()),
+      );
     }
 
     // Apply pagination
@@ -525,7 +542,10 @@ class UsersAPI {
     return response.json();
   }
 
-  async updateUser(id: string, user: { name: string; email: string; age?: number }) {
+  async updateUser(
+    id: string,
+    user: { name: string; email: string; age?: number },
+  ) {
     const response = await fetch(`${API_BASE}/users/${id}`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
@@ -690,7 +710,10 @@ app.get('/api/users/:id', {
       expiry: Date.now() + 5 * 60 * 1000,
     });
 
-    return ctx.res.setHeader('x-cache', 'MISS').setHeader('cache-control', 'public, max-age=300').json(responseData);
+    return ctx.res
+      .setHeader('x-cache', 'MISS')
+      .setHeader('cache-control', 'public, max-age=300')
+      .json(responseData);
   },
 });
 ```
@@ -713,7 +736,12 @@ app.get('/api/users', {
     let query = db.select().from(usersTable);
 
     if (search) {
-      query = query.where(or(ilike(usersTable.name, `%${search}%`), ilike(usersTable.email, `%${search}%`)));
+      query = query.where(
+        or(
+          ilike(usersTable.name, `%${search}%`),
+          ilike(usersTable.email, `%${search}%`),
+        ),
+      );
     }
 
     const users = await query.limit(limit).offset((page - 1) * limit);
