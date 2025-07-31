@@ -53,40 +53,40 @@ export default defineConfig({
             { text: 'OpenAPI Integration', link: '/en/guide/openapi' },
           ],
         },
-        {
-          text: 'Core API',
-          collapsed: true,
-          items: [
-            { text: 'Kori', link: '/en/core/kori' },
-            { text: 'Instance Context', link: '/en/core/instance-context' },
-            { text: 'Handler Context', link: '/en/core/handler-context' },
-            { text: 'Request', link: '/en/core/request' },
-            { text: 'Response', link: '/en/core/response' },
-          ],
-        },
-        {
-          text: 'Extensions',
-          collapsed: true,
-          items: [
-            { text: 'Zod Schema', link: '/en/extensions/zod-schema' },
-            { text: 'Zod Validation', link: '/en/extensions/zod-validation' },
-            { text: 'Zod OpenAPI Plugin', link: '/en/extensions/zod-openapi-plugin' },
-            { text: 'CORS Plugin', link: '/en/extensions/cors-plugin' },
-            { text: 'Body Limit Plugin', link: '/en/extensions/body-limit-plugin' },
-            { text: 'Security Headers Plugin', link: '/en/extensions/security-headers-plugin' },
-            { text: 'File Plugin', link: '/en/extensions/file-plugin' },
-          ],
-        },
-        {
-          text: 'Examples',
-          collapsed: true,
-          items: [
-            { text: 'Basic Server', link: '/en/examples/basic-server' },
-            { text: 'REST API', link: '/en/examples/rest-api' },
-            { text: 'File Upload', link: '/en/examples/file-upload' },
-            { text: 'WebSocket', link: '/en/examples/websocket' },
-          ],
-        },
+        // {
+        //   text: 'Core API',
+        //   collapsed: true,
+        //   items: [
+        //     { text: 'Kori', link: '/en/core/kori' },
+        //     { text: 'Instance Context', link: '/en/core/instance-context' },
+        //     { text: 'Handler Context', link: '/en/core/handler-context' },
+        //     { text: 'Request', link: '/en/core/request' },
+        //     { text: 'Response', link: '/en/core/response' },
+        //   ],
+        // },
+        // {
+        //   text: 'Extensions',
+        //   collapsed: true,
+        //   items: [
+        //     { text: 'Zod Schema', link: '/en/extensions/zod-schema' },
+        //     { text: 'Zod Validation', link: '/en/extensions/zod-validation' },
+        //     { text: 'Zod OpenAPI Plugin', link: '/en/extensions/zod-openapi-plugin' },
+        //     { text: 'CORS Plugin', link: '/en/extensions/cors-plugin' },
+        //     { text: 'Body Limit Plugin', link: '/en/extensions/body-limit-plugin' },
+        //     { text: 'Security Headers Plugin', link: '/en/extensions/security-headers-plugin' },
+        //     { text: 'File Plugin', link: '/en/extensions/file-plugin' },
+        //   ],
+        // },
+        // {
+        //   text: 'Examples',
+        //   collapsed: true,
+        //   items: [
+        //     { text: 'Basic Server', link: '/en/examples/basic-server' },
+        //     { text: 'REST API', link: '/en/examples/rest-api' },
+        //     { text: 'File Upload', link: '/en/examples/file-upload' },
+        //     { text: 'WebSocket', link: '/en/examples/websocket' },
+        //   ],
+        // },
       ],
       '/ja/': [
         {
@@ -124,9 +124,9 @@ export default defineConfig({
         nav: [
           { text: 'Home', link: '/en/' },
           { text: 'Guide', link: '/en/guide/what-is-kori' },
-          { text: 'Core', link: '/en/core/' },
-          { text: 'Extensions', link: '/en/extensions/' },
-          { text: 'Examples', link: '/en/examples/' },
+          // { text: 'Core', link: '/en/core/' },
+          // { text: 'Extensions', link: '/en/extensions/' },
+          // { text: 'Examples', link: '/en/examples/' },
         ],
       },
       ja: {
