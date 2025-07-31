@@ -1,8 +1,8 @@
 # What is Kori?
 
-Kori - means ice 🧊 (氷) in Japanese - is a TypeScript-first web application framework that brings cool, structured clarity to API development.
+Kori - means ice 🧊 (氷) in Japanese - is a TypeScript web framework that brings cool, type-safety-first development.
 
-Build type-safe APIs where your schemas define both validation and TypeScript types.
+Start simple, then use type-safe features as you need them.
 
 ## Start Simple
 
@@ -12,7 +12,28 @@ app.get('/', (ctx) => {
 });
 ```
 
-## Add Schemas for More Power
+## Type-Safe Context
+
+Extend your application environment with full type safety:
+
+```typescript
+const app = createKori().onInit(async (ctx) => {
+  const config = { apiVersion: 'v1' };
+
+  // Type-safe environment extensions
+  return ctx.withEnv({ config });
+});
+
+app.get('/status', (ctx) => {
+  // Fully typed environment access
+  const version = ctx.env.config.apiVersion;
+  return ctx.res.json({ version, status: 'healthy' });
+});
+```
+
+## Type-Safe Validation
+
+Define schemas once, get validation and types automatically:
 
 ```typescript
 const UserSchema = z.object({
@@ -23,15 +44,19 @@ const UserSchema = z.object({
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserSchema }),
   handler: (ctx) => {
-    // Validated and typed from schema
+    // Fully typed and validated - no casting needed!
     const { name, email } = ctx.req.validatedBody();
     return ctx.res.json({ id: '123', name, email });
   },
 });
 ```
 
-One schema provides validation and TypeScript types. Add OpenAPI plugins to generate documentation from the same schemas.
+## Same Schema, OpenAPI Documentation
+
+With the OpenAPI plugin, your validation schemas become OpenAPI documentation:
+
+[Image placeholder: Interactive OpenAPI documentation generated from UserSchema]
 
 ## Powered by Hono Router
 
-Under the hood, Kori integrates Hono's battle-tested router while adding TypeScript-first schema validation and type safety on top.
+Last but not least, Kori integrates Hono's battle-tested router. This means fast routing performance and reliability.

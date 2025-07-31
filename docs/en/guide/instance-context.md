@@ -29,8 +29,6 @@ Instance context supports environment extensions through the `onInit()` hook. Us
 Use `app.onInit()` to set up your application environment:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori()
   // Initialize database and shared services
   .onInit(async (ctx) => {
@@ -68,8 +66,6 @@ const app = createKori()
 Clean up resources when the application shuts down:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori()
   .onInit(async (ctx) => {
     // Setup database, cache, config (see details above)

@@ -5,7 +5,9 @@ The `KoriRequest` object (accessed as `ctx.req`) provides access to all incoming
 ## Type Definition
 
 ```typescript
-type KoriRequest<PathParams extends Record<string, string> = Record<string, string>> = {
+type KoriRequest<
+  PathParams extends Record<string, string> = Record<string, string>,
+> = {
   // Core request data
   raw(): Request;
   log(): KoriLogger;
@@ -82,7 +84,9 @@ app.get('/users/:id', {
       ctx.req.log().info('User found', { userId: id, userName: user.name });
       return ctx.res.json({ user });
     } catch (error) {
-      ctx.req.log().error('Failed to fetch user', { userId: id, error: error.message });
+      ctx.req
+        .log()
+        .error('Failed to fetch user', { userId: id, error: error.message });
       return ctx.res.notFound({ message: 'User not found' });
     }
   },
@@ -350,7 +354,10 @@ app.post('/data', {
 
       case 'application/x-www-form-urlencoded':
         const formData = await ctx.req.bodyFormData();
-        return ctx.res.json({ type: 'form', data: Object.fromEntries(formData) });
+        return ctx.res.json({
+          type: 'form',
+          data: Object.fromEntries(formData),
+        });
 
       case 'text/plain':
         const text = await ctx.req.bodyText();
@@ -723,7 +730,9 @@ app.post('/data', {
 
     // Respond based on accept header
     if (accept?.includes('application/xml')) {
-      return ctx.res.setHeader('content-type', 'application/xml').text(serializeToXML(data));
+      return ctx.res
+        .setHeader('content-type', 'application/xml')
+        .text(serializeToXML(data));
     } else {
       return ctx.res.json(data);
     }

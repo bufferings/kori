@@ -31,9 +31,15 @@ const ImageFileSchema = z.object({
       (file) => file.size <= 5 * 1024 * 1024, // 5MB
       { message: 'Image must be smaller than 5MB' },
     )
-    .refine((file) => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type), {
-      message: 'Only JPEG, PNG, GIF, and WebP images are allowed',
-    }),
+    .refine(
+      (file) =>
+        ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(
+          file.type,
+        ),
+      {
+        message: 'Only JPEG, PNG, GIF, and WebP images are allowed',
+      },
+    ),
 });
 
 const DocumentFileSchema = z.object({
@@ -73,7 +79,10 @@ function getFileHash(buffer: ArrayBuffer): string {
   return createHash('md5').update(Buffer.from(buffer)).digest('hex');
 }
 
-async function saveFile(file: File, directory: string): Promise<{ filename: string; path: string; hash: string }> {
+async function saveFile(
+  file: File,
+  directory: string,
+): Promise<{ filename: string; path: string; hash: string }> {
   const buffer = await file.arrayBuffer();
   const filename = generateFileName(file.name);
   const path = join(directory, filename);
@@ -196,10 +205,14 @@ app.post('/upload/multiple', {
     for (const file of files) {
       try {
         // Determine directory based on file type
-        const directory = file.type.startsWith('image/') ? './uploads/images' : './uploads/documents';
+        const directory = file.type.startsWith('image/')
+          ? './uploads/images'
+          : './uploads/documents';
 
         const result = await saveFile(file, directory);
-        const category = file.type.startsWith('image/') ? 'images' : 'documents';
+        const category = file.type.startsWith('image/')
+          ? 'images'
+          : 'documents';
 
         uploadResults.push({
           id: result.hash,
@@ -217,7 +230,8 @@ app.post('/upload/multiple', {
       }
     }
 
-    const status = errors.length === 0 ? HttpStatus.CREATED : HttpStatus.PARTIAL_CONTENT;
+    const status =
+      errors.length === 0 ? HttpStatus.CREATED : HttpStatus.PARTIAL_CONTENT;
 
     return ctx.res.status(status).json({
       message: `${uploadResults.length} files uploaded successfully`,
@@ -247,7 +261,8 @@ app.post('/upload/form', {
       }
 
       // Determine upload directory
-      const directory = category === 'image' ? './uploads/images' : './uploads/documents';
+      const directory =
+        category === 'image' ? './uploads/images' : './uploads/documents';
       const result = await saveFile(file, directory);
 
       return ctx.res.status(HttpStatus.CREATED).json({
@@ -506,7 +521,9 @@ async function uploadImage(file: File) {
 }
 
 // Usage
-const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+const fileInput = document.querySelector(
+  'input[type="file"]',
+) as HTMLInputElement;
 const file = fileInput.files?.[0];
 
 if (file) {
@@ -576,9 +593,12 @@ class ChunkedUploader {
     }
 
     // Complete upload
-    const completeResponse = await fetch(`/upload/chunked/${sessionId}/complete`, {
-      method: 'POST',
-    });
+    const completeResponse = await fetch(
+      `/upload/chunked/${sessionId}/complete`,
+      {
+        method: 'POST',
+      },
+    );
 
     return completeResponse.json();
   }

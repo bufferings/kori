@@ -143,8 +143,6 @@ Handler context supports request and response extensions through the `onRequest(
 Add custom properties to the request object:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori()
   // Authentication middleware
   .onRequest((ctx) => {
@@ -174,8 +172,6 @@ app.get('/profile', (ctx) => {
 Add custom response helpers:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori()
   // Custom response helpers
   .onRequest((ctx) => {

@@ -155,7 +155,11 @@ const app = createKori().applyPlugin(
 // Secure for production
 const app = createKori().applyPlugin(
   corsPlugin({
-    origin: ['https://myapp.com', 'https://www.myapp.com', 'https://admin.myapp.com'],
+    origin: [
+      'https://myapp.com',
+      'https://www.myapp.com',
+      'https://admin.myapp.com',
+    ],
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowHeaders: ['content-type', 'authorization'],
@@ -173,7 +177,10 @@ const app = createKori().applyPlugin(
     origin: (requestOrigin, req) => {
       // Allow requests from approved domains
       const allowedDomains = ['.myapp.com', '.partner-app.com'];
-      return allowedDomains.some((domain) => requestOrigin?.endsWith(domain)) ?? false;
+      return (
+        allowedDomains.some((domain) => requestOrigin?.endsWith(domain)) ??
+        false
+      );
     },
     credentials: true,
     allowHeaders: ['content-type', 'authorization', 'x-api-key'],
@@ -258,7 +265,9 @@ describe('CORS Plugin', () => {
       }),
     );
 
-    expect(response.headers.get('access-control-allow-origin')).toBe('https://myapp.com');
+    expect(response.headers.get('access-control-allow-origin')).toBe(
+      'https://myapp.com',
+    );
   });
 
   it('should handle preflight requests', async () => {
@@ -280,7 +289,9 @@ describe('CORS Plugin', () => {
     );
 
     expect(response.status).toBe(204);
-    expect(response.headers.get('access-control-allow-methods')).toContain('POST');
+    expect(response.headers.get('access-control-allow-methods')).toContain(
+      'POST',
+    );
   });
 });
 ```

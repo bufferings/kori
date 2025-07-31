@@ -383,7 +383,9 @@ Document all possible error responses:
 
 ```typescript
 const CommonErrorSchema = z.object({
-  error: z.string().meta({ description: 'Error type', example: 'Validation Error' }),
+  error: z
+    .string()
+    .meta({ description: 'Error type', example: 'Validation Error' }),
   message: z.string().meta({ description: 'Human-readable error message' }),
   details: z
     .array(

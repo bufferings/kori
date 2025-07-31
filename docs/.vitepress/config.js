@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   title: 'Kori (WIP)',
-  description: 'A modern TypeScript web framework built for performance and developer experience',
+  description: 'A TypeScript web framework for type-safety-first development',
   base: '/kori/',
 
   // Internationalization configuration
@@ -11,13 +11,13 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
       title: 'Kori (WIP)',
-      description: 'A modern TypeScript web framework built for performance and developer experience',
+      description: 'A TypeScript web framework for type-safety-first development',
     },
     ja: {
       label: '日本語',
       lang: 'ja',
       title: 'Kori (WIP)',
-      description: 'パフォーマンスと開発者体験のために構築されたモダンなTypeScript Webフレームワーク',
+      description: '型安全性ファーストな開発のためのTypeScript Webフレームワーク',
     },
   },
 
@@ -36,24 +36,20 @@ export default defineConfig({
           ],
         },
         {
-          text: 'Core Features',
+          text: 'Features',
           collapsed: false,
           items: [
             { text: 'Instance Context', link: '/en/guide/instance-context' },
             { text: 'Handler Context', link: '/en/guide/handler-context' },
             { text: 'Context Evolution', link: '/en/guide/context-evolution' },
+            { text: 'Logging', link: '/en/guide/logging' },
             { text: 'Routing', link: '/en/guide/routing' },
+            { text: 'Hooks', link: '/en/guide/hooks' },
+            { text: 'Hook Execution', link: '/en/guide/hook-execution' },
+            { text: 'Error Handling', link: '/en/guide/error-handling' },
             { text: 'Plugins', link: '/en/guide/plugins' },
             { text: 'Validation', link: '/en/guide/validation' },
-            { text: 'Error Handling', link: '/en/guide/error-handling' },
             { text: 'OpenAPI Integration', link: '/en/guide/openapi' },
-          ],
-        },
-        {
-          text: 'Advanced',
-          collapsed: true,
-          items: [
-            { text: 'Hooks', link: '/en/guide/hooks' },
             { text: 'Custom Adapters', link: '/en/guide/adapters' },
             { text: 'Testing', link: '/en/guide/testing' },
           ],
@@ -63,7 +59,8 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'Kori', link: '/en/core/kori' },
-            { text: 'Context', link: '/en/core/context' },
+            { text: 'Instance Context', link: '/en/core/instance-context' },
+            { text: 'Handler Context', link: '/en/core/handler-context' },
             { text: 'Request', link: '/en/core/request' },
             { text: 'Response', link: '/en/core/response' },
           ],
@@ -156,7 +153,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 Kori',
+      copyright: 'Copyright © 2025 Kori',
     },
   },
 

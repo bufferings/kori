@@ -21,7 +21,6 @@ const app = createKori()
   .onRequest((ctx) => {
     // Both ctx.env.db and ctx.req.user are typed
     ctx.req.log().info('Request', { userId: ctx.req.user?.id });
-    return ctx;
   });
 
 // ❌ Avoid: Separate calls lose type information
@@ -32,7 +31,7 @@ app.onInit(async (ctx) => {
   return ctx.withEnv({ db });
 }); // Type extension is lost
 
-app.onRequest((ctx) => {
+app.onRequest(async (ctx) => {
   // TypeScript doesn't know about ctx.env.db
   const users = await ctx.env.db.getUsers(); // ❌ Type error
 });
@@ -43,8 +42,6 @@ app.onRequest((ctx) => {
 Build complex request processing pipelines using method chaining:
 
 ```typescript
-import { createKori } from '@korix/kori';
-
 const app = createKori()
   // 1. Authentication
   .onRequest((ctx) => {

@@ -146,7 +146,8 @@ app.get('/protected', {
     headers: AuthHeaderSchema,
   }),
   handler: (ctx) => {
-    const { authorization, 'x-api-version': apiVersion } = ctx.req.validatedHeaders();
+    const { authorization, 'x-api-version': apiVersion } =
+      ctx.req.validatedHeaders();
     const token = authorization.replace('Bearer ', '');
 
     return ctx.res.json({ authenticated: true, apiVersion });
@@ -234,7 +235,10 @@ app.post('/validation-demo', {
   },
   handler: (ctx) => {
     const { email, age, preferences } = ctx.req.validatedBody();
-    return ctx.res.json({ message: 'Success!', user: { email, age, preferences } });
+    return ctx.res.json({
+      message: 'Success!',
+      user: { email, age, preferences },
+    });
   },
 });
 ```
@@ -245,9 +249,15 @@ Provide helpful error messages:
 
 ```typescript
 const UserSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Please enter a valid email address'),
-  age: z.number().min(18, 'Must be at least 18 years old').max(120, 'Age seems unrealistic'),
+  age: z
+    .number()
+    .min(18, 'Must be at least 18 years old')
+    .max(120, 'Age seems unrealistic'),
 });
 ```
 
@@ -282,7 +292,10 @@ Add custom validation logic:
 const PasswordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters')
-  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number');
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+    'Password must contain uppercase, lowercase, and number',
+  );
 ```
 
 ## Performance Tips
@@ -300,7 +313,9 @@ const UserSchema = z.object({
 
 // Multiple routes can share the same schema efficiently
 app.post('/users', { requestSchema: zodRequestSchema({ body: UserSchema }) });
-app.put('/users/:id', { requestSchema: zodRequestSchema({ body: UserSchema }) });
+app.put('/users/:id', {
+  requestSchema: zodRequestSchema({ body: UserSchema }),
+});
 ```
 
 ### Lazy Validation

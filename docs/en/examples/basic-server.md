@@ -341,7 +341,9 @@ const app = createKori()
   .applyPlugin(bodyLimitPlugin({ maxSize: '1mb' }))
   .applyPlugin(
     securityHeadersPlugin({
-      strictTransportSecurity: !isDev ? 'max-age=31536000; includeSubDomains' : false,
+      strictTransportSecurity: !isDev
+        ? 'max-age=31536000; includeSubDomains'
+        : false,
     }),
   );
 ```
