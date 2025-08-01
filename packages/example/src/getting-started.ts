@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 const UserSchema = z.object({
   name: z.string().min(1).max(100).meta({ description: 'User name' }),
-  email: z.email().meta({ description: 'Email address' }),
+  age: z.number().int().min(0).meta({ description: 'User age' }),
 });
 
 const app = createKori({
@@ -58,11 +58,11 @@ app.post('/users', {
     body: UserSchema,
   }),
   handler: (ctx) => {
-    const { name, email } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
     const newUser = {
       id: Math.floor(Math.random() * 1000),
       name,
-      email,
+      age,
       createdAt: new Date().toISOString(),
     };
     return ctx.res.status(HttpStatus.CREATED).json(newUser);
@@ -77,8 +77,8 @@ app.get('/users', {
   }),
   handler: (ctx) => {
     const users = [
-      { id: 1, name: 'Alice', email: 'alice@example.com' },
-      { id: 2, name: 'Bob', email: 'bob@example.com' },
+      { id: 1, name: 'Alice', age: 28 },
+      { id: 2, name: 'Bob', age: 35 },
     ];
     return ctx.res.json({ users });
   },

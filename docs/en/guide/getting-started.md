@@ -148,8 +148,7 @@ import { z } from 'zod';
 
 const CreateUserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
-  age: z.number().min(18).optional(),
+  age: z.number().min(0).optional(),
 });
 
 const app = createKori({
@@ -160,14 +159,13 @@ app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
     // Type-safe validated body access
-    const { name, email, age } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
 
     // Your business logic here (save to database, etc.)
 
     return ctx.res.status(201).json({
       id: Math.random().toString(36),
       name,
-      email,
       age,
       createdAt: new Date().toISOString(),
     });
@@ -191,8 +189,7 @@ import { z } from 'zod';
 
 const CreateUserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
-  age: z.number().min(18).optional(),
+  age: z.number().min(0).optional(),
 });
 
 const app = createKori({
@@ -211,14 +208,13 @@ app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
   handler: (ctx) => {
     // Type-safe validated body access
-    const { name, email, age } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
 
     // Your business logic here (save to database, etc.)
 
     return ctx.res.status(201).json({
       id: Math.random().toString(36),
       name,
-      email,
       age,
       createdAt: new Date().toISOString(),
     });

@@ -31,7 +31,7 @@ Define response schemas for different status codes:
 const UserSchema = z.object({
   id: z.number(),
   name: z.string(),
-  email: z.email(),
+  age: z.number().int().min(0),
   createdAt: z.string(),
 });
 
@@ -61,7 +61,7 @@ app.get('/users/:id', {
     return ctx.res.status(200).json({
       id,
       name: 'John Doe',
-      email: 'john@example.com',
+      age: 30,
       createdAt: new Date().toISOString(),
     });
   },

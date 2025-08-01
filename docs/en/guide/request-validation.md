@@ -30,8 +30,7 @@ Start with a simple request body validation to see how Kori transforms your API 
 ```typescript
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
-  age: z.number().min(18).optional(),
+  age: z.number().int().min(0),
 });
 
 app.post('/users', {
@@ -78,7 +77,7 @@ app.put('/users/:id', {
     }),
     body: z.object({
       name: z.string().min(1).optional(),
-      email: z.email().optional(),
+      age: z.number().int().min(0).optional(),
     }),
   }),
   handler: (ctx) => {
@@ -105,13 +104,11 @@ By default, Kori supports JSON and form-encoded bodies. You can explicitly defin
 ```typescript
 const JsonUserSchema = z.object({
   name: z.string(),
-  email: z.email(),
-  age: z.number().optional(),
+  age: z.number().int().min(0),
 });
 
 const FormUserSchema = z.object({
   name: z.string(),
-  email: z.email(),
   // Form data values are strings, transform as needed
   age: z.string().transform(Number),
 });

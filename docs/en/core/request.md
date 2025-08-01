@@ -181,7 +181,7 @@ app.get('/users/:id/posts/:postId', {
 ```typescript
 const ParamsSchema = z.object({
   id: z.string().regex(/^\d+$/).transform(Number),
-  postId: z.string().uuid(),
+  postId: z.uuid(),
 });
 
 app.get('/users/:id/posts/:postId', {
@@ -426,7 +426,7 @@ app.get('/session', {
 
 ```typescript
 const CookieSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid(),
   theme: z.enum(['light', 'dark']).default('light'),
   language: z.string().length(2).default('en'),
 });
@@ -471,7 +471,7 @@ app.post('/users', {
 ```typescript
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 app.post('/users', {
@@ -485,7 +485,7 @@ app.post('/users', {
     // userData is fully typed from schema
     return ctx.res.json({
       message: `Hello ${userData.name}`,
-      email: userData.email,
+      age: userData.age,
     });
   },
 });
@@ -680,7 +680,7 @@ const RequestSchema = zodRequestSchema({
   }),
   body: z.object({
     name: z.string().min(1),
-    email: z.email(),
+    age: z.number().int().min(0),
   }),
 });
 
@@ -691,11 +691,11 @@ app.post('/users/:id', {
     const { id } = ctx.req.validatedParams(); // number
     const { include } = ctx.req.validatedQueries(); // string[] | undefined
     const { authorization } = ctx.req.validatedHeaders(); // string
-    const { name, email } = ctx.req.validatedBody(); // { name: string, email: string }
+    const { name, age } = ctx.req.validatedBody(); // { name: string, age: number }
 
     return ctx.res.json({
       userId: id,
-      userData: { name, email },
+      userData: { name, age },
       include,
       hasAuth: !!authorization,
     });
@@ -827,7 +827,7 @@ app.post('/process', {
 // Good: Validation + typing
 const UserSchema = z.object({
   name: z.string(),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 app.post('/users', {
@@ -843,7 +843,7 @@ app.post('/users', {
 app.post('/users', {
   handler: async (ctx) => {
     const data = await ctx.req.bodyJson();
-    const user = data as { name: string; email: string }; // Unsafe
+    const user = data as { name: string; age: number }; // Unsafe
     return ctx.res.json({ user });
   },
 });

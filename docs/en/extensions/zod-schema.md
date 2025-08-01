@@ -22,8 +22,7 @@ import { z } from 'zod';
 // Define your schema
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
-  age: z.number().min(18).optional(),
+  age: z.number().int().min(0),
 });
 
 // Use in request schema
@@ -77,7 +76,7 @@ Build complex schemas from simpler ones:
 ```typescript
 const BaseUserSchema = z.object({
   name: z.string(),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 const UserCreateSchema = BaseUserSchema.extend({
@@ -86,7 +85,7 @@ const UserCreateSchema = BaseUserSchema.extend({
 
 const UserResponseSchema = BaseUserSchema.extend({
   id: z.number(),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 ```
 
@@ -123,7 +122,7 @@ Structure complex data hierarchies:
 const OrderSchema = z.object({
   customer: z.object({
     name: z.string(),
-    email: z.email(),
+    age: z.number().int().min(0),
   }),
   items: z
     .array(
@@ -147,14 +146,14 @@ Keep schemas organized and reusable:
 // schemas/user.ts
 export const UserCreateSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial();
 
 export const UserResponseSchema = UserCreateSchema.extend({
   id: z.number(),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 ```
 
@@ -182,9 +181,9 @@ const UserSchema = z.object({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.email().meta({
-    description: 'User email address',
-    example: 'john@example.com',
+  age: z.number().int().min(0).meta({
+    description: 'User age',
+    example: 30,
   }),
 });
 ```

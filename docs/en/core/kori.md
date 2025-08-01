@@ -327,7 +327,7 @@ app.post('/users', {
   requestSchema: zodRequestSchema({
     body: z.object({
       name: z.string().min(1),
-      email: z.email(),
+      age: z.number().int().min(0),
     }),
     headers: z.object({
       'content-type': z.literal('application/json'),
@@ -351,9 +351,9 @@ app.post('/users', {
 
   // Main handler
   handler: async (ctx) => {
-    const { name, email } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
 
-    const user = await createUser({ name, email });
+    const user = await createUser({ name, age });
 
     return ctx.res.status(201).json({
       user,
