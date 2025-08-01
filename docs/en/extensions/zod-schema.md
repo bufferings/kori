@@ -86,7 +86,7 @@ const UserCreateSchema = BaseUserSchema.extend({
 
 const UserResponseSchema = BaseUserSchema.extend({
   id: z.number(),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 ```
 
@@ -154,7 +154,7 @@ export const UserUpdateSchema = UserCreateSchema.partial();
 
 export const UserResponseSchema = UserCreateSchema.extend({
   id: z.number(),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 ```
 

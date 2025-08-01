@@ -100,7 +100,7 @@ import { zodResponseSchema } from '@korix/zod-schema';
 
 const UserResponseSchema = z.object({
   user: UserSchema,
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
 app.post('/users', {

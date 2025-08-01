@@ -181,7 +181,7 @@ app.get('/users/:id/posts/:postId', {
 ```typescript
 const ParamsSchema = z.object({
   id: z.string().regex(/^\d+$/).transform(Number),
-  postId: z.string().uuid(),
+  postId: z.uuid(),
 });
 
 app.get('/users/:id/posts/:postId', {
@@ -426,7 +426,7 @@ app.get('/session', {
 
 ```typescript
 const CookieSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid(),
   theme: z.enum(['light', 'dark']).default('light'),
   language: z.string().length(2).default('en'),
 });
