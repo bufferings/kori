@@ -333,8 +333,7 @@ app.post('/validation-demo', {
   }),
   requestSchema: zodRequestSchema({
     body: z.object({
-      email: z.email(),
-      age: z.number().min(18).max(120),
+      age: z.number().int().min(0),
       preferences: z.object({
         newsletter: z.boolean(),
         theme: z.enum(['light', 'dark']),
@@ -356,11 +355,11 @@ app.post('/validation-demo', {
     });
   },
   handler: (ctx) => {
-    const { email, age, preferences } = ctx.req.validatedBody();
+    const { age, preferences } = ctx.req.validatedBody();
 
     return ctx.res.json({
       message: 'Validation successful! New error handling is working.',
-      user: { email, age, preferences },
+      user: { age, preferences },
       timestamp: new Date().toISOString(),
       info: {
         note: 'Try sending invalid JSON or wrong Content-Type to see new error handling in action',

@@ -38,15 +38,15 @@ Define schemas once, get validation and types automatically:
 ```typescript
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserSchema }),
   handler: (ctx) => {
     // Fully typed and validated - no casting needed!
-    const { name, email } = ctx.req.validatedBody();
-    return ctx.res.json({ id: '123', name, email });
+    const { name, age } = ctx.req.validatedBody();
+    return ctx.res.json({ id: '123', name, age });
   },
 });
 ```

@@ -38,8 +38,7 @@ import { z } from 'zod';
 
 const UserCreateSchema = z.object({
   name: z.string().min(1),
-  email: z.email(),
-  age: z.number().min(18).optional(),
+  age: z.number().int().min(0),
 });
 
 app.post('/users', {
@@ -48,14 +47,13 @@ app.post('/users', {
   }),
   handler: (ctx) => {
     // ctx.req.validatedBody() is fully typed!
-    const { name, email, age } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
 
     // TypeScript knows the exact types:
     // name: string
-    // email: string
-    // age: number | undefined
+    // age: number
 
-    return ctx.res.json({ user: { name, email, age } });
+    return ctx.res.json({ user: { name, age } });
   },
 });
 ```
@@ -172,7 +170,7 @@ const UserResponseSchema = z.object({
   user: z.object({
     id: z.number(),
     name: z.string(),
-    email: z.string(),
+    age: z.number().int().min(0),
   }),
 });
 
@@ -186,7 +184,7 @@ app.post('/users', {
 
     // Response will be validated in development
     return ctx.res.status(201).json({
-      user: { id: 123, name: userData.name, email: userData.email },
+      user: { id: 123, name: userData.name, age: userData.age },
     });
   },
 });
@@ -208,8 +206,7 @@ const app = createKori({
 app.post('/validation-demo', {
   requestSchema: zodRequestSchema({
     body: z.object({
-      email: z.email(),
-      age: z.number().min(18).max(120),
+      age: z.number().int().min(0),
       preferences: z.object({
         newsletter: z.boolean(),
         theme: z.enum(['light', 'dark']),
@@ -234,10 +231,10 @@ app.post('/validation-demo', {
     });
   },
   handler: (ctx) => {
-    const { email, age, preferences } = ctx.req.validatedBody();
+    const { age, preferences } = ctx.req.validatedBody();
     return ctx.res.json({
       message: 'Success!',
-      user: { email, age, preferences },
+      user: { age, preferences },
     });
   },
 });
@@ -253,10 +250,10 @@ const UserSchema = z.object({
     .string()
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters'),
-  email: z.email('Please enter a valid email address'),
   age: z
     .number()
-    .min(18, 'Must be at least 18 years old')
+    .int()
+    .min(0, 'Age must be non-negative')
     .max(120, 'Age seems unrealistic'),
 });
 ```
@@ -272,13 +269,13 @@ const CreateOrUpdateSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('create'),
     name: z.string().min(1),
-    email: z.email(),
+    age: z.number().int().min(0),
     password: z.string().min(8), // Required for creation
   }),
   z.object({
     action: z.literal('update'),
     name: z.string().min(1).optional(),
-    email: z.email().optional(),
+    age: z.number().int().min(0).optional(),
     // Password not required for updates
   }),
 ]);
@@ -308,7 +305,7 @@ Schemas are automatically cached for performance:
 // This schema is compiled once and reused
 const UserSchema = z.object({
   name: z.string(),
-  email: z.email(),
+  age: z.number().int().min(0),
 });
 
 // Multiple routes can share the same schema efficiently

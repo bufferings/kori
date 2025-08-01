@@ -142,7 +142,7 @@ app.get('/download', {
     return ctx.res
       .setHeader('content-disposition', 'attachment; filename="data.csv"')
       .setHeader('cache-control', 'no-cache')
-      .text('id,name,email\n1,John,john@example.com');
+      .text('id,name,age\n1,John,30');
   },
 });
 ```
@@ -438,10 +438,10 @@ app.post('/users', {
   handler: async (ctx) => {
     const userData = ctx.req.validatedBody();
 
-    if (await userExists(userData.email)) {
+    if (userData.age < 0) {
       return ctx.res.badRequest({
-        message: 'User with this email already exists',
-        code: 'USER_EXISTS',
+        message: 'User age must be non-negative',
+        code: 'INVALID_AGE',
       });
     }
 

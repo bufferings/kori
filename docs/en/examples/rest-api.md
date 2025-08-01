@@ -22,8 +22,7 @@ import { z } from 'zod';
 // Data schemas
 const UserSchema = z.object({
   name: z.string().min(1).max(100).meta({ description: 'User full name' }),
-  email: z.email().meta({ description: 'Email address' }),
-  age: z.number().min(0).max(150).optional().meta({ description: 'User age' }),
+  age: z.number().int().min(0).meta({ description: 'User age' }),
 });
 
 const UpdateUserSchema = UserSchema.partial();
@@ -44,7 +43,6 @@ const users: User[] = [
   {
     id: '1',
     name: 'Alice Johnson',
-    email: 'alice@example.com',
     age: 30,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
@@ -52,7 +50,6 @@ const users: User[] = [
   {
     id: '2',
     name: 'Bob Smith',
-    email: 'bob@example.com',
     age: 25,
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
@@ -137,10 +134,8 @@ app.get('/api/users', {
     // Apply search filter
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredUsers = users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower),
+      filteredUsers = users.filter((user) =>
+        user.name.toLowerCase().includes(searchLower),
       );
     }
 
@@ -194,12 +189,11 @@ app.post('/api/users', {
   handler: (ctx) => {
     const userData = ctx.req.validatedBody();
 
-    // Check if email already exists
-    const existingUser = users.find((u) => u.email === userData.email);
-    if (existingUser) {
+    // Validate age requirement
+    if (userData.age < 0) {
       return ctx.res.badRequest({
-        message: 'Email already exists',
-        field: 'email',
+        message: 'Age must be non-negative',
+        field: 'age',
       });
     }
 
@@ -238,14 +232,11 @@ app.put('/api/users/:id', {
       return ctx.res.notFound({ message: 'User not found' });
     }
 
-    // Check email uniqueness (excluding current user)
-    const existingUser = users.find(
-      (u) => u.email === userData.email && u.id !== id,
-    );
-    if (existingUser) {
+    // Validate age requirement
+    if (userData.age < 0) {
       return ctx.res.badRequest({
-        message: 'Email already exists',
-        field: 'email',
+        message: 'Age must be non-negative',
+        field: 'age',
       });
     }
 
@@ -281,17 +272,12 @@ app.patch('/api/users/:id', {
       return ctx.res.notFound({ message: 'User not found' });
     }
 
-    // Check email uniqueness if email is being updated
-    if (updates.email) {
-      const existingUser = users.find(
-        (u) => u.email === updates.email && u.id !== id,
-      );
-      if (existingUser) {
-        return ctx.res.badRequest({
-          message: 'Email already exists',
-          field: 'email',
-        });
-      }
+    // Validate age requirement if age is being updated
+    if (updates.age !== undefined && updates.age < 0) {
+      return ctx.res.badRequest({
+        message: 'Age must be non-negative',
+        field: 'age',
+      });
     }
 
     // Apply partial update
@@ -369,8 +355,7 @@ console.log('📚 API Documentation available at http://localhost:3000/docs');
 // Define schema
 const UserSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.email(),
-  age: z.number().min(0).max(150).optional(),
+  age: z.number().int().min(0),
 });
 
 // Use in route
@@ -380,7 +365,7 @@ app.post('/api/users', {
   }),
   handler: (ctx) => {
     // ctx.req.validatedBody() is fully typed and validated
-    const { name, email, age } = ctx.req.validatedBody();
+    const { name, age } = ctx.req.validatedBody();
     // ...
   },
 });
@@ -403,11 +388,10 @@ app.get('/api/users/:id', {
 // Validation errors
 app.post('/api/users', {
   handler: (ctx) => {
-    const existingUser = users.find((u) => u.email === userData.email);
-    if (existingUser) {
+    if (userData.age < 0) {
       return ctx.res.badRequest({
-        message: 'Email already exists',
-        field: 'email',
+        message: 'Age must be non-negative',
+        field: 'age',
       });
     }
     // ...
@@ -477,7 +461,6 @@ curl -X POST http://localhost:3000/api/users \
   -H "content-type: application/json" \
   -d '{
     "name": "Charlie Brown",
-    "email": "charlie@example.com",
     "age": 28
   }'
 
@@ -486,7 +469,6 @@ curl -X PUT http://localhost:3000/api/users/1 \
   -H "content-type: application/json" \
   -d '{
     "name": "Alice Johnson Updated",
-    "email": "alice.updated@example.com",
     "age": 31
   }'
 
@@ -584,7 +566,6 @@ try {
   // Create user
   const newUser = await api.createUser({
     name: 'David Wilson',
-    email: 'david@example.com',
     age: 35,
   });
   console.log('Created:', newUser);
@@ -739,7 +720,7 @@ app.get('/api/users', {
       query = query.where(
         or(
           ilike(usersTable.name, `%${search}%`),
-          ilike(usersTable.email, `%${search}%`),
+          gte(usersTable.age, Number(search) || 0),
         ),
       );
     }

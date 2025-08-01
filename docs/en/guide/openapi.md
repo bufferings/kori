@@ -56,12 +56,8 @@ const UserSchema = z.object({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.email().meta({
-    description: 'Email address',
-    example: 'john@example.com',
-  }),
-  age: z.number().min(18).optional().meta({
-    description: 'User age (18 or older)',
+  age: z.number().int().min(0).meta({
+    description: 'User age',
     example: 30,
   }),
 });

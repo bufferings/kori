@@ -59,11 +59,7 @@ const UserSchema = z.object({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.email().meta({
-    description: 'User email address',
-    example: 'john@example.com',
-  }),
-  age: z.number().min(18).max(120).optional().meta({
+  age: z.number().int().min(0).meta({
     description: 'User age',
     example: 30,
   }),
@@ -284,7 +280,7 @@ const appWithFullOpenApi = app.applyPlugin(
       description: 'A comprehensive user management system',
       contact: {
         name: 'API Support',
-        email: 'support@myapi.com',
+        url: 'https://myapi.com/support',
       },
       license: {
         name: 'MIT',
@@ -363,10 +359,9 @@ Add rich metadata consistently:
 
 ```typescript
 const UserSchema = z.object({
-  email: z.email('Must be a valid email').meta({
-    description: 'User email address (must be unique)',
-    example: 'user@example.com',
-    format: 'email',
+  age: z.number().int().min(0, 'Age must be non-negative').meta({
+    description: 'User age',
+    example: 30,
   }),
 
   password: z.string().min(8, 'Password must be at least 8 characters').meta({
