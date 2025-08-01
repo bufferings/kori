@@ -207,10 +207,10 @@ function createRequestValidationErrorHandler<
     // 3. Handle pre-validation unsupported media type errors with 415 status
     if (err.body?.stage === 'pre-validation' && err.body.type === 'UNSUPPORTED_MEDIA_TYPE') {
       return ctx.res.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).json({
-        error: 'Unsupported Media Type',
-        message: err.body.message,
-        supportedTypes: err.body.supportedTypes,
-        requestedType: err.body.requestedType,
+        error: {
+          type: 'UNSUPPORTED_MEDIA_TYPE',
+          message: 'Unsupported Media Type',
+        },
       });
     }
 
