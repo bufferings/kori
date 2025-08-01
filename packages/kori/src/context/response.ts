@@ -197,12 +197,13 @@ type ErrorConfig = {
 
 function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
   res.statusCode = status;
-  const { message = defaultMsg, ...additionalFields } = options;
+  const { message, ...additionalFields } = options;
+  const finalMessage = message ?? defaultMsg;
   setBodyJsonInternal({
     res,
     body: createErrorResponseBodyJson({
       errorType,
-      message,
+      message: finalMessage,
       ...additionalFields,
     }),
   });
