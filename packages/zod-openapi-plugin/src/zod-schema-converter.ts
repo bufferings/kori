@@ -2,7 +2,7 @@ import { type KoriSchemaDefault } from '@korix/kori';
 import { type SchemaConverter, type ConversionContext } from '@korix/openapi-plugin';
 import { isKoriZodSchema } from '@korix/zod-schema';
 import { type SchemaObject } from 'openapi3-ts/oas31';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 /**
  * Create a Zod schema converter for OpenAPI

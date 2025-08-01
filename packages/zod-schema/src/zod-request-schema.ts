@@ -4,7 +4,7 @@ import {
   type KoriRequestSchemaContent,
   type KoriRequestSchemaBody,
 } from '@korix/kori';
-import { type z } from 'zod/v4';
+import { type z } from 'zod';
 
 import { type KoriZodSchema, type KoriZodSchemaProvider, createKoriZodSchema } from './zod-schema.js';
 

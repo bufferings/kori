@@ -34,11 +34,11 @@ Validate JSON request bodies:
 
 ```typescript
 import { zodRequestSchema } from '@korix/zod-schema';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const UserCreateSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   age: z.number().min(18).optional(),
 });
 
@@ -208,7 +208,7 @@ const app = createKori({
 app.post('/validation-demo', {
   requestSchema: zodRequestSchema({
     body: z.object({
-      email: z.string().email(),
+      email: z.email(),
       age: z.number().min(18).max(120),
       preferences: z.object({
         newsletter: z.boolean(),
@@ -253,7 +253,7 @@ const UserSchema = z.object({
     .string()
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters'),
-  email: z.string().email('Please enter a valid email address'),
+  email: z.email('Please enter a valid email address'),
   age: z
     .number()
     .min(18, 'Must be at least 18 years old')
@@ -272,13 +272,13 @@ const CreateOrUpdateSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('create'),
     name: z.string().min(1),
-    email: z.string().email(),
+    email: z.email(),
     password: z.string().min(8), // Required for creation
   }),
   z.object({
     action: z.literal('update'),
     name: z.string().min(1).optional(),
-    email: z.string().email().optional(),
+    email: z.email().optional(),
     // Password not required for updates
   }),
 ]);
@@ -308,7 +308,7 @@ Schemas are automatically cached for performance:
 // This schema is compiled once and reused
 const UserSchema = z.object({
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 // Multiple routes can share the same schema efficiently

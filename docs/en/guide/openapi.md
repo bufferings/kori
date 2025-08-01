@@ -48,7 +48,7 @@ Start your server and visit `http://localhost:3000/docs` to see the interactive 
 Your validation schemas automatically become documentation:
 
 ```typescript
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 // Define schema with OpenAPI metadata
 const UserSchema = z.object({
@@ -56,7 +56,7 @@ const UserSchema = z.object({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.string().email().meta({
+  email: z.email().meta({
     description: 'Email address',
     example: 'john@example.com',
   }),

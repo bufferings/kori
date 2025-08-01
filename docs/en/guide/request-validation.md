@@ -16,7 +16,7 @@ Set up your Kori application with validation:
 import { createKori } from '@korix/kori';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
 import { zodRequestSchema } from '@korix/zod-schema';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),

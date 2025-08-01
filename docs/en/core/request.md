@@ -471,7 +471,7 @@ app.post('/users', {
 ```typescript
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 app.post('/users', {
@@ -680,7 +680,7 @@ const RequestSchema = zodRequestSchema({
   }),
   body: z.object({
     name: z.string().min(1),
-    email: z.string().email(),
+    email: z.email(),
   }),
 });
 
@@ -827,7 +827,7 @@ app.post('/process', {
 // Good: Validation + typing
 const UserSchema = z.object({
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 app.post('/users', {
