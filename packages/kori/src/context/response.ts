@@ -196,7 +196,9 @@ type ErrorConfig = {
 };
 
 function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: ErrorConfig): void {
-  const msg = options.message ?? defaultMsg;
+  const { message, code, details, ...otherOptions } = options;
+
+  const msg = message ?? defaultMsg;
   res.statusCode = status;
 
   // Always return JSON for error responses
@@ -205,9 +207,9 @@ function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: 
     body: createErrorResponseBodyJson({
       errorType,
       message: msg,
-      code: options.code,
-      details: options.details,
-      ...options,
+      code,
+      details,
+      ...otherOptions,
     }),
   });
 }
