@@ -17,12 +17,12 @@ Zod Schema is the starting point for Kori's type-safe ecosystem:
 
 ```typescript
 import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 // Define your schema
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   age: z.number().min(18).optional(),
 });
 
@@ -77,7 +77,7 @@ Build complex schemas from simpler ones:
 ```typescript
 const BaseUserSchema = z.object({
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 const UserCreateSchema = BaseUserSchema.extend({
@@ -123,7 +123,7 @@ Structure complex data hierarchies:
 const OrderSchema = z.object({
   customer: z.object({
     name: z.string(),
-    email: z.string().email(),
+    email: z.email(),
   }),
   items: z
     .array(
@@ -147,7 +147,7 @@ Keep schemas organized and reusable:
 // schemas/user.ts
 export const UserCreateSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial();
@@ -182,7 +182,7 @@ const UserSchema = z.object({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.string().email().meta({
+  email: z.email().meta({
     description: 'User email address',
     example: 'john@example.com',
   }),

@@ -17,12 +17,12 @@ import {
   createKoriZodRequestValidator,
   createKoriZodResponseValidator,
 } from '@korix/zod-validator';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 // Data schemas
 const UserSchema = z.object({
   name: z.string().min(1).max(100).meta({ description: 'User full name' }),
-  email: z.string().email().meta({ description: 'Email address' }),
+  email: z.email().meta({ description: 'Email address' }),
   age: z.number().min(0).max(150).optional().meta({ description: 'User age' }),
 });
 
@@ -369,7 +369,7 @@ console.log('📚 API Documentation available at http://localhost:3000/docs');
 // Define schema
 const UserSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.string().email(),
+  email: z.email(),
   age: z.number().min(0).max(150).optional(),
 });
 

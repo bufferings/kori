@@ -38,7 +38,7 @@ Define schemas once, get validation and types automatically:
 ```typescript
 const UserSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 app.post('/users', {

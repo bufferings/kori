@@ -52,14 +52,14 @@ Now visit `http://localhost:3000/docs` for interactive documentation! 🎉
 Add rich metadata to your schemas:
 
 ```typescript
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const UserSchema = z.object({
   name: z.string().min(1).meta({
     description: 'User full name',
     example: 'John Doe',
   }),
-  email: z.string().email().meta({
+  email: z.email().meta({
     description: 'User email address',
     example: 'john@example.com',
   }),
@@ -363,7 +363,7 @@ Add rich metadata consistently:
 
 ```typescript
 const UserSchema = z.object({
-  email: z.string().email('Must be a valid email').meta({
+  email: z.email('Must be a valid email').meta({
     description: 'User email address (must be unique)',
     example: 'user@example.com',
     format: 'email',

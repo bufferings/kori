@@ -9,7 +9,7 @@ import { createKori, HttpStatus } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 // Simple in-memory storage
 const connections = new Map<string, WebSocket>();

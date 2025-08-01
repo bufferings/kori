@@ -38,7 +38,7 @@
     "@scalar/api-reference": "1.32.10",
     "openapi3-ts": "4.4.0",
     "pino": "9.7.0",
-    "zod": "3.25.67"
+    "zod": "4.0.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",

@@ -12,7 +12,7 @@ import { bodyLimitPlugin } from '@korix/body-limit-plugin';
 import { sendFilePlugin, serveStaticPlugin } from '@korix/file-plugin-nodejs';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { writeFile, mkdir, access, stat, unlink } from 'fs/promises';
 import { join, extname, basename } from 'path';
 import { createHash } from 'crypto';

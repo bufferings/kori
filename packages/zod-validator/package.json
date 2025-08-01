@@ -57,7 +57,7 @@
   "peerDependencies": {
     "@korix/kori": "workspace:*",
     "@korix/zod-schema": "workspace:*",
-    "zod": "^3.25.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
@@ -69,6 +69,6 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "zod": "3.25.67"
+    "zod": "4.0.0"
   }
 }

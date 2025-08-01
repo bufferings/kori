@@ -327,7 +327,7 @@ app.post('/users', {
   requestSchema: zodRequestSchema({
     body: z.object({
       name: z.string().min(1),
-      email: z.string().email(),
+      email: z.email(),
     }),
     headers: z.object({
       'content-type': z.literal('application/json'),

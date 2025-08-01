@@ -14,7 +14,7 @@ import { createPinoKoriLoggerFactory } from '@korix/pino-adapter';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const isDev = process.env.NODE_ENV !== 'production';
 const loggerFactory = createPinoKoriLoggerFactory({
@@ -333,7 +333,7 @@ app.post('/validation-demo', {
   }),
   requestSchema: zodRequestSchema({
     body: z.object({
-      email: z.string().email(),
+      email: z.email(),
       age: z.number().min(18).max(120),
       preferences: z.object({
         newsletter: z.boolean(),
