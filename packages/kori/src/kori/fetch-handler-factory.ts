@@ -57,8 +57,8 @@ export function createFetchHandler({
     };
 
     const onCloseImpl = async (): Promise<void> => {
-      for (const closeHook of allCloseHooks) {
-        await closeHook(instanceCtx);
+      for (let i = allCloseHooks.length - 1; i >= 0; i--) {
+        await allCloseHooks[i]?.(instanceCtx);
       }
     };
 
