@@ -45,34 +45,28 @@ ctx.res.methodNotAllowed({ message: 'Only GET and POST allowed' });
 ctx.res.internalError({ message: 'Something went wrong' });
 ```
 
-### Automatic Content Negotiation
+### Error Response Format
 
-Responses format automatically based on the client's `Accept` header:
-
-JSON (default):
+All error responses return JSON format with a consistent structure:
 
 ```json
 {
-  "error": "Not Found",
-  "message": "User with ID 123 not found",
-  "code": "USER_NOT_FOUND",
-  "timestamp": "2024-01-15T10:30:00Z"
+  "error": {
+    "type": "NOT_FOUND",
+    "message": "User with ID 123 not found",
+    "code": "USER_NOT_FOUND"
+  }
 }
 ```
 
-HTML:
+You can include additional fields in the error response:
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>404 Not Found</title>
-  </head>
-  <body>
-    <h1>Not Found</h1>
-    <p>User with ID 123 not found</p>
-  </body>
-</html>
+```typescript
+ctx.res.notFound({
+  message: 'User with ID 123 not found',
+  code: 'USER_NOT_FOUND',
+  details: { userId: 123, searchedAt: new Date().toISOString() },
+});
 ```
 
 ## Global Error Handling

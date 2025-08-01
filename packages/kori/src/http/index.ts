@@ -1,4 +1,4 @@
-export { matchesMediaType, negotiateErrorContentType, parseAcceptHeader } from './accept.js';
+export { matchesMediaType, parseAcceptHeader } from './accept.js';
 export {
   ContentType,
   ContentTypeUtf8,
@@ -14,7 +14,6 @@ export {
   parseCookies,
   serializeCookie,
 } from './cookies.js';
-export { createErrorHtmlPage } from './error-html.js';
 export {
   HttpRequestHeader,
   type HttpRequestHeaderName,

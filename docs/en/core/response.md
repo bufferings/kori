@@ -628,46 +628,35 @@ type ErrorResponseOptions = {
   message?: string;
   code?: string;
   details?: unknown;
-  type?: 'json' | 'html' | 'text'; // Force specific format
   [key: string]: unknown; // Additional fields
 };
 ```
 
-### Automatic Content Negotiation
+### Error Response Format
 
-Error responses automatically select format based on `Accept` header:
+Error responses always return JSON format:
 
 ```typescript
-// Request with Accept: application/json
+// All error responses return JSON
 {
-  "error": "Bad Request",
-  "message": "Invalid input data",
-  "code": "VALIDATION_ERROR",
-  "details": {...}
+  "error": {
+    "type": "BAD_REQUEST",
+    "message": "Invalid input data",
+    "code": "VALIDATION_ERROR",
+    "details": {...}
+  }
 }
-
-// Request with Accept: text/html
-<!DOCTYPE html>
-<html>
-  <head><title>400 Bad Request</title></head>
-  <body>
-    <h1>Bad Request</h1>
-    <p>Invalid input data</p>
-  </body>
-</html>
-
-// Request with Accept: text/plain
-Bad Request: Invalid input data
 ```
 
-### Force Specific Error Format
+You can include additional fields in the error response:
 
 ```typescript
 app.post('/api/data', {
   handler: (ctx) => {
     return ctx.res.badRequest({
       message: 'Invalid data format',
-      type: 'json', // Always JSON, ignore Accept header
+      code: 'VALIDATION_ERROR',
+      details: { field: 'email', reason: 'invalid format' },
     });
   },
 });

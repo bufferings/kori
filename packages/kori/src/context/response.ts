@@ -9,8 +9,6 @@ import {
   type CookieValue,
   serializeCookie,
   deleteCookie,
-  negotiateErrorContentType,
-  createErrorHtmlPage,
 } from '../http/index.js';
 
 import { type KoriRequest } from './request.js';
@@ -162,21 +160,31 @@ type ErrorResponseBodyJson = {
   error: {
     type: ErrorType;
     message: string;
+    [key: string]: unknown;
   };
 };
 
-function createErrorResponseBodyJson(options: { errorType: ErrorType; message: string }): ErrorResponseBodyJson {
+function createErrorResponseBodyJson(options: {
+  errorType: ErrorType;
+  message: string;
+  [key: string]: unknown;
+}): ErrorResponseBodyJson {
+  const { errorType, message, ...additionalFields } = options;
+
   return {
     error: {
-      type: options.errorType,
-      message: options.message,
+      type: errorType,
+      message,
+      ...additionalFields,
     },
   };
 }
 
 type ErrorResponseOptions = {
-  type?: 'json' | 'text' | 'html';
   message?: string;
+  code?: string;
+  details?: unknown;
+  [key: string]: unknown;
 };
 
 type ErrorConfig = {
@@ -191,46 +199,17 @@ function setErrorInternal({ res, errorType, defaultMsg, status, options = {} }: 
   const msg = options.message ?? defaultMsg;
   res.statusCode = status;
 
-  // 1. If type is explicitly specified, use it
-  if (options.type === 'text') {
-    setBodyTextInternal({ res, body: msg });
-    return;
-  }
-  if (options.type === 'json') {
-    setBodyJsonInternal({
-      res,
-      body: createErrorResponseBodyJson({ errorType, message: msg }),
-    });
-    return;
-  }
-  if (options.type === 'html') {
-    setBodyHtmlInternal({
-      res,
-      body: createErrorHtmlPage({ errorType, message: msg }),
-    });
-    return;
-  }
-
-  // 2. If no explicit type, use content negotiation based on Accept header
-  const negotiatedType = negotiateErrorContentType(res.req.header('accept'));
-
-  switch (negotiatedType) {
-    case 'text/html':
-      setBodyHtmlInternal({
-        res,
-        body: createErrorHtmlPage({ errorType, message: msg }),
-      });
-      break;
-    case 'text/plain':
-      setBodyTextInternal({ res, body: msg });
-      break;
-    default: // 'application/json'
-      setBodyJsonInternal({
-        res,
-        body: createErrorResponseBodyJson({ errorType, message: msg }),
-      });
-      break;
-  }
+  // Always return JSON for error responses
+  setBodyJsonInternal({
+    res,
+    body: createErrorResponseBodyJson({
+      errorType,
+      message: msg,
+      code: options.code,
+      details: options.details,
+      ...options,
+    }),
+  });
 }
 
 function getFinalStatusCode(res: ResState): HttpStatusCode {
