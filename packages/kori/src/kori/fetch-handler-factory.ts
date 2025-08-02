@@ -20,12 +20,14 @@ export function createFetchHandler({
   compiledRouter,
   allStartHooks,
   loggerFactory,
+  instanceLogger,
 }: {
   compiledRouter: KoriCompiledRouter;
   allStartHooks: KoriOnStartHookAny[];
   loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  instanceLogger: KoriLogger;
 }): KoriFetchHandler {
-  let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), loggerFactory });
+  let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), instanceLogger });
 
   const onStartImpl = async () => {
     for (const startHook of allStartHooks) {

@@ -587,6 +587,7 @@ export function createKoriInternal<
         compiledRouter,
         allStartHooks,
         loggerFactory,
+        instanceLogger: _shared.instanceLogger,
       });
     },
 

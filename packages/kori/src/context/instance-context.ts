@@ -21,8 +21,7 @@ type KoriInstanceContextBase = KoriInstanceContext<KoriEnvironment>;
 type InstanceCtxState = {
   env: KoriEnvironment;
   deferStack: ((ctx: KoriInstanceContextBase) => MaybePromise<void>)[];
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
-  loggerCache?: KoriLogger;
+  instanceLogger: KoriLogger;
 };
 
 const instanceContextPrototype = {
@@ -36,22 +35,21 @@ const instanceContextPrototype = {
   },
 
   log(this: InstanceCtxState) {
-    this.loggerCache ??= this.loggerFactory({ channel: INSTANCE_LOG_CHANNEL, name: INSTANCE_LOG_NAME });
-    return this.loggerCache;
+    return this.instanceLogger;
   },
 };
 
 export function createKoriInstanceContext<Env extends KoriEnvironment>({
   env,
-  loggerFactory,
+  instanceLogger,
 }: {
   env: Env;
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  instanceLogger: KoriLogger;
 }): KoriInstanceContext<Env> {
   const ctx = Object.create(instanceContextPrototype) as InstanceCtxState;
   ctx.env = env;
   ctx.deferStack = [];
-  ctx.loggerFactory = loggerFactory;
+  ctx.instanceLogger = instanceLogger;
   return ctx as unknown as KoriInstanceContext<Env>;
 }
 
