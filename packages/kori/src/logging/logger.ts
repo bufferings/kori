@@ -84,17 +84,10 @@ function createLogEntry(
   }
 
   const serializedData = applyKoriLogSerializers(data, serializers);
-  if (typeof serializedData === 'object' && serializedData !== null) {
-    return {
-      ...baseEntry,
-      data: { ...bindings, ...serializedData },
-    };
-  } else {
-    return {
-      ...baseEntry,
-      data: { ...bindings, data: serializedData },
-    };
-  }
+  return {
+    ...baseEntry,
+    data: { ...bindings, data: serializedData },
+  };
 }
 
 function createKoriLogger(options: {
