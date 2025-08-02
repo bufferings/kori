@@ -2,7 +2,6 @@ import { type KoriLogEntry, type KoriLogLevel, type KoriLogReporter } from '@kor
 import { pino } from 'pino';
 
 const PINO_LEVEL_MAP: Record<KoriLogLevel, pino.Level> = {
-  trace: 'trace',
   debug: 'debug',
   info: 'info',
   warn: 'warn',

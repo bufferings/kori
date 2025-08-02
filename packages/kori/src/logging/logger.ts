@@ -4,7 +4,7 @@ import { type KoriLogSerializers } from './log-serializers.js';
 
 export const SYS_CHANNEL = 'sys' as const;
 
-export type KoriLogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type KoriLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 export type KoriLoggerMeta = {
   channel: string;
@@ -35,7 +35,6 @@ export type KoriLogReporter = (entry: KoriLogEntry) => void;
 export type KoriLoggerFactory = (meta: { channel: string; name: string }) => KoriLogger;
 
 export type KoriLogger = {
-  trace(message: string, data?: KoriLogDataOrFactory): void;
   debug(message: string, data?: KoriLogDataOrFactory): void;
   info(message: string, data?: KoriLogDataOrFactory): void;
   warn(message: string, data?: KoriLogDataOrFactory): void;
@@ -50,7 +49,6 @@ export type KoriLogger = {
 };
 
 const LOG_LEVELS: Record<KoriLogLevel, number> = {
-  trace: 0,
   debug: 1,
   info: 2,
   warn: 3,
@@ -142,7 +140,6 @@ function createKoriLogger(options: {
   }
 
   const logger: KoriLogger = {
-    trace: (message: string, data?: KoriLogDataOrFactory) => log('trace', message, data),
     debug: (message: string, data?: KoriLogDataOrFactory) => log('debug', message, data),
     info: (message: string, data?: KoriLogDataOrFactory) => log('info', message, data),
     warn: (message: string, data?: KoriLogDataOrFactory) => log('warn', message, data),

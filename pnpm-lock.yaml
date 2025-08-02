@@ -186,6 +186,9 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
+      '@korix/logtape-log-reporter':
+        specifier: workspace:*
+        version: link:../logtape-log-reporter
       '@korix/nodejs-adapter':
         specifier: workspace:*
         version: link:../nodejs-adapter
@@ -210,6 +213,9 @@ importers:
       '@korix/zod-validator':
         specifier: workspace:*
         version: link:../zod-validator
+      '@logtape/logtape':
+        specifier: 1.0.4
+        version: 1.0.4
       '@scalar/api-reference':
         specifier: 1.32.10
         version: 1.32.10(tailwindcss@4.1.11)(typescript@5.8.3)
@@ -312,6 +318,36 @@ importers:
       '@korix/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.11.17
+      eslint:
+        specifier: 'catalog:'
+        version: 9.16.0(jiti@2.4.2)
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.0.1
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.12.9(typescript@5.8.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@20.11.17)
+
+  packages/logtape-log-reporter:
+    devDependencies:
+      '@korix/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@korix/kori':
+        specifier: workspace:*
+        version: link:../kori
+      '@logtape/logtape':
+        specifier: 1.0.4
+        version: 1.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17
@@ -1297,6 +1333,9 @@ packages:
 
   '@lezer/yaml@1.0.3':
     resolution: {integrity: sha512-GuBLekbw9jDBDhGur82nuwkxKQ+a3W5H0GfaAthDXcAu+XdpS43VlnxA9E9hllkpSP5ellRDKjLLj7Lu9Wr6xA==}
+
+  '@logtape/logtape@1.0.4':
+    resolution: {integrity: sha512-YvNVrXIxVpnY528zoiEjX8PqTfr0UCtKXyssvaWL8AE+OByFTCooKuKMdPlm6g65YUI9fPXrHn4UnogSskABnA==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -4743,6 +4782,8 @@ snapshots:
       '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.2
 
+  '@logtape/logtape@1.0.4': {}
+
   '@manypkg/find-root@1.1.0':
     dependencies:
       '@babel/runtime': 7.27.6
@@ -5515,13 +5556,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.9(vite@5.4.19(@types/node@22.16.5))':
+  '@vitest/mocker@2.1.9(vite@5.4.19(@types/node@20.11.17))':
     dependencies:
       '@vitest/spy': 2.1.9
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 5.4.19(@types/node@22.16.5)
+      vite: 5.4.19(@types/node@20.11.17)
 
   '@vitest/pretty-format@2.1.9':
     dependencies:
@@ -7811,7 +7852,7 @@ snapshots:
   vitest@2.1.9(@types/node@20.11.17):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@22.16.5))
+      '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@20.11.17))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9

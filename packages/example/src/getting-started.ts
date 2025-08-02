@@ -1,9 +1,11 @@
 import { createKori, HttpStatus } from '@korix/kori';
+import { createLogTapeLogReporter } from '@korix/logtape-log-reporter';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
+import { ansiColorFormatter, configure, getConsoleSink } from '@logtape/logtape';
 import { z } from 'zod';
 
 const UserSchema = z.object({
@@ -11,9 +13,22 @@ const UserSchema = z.object({
   age: z.number().int().min(0).meta({ description: 'User age' }),
 });
 
+// Configure LogTape
+await configure({
+  sinks: {
+    console: getConsoleSink({
+      formatter: ansiColorFormatter,
+    }),
+  },
+  loggers: [{ category: ['kori'], lowestLevel: 'debug', sinks: ['console'] }],
+});
+
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
+  loggerOptions: {
+    reporters: [createLogTapeLogReporter()],
+  },
 })
   .applyPlugin(
     zodOpenApiPlugin({
@@ -41,10 +56,22 @@ app.get('/hello/:name', {
   }),
   handler: (ctx) => {
     const { name } = ctx.req.pathParams();
-    return ctx.res.json({
+
+    ctx.log().info('Processing hello request', {
+      name,
+      userAgent: ctx.req.header('user-agent'),
+    });
+
+    const response = {
       message: `Hello, ${name}!`,
       timestamp: new Date().toISOString(),
+    };
+
+    ctx.log().debug('Response prepared', {
+      responseSize: JSON.stringify(response).length,
     });
+
+    return ctx.res.json(response);
   },
 });
 
@@ -59,12 +86,25 @@ app.post('/users', {
   }),
   handler: (ctx) => {
     const { name, age } = ctx.req.validatedBody();
+
+    ctx.log().info('Creating new user', {
+      name,
+      age,
+      clientIp: ctx.req.header('x-forwarded-for') ?? 'unknown',
+    });
+
     const newUser = {
       id: Math.floor(Math.random() * 1000),
       name,
       age,
       createdAt: new Date().toISOString(),
     };
+
+    ctx.log().info('User created successfully', {
+      userId: newUser.id,
+      name: newUser.name,
+    });
+
     return ctx.res.status(HttpStatus.CREATED).json(newUser);
   },
 });
@@ -76,10 +116,17 @@ app.get('/users', {
     tags: ['Users'],
   }),
   handler: (ctx) => {
+    ctx.log().debug('Fetching user list');
+
     const users = [
       { id: 1, name: 'Alice', age: 28 },
       { id: 2, name: 'Bob', age: 35 },
     ];
+
+    ctx.log().info('User list retrieved', {
+      userCount: users.length,
+    });
+
     return ctx.res.json({ users });
   },
 });
@@ -93,12 +140,21 @@ app.createChild({
         description: 'Get API version 1 status',
         tags: ['API v1'],
       }),
-      handler: (ctx) =>
-        ctx.res.json({
+      handler: (ctx) => {
+        ctx.log().info('V1 status check requested');
+
+        const statusResponse = {
           version: 'v1',
           status: 'stable',
           message: 'API version 1 is running',
-        }),
+        };
+
+        ctx.log().debug('V1 status response', {
+          status: statusResponse.status,
+        });
+
+        return ctx.res.json(statusResponse);
+      },
     }),
 });
 

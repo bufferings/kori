@@ -123,13 +123,12 @@ describe('Lazy Log Data Initialization', () => {
   it('should work with all log levels', () => {
     const mockReporter = vi.fn();
     const loggerFactory = createKoriLoggerFactory({
-      level: 'trace', // Enable all levels
+      level: 'debug', // Enable all levels
       reporters: [mockReporter],
     });
     const logger = loggerFactory({ channel: 'test', name: 'test' });
 
     const factoryCallCounts = {
-      trace: 0,
       debug: 0,
       info: 0,
       warn: 0,
@@ -142,7 +141,6 @@ describe('Lazy Log Data Initialization', () => {
       return { level, callCount: factoryCallCounts[level] };
     };
 
-    logger.trace('Trace message', createFactory('trace'));
     logger.debug('Debug message', createFactory('debug'));
     logger.info('Info message', createFactory('info'));
     logger.warn('Warn message', createFactory('warn'));
@@ -150,7 +148,6 @@ describe('Lazy Log Data Initialization', () => {
     logger.fatal('Fatal message', createFactory('fatal'));
 
     // All factories should have been called exactly once
-    expect(factoryCallCounts.trace).toBe(1);
     expect(factoryCallCounts.debug).toBe(1);
     expect(factoryCallCounts.info).toBe(1);
     expect(factoryCallCounts.warn).toBe(1);
@@ -158,6 +155,6 @@ describe('Lazy Log Data Initialization', () => {
     expect(factoryCallCounts.fatal).toBe(1);
 
     // All log entries should have been created
-    expect(mockReporter).toHaveBeenCalledTimes(6);
+    expect(mockReporter).toHaveBeenCalledTimes(5);
   });
 });
