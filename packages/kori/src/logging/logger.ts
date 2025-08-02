@@ -18,6 +18,9 @@ export type KoriLogData = {
   [key: string]: unknown;
 };
 
+export type KoriLogDataFactory = () => KoriLogData;
+export type KoriLogDataOrFactory = KoriLogData | KoriLogDataFactory;
+
 export type KoriLogEntry = {
   time: number;
   level: KoriLogLevel;
@@ -32,12 +35,12 @@ export type KoriLogReporter = (entry: KoriLogEntry) => void;
 export type KoriLoggerFactory = (meta: { channel: string; name: string }) => KoriLogger;
 
 export type KoriLogger = {
-  trace(message: string, data?: KoriLogData): void;
-  debug(message: string, data?: KoriLogData): void;
-  info(message: string, data?: KoriLogData): void;
-  warn(message: string, data?: KoriLogData): void;
-  error(message: string, data?: KoriLogData): void;
-  fatal(message: string, data?: KoriLogData): void;
+  trace(message: string, data?: KoriLogDataOrFactory): void;
+  debug(message: string, data?: KoriLogDataOrFactory): void;
+  info(message: string, data?: KoriLogDataOrFactory): void;
+  warn(message: string, data?: KoriLogDataOrFactory): void;
+  error(message: string, data?: KoriLogDataOrFactory): void;
+  fatal(message: string, data?: KoriLogDataOrFactory): void;
 
   isLevelEnabled(level: KoriLogLevel): boolean;
 
@@ -102,10 +105,13 @@ function createKoriLogger(options: {
   // Mutable bindings state for this logger instance
   const mutableBindings = { ...options.bindings };
 
-  function log(level: KoriLogLevel, message: string, data?: KoriLogData): void {
+  function log(level: KoriLogLevel, message: string, dataOrFactory?: KoriLogDataOrFactory): void {
     if (LOG_LEVELS[level] < LOG_LEVELS[options.level]) {
       return;
     }
+
+    // Resolve factory function lazily only when logging is enabled
+    const data = typeof dataOrFactory === 'function' ? dataOrFactory() : dataOrFactory;
 
     const allBindings = {
       ...mutableBindings,
@@ -136,12 +142,12 @@ function createKoriLogger(options: {
   }
 
   const logger: KoriLogger = {
-    trace: (message: string, data?: KoriLogData) => log('trace', message, data),
-    debug: (message: string, data?: KoriLogData) => log('debug', message, data),
-    info: (message: string, data?: KoriLogData) => log('info', message, data),
-    warn: (message: string, data?: KoriLogData) => log('warn', message, data),
-    error: (message: string, data?: KoriLogData) => log('error', message, data),
-    fatal: (message: string, data?: KoriLogData) => log('fatal', message, data),
+    trace: (message: string, data?: KoriLogDataOrFactory) => log('trace', message, data),
+    debug: (message: string, data?: KoriLogDataOrFactory) => log('debug', message, data),
+    info: (message: string, data?: KoriLogDataOrFactory) => log('info', message, data),
+    warn: (message: string, data?: KoriLogDataOrFactory) => log('warn', message, data),
+    error: (message: string, data?: KoriLogDataOrFactory) => log('error', message, data),
+    fatal: (message: string, data?: KoriLogDataOrFactory) => log('fatal', message, data),
 
     isLevelEnabled,
 
