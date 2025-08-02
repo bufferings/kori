@@ -197,7 +197,6 @@ export type KoriLoggerOptions = {
 
 export function createKoriLoggerFactory(options?: KoriLoggerOptions): KoriLoggerFactory {
   return (meta: { channel: string; name: string }) => {
-    const sharedBindings = {};
     return createKoriLogger({
       channel: meta.channel,
       name: meta.name,
@@ -205,7 +204,7 @@ export function createKoriLoggerFactory(options?: KoriLoggerOptions): KoriLogger
       serializers: { ...defaultKoriLogSerializers, ...options?.serializers },
       bindings: options?.bindings ?? {},
       reporters: options?.reporters ?? [createConsoleReporter()],
-      sharedBindings,
+      sharedBindings: undefined,
     });
   };
 }
