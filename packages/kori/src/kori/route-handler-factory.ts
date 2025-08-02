@@ -1,5 +1,5 @@
-import { isKoriResponse } from '../context/index.js';
 import {
+  isKoriResponseAbort,
   type KoriEnvironment,
   type KoriHandlerContext,
   type KoriRequest,
@@ -99,27 +99,35 @@ function createHookExecutor<
   errorHooks: KoriOnErrorHookAny[];
   finallyHooks: KoriOnFinallyHookAny[];
 }) {
-  const reversedResponseHooks = [...hooks.responseHooks].reverse();
   const reversedFinallyHooks = [...hooks.finallyHooks].reverse();
 
   const executeRequestHooks = async (
     ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  ): Promise<{ ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>; halt: boolean }> => {
+  ): Promise<KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>> => {
     let currentCtx = ctx;
-
     for (const hook of hooks.requestHooks) {
       const result = await hook(currentCtx);
-      if (isKoriResponse(result)) {
-        return { ctx: currentCtx, halt: true };
+
+      // Check abort status after each hook execution.
+      // Even if result is undefined, the hook might have called res.abort().
+      // isKoriResponseAbort check is for TypeScript type safety.
+      if (currentCtx.res.isAborted() || isKoriResponseAbort(result)) {
+        return currentCtx;
       }
-      currentCtx = result ?? currentCtx;
+
+      if (result) {
+        currentCtx = result;
+      }
     }
 
-    return { ctx: currentCtx, halt: false };
+    return currentCtx;
   };
 
   const executeResponseHooks = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<void> => {
-    for (const hook of reversedResponseHooks) {
+    for (const hook of hooks.responseHooks) {
+      if (ctx.res.isAborted()) {
+        return;
+      }
       await hook(ctx);
     }
   };
@@ -129,7 +137,14 @@ function createHookExecutor<
     err: unknown,
   ): Promise<void> => {
     for (const hook of hooks.errorHooks) {
-      await hook(ctx, err);
+      if (ctx.res.isAborted()) {
+        return;
+      }
+      try {
+        await hook(ctx, err);
+      } catch {
+        ctx.req.log().child('system').error('Error Hook Error');
+      }
     }
   };
 
@@ -150,14 +165,10 @@ function createHookExecutor<
     let currentCtx = ctx;
 
     try {
-      const shouldHalt = await executeRequestHooks(currentCtx);
-      if (shouldHalt.halt) {
-        currentCtx = shouldHalt.ctx;
-      } else {
-        currentCtx = shouldHalt.ctx;
+      currentCtx = await executeRequestHooks(currentCtx);
+      if (!currentCtx.res.isAborted()) {
         await mainHandler(currentCtx);
       }
-
       await executeResponseHooks(currentCtx);
     } catch (err) {
       await executeErrorHooks(currentCtx, err);

@@ -3,6 +3,7 @@ import {
   type KoriHandlerContext,
   type KoriRequest,
   type KoriResponse,
+  type KoriResponseAbort,
 } from '../context/index.js';
 import { type MaybePromise } from '../util/index.js';
 
@@ -14,7 +15,7 @@ export type KoriOnRequestHook<
   ResExt = unknown,
 > = (
   ctx: KoriHandlerContext<Env, Req, Res>,
-) => MaybePromise<KoriHandlerContext<Env, Req & ReqExt, Res & ResExt> | KoriResponse | void>;
+) => MaybePromise<KoriHandlerContext<Env, Req & ReqExt, Res & ResExt> | KoriResponseAbort | void>;
 
 export type KoriOnResponseHook<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = (
   ctx: KoriHandlerContext<Env, Req, Res>,

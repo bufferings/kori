@@ -3,3 +3,4 @@ export { createKoriHandlerContext, type KoriHandlerContext } from './handler-con
 export { createKoriInstanceContext, type KoriInstanceContext } from './instance-context.js';
 export { createKoriRequest, type KoriRequest } from './request.js';
 export { createKoriResponse, isKoriResponse, type KoriResponse } from './response.js';
+export { isKoriResponseAbort, type KoriResponseAbort } from './response-abort.js';
