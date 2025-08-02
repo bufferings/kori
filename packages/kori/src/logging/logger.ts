@@ -106,13 +106,16 @@ function createKoriLogger(options: {
   reporters: KoriLogReporter[];
   sharedBindings?: Record<string, unknown>; // shared context reference
 }): KoriLogger {
+  // Mutable bindings state for this logger instance
+  const mutableBindings = { ...options.bindings };
+
   function log(level: KoriLogLevel, message: string, data?: KoriLogData): void {
     if (LOG_LEVELS[level] < LOG_LEVELS[options.level]) {
       return;
     }
 
     const allBindings = {
-      ...options.bindings,
+      ...mutableBindings,
       ...(options.sharedBindings ?? {}),
     };
     const logEntry = createLogEntry(
@@ -139,7 +142,7 @@ function createKoriLogger(options: {
     return LOG_LEVELS[level] >= LOG_LEVELS[options.level];
   }
 
-  return {
+  const logger: KoriLogger = {
     trace: (message: string, data?: KoriLogData) => log('trace', message, data),
     debug: (message: string, data?: KoriLogData) => log('debug', message, data),
     info: (message: string, data?: KoriLogData) => log('info', message, data),
@@ -156,7 +159,7 @@ function createKoriLogger(options: {
         name: combinedName,
         level: options.level,
         serializers: options.serializers,
-        bindings: { ...options.bindings, ...childBindings },
+        bindings: { ...mutableBindings, ...childBindings },
         reporters: options.reporters,
         sharedBindings: options.sharedBindings,
       });
@@ -168,24 +171,19 @@ function createKoriLogger(options: {
         name: options.name,
         level: options.level,
         serializers: options.serializers,
-        bindings: options.bindings,
+        bindings: mutableBindings,
         reporters: options.reporters,
         sharedBindings: options.sharedBindings,
       });
     },
 
     addBindings: (newBindings: Record<string, unknown>) => {
-      return createKoriLogger({
-        channel: options.channel,
-        name: options.name,
-        level: options.level,
-        serializers: options.serializers,
-        bindings: { ...options.bindings, ...newBindings },
-        reporters: options.reporters,
-        sharedBindings: options.sharedBindings,
-      });
+      Object.assign(mutableBindings, newBindings);
+      return logger; // Return self for chaining
     },
   };
+
+  return logger;
 }
 
 export type KoriLoggerOptions = {
