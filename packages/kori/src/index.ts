@@ -15,7 +15,12 @@ export {
 } from './context/index.js';
 export { type KoriError, type KoriValidationConfigError } from './error/index.js';
 export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch-handler/index.js';
-export { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from './hook/index.js';
+export {
+  type KoriOnErrorHook,
+  type KoriOnRequestHook,
+  type KoriOnStartHook,
+  type OnRequestReturnValue,
+} from './hook/index.js';
 export {
   ContentType,
   type ContentTypeValue,
