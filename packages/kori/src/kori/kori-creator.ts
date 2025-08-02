@@ -69,6 +69,9 @@ export function createKori<
 
   root.onError((ctx, _err) => {
     if (!ctx.res.isReady()) {
+      ctx.log().error('Internal Server Error', {
+        error: _err,
+      });
       ctx.res.internalError({
         message: 'Internal Server Error',
       });

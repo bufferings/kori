@@ -67,15 +67,15 @@ function getLogTapeMethod(
 ): ((message: string, extra?: Record<string, unknown>) => void) | null {
   switch (level) {
     case 'debug':
-      return (message: string, extra?: Record<string, unknown>) => logger.debug(message, extra);
+      return (message: string, extra?: Record<string, unknown>) => logger.debug({ message, ...extra });
     case 'info':
-      return (message: string, extra?: Record<string, unknown>) => logger.info(message, extra);
+      return (message: string, extra?: Record<string, unknown>) => logger.info({ message, ...extra });
     case 'warn':
-      return (message: string, extra?: Record<string, unknown>) => logger.warn(message, extra);
+      return (message: string, extra?: Record<string, unknown>) => logger.warn({ message, ...extra });
     case 'error':
-      return (message: string, extra?: Record<string, unknown>) => logger.error(message, extra);
+      return (message: string, extra?: Record<string, unknown>) => logger.error({ message, ...extra });
     case 'fatal':
-      return (message: string, extra?: Record<string, unknown>) => logger.fatal(message, extra);
+      return (message: string, extra?: Record<string, unknown>) => logger.fatal({ message, ...extra });
     default:
       return null;
   }
