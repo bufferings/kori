@@ -12,6 +12,10 @@ import {
   type KoriInstanceResponseValidationErrorHandler,
 } from './route.js';
 
+// Kori instance logging constants
+const KORI_INSTANCE_LOG_CHANNEL = 'app';
+const KORI_INSTANCE_LOG_NAME = 'instance';
+
 type CreateKoriOptions<
   RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
   ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
@@ -45,7 +49,7 @@ export function createKori<
 ): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
   const router = options?.router ?? createHonoRouter();
   const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
-  const instanceLogger = loggerFactory({ channel: 'app', name: 'instance' });
+  const instanceLogger = loggerFactory({ channel: KORI_INSTANCE_LOG_CHANNEL, name: KORI_INSTANCE_LOG_NAME });
 
   const shared = {
     router,

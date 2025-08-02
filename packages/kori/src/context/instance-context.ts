@@ -3,6 +3,10 @@ import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
 
+// Instance context logging constants
+const INSTANCE_LOG_CHANNEL = 'app';
+const INSTANCE_LOG_NAME = 'instance';
+
 export type KoriInstanceContext<Env extends KoriEnvironment> = {
   env: Env;
   withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
@@ -32,7 +36,7 @@ const instanceContextPrototype = {
   },
 
   log(this: InstanceCtxState) {
-    this.loggerCache ??= this.loggerFactory({ channel: 'app', name: 'instance' });
+    this.loggerCache ??= this.loggerFactory({ channel: INSTANCE_LOG_CHANNEL, name: INSTANCE_LOG_NAME });
     return this.loggerCache;
   },
 };

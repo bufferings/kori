@@ -5,6 +5,10 @@ import { type KoriEnvironment } from './environment.js';
 import { type KoriRequest } from './request.js';
 import { type KoriResponse } from './response.js';
 
+// Handler context logging constants
+const HANDLER_LOG_CHANNEL = 'app';
+const HANDLER_LOG_NAME = 'request';
+
 export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = {
   env: Env;
   req: Req;
@@ -29,7 +33,7 @@ type HandlerCtxState = {
 };
 
 function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
-  ctx.loggerCache ??= ctx.loggerFactory({ channel: 'app', name: 'request' });
+  ctx.loggerCache ??= ctx.loggerFactory({ channel: HANDLER_LOG_CHANNEL, name: HANDLER_LOG_NAME });
   return ctx.loggerCache;
 }
 
