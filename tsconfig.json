@@ -11,7 +11,7 @@
     { "path": "./packages/nodejs-adapter" },
     { "path": "./packages/openapi-plugin" },
     { "path": "./packages/openapi-scalar-ui-plugin" },
-    { "path": "./packages/pino-adapter" },
+    { "path": "./packages/pino-log-reporter" },
     { "path": "./packages/script" },
     { "path": "./packages/security-headers-plugin" },
     { "path": "./packages/zod-openapi-plugin" },

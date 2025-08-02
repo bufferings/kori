@@ -30,7 +30,7 @@
     "@korix/nodejs-adapter": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/openapi-scalar-ui-plugin": "workspace:*",
-    "@korix/pino-adapter": "workspace:*",
+    "@korix/pino-log-reporter": "workspace:*",
     "@korix/security-headers-plugin": "workspace:*",
     "@korix/zod-openapi-plugin": "workspace:*",
     "@korix/zod-schema": "workspace:*",

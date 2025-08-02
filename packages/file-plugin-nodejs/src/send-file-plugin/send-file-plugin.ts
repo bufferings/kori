@@ -25,11 +25,11 @@ export function sendFilePlugin<Env extends KoriEnvironment, Req extends KoriRequ
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().child(PLUGIN_NAME);
+      const log = kori.log().channel(PLUGIN_NAME);
       log.info('Send file plugin initialized', { root });
 
       return kori.onRequest((ctx) => {
-        const requestLog = ctx.req.log().child(PLUGIN_NAME);
+        const requestLog = ctx.log().channel(PLUGIN_NAME);
 
         const sendFile = (filePath: string, sendFileOptions?: SendFileOptions) =>
           handleFileResponse({

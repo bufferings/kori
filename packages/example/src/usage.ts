@@ -1,6 +1,7 @@
 import { bodyLimitPlugin } from '@korix/body-limit-plugin';
 import {
   createKori,
+  createKoriLoggerFactory,
   defineKoriPlugin,
   HttpRequestHeader,
   HttpStatus,
@@ -10,14 +11,14 @@ import {
 } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
-import { createPinoKoriLoggerFactory } from '@korix/pino-adapter';
+import { createPinoLogReporter } from '@korix/pino-log-reporter';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
 import { z } from 'zod';
 
 const isDev = process.env.NODE_ENV !== 'production';
-const loggerFactory = createPinoKoriLoggerFactory({
+const pinoReporter = createPinoLogReporter({
   level: 'info',
   ...(isDev && {
     transport: {
@@ -27,6 +28,11 @@ const loggerFactory = createPinoKoriLoggerFactory({
       },
     },
   }),
+});
+
+const loggerFactory = createKoriLoggerFactory({
+  level: 'info',
+  reporters: [pinoReporter],
 });
 
 type RequestIdExtension = { requestId: string };
@@ -116,7 +122,7 @@ const app = createKori({
     }),
   )
   .onRequest((ctx) => {
-    ctx.req.log().info('Request started', {
+    ctx.log().info('Request started', {
       requestId: ctx.req.requestId,
       method: ctx.req.method(),
       path: ctx.req.url().pathname,
@@ -124,7 +130,7 @@ const app = createKori({
 
     // Defer completion logging until after handler execution
     ctx.defer((deferCtx) => {
-      deferCtx.req.log().info('Request completed', {
+      deferCtx.log().info('Request completed', {
         requestId: deferCtx.req.requestId,
         status: deferCtx.res.getStatus(),
       });
@@ -132,7 +138,7 @@ const app = createKori({
   })
   .onError((ctx, err) => {
     const error = err instanceof Error ? err : new Error(String(err));
-    ctx.req.log().error('Request failed', {
+    ctx.log().error('Request failed', {
       requestId: ctx.req.requestId,
       error: error.message,
     });
@@ -167,7 +173,7 @@ app.post('/products', {
       apiVersion: headers['x-api-version'] ?? '1.0',
     };
 
-    ctx.req.log().info('Product created', {
+    ctx.log().info('Product created', {
       productId: newProduct.id,
       requestId: ctx.req.requestId,
     });
@@ -238,7 +244,7 @@ app.createChild({
       .onRequest((ctx) => {
         const token = ctx.req.header(HttpRequestHeader.AUTHORIZATION)?.replace('Bearer ', '');
         if (!token || token !== 'admin-secret-token') {
-          ctx.req.log().warn('Unauthorized admin access', { requestId: ctx.req.requestId });
+          ctx.log().warn('Unauthorized admin access', { requestId: ctx.req.requestId });
           throw new Error('Unauthorized');
         }
         return ctx.withReq({ isAdmin: true });
@@ -283,7 +289,7 @@ app.createChild({
         handler: (ctx) => {
           const { mode, reason } = ctx.req.validatedBody();
 
-          ctx.req.log().info('Maintenance mode changed', {
+          ctx.log().info('Maintenance mode changed', {
             mode,
             reason,
             requestId: ctx.req.requestId,
@@ -356,7 +362,7 @@ app.post('/validation-demo', {
   // Route-level validation error handling
   onRequestValidationError: (ctx, errors) => {
     // Log error details for debugging
-    ctx.req.log().warn('Validation demo failed', {
+    ctx.log().warn('Validation demo failed', {
       errors,
       path: ctx.req.url().pathname,
       method: ctx.req.method(),

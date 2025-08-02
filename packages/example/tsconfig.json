@@ -11,7 +11,7 @@
     { "path": "../nodejs-adapter" },
     { "path": "../openapi-plugin" },
     { "path": "../openapi-scalar-ui-plugin" },
-    { "path": "../pino-adapter" },
+    { "path": "../pino-log-reporter" },
     { "path": "../zod-openapi-plugin" },
     { "path": "../zod-schema" },
     { "path": "../zod-validator" }

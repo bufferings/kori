@@ -1,4 +1,4 @@
-# @korix/pino-adapter
+# @korix/pino-log-reporter
 
 ## 0.1.1
 

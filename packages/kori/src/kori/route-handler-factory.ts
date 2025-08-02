@@ -7,6 +7,7 @@ import {
   type KoriResponse,
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
+import { SYS_CHANNEL } from '../logging/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -118,8 +119,11 @@ function createHookExecutor<
       }
       try {
         await hook(ctx, err);
-      } catch {
-        ctx.req.log().child('system').error('Error Hook Error');
+      } catch (hookError) {
+        ctx.log().channel(SYS_CHANNEL).child('error-hook').error('Error hook execution failed', {
+          originalError: err,
+          hookError,
+        });
       }
     }
   };
@@ -192,7 +196,11 @@ function createRequestValidationErrorHandler<
 
     // 4. Default validation error handling with 400 status
     // Log error occurrence for monitoring
-    ctx.req.log().child('system').warn('Request validation failed');
+    ctx.log().channel(SYS_CHANNEL).child('request-validation').warn('Request validation failed', {
+      path: ctx.req.url().pathname,
+      method: ctx.req.method(),
+      validationError: err,
+    });
 
     // Return minimal error information to client
     return ctx.res.badRequest({
@@ -236,7 +244,11 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.req.log().child('system').warn('Response validation failed');
+    ctx.log().channel(SYS_CHANNEL).child('response-validation').warn('Response validation failed', {
+      path: ctx.req.url().pathname,
+      method: ctx.req.method(),
+      validationError: err,
+    });
     return undefined;
   };
 }

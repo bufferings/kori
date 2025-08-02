@@ -6,6 +6,7 @@ import {
   type KoriEnvironment,
   type KoriHandlerContext,
   HttpStatus,
+  type KoriLogger,
 } from '@korix/kori';
 
 import { PLUGIN_VERSION } from './version.js';
@@ -22,7 +23,6 @@ export type BodyLimitOptions = {
 // Constants
 const DEFAULT_MAX_SIZE = 1024 * 1024; // 1MB
 const PLUGIN_NAME = 'body-limit-plugin';
-const LOGGER_NAME = 'body-limit';
 
 // HTTP methods that typically have request bodies
 const METHODS_WITH_BODY = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -113,7 +113,7 @@ function createMonitoredStream({
 }: {
   originalStream: ReadableStream<Uint8Array>;
   maxSize: number;
-  requestLog: ReturnType<KoriRequest['log']>;
+  requestLog: KoriLogger;
 }): ReadableStream<Uint8Array> {
   let totalSize = 0;
 
@@ -191,7 +191,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
     version: PLUGIN_VERSION,
     apply: (kori) => {
       // Instance-level logger for plugin initialization
-      const log = kori.log().child(LOGGER_NAME);
+      const log = kori.log().channel(PLUGIN_NAME);
       log.info(`Plugin initialized with max size: ${maxSize} bytes`);
 
       // Setup request monitoring for chunked transfer encoding and error handling
@@ -200,7 +200,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
           const { req, res } = ctx;
 
           // Request-level logger with request tracing
-          const requestLog = req.log().child(LOGGER_NAME);
+          const requestLog = ctx.log().channel(PLUGIN_NAME);
 
           // Skip methods that don't typically have bodies
           if (!METHODS_WITH_BODY.has(req.method())) {
@@ -302,7 +302,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         .onError((ctx, error) => {
           if (error instanceof BodySizeLimitError) {
             const { req } = ctx;
-            const requestLog = req.log().child(LOGGER_NAME);
+            const requestLog = ctx.log().channel(PLUGIN_NAME);
             const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
 
             requestLog.warn('Request body size exceeds limit', {

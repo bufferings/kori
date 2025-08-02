@@ -35,9 +35,8 @@ type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
 export type KoriInternalShared = {
   root: KoriInternalAny;
   router: KoriRouter;
-  rootLogger: KoriLogger;
-  applicationLogger: KoriLogger;
-  systemLogger: KoriLogger;
+  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  instanceLogger: KoriLogger;
 };
 
 export type KoriInternal<
@@ -98,7 +97,7 @@ export function createKoriInternal<
 
   const _internal: KoriInternal<Env, Req, Res, RequestValidator, ResponseValidator> = {
     log() {
-      return _shared.applicationLogger;
+      return _shared.instanceLogger;
     },
 
     _collectStartHooks() {
@@ -583,11 +582,12 @@ export function createKoriInternal<
     generate(): KoriFetchHandler {
       const compiledRouter = _shared.router.compile();
       const allStartHooks = _shared.root._collectStartHooks();
-      const rootLogger = _shared.rootLogger;
+      const loggerFactory = _shared.loggerFactory;
       return createFetchHandler({
         compiledRouter,
         allStartHooks,
-        rootLogger,
+        loggerFactory,
+        instanceLogger: _shared.instanceLogger,
       });
     },
 

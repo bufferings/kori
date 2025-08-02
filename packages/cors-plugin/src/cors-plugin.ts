@@ -155,7 +155,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().child(PLUGIN_NAME);
+      const log = kori.log().channel(PLUGIN_NAME);
       validateCorsOptions(log, options);
 
       log.info('CORS plugin initialized', {

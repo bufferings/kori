@@ -85,7 +85,7 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().child(PLUGIN_NAME);
+      const log = kori.log().channel(PLUGIN_NAME);
 
       validateOptions(options, log);
 
@@ -99,11 +99,11 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
         lastModified: options.lastModified,
       });
 
-      return kori.get(`${options.mountAt}/*`, async ({ req, res }) => {
-        const requestLog = req.log().child(PLUGIN_NAME);
-        const pathname = req.url().pathname;
+      return kori.get(`${options.mountAt}/*`, async (ctx) => {
+        const requestLog = ctx.log().channel(PLUGIN_NAME);
+        const pathname = ctx.req.url().pathname;
         const requestPath = removeMountPrefix(pathname, options.mountAt);
-        return await handleStaticFileRequest(req, res, requestPath, options, requestLog);
+        return await handleStaticFileRequest(ctx.req, ctx.res, requestPath, options, requestLog);
       });
     },
   });
