@@ -3,10 +3,6 @@ import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
 
-// Instance context logging constants
-const INSTANCE_LOG_CHANNEL = 'app';
-const INSTANCE_LOG_NAME = 'instance';
-
 export type KoriInstanceContext<Env extends KoriEnvironment> = {
   env: Env;
   withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
