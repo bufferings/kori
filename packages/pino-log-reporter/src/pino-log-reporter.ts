@@ -10,6 +10,8 @@ const PINO_LEVEL_MAP: Record<KoriLogLevel, pino.Level> = {
   fatal: 'fatal',
 };
 
+const DEFAULT_FILTER = () => true;
+
 export function createPinoLogReporter(
   options?: Omit<pino.LoggerOptions, 'level'> & {
     level?: KoriLogLevel;
@@ -25,7 +27,7 @@ export function createPinoLogReporter(
   };
 
   const pinoLogger = pino(pinoOptions);
-  const filter = options?.filter ?? (() => true);
+  const filter = options?.filter ?? DEFAULT_FILTER;
 
   return (entry: KoriLogEntry) => {
     if (!filter(entry)) {
