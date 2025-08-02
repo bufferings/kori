@@ -1,5 +1,25 @@
 # @korix/nodejs-adapter
 
+## 0.1.2
+
+### Patch Changes
+
+- cc8c36e: Add dedicated logging channel for Node.js adapter
+
+  Server startup and shutdown messages now use a dedicated 'nodejs-adapter' log channel instead of the default channel. This provides better log organization and allows for more granular log filtering in applications.
+
+- Updated dependencies [e467fdf]
+- Updated dependencies [cd97f48]
+- Updated dependencies [7afcfa4]
+- Updated dependencies [8a2dcd5]
+- Updated dependencies [4777812]
+- Updated dependencies [faf7c12]
+- Updated dependencies [6c8a3ce]
+- Updated dependencies [cc8c36e]
+- Updated dependencies [cf6aa9d]
+- Updated dependencies [c47f37d]
+  - @korix/kori@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
