@@ -35,14 +35,18 @@ const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, R
   defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown>({
     name: 'requestId',
     apply: (k) =>
-      k
-        .onRequest((ctx) => {
-          const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-          return ctx.withReq({ requestId });
-        })
-        .onResponse((ctx) => {
-          ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
-        }),
+      k.onRequest((ctx) => {
+        const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+        const ctxWithRequestId = ctx.withReq({ requestId });
+
+        // Defer header setting until after handler execution
+        ctxWithRequestId.defer((deferCtx) => {
+          deferCtx.res.setHeader('x-request-id', deferCtx.req.requestId);
+        });
+
+        return ctxWithRequestId;
+      }),
   });
 
 type TimingExtension = { startTime: number };
@@ -51,12 +55,19 @@ const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res 
   defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown>({
     name: 'timing',
     apply: (k) =>
-      k
-        .onRequest((ctx) => ctx.withReq({ startTime: Date.now() }))
-        .onResponse((ctx) => {
-          const duration = Date.now() - ctx.req.startTime;
-          ctx.res.setHeader('X-Response-Time', `${duration}ms`);
-        }),
+      k.onRequest((ctx) => {
+        const startTime = Date.now();
+
+        const ctxWithStartTime = ctx.withReq({ startTime });
+
+        // Defer response time header setting until after handler execution
+        ctxWithStartTime.defer((deferCtx) => {
+          const duration = Date.now() - deferCtx.req.startTime;
+          deferCtx.res.setHeader('x-response-time', `${duration}ms`);
+        });
+
+        return ctxWithStartTime;
+      }),
   });
 
 const ProductSchema = z.object({
@@ -110,11 +121,13 @@ const app = createKori({
       method: ctx.req.method(),
       path: ctx.req.url().pathname,
     });
-  })
-  .onResponse((ctx) => {
-    ctx.req.log().info('Request completed', {
-      requestId: ctx.req.requestId,
-      status: ctx.res.getStatus(),
+
+    // Defer completion logging until after handler execution
+    ctx.defer((deferCtx) => {
+      deferCtx.req.log().info('Request completed', {
+        requestId: deferCtx.req.requestId,
+        status: deferCtx.res.getStatus(),
+      });
     });
   })
   .onError((ctx, err) => {

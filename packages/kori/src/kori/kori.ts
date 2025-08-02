@@ -1,13 +1,6 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { type KoriFetchHandler } from '../fetch-handler/index.js';
-import {
-  type KoriOnCloseHook,
-  type KoriOnErrorHook,
-  type KoriOnFinallyHook,
-  type KoriOnInitHook,
-  type KoriOnRequestHook,
-  type KoriOnResponseHook,
-} from '../hook/index.js';
+import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
@@ -86,17 +79,16 @@ export type Kori<
   // Logger
   log(): KoriLogger;
 
-  // Lifestyle Hooks
-  onInit<EnvExt>(hook: KoriOnInitHook<Env, EnvExt>): Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
-  onClose(hook: KoriOnCloseHook<Env>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
+  // Lifecycle Hooks
+  onStart<EnvExt>(
+    hook: KoriOnStartHook<Env, EnvExt>,
+  ): Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
 
   // Handler Hooks
   onRequest<ReqExt, ResExt>(
     hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>,
   ): Kori<Env, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
-  onResponse(hook: KoriOnResponseHook<Env, Req, Res>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
   onError(hook: KoriOnErrorHook<Env, Req, Res>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
-  onFinally(hook: KoriOnFinallyHook<Env, Req, Res>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
 
   // Plugin
   applyPlugin<EnvExt, ReqExt, ResExt>(

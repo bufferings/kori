@@ -1,16 +1,12 @@
 import {
+  executeHandlerDeferredCallbacks,
   isKoriResponseAbort,
   type KoriEnvironment,
   type KoriHandlerContext,
   type KoriRequest,
   type KoriResponse,
 } from '../context/index.js';
-import {
-  type KoriOnRequestHook,
-  type KoriOnResponseHook,
-  type KoriOnErrorHook,
-  type KoriOnFinallyHook,
-} from '../hook/index.js';
+import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -35,9 +31,7 @@ import {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
-type KoriOnResponseHookAny = KoriOnResponseHook<any, any, any>;
 type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
-type KoriOnFinallyHookAny = KoriOnFinallyHook<any, any, any>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 type Dependencies<
@@ -52,9 +46,7 @@ type Dependencies<
   onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
   onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   requestHooks: KoriOnRequestHookAny[];
-  responseHooks: KoriOnResponseHookAny[];
   errorHooks: KoriOnErrorHookAny[];
-  finallyHooks: KoriOnFinallyHookAny[];
 };
 
 type RouteParameters<
@@ -93,14 +85,7 @@ function createHookExecutor<
   Req extends KoriRequest,
   Res extends KoriResponse,
   Path extends string,
->(hooks: {
-  requestHooks: KoriOnRequestHookAny[];
-  responseHooks: KoriOnResponseHookAny[];
-  errorHooks: KoriOnErrorHookAny[];
-  finallyHooks: KoriOnFinallyHookAny[];
-}) {
-  const reversedFinallyHooks = [...hooks.finallyHooks].reverse();
-
+>(hooks: { requestHooks: KoriOnRequestHookAny[]; errorHooks: KoriOnErrorHookAny[] }) {
   const executeRequestHooks = async (
     ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
   ): Promise<KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>> => {
@@ -123,15 +108,6 @@ function createHookExecutor<
     return currentCtx;
   };
 
-  const executeResponseHooks = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<void> => {
-    for (const hook of hooks.responseHooks) {
-      if (ctx.res.isAborted()) {
-        return;
-      }
-      await hook(ctx);
-    }
-  };
-
   const executeErrorHooks = async (
     ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
     err: unknown,
@@ -148,14 +124,10 @@ function createHookExecutor<
     }
   };
 
-  const executeFinallyHooks = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<void> => {
-    for (const hook of reversedFinallyHooks) {
-      try {
-        await hook(ctx);
-      } catch {
-        ctx.req.log().child('system').error('Finally Hook Error');
-      }
-    }
+  const executeDeferredCleanup = async (
+    ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+  ): Promise<void> => {
+    await executeHandlerDeferredCallbacks(ctx);
   };
 
   return async (
@@ -169,11 +141,10 @@ function createHookExecutor<
       if (!currentCtx.res.isAborted()) {
         await mainHandler(currentCtx);
       }
-      await executeResponseHooks(currentCtx);
     } catch (err) {
       await executeErrorHooks(currentCtx, err);
     } finally {
-      await executeFinallyHooks(currentCtx);
+      await executeDeferredCleanup(currentCtx);
     }
 
     return currentCtx.res;
@@ -291,9 +262,7 @@ export function createRouteHandler<
 
   const executeWithHooks = createHookExecutor<Env, Req, Res, Path>({
     requestHooks: deps.requestHooks,
-    responseHooks: deps.responseHooks,
     errorHooks: deps.errorHooks,
-    finallyHooks: deps.finallyHooks,
   });
 
   const requestValidateFn = resolveRequestValidationFunction({
@@ -357,11 +326,7 @@ export function createRouteHandler<
   /* ------------------------------------------------------- */
   /* Fast-path: no hooks & no validation                     */
   /* ------------------------------------------------------- */
-  const hasHooks =
-    deps.requestHooks.length > 0 ||
-    deps.responseHooks.length > 0 ||
-    deps.errorHooks.length > 0 ||
-    deps.finallyHooks.length > 0;
+  const hasHooks = deps.requestHooks.length > 0 || deps.errorHooks.length > 0;
 
   const hasValidation = !!requestValidateFn || !!responseValidateFn;
 

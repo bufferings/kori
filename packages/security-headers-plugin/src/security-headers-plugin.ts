@@ -231,15 +231,18 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
         skipPathsCount: skipPaths.length,
       });
 
-      return kori.onResponse((ctx) => {
-        const pathname = ctx.req.url().pathname;
+      return kori.onRequest((ctx) => {
+        // Defer security headers setting until after handler execution
+        ctx.defer((deferCtx) => {
+          const pathname = deferCtx.req.url().pathname;
 
-        // Skip security headers for specified paths
-        if (shouldSkipPath(pathname, skipPaths)) {
-          return;
-        }
+          // Skip security headers for specified paths
+          if (shouldSkipPath(pathname, skipPaths)) {
+            return;
+          }
 
-        setSecurityHeaders(ctx.res, options);
+          setSecurityHeaders(deferCtx.res, options);
+        });
       });
     },
   });

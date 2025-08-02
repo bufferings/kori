@@ -17,7 +17,7 @@ describe('serve-static-plugin-nodejs', () => {
     headers?: Record<string, string>,
   ): Promise<Response> {
     const generated = app.generate();
-    const { fetchHandler } = await generated.onInit();
+    const { fetchHandler } = await generated.onStart();
     return fetchHandler(new Request(url, { headers }));
   }
 
@@ -659,7 +659,7 @@ describe('serve-static-plugin-nodejs', () => {
 
       // Second request with If-None-Match header
       const generated = app.generate();
-      const { fetchHandler } = await generated.onInit();
+      const { fetchHandler } = await generated.onStart();
       const secondResponse = await fetchHandler(
         new Request('http://localhost/static/index.html', {
           headers: {
@@ -690,7 +690,7 @@ describe('serve-static-plugin-nodejs', () => {
 
       // Second request with If-Modified-Since header (same timestamp)
       const generated = app.generate();
-      const { fetchHandler } = await generated.onInit();
+      const { fetchHandler } = await generated.onStart();
       const secondResponse = await fetchHandler(
         new Request('http://localhost/static/index.html', {
           headers: {
@@ -744,7 +744,7 @@ describe('serve-static-plugin-nodejs', () => {
 
       // Request with both headers - ETag should take priority
       const generated = app.generate();
-      const { fetchHandler } = await generated.onInit();
+      const { fetchHandler } = await generated.onStart();
       const secondResponse = await fetchHandler(
         new Request('http://localhost/static/index.html', {
           headers: {

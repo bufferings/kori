@@ -17,15 +17,7 @@ export type KoriOnRequestHook<
   ctx: KoriHandlerContext<Env, Req, Res>,
 ) => MaybePromise<KoriHandlerContext<Env, Req & ReqExt, Res & ResExt> | KoriResponseAbort | void>;
 
-export type KoriOnResponseHook<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = (
-  ctx: KoriHandlerContext<Env, Req, Res>,
-) => MaybePromise<void>;
-
 export type KoriOnErrorHook<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = (
   ctx: KoriHandlerContext<Env, Req, Res>,
   err: unknown,
-) => MaybePromise<void>;
-
-export type KoriOnFinallyHook<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = (
-  ctx: KoriHandlerContext<Env, Req, Res>,
 ) => MaybePromise<void>;

@@ -54,7 +54,7 @@ export async function startNodeServer<
   const hostname = options.hostname ?? 'localhost';
 
   const generated = kori.generate();
-  const { fetchHandler, onClose } = await generated.onInit();
+  const { fetchHandler, onClose } = await generated.onStart();
 
   const server = createAdaptorServer({
     fetch: fetchHandler,

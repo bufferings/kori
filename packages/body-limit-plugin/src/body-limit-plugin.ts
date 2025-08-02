@@ -235,11 +235,14 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
                 userAgent: req.headers()['user-agent'],
               });
 
-              return res.status(HttpStatus.BAD_REQUEST).json({
-                error: 'Bad Request',
-                message: 'Invalid Content-Length header',
-                code: ERROR_CODES.INVALID_CONTENT_LENGTH,
-              });
+              return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                  error: 'Bad Request',
+                  message: 'Invalid Content-Length header',
+                  code: ERROR_CODES.INVALID_CONTENT_LENGTH,
+                })
+                .abort();
             }
 
             const contentLength = parseInt(contentLengthHeader, 10);

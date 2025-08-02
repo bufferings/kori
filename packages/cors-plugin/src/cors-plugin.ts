@@ -168,41 +168,40 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
         optionsSuccessStatus: options.optionsSuccessStatus,
       });
 
-      return kori
-        .onRequest((ctx) => {
-          if (!isPreflightRequest(ctx.req)) {
-            return;
-          }
-
+      return kori.onRequest((ctx) => {
+        if (isPreflightRequest(ctx.req)) {
+          // Handle preflight request immediately and abort
           const allowedOrigin = resolveAllowOrigin(ctx.req, options.origin);
           if (!allowedOrigin) {
-            return ctx.res.status(HttpStatus.FORBIDDEN).json({
-              error: 'CORS: Origin not allowed',
-              origin: ctx.req.header(CORS_HEADERS.ORIGIN),
-            });
+            return ctx.res
+              .status(HttpStatus.FORBIDDEN)
+              .json({
+                error: 'CORS: Origin not allowed',
+                origin: ctx.req.header(CORS_HEADERS.ORIGIN),
+              })
+              .abort();
           }
 
           ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
           for (const setHeader of preflightHeaderSetters) {
             setHeader(ctx);
           }
-          return ctx.res.status(options.optionsSuccessStatus).empty();
-        })
-        .onResponse((ctx) => {
-          if (isPreflightRequest(ctx.req)) {
-            return;
-          }
+          return ctx.res.status(options.optionsSuccessStatus).empty().abort();
+        }
 
-          const allowedOrigin = resolveAllowOrigin(ctx.req, options.origin);
+        // For actual requests, defer CORS header setting until after handler execution
+        ctx.defer((deferCtx) => {
+          const allowedOrigin = resolveAllowOrigin(deferCtx.req, options.origin);
           if (!allowedOrigin) {
             return;
           }
 
-          ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
+          deferCtx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
           for (const setHeader of actualRequestHeaderSetters) {
-            setHeader(ctx);
+            setHeader(deferCtx);
           }
         });
+      });
     },
   });
 }

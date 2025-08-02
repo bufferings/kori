@@ -8,34 +8,40 @@ Instance hooks execute once during application lifecycle.
 
 ### Execution Order
 
-`onInit` (app startup) → ... → `onClose` (app shutdown)
+`onStart` (app startup) → ... → `defer` callbacks (app shutdown)
 
-Instance hooks execute in registration order:
+Instance hooks execute in registration order, defer callbacks execute in reverse order:
 
 ```typescript
 const app = createKori()
-  .onInit(async (ctx) => {
-    console.log('Init 1: Database setup');
+  .onStart(async (ctx) => {
+    console.log('Start 1: Database setup');
+
+    // Defer cleanup for this resource
+    ctx.defer(async (ctx) => {
+      console.log('Defer 1: Database cleanup');
+    });
+
     return ctx.withEnv({ db: 'connected' });
   })
-  .onInit(async (ctx) => {
-    console.log('Init 2: Cache setup');
+  .onStart(async (ctx) => {
+    console.log('Start 2: Cache setup');
+
+    // Defer cleanup for this resource
+    ctx.defer(async (ctx) => {
+      console.log('Defer 2: Cache cleanup');
+    });
+
     return ctx.withEnv({ cache: 'connected' });
-  })
-  .onClose(async (ctx) => {
-    console.log('Close 1: First cleanup');
-  })
-  .onClose(async (ctx) => {
-    console.log('Close 2: Second cleanup');
   });
 
 // Output during startup:
-// Init 1: Database setup
-// Init 2: Cache setup
+// Start 1: Database setup
+// Start 2: Cache setup
 
-// Output during shutdown:
-// Close 1: First cleanup
-// Close 2: Second cleanup
+// Output during shutdown (LIFO order):
+// Defer 2: Cache cleanup
+// Defer 1: Database cleanup
 ```
 
 ## Request Hooks
@@ -44,41 +50,47 @@ Request hooks execute for every matching request.
 
 Key behaviors:
 
-- `onResponse` and `onFinally` execute in **reverse order**
-- `onRequest` can stop processing by returning a response
+- `defer` callbacks execute in **reverse order** (LIFO)
+- `onRequest` can stop processing by calling `res.abort()`
 - Hooks are captured when you define routes, not when requests arrive
 
 ### Execution Order
 
-`onRequest` → Route Handler → `onResponse` → `onFinally`
+`onRequest` → Route Handler → `defer` callbacks (reverse order)
 
-(`onError` only executes when an error occurs, replacing `onResponse`)
+(`onError` only executes when an error occurs, replacing normal flow)
 
 ```typescript
 const app = createKori()
   .onRequest((ctx) => {
     console.log('Request 1: Auth check');
+
+    // Defer cleanup operations
+    ctx.defer((ctx) => {
+      console.log('Defer 1: Auth cleanup');
+    });
+
     return ctx.withReq({ authenticated: true });
   })
   .onRequest((ctx) => {
     console.log('Request 2: Logging');
+
+    // Defer metrics collection
+    ctx.defer((ctx) => {
+      console.log('Defer 2: Metrics');
+    });
+
     return ctx.withReq({ requestId: 'abc123' });
-  })
-  .onResponse((ctx) => {
-    console.log('Response 1: Add headers');
-  })
-  .onResponse((ctx) => {
-    console.log('Response 2: Log response');
-  })
-  .onFinally((ctx) => {
-    console.log('Finally 1: Metrics');
-  })
-  .onFinally((ctx) => {
-    console.log('Finally 2: Cleanup');
   });
 
 app.get('/example', (ctx) => {
   console.log('Handler: Processing request');
+
+  // Defer response logging
+  ctx.defer((ctx) => {
+    console.log('Defer 3: Response logged');
+  });
+
   return ctx.res.json({ message: 'Hello' });
 });
 
@@ -86,10 +98,9 @@ app.get('/example', (ctx) => {
 // Request 1: Auth check
 // Request 2: Logging
 // Handler: Processing request
-// Response 2: Log response      ← Reverse order!
-// Response 1: Add headers       ← Reverse order!
-// Finally 2: Cleanup           ← Reverse order!
-// Finally 1: Metrics           ← Reverse order!
+// Defer 3: Response logged      ← Reverse order (LIFO)!
+// Defer 2: Metrics              ← Reverse order (LIFO)!
+// Defer 1: Auth cleanup         ← Reverse order (LIFO)!
 ```
 
 ### Early Response in onRequest
@@ -101,7 +112,8 @@ const app = createKori().onRequest((ctx) => {
   const token = ctx.req.header('authorization');
   if (!token) {
     // Stops here - handler won't run
-    return ctx.res.unauthorized({ message: 'Token required' });
+    ctx.res.unauthorized({ message: 'Token required' });
+    return ctx.res.abort();
   }
   return ctx.withReq({ authenticated: true });
 });
@@ -142,16 +154,21 @@ Define all hooks before defining routes:
 const app = createKori()
   .onRequest((ctx) => {
     console.log('Processing request');
+
+    // Defer completion logging
+    ctx.defer((ctx) => {
+      console.log('Request completed');
+    });
+
+    // Defer cleanup operations
+    ctx.defer((ctx) => {
+      console.log('Cleaning up');
+    });
+
     return ctx.withReq({ timestamp: Date.now() });
-  })
-  .onResponse((ctx) => {
-    console.log('Request completed');
   })
   .onError((ctx, error) => {
     console.error('Request failed:', error.message);
-  })
-  .onFinally((ctx) => {
-    console.log('Cleaning up');
   });
 
 // All routes defined after this point will use the hooks above

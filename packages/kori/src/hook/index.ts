@@ -1,7 +1,2 @@
-export {
-  type KoriOnErrorHook,
-  type KoriOnFinallyHook,
-  type KoriOnRequestHook,
-  type KoriOnResponseHook,
-} from './handler-hook.js';
-export { type KoriOnCloseHook, type KoriOnInitHook } from './instance-hook.js';
+export { type KoriOnErrorHook, type KoriOnRequestHook } from './handler-hook.js';
+export { type KoriOnStartHook } from './instance-hook.js';
