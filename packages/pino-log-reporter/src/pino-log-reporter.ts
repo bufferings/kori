@@ -25,7 +25,7 @@ export type PinoLogReporterOptions = {
    * Optional filter function to selectively log entries
    */
   filter?: (entry: KoriLogEntry) => boolean;
-} & Omit<pino.LoggerOptions, 'level' | 'filter'>;
+} & Omit<pino.LoggerOptions, 'level'>;
 
 export function createPinoLogReporter(options?: PinoLogReporterOptions): KoriLogReporter {
   const koriLevel = options?.level ?? 'info';
