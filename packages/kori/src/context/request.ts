@@ -46,7 +46,7 @@ type BodyCache = {
 type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
   raw: Request;
-  pathParams: Record<string, string>;
+  pathParamsData: Record<string, string>;
   bodyCache: BodyCache;
   clonedRawRequest?: Request;
   urlCache?: URL;
@@ -67,7 +67,7 @@ function getMethodInternal(req: ReqState): string {
 }
 
 function getPathParamsInternal(req: ReqState): Record<string, string> {
-  return req.pathParams;
+  return req.pathParamsData;
 }
 
 function getQueryParamsInternal(req: ReqState): Record<string, string | string[]> {
@@ -249,7 +249,7 @@ export function createKoriRequest({
 
   obj[KoriRequestBrand] = KoriRequestBrand;
   obj.raw = rawRequest;
-  obj.pathParams = pathParams;
+  obj.pathParamsData = pathParams;
   obj.bodyCache = {};
   return obj as unknown as KoriRequest;
 }
