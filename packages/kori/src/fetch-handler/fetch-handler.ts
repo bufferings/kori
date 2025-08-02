@@ -4,5 +4,5 @@ export type KoriInitializedFetchHandler = {
 };
 
 export type KoriFetchHandler = {
-  onInit: () => Promise<KoriInitializedFetchHandler>;
+  onStart: () => Promise<KoriInitializedFetchHandler>;
 };

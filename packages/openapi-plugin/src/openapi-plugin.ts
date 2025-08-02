@@ -110,7 +110,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
         pluginMetadata: openApiMeta({ exclude: true }),
       });
 
-      return kori.onInit((ctx) => {
+      return kori.onStart((ctx) => {
         // Collect route metadata from the kori instance (after all routes are registered)
         const routeDefinitions = kori.routeDefinitions();
         for (const routeDef of routeDefinitions) {

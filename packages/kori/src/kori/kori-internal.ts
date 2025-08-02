@@ -1,13 +1,6 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { type KoriFetchHandler } from '../fetch-handler/index.js';
-import {
-  type KoriOnCloseHook,
-  type KoriOnErrorHook,
-  type KoriOnFinallyHook,
-  type KoriOnInitHook,
-  type KoriOnRequestHook,
-  type KoriOnResponseHook,
-} from '../hook/index.js';
+import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { getMethodString } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
@@ -34,12 +27,9 @@ import {
 type KoriRouterHandlerAny = KoriRouterHandler<any, any, any>;
 type KoriInternalAny = KoriInternal<any, any, any, any, any>;
 
-type KoriOnInitHookAny = KoriOnInitHook<any, any>;
-type KoriOnCloseHookAny = KoriOnCloseHook<any>;
+type KoriOnStartHookAny = KoriOnStartHook<any, any>;
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
-type KoriOnResponseHookAny = KoriOnResponseHook<any, any, any>;
 type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
-type KoriOnFinallyHookAny = KoriOnFinallyHook<any, any, any>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type KoriInternalShared = {
@@ -57,8 +47,7 @@ export type KoriInternal<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 > = Kori<Env, Req, Res, RequestValidator, ResponseValidator> & {
-  _collectInitHooks(): KoriOnInitHook<Env, unknown>[];
-  _collectCloseHooks(): KoriOnCloseHook<Env>[];
+  _collectStartHooks(): KoriOnStartHook<Env, unknown>[];
   _collectRouteDefinitions(): KoriRouteDefinition[];
 };
 
@@ -77,9 +66,7 @@ export function createKoriInternal<
   prefix = '',
   parentHandlerHooks = {
     requestHooks: [],
-    responseHooks: [],
     errorHooks: [],
-    finallyHooks: [],
   },
 }: {
   shared: KoriInternalShared;
@@ -90,9 +77,7 @@ export function createKoriInternal<
   prefix?: string;
   parentHandlerHooks?: {
     requestHooks: KoriOnRequestHookAny[];
-    responseHooks: KoriOnResponseHookAny[];
     errorHooks: KoriOnErrorHookAny[];
-    finallyHooks: KoriOnFinallyHookAny[];
   };
 }): KoriInternal<Env, Req, Res, RequestValidator, ResponseValidator> {
   const _shared = shared;
@@ -106,26 +91,19 @@ export function createKoriInternal<
 
   const _routeDefinitions: KoriRouteDefinition[] = [];
 
-  const _initHooks: KoriOnInitHookAny[] = [];
-  const _closeHooks: KoriOnCloseHookAny[] = [];
+  const _startHooks: KoriOnStartHookAny[] = [];
 
   const _requestHooks: KoriOnRequestHookAny[] = [...parentHandlerHooks.requestHooks];
-  const _responseHooks: KoriOnResponseHookAny[] = [...parentHandlerHooks.responseHooks];
   const _errorHooks: KoriOnErrorHookAny[] = [...parentHandlerHooks.errorHooks];
-  const _finallyHooks: KoriOnFinallyHookAny[] = [...parentHandlerHooks.finallyHooks];
 
   const _internal: KoriInternal<Env, Req, Res, RequestValidator, ResponseValidator> = {
     log() {
       return _shared.applicationLogger;
     },
 
-    _collectInitHooks() {
-      const childHooks = _children.flatMap((child) => child._collectInitHooks());
-      return [..._initHooks, ...childHooks] as KoriOnInitHook<Env, unknown>[];
-    },
-    _collectCloseHooks() {
-      const childHooks = _children.flatMap((child) => child._collectCloseHooks());
-      return [..._closeHooks, ...childHooks];
+    _collectStartHooks() {
+      const childHooks = _children.flatMap((child) => child._collectStartHooks());
+      return [..._startHooks, ...childHooks] as KoriOnStartHook<Env, unknown>[];
     },
 
     _collectRouteDefinitions() {
@@ -133,29 +111,18 @@ export function createKoriInternal<
       return [..._routeDefinitions, ...childDefinitions];
     },
 
-    onInit<EnvExt>(hook: KoriOnInitHook<Env, EnvExt>) {
-      _initHooks.push(hook);
+    onStart<EnvExt>(hook: KoriOnStartHook<Env, EnvExt>) {
+      _startHooks.push(hook);
       return _internal as unknown as Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
-    },
-    onClose(hook) {
-      _closeHooks.push(hook);
-      return _internal;
     },
 
     onRequest<ReqExt, ResExt>(hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>) {
       _requestHooks.push(hook);
       return _internal as unknown as Kori<Env, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
     },
-    onResponse(hook) {
-      _responseHooks.push(hook);
-      return _internal;
-    },
+
     onError(hook) {
       _errorHooks.push(hook);
-      return _internal;
-    },
-    onFinally(hook) {
-      _finallyHooks.push(hook);
       return _internal;
     },
 
@@ -186,9 +153,7 @@ export function createKoriInternal<
         prefix: `${_prefix}${childOptions.prefix ?? ''}`,
         parentHandlerHooks: {
           requestHooks: _requestHooks,
-          responseHooks: _responseHooks,
           errorHooks: _errorHooks,
-          finallyHooks: _finallyHooks,
         },
       });
       const configuredChild = childOptions.configure(childKoriInternal);
@@ -255,9 +220,7 @@ export function createKoriInternal<
           onRequestValidationError: _onRequestValidationError,
           onResponseValidationError: _onResponseValidationError,
           requestHooks: _requestHooks,
-          responseHooks: _responseHooks,
           errorHooks: _errorHooks,
-          finallyHooks: _finallyHooks,
         },
         {
           requestSchema,
@@ -619,13 +582,11 @@ export function createKoriInternal<
 
     generate(): KoriFetchHandler {
       const compiledRouter = _shared.router.compile();
-      const allInitHooks = _shared.root._collectInitHooks();
-      const allCloseHooks = _shared.root._collectCloseHooks();
+      const allStartHooks = _shared.root._collectStartHooks();
       const rootLogger = _shared.rootLogger;
       return createFetchHandler({
         compiledRouter,
-        allInitHooks,
-        allCloseHooks,
+        allStartHooks,
         rootLogger,
       });
     },

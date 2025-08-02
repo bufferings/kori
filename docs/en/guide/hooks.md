@@ -8,28 +8,25 @@ Kori provides two categories of hooks:
 
 ### Lifecycle Hooks
 
-Execute once during application startup/shutdown:
+Execute once during application startup:
 
-- `onInit` - Application initialization (database setup, config loading)
-- `onClose` - Application shutdown (cleanup, graceful shutdown)
+- `onStart` - Application initialization (database setup, config loading, defer cleanup)
 
 ### Handler Hooks
 
 Execute for every matching request:
 
-- `onRequest` - Before request handler (auth, logging, validation)
-- `onResponse` - After successful request handler (response modification)
+- `onRequest` - Before request handler (auth, logging, validation, defer cleanup)
 - `onError` - When an error occurs (error handling, reporting)
-- `onFinally` - Always executes (cleanup, metrics)
 
 ## Lifecycle Hooks
 
-### onInit Hook
+### onStart Hook
 
 Set up shared resources when the application starts:
 
 ```typescript
-const app = createKori().onInit(async (ctx) => {
+const app = createKori().onStart(async (ctx) => {
   console.log('Application starting...');
 
   // Initialize database
@@ -41,26 +38,8 @@ const app = createKori().onInit(async (ctx) => {
   // Load configuration
   const config = await loadConfiguration();
 
-  // Return extended environment
-  return ctx.withEnv({
-    db,
-    redis,
-    config,
-    startTime: Date.now(),
-  });
-});
-```
-
-### onClose Hook
-
-Clean up resources when the application shuts down:
-
-```typescript
-const app = createKori()
-  .onInit(async (ctx) => {
-    // ... initialization code
-  })
-  .onClose(async (ctx) => {
+  // Defer cleanup operations for shutdown
+  ctx.defer(async (ctx) => {
     console.log('Application shutting down...');
 
     // Close database connections
@@ -74,6 +53,15 @@ const app = createKori()
 
     console.log('Shutdown complete');
   });
+
+  // Return extended environment
+  return ctx.withEnv({
+    db,
+    redis,
+    config,
+    startTime: Date.now(),
+  });
+});
 ```
 
 ## Handler Hooks
@@ -105,25 +93,6 @@ app.get('/users', (ctx) => {
 });
 ```
 
-### onResponse Hook
-
-Modify responses after successful handlers:
-
-```typescript
-app.onResponse((ctx) => {
-  // Add response headers
-  ctx.res.setHeader('X-Request-Id', ctx.req.requestId);
-  ctx.res.setHeader('X-Response-Time', Date.now() - ctx.req.startTime);
-
-  // Log response
-  ctx.req.log().info('Request completed', {
-    requestId: ctx.req.requestId,
-    status: ctx.res.getStatus(),
-    responseTime: Date.now() - ctx.req.startTime,
-  });
-});
-```
-
 ### onError Hook
 
 Handle errors that occur during request processing:
@@ -146,29 +115,33 @@ app.onError((ctx, error) => {
 });
 ```
 
-### onFinally Hook
+### Defer Pattern for Cleanup
 
-Execute code that always runs (success or error):
+Use `ctx.defer()` within hooks to register cleanup operations that execute after the handler:
 
 ```typescript
-app.onFinally((ctx) => {
-  // Update metrics
-  ctx.env.metrics?.increment('requests.total', {
-    method: ctx.req.method(),
-    status: ctx.res.getStatus().toString(),
+app.onRequest((ctx) => {
+  // Set up resources
+  const requestId = generateRequestId();
+  const startTime = Date.now();
+
+  // Defer cleanup and logging
+  ctx.defer((ctx) => {
+    // Update metrics
+    ctx.env.metrics?.increment('requests.total', {
+      method: ctx.req.method(),
+      status: ctx.res.getStatus().toString(),
+    });
+
+    // Log final status
+    const duration = Date.now() - startTime;
+    ctx.req.log().info('Request finished', {
+      requestId,
+      duration,
+      status: ctx.res.getStatus(),
+    });
   });
 
-  // Clean up request-specific resources
-  if (ctx.req.tempFiles) {
-    cleanupTempFiles(ctx.req.tempFiles);
-  }
-
-  // Log final status
-  const duration = Date.now() - ctx.req.startTime;
-  ctx.req.log().info('Request finished', {
-    requestId: ctx.req.requestId,
-    duration,
-    status: ctx.res.getStatus(),
-  });
+  return ctx.withReq({ requestId, startTime });
 });
 ```

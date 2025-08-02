@@ -16,7 +16,7 @@ describe('Error Response JSON Only', () => {
       });
     });
 
-    const { fetchHandler } = await app.generate().onInit();
+    const { fetchHandler } = await app.generate().onStart();
 
     // Test with Accept: text/html
     const htmlRequest = new Request('http://localhost/', {
@@ -84,7 +84,7 @@ describe('Error Response JSON Only', () => {
     app.get('/notfound', (ctx) => ctx.res.notFound({ message: 'Resource not found' }));
     app.get('/internal', (ctx) => ctx.res.internalError({ message: 'Server error' }));
 
-    const { fetchHandler } = await app.generate().onInit();
+    const { fetchHandler } = await app.generate().onStart();
 
     const testCases = [
       { path: '/unauthorized', status: 401, type: 'UNAUTHORIZED' },
@@ -110,7 +110,7 @@ describe('Error Response JSON Only', () => {
       return ctx.res.badRequest(); // No options
     });
 
-    const { fetchHandler } = await app.generate().onInit();
+    const { fetchHandler } = await app.generate().onStart();
     const response = await fetchHandler(new Request('http://localhost/'));
     const body = await response.json();
 

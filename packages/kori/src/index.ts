@@ -5,22 +5,17 @@ export {
   createKoriRequest,
   createKoriResponse,
   isKoriResponse,
+  isKoriResponseAbort,
   type KoriEnvironment,
   type KoriHandlerContext,
   type KoriInstanceContext,
   type KoriRequest,
   type KoriResponse,
+  type KoriResponseAbort,
 } from './context/index.js';
 export { type KoriError, type KoriValidationConfigError } from './error/index.js';
 export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch-handler/index.js';
-export {
-  type KoriOnCloseHook,
-  type KoriOnErrorHook,
-  type KoriOnFinallyHook,
-  type KoriOnInitHook,
-  type KoriOnRequestHook,
-  type KoriOnResponseHook,
-} from './hook/index.js';
+export { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from './hook/index.js';
 export {
   ContentType,
   type ContentTypeValue,

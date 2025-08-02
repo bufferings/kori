@@ -54,32 +54,26 @@ app.log().error('Something went wrong', { error });
 
 Lifecycle hooks execute once per application lifecycle.
 
-#### `app.onInit(hook)`
+#### `app.onStart(hook)`
 
 Execute code when the application initializes.
 
 ```typescript
-app.onInit(async (ctx) => {
+app.onStart(async (ctx) => {
   // Initialize database connection
   const db = await connectDatabase();
+
+  // Defer cleanup for shutdown
+  ctx.defer(async (ctx) => {
+    // Clean up resources
+    await ctx.env.db.close();
+  });
+
   return ctx.withEnv({ db });
 });
 ```
 
 **Type:** `(ctx: KoriInstanceContext<Env>) => Promise<KoriInstanceContext<Env & EnvExt>> | KoriInstanceContext<Env & EnvExt>`
-
-#### `app.onClose(hook)`
-
-Execute code when the application shuts down.
-
-```typescript
-app.onClose(async (ctx) => {
-  // Clean up resources
-  await ctx.env.db.close();
-});
-```
-
-**Type:** `(ctx: KoriInstanceContext<Env>) => Promise<void> | void`
 
 ### Handler Hooks
 
