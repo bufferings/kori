@@ -8,6 +8,7 @@
     { "path": "./packages/example" },
     { "path": "./packages/file-plugin-nodejs" },
     { "path": "./packages/kori" },
+    { "path": "./packages/logtape-log-reporter" },
     { "path": "./packages/nodejs-adapter" },
     { "path": "./packages/openapi-plugin" },
     { "path": "./packages/openapi-scalar-ui-plugin" },
