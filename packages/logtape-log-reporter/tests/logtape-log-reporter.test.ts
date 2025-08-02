@@ -88,7 +88,8 @@ describe('createLogTapeLogReporter', () => {
 
     reporter(entry);
 
-    expect(mockInfo).toHaveBeenCalledWith('Test message', {
+    expect(mockInfo).toHaveBeenCalledWith({
+      message: 'Test message',
       userId: 123,
       kori: {
         time: entry.time,
@@ -111,7 +112,8 @@ describe('createLogTapeLogReporter', () => {
 
     reporter(entry);
 
-    expect(mockError).toHaveBeenCalledWith('Error occurred', {
+    expect(mockError).toHaveBeenCalledWith({
+      message: 'Error occurred',
       error: 'Something went wrong',
       kori: {
         time: entry.time,
@@ -133,7 +135,8 @@ describe('createLogTapeLogReporter', () => {
 
     reporter(entry);
 
-    expect(mockInfo).toHaveBeenCalledWith('Simple message', {
+    expect(mockInfo).toHaveBeenCalledWith({
+      message: 'Simple message',
       kori: {
         time: expect.any(Number) as number,
         channel: 'test',
@@ -171,7 +174,8 @@ describe('createLogTapeLogReporter', () => {
 
     reporter(entry);
 
-    expect(mockInfo).toHaveBeenCalledWith('Test message', {
+    expect(mockInfo).toHaveBeenCalledWith({
+      message: 'Test message',
       kori: {
         time: 1234567890,
         channel: 'test-channel',
