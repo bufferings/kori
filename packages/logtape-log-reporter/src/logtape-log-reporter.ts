@@ -50,11 +50,7 @@ export function createLogTapeLogReporter(options?: LogTapeLogReporterOptions): K
     };
 
     // Log with LogTape
-    if (Object.keys(structuredData).length > 0) {
-      logMethod(entry.message, structuredData);
-    } else {
-      logMethod(entry.message, undefined);
-    }
+    logMethod(entry.message, structuredData);
   };
 }
 
