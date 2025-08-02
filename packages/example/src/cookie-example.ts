@@ -10,10 +10,12 @@ import { createKori } from '@korix/kori';
 const app = createKori();
 
 // Example of reading cookies from request
-app.get('/read-cookies', ({ req, res }) => {
+app.get('/read-cookies', (ctx) => {
+  const { req, res } = ctx;
+
   // Get all cookies
-  const allCookies = req.cookies();
-  req.log().info('All cookies:', allCookies);
+  const allCookies = ctx.req.cookies();
+  ctx.log().info('All cookies:', allCookies);
 
   // Get specific cookies
   const sessionId = req.cookie('session_id');

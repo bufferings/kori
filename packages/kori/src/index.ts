@@ -48,14 +48,17 @@ export {
 } from './kori/index.js';
 export {
   applyKoriLogSerializers,
-  createKoriSimpleLoggerFactory,
-  defaultKoriLogSerializers,
+  createKoriLoggerFactory,
   type KoriLogData,
+  type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
+  type KoriLoggerMeta,
+  type KoriLoggerOptions,
   type KoriLogLevel,
+  type KoriLogReporter,
   type KoriLogSerializers,
-  type KoriSimpleLoggerOptions,
+  SYS_CHANNEL,
 } from './logging/index.js';
 export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
 export {

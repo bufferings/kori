@@ -68,7 +68,7 @@ app.post('/upload-stream', {
 
         // Optional: Process chunks as they arrive
         // This is where you might save to disk, process data, etc.
-        ctx.req.log().info('Received chunk', { size: value.length, totalBytes });
+        ctx.log().info('Received chunk', { size: value.length, totalBytes });
       }
 
       // Combine all chunks (in real use case, you might process them differently)
@@ -85,7 +85,7 @@ app.post('/upload-stream', {
         chunksReceived: chunks.length,
       });
     } catch (error) {
-      ctx.req.log().error('Upload error', { error });
+      ctx.log().error('Upload error', { error });
       return res.internalError({ message: 'Upload failed' });
     }
   },

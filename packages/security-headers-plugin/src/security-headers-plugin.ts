@@ -215,7 +215,7 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().child(PLUGIN_NAME);
+      const log = kori.log().channel(PLUGIN_NAME);
 
       log.info('Security headers plugin initialized', {
         frameOptions: options.frameOptions ?? DEFAULT_OPTIONS.frameOptions,
