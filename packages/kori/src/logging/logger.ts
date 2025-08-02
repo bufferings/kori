@@ -18,7 +18,7 @@ export type KoriLogData = {
   [key: string]: unknown;
 };
 
-export type KoriLogDataFactory = () => KoriLogData;
+export type KoriLogDataFactory = () => KoriLogData | undefined;
 export type KoriLogDataOrFactory = KoriLogData | KoriLogDataFactory;
 
 export type KoriLogEntry = {

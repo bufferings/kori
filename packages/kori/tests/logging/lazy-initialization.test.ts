@@ -65,7 +65,7 @@ describe('Lazy Log Data Initialization', () => {
     });
     const logger = loggerFactory({ channel: 'test', name: 'test' });
 
-    const undefinedFactory: KoriLogDataFactory = () => undefined as unknown as KoriLogData;
+    const undefinedFactory: KoriLogDataFactory = () => undefined;
 
     logger.info('Undefined factory test', undefinedFactory);
     expect(mockReporter).toHaveBeenCalledWith(
