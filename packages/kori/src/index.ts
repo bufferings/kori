@@ -50,6 +50,8 @@ export {
   applyKoriLogSerializers,
   createKoriLoggerFactory,
   type KoriLogData,
+  type KoriLogDataFactory,
+  type KoriLogDataOrFactory,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
