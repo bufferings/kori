@@ -175,11 +175,6 @@ function createKoriLogger(options: {
     },
 
     addBindings: (newBindings: Record<string, unknown>) => {
-      // Create a new sharedBindings object to avoid modifying the original
-      const newSharedBindings = {
-        ...(options.sharedBindings ?? {}),
-        ...newBindings,
-      };
       return createKoriLogger({
         channel: options.channel,
         name: options.name,
@@ -187,7 +182,7 @@ function createKoriLogger(options: {
         serializers: options.serializers,
         bindings: { ...options.bindings, ...newBindings },
         reporters: options.reporters,
-        sharedBindings: newSharedBindings,
+        sharedBindings: options.sharedBindings,
       });
     },
   };
