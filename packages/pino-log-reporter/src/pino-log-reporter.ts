@@ -12,12 +12,22 @@ const PINO_LEVEL_MAP: Record<KoriLogLevel, pino.Level> = {
 
 const DEFAULT_FILTER = () => true;
 
-export function createPinoLogReporter(
-  options?: Omit<pino.LoggerOptions, 'level'> & {
-    level?: KoriLogLevel;
-    filter?: (entry: KoriLogEntry) => boolean;
-  },
-): KoriLogReporter {
+/**
+ * Options for creating a Pino log reporter.
+ * Uses KoriLogLevel instead of pino.Level for consistency with Kori logging system.
+ */
+export type PinoLogReporterOptions = {
+  /**
+   * Log level using Kori's level system (automatically mapped to Pino levels)
+   */
+  level?: KoriLogLevel;
+  /**
+   * Optional filter function to selectively log entries
+   */
+  filter?: (entry: KoriLogEntry) => boolean;
+} & Omit<pino.LoggerOptions, 'level'>;
+
+export function createPinoLogReporter(options?: PinoLogReporterOptions): KoriLogReporter {
   const koriLevel = options?.level ?? 'info';
   const pinoLevel = PINO_LEVEL_MAP[koriLevel];
 
