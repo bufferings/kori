@@ -1,5 +1,36 @@
 # @korix/body-limit-plugin
 
+## 0.1.2
+
+### Patch Changes
+
+- faf7c12: Refactor logging system architecture from LoggerFactory to Reporter pattern
+
+  This change introduces a new logging architecture that uses a Reporter pattern instead of the previous LoggerFactory pattern:
+
+  - Replace `packages/pino-adapter/` with `packages/pino-log-reporter/` using Reporter pattern
+  - Consolidate logging implementation into `packages/kori/src/logging/logger.ts`
+  - Update API names: `KoriReporter` → `KoriLogReporter`, `createKoriSimpleLoggerFactory` → `createKoriLoggerFactory`
+  - Change logging method calls: `req.log().child()` → `ctx.log().channel()`, `req.log()` → `ctx.log()`
+  - Update all plugins and examples to use new logging API
+
+  Breaking changes:
+
+  - `@korix/pino-adapter` package removed, use `@korix/pino-log-reporter` instead
+  - Logger creation pattern changed from direct Pino integration to Reporter-based configuration
+
+- Updated dependencies [e467fdf]
+- Updated dependencies [cd97f48]
+- Updated dependencies [7afcfa4]
+- Updated dependencies [8a2dcd5]
+- Updated dependencies [4777812]
+- Updated dependencies [faf7c12]
+- Updated dependencies [6c8a3ce]
+- Updated dependencies [cc8c36e]
+- Updated dependencies [cf6aa9d]
+- Updated dependencies [c47f37d]
+  - @korix/kori@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
