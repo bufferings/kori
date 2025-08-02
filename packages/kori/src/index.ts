@@ -56,7 +56,6 @@ export {
   type KoriLogLevel,
   type KoriLogSerializers,
   type KoriSimpleLoggerOptions,
-  wrapKoriLogger,
 } from './logging/index.js';
 export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
 export {

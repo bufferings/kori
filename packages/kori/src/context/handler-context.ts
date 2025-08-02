@@ -1,3 +1,4 @@
+import { SYS_CHANNEL, type KoriLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -11,6 +12,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
   withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
   withRes<ResExt>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
   defer(callback: (ctx: KoriHandlerContext<Env, Req, Res>) => MaybePromise<void>): void;
+  log(): KoriLogger;
 };
 
 // --- Internal Implementation ---
@@ -22,9 +24,20 @@ type HandlerCtxState = {
   req: KoriRequest;
   res: KoriResponse;
   deferStack: ((ctx: KoriHandlerContextBase) => MaybePromise<void>)[];
+  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  loggerCache?: KoriLogger;
 };
 
+function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
+  ctx.loggerCache ??= ctx.loggerFactory({ channel: 'app', name: 'request' });
+  return ctx.loggerCache;
+}
+
 const handlerContextPrototype = {
+  log(this: HandlerCtxState) {
+    return getLoggerInternal(this);
+  },
+
   withReq<ReqExt extends object>(this: HandlerCtxState, reqExt: ReqExt) {
     Object.assign(this.req, reqExt);
     return this;
@@ -44,12 +57,23 @@ export function createKoriHandlerContext<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
->({ env, req, res }: { env: Env; req: Req; res: Res }): KoriHandlerContext<Env, Req, Res> {
+>({
+  env,
+  req,
+  res,
+  loggerFactory,
+}: {
+  env: Env;
+  req: Req;
+  res: Res;
+  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+}): KoriHandlerContext<Env, Req, Res> {
   const ctx = Object.create(handlerContextPrototype) as HandlerCtxState;
   ctx.env = env;
   ctx.req = req;
   ctx.res = res;
   ctx.deferStack = [];
+  ctx.loggerFactory = loggerFactory;
   return ctx as unknown as KoriHandlerContext<Env, Req, Res>;
 }
 
@@ -62,8 +86,8 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
   for (let i = deferStack.length - 1; i >= 0; i--) {
     try {
       await deferStack[i]?.(ctx);
-    } catch (error) {
-      ctx.req.log().error('Defer callback error:', { error });
+    } catch (err) {
+      ctx.log().channel(SYS_CHANNEL).child('defer-callback').error('Defer callback error:', { err });
     }
   }
 }

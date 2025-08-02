@@ -6,7 +6,6 @@ import {
   type HttpRequestHeaderName,
   HttpRequestHeader,
 } from '../http/index.js';
-import { type KoriLogger } from '../logging/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
 
@@ -15,7 +14,6 @@ export type KoriRequest = {
 
   raw(): Request;
 
-  log(): KoriLogger;
   url(): URL;
   method(): string;
   pathParams(): Record<string, string>;
@@ -48,23 +46,15 @@ type BodyCache = {
 type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
   raw: Request;
-  rootLogger: KoriLogger;
   pathParams: Record<string, string>;
   bodyCache: BodyCache;
-
   clonedRawRequest?: Request;
-  logCache?: KoriLogger;
   urlCache?: URL;
   methodCache?: string;
   queriesCache?: Record<string, string | string[]>;
   headersCache?: Record<string, string>;
   cookiesCache?: Record<string, string>;
 };
-
-function getLogInternal(req: ReqState): KoriLogger {
-  req.logCache ??= req.rootLogger.child('request');
-  return req.logCache;
-}
 
 function getUrlInternal(req: ReqState): URL {
   req.urlCache ??= new URL(req.raw.url);
@@ -194,9 +184,6 @@ const sharedMethods = {
     return this.raw;
   },
 
-  log(): KoriLogger {
-    return getLogInternal(this);
-  },
   url(): URL {
     return getUrlInternal(this);
   },
@@ -254,17 +241,14 @@ const sharedMethods = {
 export function createKoriRequest({
   rawRequest,
   pathParams,
-  rootLogger,
 }: {
   rawRequest: Request;
   pathParams: Record<string, string>;
-  rootLogger: KoriLogger;
 }): KoriRequest {
   const obj = Object.create(sharedMethods) as ReqState;
 
   obj[KoriRequestBrand] = KoriRequestBrand;
   obj.raw = rawRequest;
-  obj.rootLogger = rootLogger;
   obj.pathParams = pathParams;
   obj.bodyCache = {};
   return obj as unknown as KoriRequest;

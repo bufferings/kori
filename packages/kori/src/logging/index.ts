@@ -1,4 +1,13 @@
 export { applyKoriLogSerializers, defaultKoriLogSerializers, type KoriLogSerializers } from './log-serializers.js';
-export { type KoriLogData, type KoriLogger, type KoriLogLevel } from './logger.js';
+export {
+  SYS_CHANNEL,
+  type KoriLogData,
+  type KoriLogEntry,
+  type KoriLogger,
+  type KoriLoggerFactory,
+  type KoriLoggerMeta,
+  type KoriLogLevel,
+  type KoriReporter,
+} from './logger.js';
 export { createKoriSimpleLoggerFactory, type KoriSimpleLoggerOptions } from './simple-logger.js';
-export { type KoriLoggerFactory, wrapKoriLogger } from './wrap-logger.js';
+export { createConsoleReporter } from './simple-reporter.js';

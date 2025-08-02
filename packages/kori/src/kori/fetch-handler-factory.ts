@@ -19,13 +19,13 @@ type KoriOnStartHookAny = KoriOnStartHook<any, any>;
 export function createFetchHandler({
   compiledRouter,
   allStartHooks,
-  rootLogger,
+  loggerFactory,
 }: {
   compiledRouter: KoriCompiledRouter;
   allStartHooks: KoriOnStartHookAny[];
-  rootLogger: KoriLogger;
+  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
 }): KoriFetchHandler {
-  let instanceCtx = createKoriInstanceContext(createKoriEnvironment());
+  let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), loggerFactory });
 
   const onStartImpl = async () => {
     for (const startHook of allStartHooks) {
@@ -41,13 +41,13 @@ export function createFetchHandler({
       const req = createKoriRequest({
         rawRequest: request,
         pathParams: routeResult.pathParams,
-        rootLogger,
       });
 
       const handlerCtx = createKoriHandlerContext({
         env: instanceCtx.env,
         req,
         res: createKoriResponse(req),
+        loggerFactory,
       });
 
       const res = await routeResult.handler(handlerCtx);
