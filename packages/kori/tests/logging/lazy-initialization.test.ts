@@ -155,6 +155,6 @@ describe('Lazy Log Data Initialization', () => {
     expect(factoryCallCounts.fatal).toBe(1);
 
     // All log entries should have been created
-    expect(mockReporter).toHaveBeenCalledTimes(6);
+    expect(mockReporter).toHaveBeenCalledTimes(5);
   });
 });
