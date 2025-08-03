@@ -48,15 +48,14 @@ export {
 } from './kori/index.js';
 export {
   createKoriLoggerFactory,
-  type KoriLogData,
-  type KoriLogDataFactory,
-  type KoriLogDataOrFactory,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
-  type KoriLoggerMeta,
-  type KoriLoggerOptions,
+  type KoriLoggerFactoryOptions,
   type KoriLogLevel,
+  type KoriLogMeta,
+  type KoriLogMetaFactory,
+  type KoriLogMetaOrFactory,
   type KoriLogReporter,
   SYS_CHANNEL,
 } from './logging/index.js';

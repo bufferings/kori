@@ -83,7 +83,7 @@ describe('createLogTapeLogReporter', () => {
       channel: 'test',
       name: 'test-logger',
       message: 'Test message',
-      data: { userId: 123 },
+      meta: { userId: 123 },
     };
 
     reporter(entry);
@@ -107,7 +107,7 @@ describe('createLogTapeLogReporter', () => {
       channel: 'test',
       name: 'test-logger',
       message: 'Error occurred',
-      data: { error: 'Something went wrong' },
+      meta: { error: 'Something went wrong' },
     };
 
     reporter(entry);

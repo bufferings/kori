@@ -1,23 +1,10 @@
 import { createConsoleReporter } from './console-log-reporter.js';
 
-export const SYS_CHANNEL = 'sys' as const;
-
 export type KoriLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-export type KoriLoggerMeta = {
-  channel: string;
-  name: string;
-  bindings: Record<string, unknown>;
-  level: KoriLogLevel;
-};
-
-export type KoriLogData = {
-  err?: unknown;
-  [key: string]: unknown;
-};
-
-export type KoriLogDataFactory = () => KoriLogData | undefined;
-export type KoriLogDataOrFactory = KoriLogData | KoriLogDataFactory;
+export type KoriLogMeta = Record<string, unknown>;
+export type KoriLogMetaFactory = () => KoriLogMeta | undefined;
+export type KoriLogMetaOrFactory = KoriLogMeta | KoriLogMetaFactory;
 
 export type KoriLogEntry = {
   time: number;
@@ -25,25 +12,25 @@ export type KoriLogEntry = {
   channel: string;
   name: string;
   message: string;
-  data?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 };
 
 export type KoriLogReporter = (entry: KoriLogEntry) => void;
 
-export type KoriLoggerFactory = (meta: { channel: string; name: string }) => KoriLogger;
+export type KoriLoggerFactory = (loggerOptions: { channel: string; name: string }) => KoriLogger;
 
 export type KoriLogger = {
-  debug(message: string, data?: KoriLogDataOrFactory): void;
-  info(message: string, data?: KoriLogDataOrFactory): void;
-  warn(message: string, data?: KoriLogDataOrFactory): void;
-  error(message: string, data?: KoriLogDataOrFactory): void;
-  fatal(message: string, data?: KoriLogDataOrFactory): void;
+  debug(message: string, meta?: KoriLogMetaOrFactory): void;
+  info(message: string, meta?: KoriLogMetaOrFactory): void;
+  warn(message: string, meta?: KoriLogMetaOrFactory): void;
+  error(message: string, meta?: KoriLogMetaOrFactory): void;
+  fatal(message: string, meta?: KoriLogMetaOrFactory): void;
 
   isLevelEnabled(level: KoriLogLevel): boolean;
 
   channel(channelName: string): KoriLogger;
-  addBindings(bindings: Record<string, unknown>): KoriLogger;
   child(name: string, bindings?: Record<string, unknown>): KoriLogger;
+  addBindings(bindings: Record<string, unknown>): KoriLogger;
 };
 
 const LOG_LEVELS: Record<KoriLogLevel, number> = {
@@ -54,36 +41,28 @@ const LOG_LEVELS: Record<KoriLogLevel, number> = {
   fatal: 5,
 };
 
-function createLogEntry(
-  level: KoriLogLevel,
-  message: string,
-  channel: string,
-  name: string,
-  bindings: Record<string, unknown>,
-  data: KoriLogData | undefined,
-): {
-  time: number;
+function createLogEntry({
+  level,
+  channel,
+  name,
+  message,
+  bindings,
+  meta,
+}: {
   level: KoriLogLevel;
   channel: string;
   name: string;
   message: string;
-  data?: Record<string, unknown>;
-} {
-  const baseEntry = {
+  bindings: Record<string, unknown>;
+  meta?: KoriLogMeta;
+}): KoriLogEntry {
+  return {
     time: Date.now(),
     level,
     channel,
     name,
     message,
-  };
-
-  if (!data) {
-    return baseEntry;
-  }
-
-  return {
-    ...baseEntry,
-    data: { ...bindings, ...data },
+    meta: { ...(bindings ?? {}), ...(meta ?? {}) },
   };
 }
 
@@ -93,56 +72,59 @@ function createKoriLogger(options: {
   level: KoriLogLevel;
   bindings: Record<string, unknown>;
   reporters: KoriLogReporter[];
-  sharedBindings?: Record<string, unknown>;
 }): KoriLogger {
-  const mutableBindings = { ...options.bindings };
-
-  function log(level: KoriLogLevel, message: string, dataOrFactory?: KoriLogDataOrFactory): void {
-    if (LOG_LEVELS[level] < LOG_LEVELS[options.level]) {
-      return;
-    }
-
-    // Resolve factory function lazily only when logging is enabled
-    const data = typeof dataOrFactory === 'function' ? dataOrFactory() : dataOrFactory;
-
-    const allBindings = {
-      ...mutableBindings,
-      ...(options.sharedBindings ?? {}),
-    };
-    const logEntry = createLogEntry(level, message, options.channel, options.name, allBindings, data);
-
-    for (const reporter of options.reporters) {
-      try {
-        reporter(logEntry);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Reporter error:', error);
-      }
-    }
-  }
+  let _bindings = { ...options.bindings };
 
   function isLevelEnabled(level: KoriLogLevel): boolean {
     return LOG_LEVELS[level] >= LOG_LEVELS[options.level];
   }
 
+  function log(level: KoriLogLevel, message: string, metaOrFactory?: KoriLogMetaOrFactory): void {
+    if (!isLevelEnabled(level)) {
+      return;
+    }
+
+    // Resolve factory function lazily only when logging is enabled
+    const meta = typeof metaOrFactory === 'function' ? metaOrFactory() : metaOrFactory;
+
+    const logEntry = createLogEntry({
+      level,
+      channel: options.channel,
+      name: options.name,
+      message,
+      bindings: _bindings,
+      meta,
+    });
+
+    for (const reporter of options.reporters) {
+      try {
+        reporter(logEntry);
+      } catch {
+        // We can't do anything about this, so we just ignore it
+      }
+    }
+  }
+
+  function createChildName(parentName: string, childName: string): string {
+    return parentName ? `${parentName}.${childName}` : childName;
+  }
+
   const logger: KoriLogger = {
-    debug: (message: string, data?: KoriLogDataOrFactory) => log('debug', message, data),
-    info: (message: string, data?: KoriLogDataOrFactory) => log('info', message, data),
-    warn: (message: string, data?: KoriLogDataOrFactory) => log('warn', message, data),
-    error: (message: string, data?: KoriLogDataOrFactory) => log('error', message, data),
-    fatal: (message: string, data?: KoriLogDataOrFactory) => log('fatal', message, data),
+    debug: (message: string, meta?: KoriLogMetaOrFactory) => log('debug', message, meta),
+    info: (message: string, meta?: KoriLogMetaOrFactory) => log('info', message, meta),
+    warn: (message: string, meta?: KoriLogMetaOrFactory) => log('warn', message, meta),
+    error: (message: string, meta?: KoriLogMetaOrFactory) => log('error', message, meta),
+    fatal: (message: string, meta?: KoriLogMetaOrFactory) => log('fatal', message, meta),
 
     isLevelEnabled,
 
     child: (childName: string, childBindings: Record<string, unknown> = {}) => {
-      const combinedName = options.name ? `${options.name}.${childName}` : childName;
       return createKoriLogger({
         channel: options.channel,
-        name: combinedName,
+        name: createChildName(options.name, childName),
         level: options.level,
-        bindings: { ...mutableBindings, ...childBindings },
+        bindings: { ..._bindings, ...childBindings },
         reporters: options.reporters,
-        sharedBindings: options.sharedBindings,
       });
     },
 
@@ -151,14 +133,13 @@ function createKoriLogger(options: {
         channel: channelName,
         name: options.name,
         level: options.level,
-        bindings: mutableBindings,
+        bindings: _bindings,
         reporters: options.reporters,
-        sharedBindings: options.sharedBindings,
       });
     },
 
     addBindings: (newBindings: Record<string, unknown>) => {
-      Object.assign(mutableBindings, newBindings);
+      _bindings = { ..._bindings, ...newBindings };
       return logger; // Return self for chaining
     },
   };
@@ -166,21 +147,24 @@ function createKoriLogger(options: {
   return logger;
 }
 
-export type KoriLoggerOptions = {
+export type KoriLoggerFactoryOptions = {
   level?: KoriLogLevel;
   bindings?: Record<string, unknown>;
   reporters?: KoriLogReporter[];
 };
 
-export function createKoriLoggerFactory(options?: KoriLoggerOptions): KoriLoggerFactory {
-  return (meta: { channel: string; name: string }) => {
+export function createKoriLoggerFactory({
+  level,
+  bindings,
+  reporters,
+}: KoriLoggerFactoryOptions = {}): KoriLoggerFactory {
+  return ({ channel, name }: { channel: string; name: string }) => {
     return createKoriLogger({
-      channel: meta.channel,
-      name: meta.name,
-      level: options?.level ?? 'info',
-      bindings: options?.bindings ?? {},
-      reporters: options?.reporters ?? [createConsoleReporter()],
-      sharedBindings: undefined,
+      channel,
+      name,
+      level: level ?? 'info',
+      bindings: bindings ?? {},
+      reporters: reporters ?? [createConsoleReporter()],
     });
   };
 }

@@ -41,7 +41,7 @@ export function createLogTapeLogReporter(options?: LogTapeLogReporterOptions): K
 
     // Prepare structured data with Kori metadata
     const structuredData: Record<string, unknown> = {
-      ...(entry.data ?? {}),
+      ...(entry.meta ?? {}),
       kori: {
         time: entry.time,
         channel: entry.channel,

@@ -52,7 +52,7 @@ export function createPinoLogReporter(options?: PinoLogReporterOptions): KoriLog
       time: entry.time,
       channel: entry.channel,
       name: entry.name,
-      ...entry.data,
+      ...entry.meta,
     };
 
     pinoLogger[entryPinoLevel](logData, entry.message);

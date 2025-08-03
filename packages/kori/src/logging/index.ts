@@ -1,15 +1,14 @@
+export { SYS_CHANNEL } from './channel.js';
 export { createConsoleReporter } from './console-log-reporter.js';
 export {
   createKoriLoggerFactory,
-  type KoriLogData,
-  type KoriLogDataFactory,
-  type KoriLogDataOrFactory,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
-  type KoriLoggerMeta,
-  type KoriLoggerOptions,
+  type KoriLoggerFactoryOptions,
   type KoriLogLevel,
+  type KoriLogMeta,
+  type KoriLogMetaFactory,
+  type KoriLogMetaOrFactory,
   type KoriLogReporter,
-  SYS_CHANNEL,
 } from './logger.js';
