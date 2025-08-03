@@ -65,11 +65,16 @@ export function createRouteCollector(): RouteCollector {
     routes.length = 0;
   }
 
+  function convertHonoPathToOpenApiPath(path: string): string {
+    return path.replace(/:([^/]+)/g, '{$1}');
+  }
+
   function generateOperations(context: ConversionContext): Map<string, Map<string, OperationObject>> {
     const operations = new Map<string, Map<string, OperationObject>>();
 
     for (const route of routes) {
-      const pathOps = operations.get(route.path) ?? new Map<string, OperationObject>();
+      const openApiPath = convertHonoPathToOpenApiPath(route.path);
+      const pathOps = operations.get(openApiPath) ?? new Map<string, OperationObject>();
 
       const operation: OperationObject = {
         ...route.metadata,
@@ -81,35 +86,46 @@ export function createRouteCollector(): RouteCollector {
       };
 
       pathOps.set(route.method.toLowerCase(), operation);
-      operations.set(route.path, pathOps);
+      operations.set(openApiPath, pathOps);
     }
 
     return operations;
   }
 
+  function extractPathParameters(path: string): string[] {
+    const matches = path.match(/:([^/]+)/g);
+    return matches ? matches.map((match) => match.slice(1)) : [];
+  }
+
   function generateParameters(route: RouteInfo, context: ConversionContext): ParameterObject[] {
     const parameters: ParameterObject[] = [];
+
+    // Extract path parameters from the route path
+    const pathParams = extractPathParameters(route.path);
+    for (const paramName of pathParams) {
+      const paramSchema: SchemaObject = { type: 'string' };
+
+      // If requestSchema.params exists, try to get the schema for this parameter
+      if (route.requestSchema?.params) {
+        const paramsSchema = convertSchema(route.requestSchema.params, context);
+        if (paramsSchema && 'properties' in paramsSchema && paramsSchema.properties?.[paramName]) {
+          Object.assign(paramSchema, paramsSchema.properties[paramName]);
+        }
+      }
+
+      parameters.push({
+        name: paramName,
+        in: 'path',
+        required: true,
+        schema: paramSchema,
+      });
+    }
 
     if (!route.requestSchema) {
       return parameters;
     }
 
     const schema = route.requestSchema;
-
-    // Path parameters
-    if (schema.params) {
-      const paramsSchema = convertSchema(schema.params, context);
-      if (paramsSchema && 'properties' in paramsSchema) {
-        for (const [name, paramSchema] of Object.entries(paramsSchema.properties ?? {})) {
-          parameters.push({
-            name,
-            in: 'path',
-            required: true,
-            schema: paramSchema as SchemaObject,
-          });
-        }
-      }
-    }
 
     // Query parameters
     if (schema.queries) {
