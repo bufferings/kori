@@ -57,7 +57,6 @@ export {
   type KoriLogMetaFactory,
   type KoriLogMetaOrFactory,
   type KoriLogReporter,
-  SYS_CHANNEL,
 } from './logging/index.js';
 export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
 export {

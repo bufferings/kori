@@ -13,7 +13,7 @@ import { handleStaticFileRequest } from './serve/index.js';
 
 import { type ServeStaticOptions } from './options.js';
 
-const PLUGIN_NAME = 'serve-static-plugin-nodejs';
+const PLUGIN_NAME = 'serve-static-nodejs';
 
 const defaultOptions: Required<Omit<ServeStaticOptions, 'serveFrom'>> = {
   mountAt: '/static',
@@ -85,7 +85,7 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().channel(PLUGIN_NAME);
+      const log = kori.createPluginLogger(PLUGIN_NAME);
 
       validateOptions(options, log);
 
@@ -100,7 +100,7 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
       });
 
       return kori.get(`${options.mountAt}/*`, async (ctx) => {
-        const requestLog = ctx.log().channel(PLUGIN_NAME);
+        const requestLog = ctx.createPluginLogger(PLUGIN_NAME);
         const pathname = ctx.req.url().pathname;
         const requestPath = removeMountPrefix(pathname, options.mountAt);
         return await handleStaticFileRequest(ctx.req, ctx.res, requestPath, options, requestLog);

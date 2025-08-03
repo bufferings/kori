@@ -10,8 +10,6 @@ import {
   type KoriResponseValidatorDefault,
 } from '@korix/kori';
 
-const LOGGER_CHANNEL = 'nodejs-adapter';
-
 function setupGracefulShutdown<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
@@ -20,7 +18,7 @@ function setupGracefulShutdown<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(server: ServerType, kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>, onClose: () => Promise<void>) {
   const handler = async () => {
-    const log = kori.log().channel(LOGGER_CHANNEL);
+    const log = kori.createSysLogger();
     log.info('Shutting down server...');
     await onClose();
     server.close((err) => {
@@ -66,7 +64,7 @@ export async function startNodeServer<
   });
 
   server.listen(port, hostname, () => {
-    const log = kori.log().channel(LOGGER_CHANNEL);
+    const log = kori.createSysLogger();
 
     const address = server.address();
     if (address && typeof address !== 'string') {

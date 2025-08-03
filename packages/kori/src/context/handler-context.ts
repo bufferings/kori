@@ -1,22 +1,23 @@
-import { SYS_CHANNEL, type KoriLogger } from '../logging/index.js';
+import { KoriLoggerUtils, type KoriLoggerFactory, serializeError, type KoriLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
 import { type KoriRequest } from './request.js';
 import { type KoriResponse } from './response.js';
 
-// Handler context logging constants
-const HANDLER_LOG_CHANNEL = 'app';
-const HANDLER_LOG_NAME = 'request';
-
 export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = {
   env: Env;
   req: Req;
   res: Res;
+
   withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
   withRes<ResExt>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
+
   defer(callback: (ctx: KoriHandlerContext<Env, Req, Res>) => MaybePromise<void>): void;
+
   log(): KoriLogger;
+  createSysLogger(): KoriLogger;
+  createPluginLogger(pluginName: string): KoriLogger;
 };
 
 // --- Internal Implementation ---
@@ -28,20 +29,29 @@ type HandlerCtxState = {
   req: KoriRequest;
   res: KoriResponse;
   deferStack: ((ctx: KoriHandlerContextBase) => MaybePromise<void>)[];
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  loggerFactory: KoriLoggerFactory;
   loggerCache?: KoriLogger;
 };
 
 function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
-  ctx.loggerCache ??= ctx.loggerFactory({ channel: HANDLER_LOG_CHANNEL, name: HANDLER_LOG_NAME });
+  ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
   return ctx.loggerCache;
 }
 
-const handlerContextPrototype = {
-  log(this: HandlerCtxState) {
-    return getLoggerInternal(this);
-  },
+function createSysLogger(ctx: HandlerCtxState) {
+  return KoriLoggerUtils.createSysLogger({
+    logger: getLoggerInternal(ctx),
+  });
+}
 
+function createPluginLogger(ctx: HandlerCtxState, pluginName: string) {
+  return KoriLoggerUtils.createPluginLogger({
+    logger: getLoggerInternal(ctx),
+    pluginName,
+  });
+}
+
+const handlerContextPrototype = {
   withReq<ReqExt extends object>(this: HandlerCtxState, reqExt: ReqExt) {
     Object.assign(this.req, reqExt);
     return this;
@@ -54,6 +64,18 @@ const handlerContextPrototype = {
 
   defer(this: HandlerCtxState, callback: (ctx: KoriHandlerContextBase) => MaybePromise<void>) {
     this.deferStack.push(callback);
+  },
+
+  log(this: HandlerCtxState) {
+    return getLoggerInternal(this);
+  },
+
+  createSysLogger(this: HandlerCtxState) {
+    return createSysLogger(this);
+  },
+
+  createPluginLogger(this: HandlerCtxState, pluginName: string) {
+    return createPluginLogger(this, pluginName);
   },
 };
 
@@ -91,7 +113,10 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      ctx.log().channel(SYS_CHANNEL).child('defer-callback').error('Defer callback error:', { err });
+      ctx.createSysLogger().error('Defer callback error:', {
+        type: 'defer-callback',
+        err: serializeError(err),
+      });
     }
   }
 }

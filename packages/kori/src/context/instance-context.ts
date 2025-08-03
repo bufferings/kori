@@ -1,13 +1,19 @@
-import { SYS_CHANNEL, type KoriLogger } from '../logging/index.js';
+import { KoriLoggerUtils } from '../logging/index.js';
+import { serializeError, type KoriLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
 
 export type KoriInstanceContext<Env extends KoriEnvironment> = {
   env: Env;
+
   withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
+
   defer(callback: (ctx: KoriInstanceContext<Env>) => MaybePromise<void>): void;
+
   log(): KoriLogger;
+  createSysLogger(): KoriLogger;
+  createPluginLogger(pluginName: string): KoriLogger;
 };
 
 // --- Internal Implementation ---
@@ -19,6 +25,19 @@ type InstanceCtxState = {
   deferStack: ((ctx: KoriInstanceContextBase) => MaybePromise<void>)[];
   instanceLogger: KoriLogger;
 };
+
+function createSysLogger(ctx: InstanceCtxState) {
+  return KoriLoggerUtils.createSysLogger({
+    logger: ctx.instanceLogger,
+  });
+}
+
+function createPluginLogger(ctx: InstanceCtxState, pluginName: string) {
+  return KoriLoggerUtils.createPluginLogger({
+    logger: ctx.instanceLogger,
+    pluginName,
+  });
+}
 
 const instanceContextPrototype = {
   withEnv<EnvExt extends object>(this: InstanceCtxState, envExt: EnvExt) {
@@ -32,6 +51,14 @@ const instanceContextPrototype = {
 
   log(this: InstanceCtxState) {
     return this.instanceLogger;
+  },
+
+  createSysLogger(this: InstanceCtxState) {
+    return createSysLogger(this);
+  },
+
+  createPluginLogger(this: InstanceCtxState, pluginName: string) {
+    return createPluginLogger(this, pluginName);
   },
 };
 
@@ -59,7 +86,10 @@ export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextB
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      ctx.log().channel(SYS_CHANNEL).child('defer-callback').error('Instance defer callback error', { err });
+      ctx.createSysLogger().error('Instance defer callback error', {
+        type: 'defer-callback',
+        err: serializeError(err),
+      });
     }
   }
 }

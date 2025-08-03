@@ -7,7 +7,7 @@ import {
   type KoriResponse,
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
-import { SYS_CHANNEL } from '../logging/index.js';
+import { serializeError } from '../logging/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -120,9 +120,9 @@ function createHookExecutor<
       try {
         await hook(ctx, err);
       } catch (hookError) {
-        ctx.log().channel(SYS_CHANNEL).child('error-hook').error('Error hook execution failed', {
-          originalError: err,
-          hookError,
+        ctx.createSysLogger().error('Error hook execution failed', {
+          type: 'error-hook',
+          err: serializeError(hookError),
         });
       }
     }
@@ -147,6 +147,12 @@ function createHookExecutor<
       }
     } catch (err) {
       await executeErrorHooks(currentCtx, err);
+      if (!currentCtx.res.isReady()) {
+        currentCtx.createSysLogger().error('Unhandled error in route handler', {
+          err: serializeError(err),
+        });
+        currentCtx.res.internalError();
+      }
     } finally {
       await executeDeferredCleanup(currentCtx);
     }
@@ -196,10 +202,9 @@ function createRequestValidationErrorHandler<
 
     // 4. Default validation error handling with 400 status
     // Log error occurrence for monitoring
-    ctx.log().channel(SYS_CHANNEL).child('request-validation').warn('Request validation failed', {
-      path: ctx.req.url().pathname,
-      method: ctx.req.method(),
-      validationError: err,
+    ctx.createSysLogger().warn('Request validation failed', {
+      type: 'request-validation',
+      err: serializeError(err),
     });
 
     // Return minimal error information to client
@@ -244,10 +249,9 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.log().channel(SYS_CHANNEL).child('response-validation').warn('Response validation failed', {
-      path: ctx.req.url().pathname,
-      method: ctx.req.method(),
-      validationError: err,
+    ctx.createSysLogger().warn('Response validation failed', {
+      type: 'response-validation',
+      err: serializeError(err),
     });
     return undefined;
   };

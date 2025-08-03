@@ -29,7 +29,7 @@ export type KoriLogger = {
   isLevelEnabled(level: KoriLogLevel): boolean;
 
   channel(channelName: string): KoriLogger;
-  child(name: string, bindings?: Record<string, unknown>): KoriLogger;
+  child(options: { name: string; channelName?: string; bindings?: Record<string, unknown> }): KoriLogger;
   addBindings(bindings: Record<string, unknown>): KoriLogger;
 };
 
@@ -105,30 +105,20 @@ function createKoriLogger(options: {
     }
   }
 
-  function createChildName(parentName: string, childName: string): string {
+  function createChildName({ parentName, childName }: { parentName: string; childName: string }): string {
     return parentName ? `${parentName}.${childName}` : childName;
   }
 
   const logger: KoriLogger = {
-    debug: (message: string, meta?: KoriLogMetaOrFactory) => log('debug', message, meta),
-    info: (message: string, meta?: KoriLogMetaOrFactory) => log('info', message, meta),
-    warn: (message: string, meta?: KoriLogMetaOrFactory) => log('warn', message, meta),
-    error: (message: string, meta?: KoriLogMetaOrFactory) => log('error', message, meta),
-    fatal: (message: string, meta?: KoriLogMetaOrFactory) => log('fatal', message, meta),
+    debug: (message, meta) => log('debug', message, meta),
+    info: (message, meta) => log('info', message, meta),
+    warn: (message, meta) => log('warn', message, meta),
+    error: (message, meta) => log('error', message, meta),
+    fatal: (message, meta) => log('fatal', message, meta),
 
     isLevelEnabled,
 
-    child: (childName: string, childBindings: Record<string, unknown> = {}) => {
-      return createKoriLogger({
-        channel: options.channel,
-        name: createChildName(options.name, childName),
-        level: options.level,
-        bindings: { ..._bindings, ...childBindings },
-        reporters: options.reporters,
-      });
-    },
-
-    channel: (channelName: string) => {
+    channel: (channelName) => {
       return createKoriLogger({
         channel: channelName,
         name: options.name,
@@ -138,8 +128,18 @@ function createKoriLogger(options: {
       });
     },
 
-    addBindings: (newBindings: Record<string, unknown>) => {
-      _bindings = { ..._bindings, ...newBindings };
+    child: (childOptions) => {
+      return createKoriLogger({
+        channel: childOptions.channelName ?? options.channel,
+        name: createChildName({ parentName: options.name, childName: childOptions.name }),
+        level: options.level,
+        bindings: { ..._bindings, ...childOptions.bindings },
+        reporters: options.reporters,
+      });
+    },
+
+    addBindings: (bindings) => {
+      _bindings = { ..._bindings, ...bindings };
       return logger; // Return self for chaining
     },
   };

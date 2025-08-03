@@ -22,7 +22,7 @@ export type BodyLimitOptions = {
 
 // Constants
 const DEFAULT_MAX_SIZE = 1024 * 1024; // 1MB
-const PLUGIN_NAME = 'body-limit-plugin';
+const PLUGIN_NAME = 'body-limit';
 
 // HTTP methods that typically have request bodies
 const METHODS_WITH_BODY = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -179,7 +179,6 @@ function validateOptions(options: BodyLimitOptions): void {
 export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: BodyLimitOptions = {},
 ): KoriPlugin<Env, Req, Res> {
-  // Validate options
   validateOptions(options);
 
   const maxSize = options.maxSize ?? DEFAULT_MAX_SIZE;
@@ -198,9 +197,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
       return kori
         .onRequest((ctx) => {
           const { req, res } = ctx;
-
-          // Request-level logger with request tracing
-          const requestLog = ctx.log().channel(PLUGIN_NAME);
+          const requestLog = ctx.createPluginLogger(PLUGIN_NAME);
 
           // Skip methods that don't typically have bodies
           if (!METHODS_WITH_BODY.has(req.method())) {
@@ -214,8 +211,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
           // Skip check for certain paths
           if (shouldSkipPath(req.url().pathname, compiledSkipPaths)) {
             requestLog.debug('Body limit check skipped for configured path', {
-              path: req.url().pathname,
               method: req.method(),
+              path: req.url().pathname,
             });
             return;
           }
@@ -229,8 +226,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             // Validate Content-Length format and value
             if (!isValidContentLength(contentLengthHeader)) {
               requestLog.warn('Invalid Content-Length header value', {
-                path: req.url().pathname,
                 method: req.method(),
+                path: req.url().pathname,
                 contentLength: contentLengthHeader,
                 userAgent: req.headers()['user-agent'],
               });
@@ -250,8 +247,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             if (contentLength > maxSize) {
               const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
               requestLog.warn('Request body size exceeds limit', {
-                path: req.url().pathname,
                 method: req.method(),
+                path: req.url().pathname,
                 contentLength,
                 maxSize,
                 userAgent: req.headers()['user-agent'],
@@ -306,8 +303,8 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
             const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
 
             requestLog.warn('Request body size exceeds limit', {
-              path: req.url().pathname,
               method: req.method(),
+              path: req.url().pathname,
               actualSize: error.actualSize,
               maxSize: error.maxSize,
               transferEncoding: req.headers()['transfer-encoding'],

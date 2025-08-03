@@ -12,7 +12,7 @@ import {
 import { type CorsPluginOptions } from './cors-plugin-options.js';
 import { PLUGIN_VERSION } from './version.js';
 
-const PLUGIN_NAME = 'cors-plugin';
+const PLUGIN_NAME = 'cors';
 
 const DEFAULT_METHODS = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'];
 const SECONDS_IN_A_DAY = 24 * 60 * 60;
@@ -155,7 +155,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().channel(PLUGIN_NAME);
+      const log = kori.createPluginLogger(PLUGIN_NAME);
       validateCorsOptions(log, options);
 
       log.info('CORS plugin initialized', {
