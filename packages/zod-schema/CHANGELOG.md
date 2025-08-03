@@ -1,5 +1,33 @@
 # @korix/zod-schema
 
+## 0.1.2
+
+### Patch Changes
+
+- 8a4c863: Upgrade zod peer dependency from v3 to v4
+
+  This update changes the required zod version from ^3.25.0 to ^4.0.0. Users will need to upgrade their zod dependency to v4 when using these packages.
+
+  Key changes:
+
+  - Updated import paths from 'zod/v4' to 'zod' (stable release)
+  - Zod v4 provides improved type inference and performance
+  - Requires zod ^4.0.0 as peer dependency
+
+- Updated dependencies [b9ccc4e]
+- Updated dependencies [e467fdf]
+- Updated dependencies [cd97f48]
+- Updated dependencies [7afcfa4]
+- Updated dependencies [8a2dcd5]
+- Updated dependencies [4777812]
+- Updated dependencies [faf7c12]
+- Updated dependencies [6c8a3ce]
+- Updated dependencies [d7b3394]
+- Updated dependencies [cc8c36e]
+- Updated dependencies [cf6aa9d]
+- Updated dependencies [c47f37d]
+  - @korix/kori@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
