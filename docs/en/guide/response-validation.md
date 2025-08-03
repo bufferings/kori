@@ -51,8 +51,7 @@ app.get('/users/:id', {
 
     if (id === 999) {
       // This 404 response will be validated against ErrorSchema
-      return ctx.res.status(404).json({
-        error: 'Not Found',
+      return ctx.res.notFound({
         message: 'User not found',
       });
     }
@@ -68,7 +67,7 @@ app.get('/users/:id', {
 });
 ```
 
-> **Note**: Response validation only checks your data at runtime. TypeScript won't catch mismatches between `ctx.res.json()` and your schema—those are detected after your handler completes.
+> Note: Response validation only checks your data at runtime. TypeScript won't catch mismatches between `ctx.res.json()` and your schema—those are detected after your handler completes.
 
 ## Response Schema Patterns
 
@@ -150,15 +149,14 @@ app.get('/users/:id', {
   }),
   onResponseValidationError: (ctx, error) => {
     // Log the validation error with more context
-    ctx.req.log().error('Response validation failed', {
+    ctx.log().error('Response validation failed', {
       path: ctx.req.path(),
       status: ctx.res.getStatus(),
       error,
     });
 
     // Optionally return a different response
-    return ctx.res.status(500).json({
-      error: 'Internal Server Error',
+    return ctx.res.internalError({
       message: 'Invalid response format',
     });
   },
@@ -175,7 +173,7 @@ const app = createKori({
   responseValidator: createKoriZodResponseValidator(),
   onResponseValidationError: (ctx, error) => {
     // Global response validation error handling
-    ctx.req.log().error('Response validation failed globally', { error });
+    ctx.log().error('Response validation failed globally', { error });
 
     // Return undefined to use the original response
     return undefined;
@@ -191,7 +189,7 @@ Response validation error handlers follow the same priority as request validatio
 2. Instance-level handler (if provided)
 3. Default behavior (log warning, send original response)
 
-Each handler can choose to handle the error or pass it to the next handler by returning `undefined`. This allows specific handlers to only deal with certain error types.
+Each handler can choose to handle the error or pass it to the next handler by not returning a response. This allows specific handlers to only deal with certain error types.
 
 ## Stream Response Handling
 

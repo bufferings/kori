@@ -12,7 +12,6 @@ import {
 } from '../http/index.js';
 
 import { type KoriRequest } from './request.js';
-import { type KoriResponseAbort, KoriResponseAbortObject } from './response-abort.js';
 
 const KoriResponseBrand = Symbol('kori-response');
 
@@ -67,9 +66,6 @@ export type KoriResponse = {
   getBody(): unknown;
   isReady(): boolean;
   isStream(): boolean;
-
-  abort(): KoriResponseAbort;
-  isAborted(): boolean;
 
   build(): Response;
 };
@@ -432,15 +428,6 @@ const sharedMethods = {
   },
   isStream(): boolean {
     return this.bodyKind === 'stream';
-  },
-
-  abort(): KoriResponseAbort {
-    this.aborted = true;
-    return KoriResponseAbortObject;
-  },
-
-  isAborted(): boolean {
-    return this.aborted;
   },
 } satisfies Omit<KoriResponse, typeof KoriResponseBrand> & ThisType<ResState>;
 

@@ -117,7 +117,7 @@ const apiV2 = app.createChild({
     k
       .onRequest((ctx) => {
         // Add request logging for v2 only
-        ctx.req.log().info('API v2 request', { path: ctx.req.url().pathname });
+        ctx.log().info('API v2 request', { path: ctx.req.url().pathname });
         return ctx; // Must return context
       })
       .get('/status', (ctx) => {

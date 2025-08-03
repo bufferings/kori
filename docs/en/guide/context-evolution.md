@@ -9,7 +9,7 @@ Use method chaining to ensure type extensions are properly inherited:
 ```typescript
 // ✅ Good: Chained hooks preserve type extensions
 const app = createKori()
-  .onInit(async (ctx) => {
+  .onStart(async (ctx) => {
     const db = await connectDatabase();
     return ctx.withEnv({ db });
   })
@@ -20,13 +20,13 @@ const app = createKori()
   })
   .onRequest((ctx) => {
     // Both ctx.env.db and ctx.req.user are typed
-    ctx.req.log().info('Request', { userId: ctx.req.user?.id });
+    ctx.log().info('Request', { userId: ctx.req.user?.id });
   });
 
 // ❌ Avoid: Separate calls lose type information
 const app = createKori();
 
-app.onInit(async (ctx) => {
+app.onStart(async (ctx) => {
   const db = await connectDatabase();
   return ctx.withEnv({ db });
 }); // Type extension is lost
@@ -51,7 +51,7 @@ const app = createKori()
   // 2. Request ID tracking
   .onRequest((ctx) => {
     const requestId = crypto.randomUUID();
-    ctx.req.log().info('Request started', { requestId });
+    ctx.log().info('Request started', { requestId });
     return ctx.withReq({ requestId });
   })
   // 3. Timing
@@ -71,7 +71,7 @@ const app = createKori()
 
 // All extensions are available
 app.get('/api/data', (ctx) => {
-  ctx.req.log().info('Processing request', {
+  ctx.log().info('Processing request', {
     requestId: ctx.req.requestId,
     user: ctx.req.user?.id,
   });

@@ -9,30 +9,36 @@ The **KoriInstanceContext** handles application-wide concerns that happen once w
 ```typescript
 type KoriInstanceContext<Env extends KoriEnvironment> = {
   env: Env;
+
   withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
+
+  defer(
+    callback: (ctx: KoriInstanceContext<Env>) => Promise<void> | void,
+  ): void;
+
+  log(): KoriLogger;
 };
 ```
 
-**Perfect for:**
+**Used for:**
 
 - Setting up database connections
 - Loading configuration
 - Initializing shared services
-- Application shutdown cleanup
 
 ## Context Extensions
 
-Instance context supports environment extensions through the `onInit()` hook. Use `ctx.withEnv()` to add shared resources that will be available throughout your application's lifecycle.
+Instance context supports environment extensions through the `onStart()` hook. Use `ctx.withEnv()` to add shared resources that will be available throughout your application's lifecycle.
 
 ## Application Initialization
 
-Use `app.onInit()` to set up your application environment:
+Use `app.onStart()` to set up your application environment, where Instance Context is passed:
 
 ```typescript
 const app = createKori()
   // Initialize database and shared services
-  .onInit(async (ctx) => {
-    app.log().info('Initializing application...');
+  .onStart(async (ctx) => {
+    ctx.log().info('Initializing application...');
 
     // Set up database connection
     const db = await connectDatabase({
@@ -63,15 +69,22 @@ const app = createKori()
 
 ## Application Shutdown
 
-Clean up resources when the application shuts down:
+Clean up resources when the application shuts down using `defer`:
 
 ```typescript
-const app = createKori()
-  .onInit(async (ctx) => {
-    // Setup database, cache, config (see details above)
-  })
-  .onClose(async (ctx) => {
-    app.log().info('Shutting down application...');
+const app = createKori().onStart(async (ctx) => {
+  ctx.log().info('Initializing application...');
+
+  // Setup database, cache, config
+  const db = await connectDatabase();
+  const cache = await connectRedis();
+  const config = {
+    /* ... */
+  };
+
+  // Schedule shutdown cleanup
+  ctx.defer(async (ctx) => {
+    ctx.log().info('Shutting down application...');
 
     // Close database connections
     await ctx.env.db.close();
@@ -79,8 +92,11 @@ const app = createKori()
     // Close cache connections
     await ctx.env.cache.disconnect();
 
-    app.log().info('Application shutdown complete');
+    ctx.log().info('Application shutdown complete');
   });
+
+  return ctx.withEnv({ db, cache, config });
+});
 ```
 
 ## Environment Type Safety

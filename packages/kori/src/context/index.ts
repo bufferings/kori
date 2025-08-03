@@ -11,4 +11,3 @@ export {
 } from './instance-context.js';
 export { createKoriRequest, type KoriRequest } from './request.js';
 export { createKoriResponse, isKoriResponse, type KoriResponse } from './response.js';
-export { isKoriResponseAbort, type KoriResponseAbort, KoriResponseAbortObject } from './response-abort.js';

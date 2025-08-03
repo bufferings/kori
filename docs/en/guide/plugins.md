@@ -27,7 +27,7 @@ const app = createKori()
 
 ## How Plugins Work
 
-A plugin is a collection of hooks and endpoints grouped together. When you apply a plugin, you're registering its hooks (like onRequest, onResponse) and any endpoints it defines to your application.
+A plugin is a collection of hooks and endpoints grouped together. When you apply a plugin, you're registering its hooks (like onRequest, onError) and any endpoints it defines to your application.
 
 For example, a logging plugin might use multiple hooks:
 
@@ -49,23 +49,24 @@ export function loggingPlugin<
   return defineKoriPlugin({
     name: 'simple-logging',
     apply: (kori) =>
-      kori
-        .onRequest((ctx) => {
-          // Log when request starts
-          ctx.req.log().info('Request started', {
-            method: ctx.req.method(),
-            path: ctx.req.url().pathname,
-          });
-          return ctx.withReq({ startTime: Date.now() });
-        })
-        .onResponse((ctx) => {
-          // Log when response is ready
+      kori.onRequest((ctx) => {
+        // Log when request starts
+        ctx.log().info('Request started', {
+          method: ctx.req.method(),
+          path: ctx.req.url().pathname,
+        });
+
+        // Defer response logging
+        ctx.defer(() => {
           const duration = Date.now() - ctx.req.startTime;
-          ctx.req.log().info('Request completed', {
+          ctx.log().info('Request completed', {
             status: ctx.res.getStatus(),
             duration: `${duration}ms`,
           });
-        }),
+        });
+
+        return ctx.withReq({ startTime: Date.now() });
+      }),
   });
 }
 ```
@@ -84,8 +85,6 @@ const app = createKori()
   // 3rd: Registers hooks for security headers
   .applyPlugin(securityHeadersPlugin());
 ```
-
-For detailed hook execution behavior, see the [Hook Execution](./hook-execution.md) guide.
 
 ## Type Extensions
 
@@ -193,8 +192,11 @@ const timestampPlugin = <
   defineKoriPlugin({
     name: 'timestamp',
     apply: (kori) =>
-      kori.onResponse((ctx) => {
-        ctx.res.setHeader('x-timestamp', new Date().toISOString());
+      kori.onRequest((ctx) => {
+        // Defer header setting until response is ready
+        ctx.defer(() => {
+          ctx.res.setHeader('x-timestamp', new Date().toISOString());
+        });
       }),
   });
 ```
@@ -220,16 +222,18 @@ const requestIdPlugin = <
   Res extends KoriResponse,
 >(): KoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown> =>
   defineKoriPlugin({
-    name: 'requestId',
+    name: 'request-id',
     apply: (kori) =>
-      kori
-        .onRequest((ctx) => {
-          const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-          return ctx.withReq({ requestId });
-        })
-        .onResponse((ctx) => {
+      kori.onRequest((ctx) => {
+        const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+        // Defer header setting until response is ready
+        ctx.defer(() => {
           ctx.res.setHeader('x-request-id', ctx.req.requestId);
-        }),
+        });
+
+        return ctx.withReq({ requestId });
+      }),
   });
 ```
 

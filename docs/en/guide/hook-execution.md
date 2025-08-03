@@ -18,7 +18,7 @@ const app = createKori()
     console.log('Start 1: Database setup');
 
     // Defer cleanup for this resource
-    ctx.defer(async (ctx) => {
+    ctx.defer(() => {
       console.log('Defer 1: Database cleanup');
     });
 
@@ -28,7 +28,7 @@ const app = createKori()
     console.log('Start 2: Cache setup');
 
     // Defer cleanup for this resource
-    ctx.defer(async (ctx) => {
+    ctx.defer(() => {
       console.log('Defer 2: Cache cleanup');
     });
 
@@ -51,14 +51,12 @@ Request hooks execute for every matching request.
 Key behaviors:
 
 - `defer` callbacks execute in **reverse order** (LIFO)
-- `onRequest` can stop processing by calling `res.abort()`
+- `onRequest` can stop processing by returning a response
 - Hooks are captured when you define routes, not when requests arrive
 
 ### Execution Order
 
 `onRequest` → Route Handler → `defer` callbacks (reverse order)
-
-(`onError` only executes when an error occurs, replacing normal flow)
 
 ```typescript
 const app = createKori()
@@ -66,7 +64,7 @@ const app = createKori()
     console.log('Request 1: Auth check');
 
     // Defer cleanup operations
-    ctx.defer((ctx) => {
+    ctx.defer(() => {
       console.log('Defer 1: Auth cleanup');
     });
 
@@ -76,7 +74,7 @@ const app = createKori()
     console.log('Request 2: Logging');
 
     // Defer metrics collection
-    ctx.defer((ctx) => {
+    ctx.defer(() => {
       console.log('Defer 2: Metrics');
     });
 
@@ -87,7 +85,7 @@ app.get('/example', (ctx) => {
   console.log('Handler: Processing request');
 
   // Defer response logging
-  ctx.defer((ctx) => {
+  ctx.defer(() => {
     console.log('Defer 3: Response logged');
   });
 
@@ -105,15 +103,16 @@ app.get('/example', (ctx) => {
 
 ### Early Response in onRequest
 
-Use this pattern for authentication or rate limiting:
+`onRequest` hooks can stop the execution flow by returning a response. When a hook returns a response, the remaining hooks and route handler are skipped.
+
+Use this pattern for authentication, rate limiting, or validation:
 
 ```typescript
 const app = createKori().onRequest((ctx) => {
   const token = ctx.req.header('authorization');
   if (!token) {
     // Stops here - handler won't run
-    ctx.res.unauthorized({ message: 'Token required' });
-    return ctx.res.abort();
+    return ctx.res.unauthorized({ message: 'Token required' });
   }
   return ctx.withReq({ authenticated: true });
 });
@@ -122,6 +121,64 @@ app.get('/protected', (ctx) => {
   // Only runs if token exists
   return ctx.res.json({ message: 'Protected resource' });
 });
+```
+
+### onError Execution
+
+When an error occurs, `onError` hooks replace the normal execution flow:
+
+**Normal flow**: `onRequest` → Route Handler → `defer` callbacks
+**Error flow**: `onRequest` → Error occurs → `onError` hooks → `defer` callbacks
+
+```typescript
+const app = createKori()
+  .onRequest((ctx) => {
+    console.log('Request: Starting');
+
+    ctx.defer(() => {
+      console.log('Defer: Always runs, even on error');
+    });
+
+    return ctx.withReq({ authenticated: true });
+  })
+  .onError((ctx, error) => {
+    console.log('Error: Handling error');
+    return ctx.res.internalError({ message: 'Something went wrong' });
+  });
+
+app.get('/error-demo', (ctx) => {
+  console.log('Handler: This will throw');
+  throw new Error('Demo error');
+});
+
+// Output when error occurs:
+// Request: Starting
+// Handler: This will throw
+// Error: Handling error
+// Defer: Always runs, even on error
+```
+
+#### Multiple onError Hooks
+
+When multiple `onError` hooks are registered, they execute in order until one returns a response:
+
+```typescript
+const app = createKori()
+  .onError((ctx, error) => {
+    // Log error but don't handle it (continue to next hook)
+    console.log('Error logger:', error.message);
+  })
+  .onError((ctx, error) => {
+    // Handle specific error types
+    if (error instanceof ValidationError) {
+      return ctx.res.badRequest({ message: error.message });
+    }
+    // Continue to next hook if not handled
+  })
+  .onError((ctx, error) => {
+    // Final fallback
+    return ctx.res.internalError({ message: 'Internal error' });
+  });
 ```
 
 ### Common Gotcha: Hook Timing
@@ -156,12 +213,12 @@ const app = createKori()
     console.log('Processing request');
 
     // Defer completion logging
-    ctx.defer((ctx) => {
+    ctx.defer(() => {
       console.log('Request completed');
     });
 
     // Defer cleanup operations
-    ctx.defer((ctx) => {
+    ctx.defer(() => {
       console.log('Cleaning up');
     });
 

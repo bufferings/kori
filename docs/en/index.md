@@ -14,18 +14,12 @@ hero:
       link: https://github.com/bufferings/kori
 
 features:
-  - title: Type-Safe by Design
-    details: Complete TypeScript integration with automatic type inference and compile-time validation
-  - title: Powerful Validation
-    details: Built-in Zod integration for runtime validation with automatic type generation
-  - title: Automatic OpenAPI
-    details: Generate comprehensive API documentation from your type-safe schemas automatically
-  - title: Plugin Architecture
-    details: Lightweight core with extensible plugin system for adding features as needed
-  - title: Proven Foundation
-    details: Built on Hono's battle-tested router engine for reliable routing performance
-  - title: Runtime Agnostic
-    details: Works with Node.js, Bun, Deno, Cloudflare Workers, and more
-  - title: Developer Experience
-    details: Hot reload, excellent debugging support, and intuitive APIs that just work
+  - title: Zero Runtime Casting
+    details: Write `ctx.req.validatedBody()` and get perfectly typed data. No manual casting, no type assertions, no runtime surprises.
+  - title: Schema-Driven Development
+    details: One Zod schema powers validation, TypeScript types, and OpenAPI documentation. Change once, update everywhere automatically.
+  - title: Type-Safe Context Evolution
+    details: Each plugin and hook adds precisely typed properties through method chaining. Your handler context grows safely as you add features.
+  - title: Always-Sync Documentation
+    details: Interactive API documentation generated from your validation schemas. Impossible to get out of sync because it's the same source of truth.
 ---
