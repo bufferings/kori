@@ -1,8 +1,6 @@
 import { type KoriLogEntry, type KoriLogLevel, type KoriLogReporter } from '@korix/kori';
 import { getLogger, type Logger } from '@logtape/logtape';
 
-const DEFAULT_FILTER = () => true;
-
 /**
  * Options for creating a LogTape log reporter.
  */
@@ -19,11 +17,11 @@ export type LogTapeLogReporterOptions = {
 };
 
 export function createLogTapeLogReporter(options?: LogTapeLogReporterOptions): KoriLogReporter {
-  const filter = options?.filter ?? DEFAULT_FILTER;
+  const filter = options?.filter;
   const categoryPrefix = options?.categoryPrefix ?? ['kori'];
 
   return (entry: KoriLogEntry) => {
-    if (!filter(entry)) {
+    if (filter && !filter(entry)) {
       return;
     }
 
