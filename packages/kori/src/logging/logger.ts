@@ -147,17 +147,13 @@ function createKoriLogger(options: {
   return logger;
 }
 
-export type KoriLoggerFactoryOptions = {
+export type KoriLoggerOptions = {
   level?: KoriLogLevel;
   bindings?: Record<string, unknown>;
   reporters?: KoriLogReporter[];
 };
 
-export function createKoriLoggerFactory({
-  level,
-  bindings,
-  reporters,
-}: KoriLoggerFactoryOptions = {}): KoriLoggerFactory {
+export function createKoriLoggerFactory({ level, bindings, reporters }: KoriLoggerOptions = {}): KoriLoggerFactory {
   return ({ channel, name }: { channel: string; name: string }) => {
     return createKoriLogger({
       channel,

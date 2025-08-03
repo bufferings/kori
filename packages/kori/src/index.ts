@@ -51,7 +51,7 @@ export {
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
-  type KoriLoggerFactoryOptions,
+  type KoriLoggerOptions,
   type KoriLogLevel,
   type KoriLogMeta,
   type KoriLogMetaFactory,
