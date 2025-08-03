@@ -24,17 +24,10 @@ export function serializeError(error: unknown): Record<string, unknown> {
 
   // Handle non-Error objects
   if (error !== null && typeof error === 'object') {
-    try {
-      return {
-        type: 'non-error-object',
-        value: JSON.parse(JSON.stringify(error)), // Safe serialization
-      };
-    } catch {
-      return {
-        type: 'non-serializable-object',
-        value: error,
-      };
-    }
+    return {
+      type: 'non-error-object',
+      value: { ...error },
+    };
   }
 
   // Handle primitives and null
