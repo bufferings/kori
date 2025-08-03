@@ -1,8 +1,8 @@
 import { type KoriLogEntry, type KoriLogReporter } from './logger.js';
 
-export function createConsoleReporter(filter: (entry: KoriLogEntry) => boolean = () => true): KoriLogReporter {
+export function createConsoleReporter(filter?: (entry: KoriLogEntry) => boolean): KoriLogReporter {
   return (entry: KoriLogEntry) => {
-    if (!filter(entry)) {
+    if (filter && !filter(entry)) {
       return;
     }
 

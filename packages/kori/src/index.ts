@@ -47,20 +47,16 @@ export {
   type KoriRouteResponseValidationErrorHandler,
 } from './kori/index.js';
 export {
-  applyKoriLogSerializers,
   createKoriLoggerFactory,
-  type KoriLogData,
-  type KoriLogDataFactory,
-  type KoriLogDataOrFactory,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
-  type KoriLoggerMeta,
   type KoriLoggerOptions,
   type KoriLogLevel,
+  type KoriLogMeta,
+  type KoriLogMetaFactory,
+  type KoriLogMetaOrFactory,
   type KoriLogReporter,
-  type KoriLogSerializers,
-  SYS_CHANNEL,
 } from './logging/index.js';
 export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
 export {

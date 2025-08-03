@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createKoriLoggerFactory, type KoriLogData, type KoriLogDataFactory } from '../../src/logging/logger.js';
+import { createKoriLoggerFactory, type KoriLogMeta, type KoriLogMetaFactory } from '../../src/logging/logger.js';
 
 describe('Lazy Log Data Initialization', () => {
   it('should execute factory function only when log level is enabled', () => {
@@ -20,7 +20,7 @@ describe('Lazy Log Data Initialization', () => {
       expect.objectContaining({
         level: 'info',
         message: 'Test message',
-        data: expect.objectContaining({
+        meta: expect.objectContaining({
           data: { expensive: 'data' },
         }) as object,
       }) as object,
@@ -43,14 +43,14 @@ describe('Lazy Log Data Initialization', () => {
     });
     const logger = loggerFactory({ channel: 'test', name: 'test' });
 
-    const regularData: KoriLogData = { user: 'john', action: 'login' };
+    const regularData: KoriLogMeta = { user: 'john', action: 'login' };
 
     logger.info('Regular data test', regularData);
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'info',
         message: 'Regular data test',
-        data: expect.objectContaining({
+        meta: expect.objectContaining({
           data: { user: 'john', action: 'login' },
         }) as object,
       }) as object,
@@ -65,20 +65,20 @@ describe('Lazy Log Data Initialization', () => {
     });
     const logger = loggerFactory({ channel: 'test', name: 'test' });
 
-    const undefinedFactory: KoriLogDataFactory = () => undefined;
+    const undefinedFactory: KoriLogMetaFactory = () => undefined;
 
     logger.info('Undefined factory test', undefinedFactory);
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'info',
         message: 'Undefined factory test',
-        // data should not be present when factory returns undefined
+        // meta should not be present when factory returns undefined
       }),
     );
 
-    // Verify that data field is not present
+    // Verify that meta field is not present
     const call = mockReporter.mock.calls[0];
-    expect(call?.[0]).not.toHaveProperty('data');
+    expect(call?.[0]).not.toHaveProperty('meta');
   });
 
   it('should handle expensive computations in factory', () => {
@@ -95,7 +95,7 @@ describe('Lazy Log Data Initialization', () => {
       return { result: 'expensive-computation-result' };
     };
 
-    const factoryWithExpensiveComputation: KoriLogDataFactory = () => ({
+    const factoryWithExpensiveComputation: KoriLogMetaFactory = () => ({
       timestamp: Date.now(),
       computedData: expensiveComputation(),
     });
@@ -111,7 +111,7 @@ describe('Lazy Log Data Initialization', () => {
       expect.objectContaining({
         level: 'warn',
         message: 'Warn with expensive computation',
-        data: expect.objectContaining({
+        meta: expect.objectContaining({
           data: expect.objectContaining({
             computedData: { result: 'expensive-computation-result' },
           }) as object,

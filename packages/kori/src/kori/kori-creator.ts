@@ -1,5 +1,5 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { createKoriLoggerFactory } from '../logging/index.js';
+import { createKoriLoggerFactory, KoriLoggerUtils } from '../logging/index.js';
 import { type KoriLoggerOptions, type KoriLoggerFactory } from '../logging/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
@@ -11,10 +11,6 @@ import {
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
 } from './route.js';
-
-// Kori instance logging constants
-const KORI_INSTANCE_LOG_CHANNEL = 'app';
-const KORI_INSTANCE_LOG_NAME = 'instance';
 
 type CreateKoriOptions<
   RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
@@ -49,7 +45,7 @@ export function createKori<
 ): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
   const router = options?.router ?? createHonoRouter();
   const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
-  const instanceLogger = loggerFactory({ channel: KORI_INSTANCE_LOG_CHANNEL, name: KORI_INSTANCE_LOG_NAME });
+  const instanceLogger = KoriLoggerUtils.createInstanceLogger(loggerFactory);
 
   const shared = {
     router,
@@ -66,17 +62,5 @@ export function createKori<
   });
 
   shared.root = root;
-
-  root.onError((ctx, _err) => {
-    if (!ctx.res.isReady()) {
-      ctx.log().error('Internal Server Error', {
-        error: _err,
-      });
-      ctx.res.internalError({
-        message: 'Internal Server Error',
-      });
-    }
-  });
-
   return root;
 }

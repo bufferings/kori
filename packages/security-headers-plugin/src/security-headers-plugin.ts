@@ -9,7 +9,7 @@ import {
 
 import { PLUGIN_VERSION } from './version.js';
 
-const PLUGIN_NAME = 'security-headers-plugin';
+const PLUGIN_NAME = 'security-headers';
 
 // CSP directive values as constants
 export const CSP_VALUES = {
@@ -215,7 +215,7 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().channel(PLUGIN_NAME);
+      const log = kori.createPluginLogger(PLUGIN_NAME);
 
       log.info('Security headers plugin initialized', {
         frameOptions: options.frameOptions ?? DEFAULT_OPTIONS.frameOptions,

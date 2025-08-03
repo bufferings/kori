@@ -5,7 +5,7 @@ import { PLUGIN_VERSION } from '../version/index.js';
 
 import { handleFileResponse, type DownloadOptions, type SendFileOptions } from './handle-file-response.js';
 
-const PLUGIN_NAME = 'send-file-plugin-nodejs';
+const PLUGIN_NAME = 'send-file-nodejs';
 
 export type SendFileOption = {
   root?: string;
@@ -25,11 +25,11 @@ export function sendFilePlugin<Env extends KoriEnvironment, Req extends KoriRequ
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.log().channel(PLUGIN_NAME);
+      const log = kori.createPluginLogger(PLUGIN_NAME);
       log.info('Send file plugin initialized', { root });
 
       return kori.onRequest((ctx) => {
-        const requestLog = ctx.log().channel(PLUGIN_NAME);
+        const requestLog = ctx.createPluginLogger(PLUGIN_NAME);
 
         const sendFile = (filePath: string, sendFileOptions?: SendFileOptions) =>
           handleFileResponse({
