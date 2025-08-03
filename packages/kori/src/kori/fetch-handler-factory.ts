@@ -43,6 +43,7 @@ export function createFetchHandler({
       const req = createKoriRequest({
         rawRequest: request,
         pathParams: routeResult.pathParams,
+        pathTemplate: routeResult.pathTemplate,
       });
 
       const handlerCtx = createKoriHandlerContext({

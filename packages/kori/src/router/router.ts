@@ -26,6 +26,7 @@ export type KoriRouteOptions<
 export type KoriRoutingMatch = {
   handler: KoriRouterHandler<KoriEnvironment, KoriRequest, KoriResponse>;
   pathParams: Record<string, string>;
+  pathTemplate: string;
 };
 
 export type KoriCompiledRouter = (request: Request) => KoriRoutingMatch | undefined;

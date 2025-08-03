@@ -51,11 +51,15 @@ export function createHonoRouter(): KoriRouter {
     routers: [new RegExpRouter(), new TrieRouter()],
   });
 
+  // Store path templates for each handler
+  const handlerToPathTemplate = new Map<KoriRouterHandlerAny, string>();
+
   return {
     addRoute: <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse, Path extends string>(
       options: KoriRouteOptions<Env, Req, Res, Path>,
     ) => {
       router.add(options.method, options.path, options.handler);
+      handlerToPathTemplate.set(options.handler, options.path);
     },
 
     compile: (): KoriCompiledRouter => {
@@ -70,9 +74,11 @@ export function createHonoRouter(): KoriRouter {
         }
 
         const pathParams = convertParams(matched);
+        const pathTemplate = handlerToPathTemplate.get(handler) ?? '';
         return {
           handler,
           pathParams,
+          pathTemplate,
         };
       };
     },

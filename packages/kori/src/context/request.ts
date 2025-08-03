@@ -17,6 +17,7 @@ export type KoriRequest = {
   url(): URL;
   method(): string;
   pathParams(): Record<string, string>;
+  pathTemplate(): string;
   queryParams(): Record<string, string | string[]>;
 
   headers(): Record<string, string>;
@@ -47,6 +48,7 @@ type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
   raw: Request;
   pathParamsData: Record<string, string>;
+  pathTemplateData: string;
   bodyCache: BodyCache;
   clonedRawRequest?: Request;
   urlCache?: URL;
@@ -68,6 +70,10 @@ function getMethodInternal(req: ReqState): string {
 
 function getPathParamsInternal(req: ReqState): Record<string, string> {
   return req.pathParamsData;
+}
+
+function getPathTemplateInternal(req: ReqState): string {
+  return req.pathTemplateData;
 }
 
 function getQueryParamsInternal(req: ReqState): Record<string, string | string[]> {
@@ -193,6 +199,9 @@ const sharedMethods = {
   pathParams(): Record<string, string> {
     return getPathParamsInternal(this);
   },
+  pathTemplate(): string {
+    return getPathTemplateInternal(this);
+  },
   queryParams(): Record<string, string | string[]> {
     return getQueryParamsInternal(this);
   },
@@ -241,15 +250,18 @@ const sharedMethods = {
 export function createKoriRequest({
   rawRequest,
   pathParams,
+  pathTemplate,
 }: {
   rawRequest: Request;
   pathParams: Record<string, string>;
+  pathTemplate: string;
 }): KoriRequest {
   const obj = Object.create(sharedMethods) as ReqState;
 
   obj[KoriRequestBrand] = KoriRequestBrand;
   obj.raw = rawRequest;
   obj.pathParamsData = pathParams;
+  obj.pathTemplateData = pathTemplate;
   obj.bodyCache = {};
   return obj as unknown as KoriRequest;
 }
