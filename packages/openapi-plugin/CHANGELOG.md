@@ -1,5 +1,29 @@
 # @korix/openapi-plugin
 
+## 0.1.2
+
+### Patch Changes
+
+- 4246faa: Fix OpenAPI path parameter conversion and automatic parameter extraction
+
+  - Convert Hono-style path parameters (:param) to OpenAPI format ({param})
+  - Automatically extract path parameters from route paths for OpenAPI documentation
+  - Ensure all path parameters are properly included in OpenAPI parameters array
+
+- Updated dependencies [b9ccc4e]
+- Updated dependencies [e467fdf]
+- Updated dependencies [cd97f48]
+- Updated dependencies [7afcfa4]
+- Updated dependencies [8a2dcd5]
+- Updated dependencies [4777812]
+- Updated dependencies [faf7c12]
+- Updated dependencies [6c8a3ce]
+- Updated dependencies [d7b3394]
+- Updated dependencies [cc8c36e]
+- Updated dependencies [cf6aa9d]
+- Updated dependencies [c47f37d]
+  - @korix/kori@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
