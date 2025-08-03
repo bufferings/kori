@@ -173,20 +173,17 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
           // Handle preflight request immediately and abort
           const allowedOrigin = resolveAllowOrigin(ctx.req, options.origin);
           if (!allowedOrigin) {
-            return ctx.res
-              .status(HttpStatus.FORBIDDEN)
-              .json({
-                error: 'CORS: Origin not allowed',
-                origin: ctx.req.header(CORS_HEADERS.ORIGIN),
-              })
-              .abort();
+            return ctx.res.forbidden({
+              message: 'CORS: Origin not allowed',
+              origin: ctx.req.header(CORS_HEADERS.ORIGIN),
+            });
           }
 
           ctx.res.setHeader(CORS_HEADERS.ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
           for (const setHeader of preflightHeaderSetters) {
             setHeader(ctx);
           }
-          return ctx.res.status(options.optionsSuccessStatus).empty().abort();
+          return ctx.res.status(options.optionsSuccessStatus).empty();
         }
 
         // For actual requests, defer CORS header setting until after handler execution

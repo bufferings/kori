@@ -11,12 +11,19 @@ type KoriHandlerContext<Env, Req, Res> = {
   env: Env; // Application environment
   req: Req; // Request object
   res: Res; // Response builder
+
   withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
   withRes<ResExt>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
+
+  defer(
+    callback: (ctx: KoriHandlerContext<Env, Req, Res>) => Promise<void> | void,
+  ): void;
+
+  log(): KoriLogger;
 };
 ```
 
-**Perfect for:**
+**Used for:**
 
 - Processing HTTP requests
 - Accessing request data
@@ -30,7 +37,7 @@ Handler context supports request and response extensions for adding custom funct
 Every route handler receives a `ctx` parameter containing environment, request, and response:
 
 ```typescript
-app.get('/api/users/:id', (ctx) => {
+app.get('/api/users/:id', async (ctx) => {
   // ctx.env - application environment
   // ctx.req - request data and methods
   // ctx.res - response building methods
@@ -63,7 +70,7 @@ app.get('/users', async (ctx) => {
 Access all incoming request data:
 
 ```typescript
-app.get('/users/:id/posts', (ctx) => {
+app.get('/users/:id/posts', async (ctx) => {
   // Path parameters
   const { id } = ctx.req.pathParams();
 
@@ -202,5 +209,40 @@ app.get('/users', async (ctx) => {
   } catch (error) {
     return ctx.res.apiError('FETCH_FAILED', 'Could not fetch users');
   }
+});
+```
+
+## Deferred Processing (`ctx.defer()`)
+
+Schedule tasks to run after the handler completes but before the response is returned. Commonly used in `onRequest` hooks, but also available in handlers.
+
+### In onRequest Hook (Recommended)
+
+```typescript
+const app = createKori().onRequest((ctx) => {
+  // Add request ID for tracking
+  const requestId = crypto.randomUUID();
+
+  // Schedule post-response cleanup
+  ctx.defer(() => {
+    // Clean up request-specific resources
+    // Update metrics, close connections, etc.
+  });
+
+  return ctx.withReq({ requestId });
+});
+```
+
+### In Handler (When Needed)
+
+```typescript
+app.post('/api/process', async (ctx) => {
+  // Schedule cleanup for after response
+  ctx.defer(() => {
+    // Clean up temporary resources, update metrics, etc.
+  });
+
+  const result = await processData();
+  return ctx.res.json({ result });
 });
 ```

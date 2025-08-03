@@ -1,6 +1,6 @@
 import {
   executeHandlerDeferredCallbacks,
-  isKoriResponseAbort,
+  isKoriResponse,
   type KoriEnvironment,
   type KoriHandlerContext,
   type KoriRequest,
@@ -87,74 +87,53 @@ function createHookExecutor<
   Res extends KoriResponse,
   Path extends string,
 >(hooks: { requestHooks: KoriOnRequestHookAny[]; errorHooks: KoriOnErrorHookAny[] }) {
-  const executeRequestHooks = async (
-    ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  ): Promise<KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>> => {
-    let currentCtx = ctx;
-    for (const hook of hooks.requestHooks) {
-      const result = await hook(currentCtx);
-
-      // Check abort status after each hook execution.
-      // Even if result is undefined, the hook might have called res.abort().
-      // isKoriResponseAbort check is for TypeScript type safety.
-      if (currentCtx.res.isAborted() || isKoriResponseAbort(result)) {
-        return currentCtx;
-      }
-
-      if (result) {
-        currentCtx = result;
-      }
-    }
-
-    return currentCtx;
-  };
-
-  const executeErrorHooks = async (
-    ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-    err: unknown,
-  ): Promise<void> => {
-    for (const hook of hooks.errorHooks) {
-      if (ctx.res.isAborted()) {
-        return;
-      }
-      try {
-        await hook(ctx, err);
-      } catch (hookError) {
-        ctx.createSysLogger().error('Error hook execution failed', {
-          type: 'error-hook',
-          err: serializeError(hookError),
-        });
-      }
-    }
-  };
-
-  const executeDeferredCleanup = async (
-    ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  ): Promise<void> => {
-    await executeHandlerDeferredCallbacks(ctx);
-  };
-
   return async (
     ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
     mainHandler: (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse>,
   ): Promise<KoriResponse> => {
     let currentCtx = ctx;
+    let isAborted = false;
 
     try {
-      currentCtx = await executeRequestHooks(currentCtx);
-      if (!currentCtx.res.isAborted()) {
+      for (const hook of hooks.requestHooks) {
+        const result = await hook(currentCtx);
+        if (isKoriResponse(result)) {
+          isAborted = true;
+          break;
+        }
+        if (result) {
+          currentCtx = result;
+        }
+      }
+
+      if (!isAborted) {
         await mainHandler(currentCtx);
       }
     } catch (err) {
-      await executeErrorHooks(currentCtx, err);
-      if (!currentCtx.res.isReady()) {
+      let isErrHandled = false;
+      for (const hook of hooks.errorHooks) {
+        try {
+          const result = await hook(currentCtx, err);
+          if (isKoriResponse(result)) {
+            isErrHandled = true;
+            break;
+          }
+        } catch (hookError) {
+          currentCtx.createSysLogger().error('Error hook execution failed', {
+            type: 'error-hook',
+            err: serializeError(hookError),
+          });
+        }
+      }
+
+      if (!isErrHandled) {
         currentCtx.createSysLogger().error('Unhandled error in route handler', {
           err: serializeError(err),
         });
         currentCtx.res.internalError();
       }
     } finally {
-      await executeDeferredCleanup(currentCtx);
+      await executeHandlerDeferredCallbacks(currentCtx);
     }
 
     return currentCtx.res;

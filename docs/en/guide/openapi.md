@@ -308,3 +308,73 @@ OpenAPI documentation works seamlessly with your existing validation:
 - Schema definitions are always in sync with validation rules
 
 The same schema powers both validation and documentation, eliminating the possibility of documentation drift.
+
+## Documentation-Only Mode
+
+You can generate OpenAPI documentation without runtime validation. This is useful when you want API documentation but handle validation differently:
+
+```typescript
+import { createKori } from '@korix/kori';
+import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
+import { z } from 'zod';
+
+// No requestValidator or responseValidator
+const app = createKori()
+  .applyPlugin(
+    zodOpenApiPlugin({
+      info: {
+        title: 'My API',
+        version: '1.0.0',
+        description: 'API with documentation only',
+      },
+    }),
+  )
+  .applyPlugin(
+    scalarUiPlugin({
+      path: '/docs',
+    }),
+  );
+
+// Schema is used for documentation only, not validation
+app.post('/users', {
+  pluginMetadata: openApiMeta({
+    summary: 'Create user',
+    tags: ['Users'],
+  }),
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string().meta({ description: 'User name' }),
+      email: z.string().email().meta({ description: 'User email' }),
+    }),
+  }),
+  responseSchema: zodResponseSchema({
+    201: z.object({
+      id: z.number(),
+      name: z.string(),
+      email: z.string(),
+    }),
+  }),
+  handler: (ctx) => {
+    // Handle request without automatic validation
+    const body = ctx.req.bodyJson(); // Returns unknown, not validated
+
+    // Your custom validation logic here
+
+    return ctx.res.status(201).json({
+      id: 123,
+      name: 'John',
+      email: 'john@example.com',
+    });
+  },
+});
+```
+
+In this mode:
+
+- `ctx.req.validatedBody()` is not available
+- Use `ctx.req.bodyJson()`, `ctx.req.pathParams()`, etc. for raw data
+- Implement your own validation logic if needed
+- OpenAPI documentation is still generated from schemas
+- Interactive documentation is available at `/docs`

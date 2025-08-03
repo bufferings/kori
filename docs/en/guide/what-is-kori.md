@@ -17,7 +17,7 @@ app.get('/', (ctx) => {
 Extend your application environment with full type safety:
 
 ```typescript
-const app = createKori().onInit(async (ctx) => {
+const app = createKori().onStart(async (ctx) => {
   const config = { apiVersion: 'v1' };
 
   // Type-safe environment extensions

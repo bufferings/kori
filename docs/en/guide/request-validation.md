@@ -149,18 +149,21 @@ By default, validation failures return a `400 Bad Request` response:
 
 ```json
 {
-  "message": "Request validation failed"
+  "error": {
+    "type": "BAD_REQUEST",
+    "message": "Request validation failed"
+  }
 }
 ```
 
-Content type errors return a `415 Unsupported Media Type` response when the request content type doesn't match any defined schema. For example, if your schema only supports JSON and form data, but the client sends `text/plain`:
+Content type errors return a `415 Unsupported Media Type` response when the request content type doesn't match any defined schema:
 
 ```json
 {
-  "error": "Unsupported Media Type",
-  "message": "Expected application/json",
-  "supportedTypes": ["application/json", "application/x-www-form-urlencoded"],
-  "requestedType": "text/plain"
+  "error": {
+    "type": "UNSUPPORTED_MEDIA_TYPE",
+    "message": "Unsupported Media Type"
+  }
 }
 ```
 
@@ -179,10 +182,10 @@ app.post('/users', {
   }),
   onRequestValidationError: (ctx, error) => {
     // Access detailed Zod validation errors
-    if ('issues' in error) {
-      return ctx.res.status(400).json({
-        error: 'Validation failed',
-        details: error.issues.map((issue) => ({
+    if (error.body && 'issues' in error.body) {
+      return ctx.res.badRequest({
+        message: 'Validation failed',
+        details: error.body.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
           code: issue.code,
@@ -190,13 +193,14 @@ app.post('/users', {
       });
     }
 
-    return ctx.res.status(400).json({
-      error: 'Validation failed',
-      message: error.message,
+    return ctx.res.badRequest({
+      message: 'Validation failed',
     });
   },
   handler: (ctx) => {
-    // Handler logic
+    const user = ctx.req.validatedBody();
+    // Create user logic...
+    return ctx.res.json({ message: 'User created', user });
   },
 });
 ```
@@ -210,7 +214,7 @@ const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   onRequestValidationError: (ctx, error) => {
     // Global validation error handling
-    ctx.req.log().warn('Validation failed', { error });
+    ctx.log().warn('Validation failed', { error });
 
     return ctx.res.status(400).json({
       error: 'Invalid request data',
@@ -228,4 +232,4 @@ Error handlers are called in this order:
 2. Instance-level handler (if provided)
 3. Default behavior
 
-Each handler can choose to handle the error or pass it to the next handler by returning `undefined`. This allows specific handlers to only deal with certain error types.
+Each handler can choose to handle the error or pass it to the next handler by not returning a response. This allows specific handlers to only deal with certain error types.

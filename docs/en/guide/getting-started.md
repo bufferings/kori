@@ -63,29 +63,37 @@ Monitor your application with built-in structured logging:
 ```typescript
 import { createKori } from '@korix/kori';
 
-const app = createKori().onInit(async (ctx) => {
-  // Application-level logging (for system events)
-  app.log().info('Application initializing');
+const app = createKori().onStart((ctx) => {
+  // Instance-level logging (within hooks)
+  ctx.log().info('Application initializing');
 });
 
 app.get('/hello', (ctx) => {
-  // Request-level logging (includes request context automatically)
-  ctx.req.log().info('Processing hello request');
+  // Request-level logging (within handlers)
+  ctx.log().info('Processing hello request');
 
   return ctx.res.text('Hello, Kori!');
 });
 
+// Application-level logging (outside of Kori context)
+app.log().info('Application ready');
+
 export { app };
 ```
+
+- **`app.log()`** - Application-level logger (outside of Kori context)
+- **`ctx.log()`** - Context-aware logger (inside Kori context: hooks and handlers)
 
 Sample log output:
 
 ```json
-{"level":"info","time":1704067200000,"name":"application","message":"Application initializing"}
-{"level":"info","time":1704067200100,"name":"request","message":"Processing hello request"}
+{"time":1754198335875,"level":"info","channel":"app","name":"instance","message":"Application ready","meta":{}}
+{"time":1754198335875,"level":"info","channel":"app","name":"instance","message":"Application initializing","meta":{}}
+{"time":1754198335879,"level":"info","channel":"sys","name":"instance","message":"Kori server started at http://127.0.0.1:3000","meta":{}}
+{"time":1754198349150,"level":"info","channel":"app","name":"request","message":"Processing hello request","meta":{}}
 ```
 
-Kori provides a simple console logger by default for quick development. For real applications, use high-performance loggers like Pino. We provide a Pino adapter for easy integration.
+Kori provides a simple console logger by default for quick development. For real applications, use high-performance loggers like Pino or LogTape. We provide the adapters for easy integration.
 
 ## Hooks
 
@@ -95,17 +103,18 @@ Add initialization and request lifecycle processing:
 import { createKori } from '@korix/kori';
 
 const app = createKori()
-  .onInit(async (ctx) => {
+  .onStart((ctx) => {
     // Runs once when application starts
     return ctx.withEnv({ applicationStartTime: new Date() });
   })
   .onRequest((ctx) => {
     // Runs before each request handler
-    ctx.req.log().info(`${ctx.req.method()} ${ctx.req.url().pathname}`);
-  })
-  .onResponse((ctx) => {
-    // Runs after each successful response
-    ctx.req.log().info(`Response: ${ctx.res.status()}`);
+    ctx.log().info(`${ctx.req.method()} ${ctx.req.url().pathname}`);
+
+    // Defer response logging until after handler completes
+    ctx.defer(() => {
+      ctx.log().info(`Response: ${ctx.res.getStatus()}`);
+    });
   });
 
 app.get('/hello', (ctx) => {
