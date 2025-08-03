@@ -62,7 +62,7 @@ function createLogEntry({
     channel,
     name,
     message,
-    meta: { ...(bindings ?? {}), ...(meta ?? {}) },
+    meta: { ...bindings, ...(meta ?? {}) },
   };
 }
 
