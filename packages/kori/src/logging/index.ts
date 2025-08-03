@@ -1,5 +1,4 @@
 export { createConsoleReporter } from './console-log-reporter.js';
-export { applyKoriLogSerializers, defaultKoriLogSerializers, type KoriLogSerializers } from './log-serializers.js';
 export {
   createKoriLoggerFactory,
   type KoriLogData,

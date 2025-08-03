@@ -1,6 +1,4 @@
 import { createConsoleReporter } from './console-log-reporter.js';
-import { applyKoriLogSerializers, defaultKoriLogSerializers } from './log-serializers.js';
-import { type KoriLogSerializers } from './log-serializers.js';
 
 export const SYS_CHANNEL = 'sys' as const;
 
@@ -63,7 +61,6 @@ function createLogEntry(
   name: string,
   bindings: Record<string, unknown>,
   data: KoriLogData | undefined,
-  serializers: KoriLogSerializers,
 ): {
   time: number;
   level: KoriLogLevel;
@@ -84,10 +81,9 @@ function createLogEntry(
     return baseEntry;
   }
 
-  const serializedData = applyKoriLogSerializers(data, serializers);
   return {
     ...baseEntry,
-    data: { ...bindings, data: serializedData },
+    data: { ...bindings, ...data },
   };
 }
 
@@ -95,12 +91,10 @@ function createKoriLogger(options: {
   channel: string;
   name: string;
   level: KoriLogLevel;
-  serializers: KoriLogSerializers;
   bindings: Record<string, unknown>;
   reporters: KoriLogReporter[];
-  sharedBindings?: Record<string, unknown>; // shared context reference
+  sharedBindings?: Record<string, unknown>;
 }): KoriLogger {
-  // Mutable bindings state for this logger instance
   const mutableBindings = { ...options.bindings };
 
   function log(level: KoriLogLevel, message: string, dataOrFactory?: KoriLogDataOrFactory): void {
@@ -115,15 +109,7 @@ function createKoriLogger(options: {
       ...mutableBindings,
       ...(options.sharedBindings ?? {}),
     };
-    const logEntry = createLogEntry(
-      level,
-      message,
-      options.channel,
-      options.name,
-      allBindings,
-      data,
-      options.serializers,
-    );
+    const logEntry = createLogEntry(level, message, options.channel, options.name, allBindings, data);
 
     for (const reporter of options.reporters) {
       try {
@@ -154,7 +140,6 @@ function createKoriLogger(options: {
         channel: options.channel,
         name: combinedName,
         level: options.level,
-        serializers: options.serializers,
         bindings: { ...mutableBindings, ...childBindings },
         reporters: options.reporters,
         sharedBindings: options.sharedBindings,
@@ -166,7 +151,6 @@ function createKoriLogger(options: {
         channel: channelName,
         name: options.name,
         level: options.level,
-        serializers: options.serializers,
         bindings: mutableBindings,
         reporters: options.reporters,
         sharedBindings: options.sharedBindings,
@@ -184,7 +168,6 @@ function createKoriLogger(options: {
 
 export type KoriLoggerOptions = {
   level?: KoriLogLevel;
-  serializers?: KoriLogSerializers;
   bindings?: Record<string, unknown>;
   reporters?: KoriLogReporter[];
 };
@@ -195,7 +178,6 @@ export function createKoriLoggerFactory(options?: KoriLoggerOptions): KoriLogger
       channel: meta.channel,
       name: meta.name,
       level: options?.level ?? 'info',
-      serializers: { ...defaultKoriLogSerializers, ...options?.serializers },
       bindings: options?.bindings ?? {},
       reporters: options?.reporters ?? [createConsoleReporter()],
       sharedBindings: undefined,

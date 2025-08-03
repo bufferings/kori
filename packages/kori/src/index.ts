@@ -47,7 +47,6 @@ export {
   type KoriRouteResponseValidationErrorHandler,
 } from './kori/index.js';
 export {
-  applyKoriLogSerializers,
   createKoriLoggerFactory,
   type KoriLogData,
   type KoriLogDataFactory,
@@ -59,7 +58,6 @@ export {
   type KoriLoggerOptions,
   type KoriLogLevel,
   type KoriLogReporter,
-  type KoriLogSerializers,
   SYS_CHANNEL,
 } from './logging/index.js';
 export { defineKoriPlugin, isKoriPlugin, type KoriPlugin, type KoriPluginDefault } from './plugin/index.js';
