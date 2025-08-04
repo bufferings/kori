@@ -1,0 +1,153 @@
+---
+description: 'Guidelines for writing comments and JSDoc in the Kori project'
+globs: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx']
+alwaysApply: true
+---
+
+# TSDoc Rules
+
+Guidelines for writing comments and JSDoc in the Kori project.
+
+## Basic Principles
+
+- **Explain WHY** (not WHAT)
+- **Don't repeat what's obvious from function names**
+- **Minimal comments for internal implementation**
+
+## Public API
+
+### ✅ Required
+
+- Type parameter descriptions (`@template`)
+- Parameter descriptions (`@param`)
+- Return value descriptions (`@returns`)
+- Usage examples (`@example`)
+
+````typescript
+/**
+ * Handler context provides access to environment, request, response, and utilities
+ * for processing a specific HTTP request.
+ *
+ * @template Env - Environment type containing instance-specific data
+ * @template Req - Request type with request-specific data and methods
+ * @template Res - Response type with response building capabilities
+ */
+export type KoriHandlerContext<Env, Req, Res> = {
+  /**
+   * Extends the request object with additional properties.
+   *
+   * **Performance Note**: This method mutates the existing request object
+   * rather than creating a new one for hot path optimization.
+   *
+   * @param reqExt - Additional properties to add to the request
+   * @returns The same context instance with extended request type
+   *
+   * @example
+   * ```typescript
+   * const extendedCtx = ctx.withReq({
+   *   userId: '123',
+   *   permissions: ['read', 'write']
+   * });
+   * ```
+   */
+  withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
+};
+````
+
+### 📝 Highlight Important Details
+
+- **Performance reasons** (mutation, caching, etc.)
+- **Execution order** (LIFO, defer, etc.)
+- **Side effects** (state changes, logging, etc.)
+
+## Internal Implementation (`@internal`)
+
+### ✅ Basic Pattern
+
+```typescript
+/** @internal */
+function createSysLogger(ctx: HandlerCtxState) {
+  return KoriLoggerUtils.createSysLogger({
+    logger: getLoggerInternal(ctx),
+  });
+}
+```
+
+### ✅ One-line Explanation Only for Complex Logic
+
+```typescript
+/** @internal Caches logger per request for performance */
+function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
+  ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
+  return ctx.loggerCache;
+}
+```
+
+### ❌ Patterns to Avoid
+
+```typescript
+// ❌ Same description as function name
+/** @internal Create plugin logger */
+function createPluginLogger() {}
+
+// ❌ Repeating obvious content
+/** @internal Get logger internal */
+function getLoggerInternal() {}
+```
+
+## Package-internal API (`@packageInternal`)
+
+Internal API that may be re-exported by folder-level `index.ts` files but **must not** be re-exported by the package public barrel (`src/index.ts`).
+
+```typescript
+/** @packageInternal Framework infrastructure */
+export function createKoriHandlerContext() {}
+```
+
+## Test Exports
+
+```typescript
+/** @internal Exported for testing purposes only */
+export type HandlerCtxState = {
+  // ...
+};
+
+/** @internal */
+export function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
+  // ...
+}
+```
+
+## Type Definitions
+
+### ✅ Document Purpose and Constraints
+
+```typescript
+/**
+ * HTTP request methods supported by Kori.
+ *
+ * Supports standard methods and custom methods via the `custom` property.
+ */
+export type HttpMethod = 'GET' | 'POST' | { custom: Uppercase<string> };
+```
+
+### ✅ Explain Branded Types
+
+```typescript
+/**
+ * Base environment type for Kori instances.
+ *
+ * This type serves as a branded object that can be extended to store
+ * instance-specific data and configuration.
+ */
+export type KoriEnvironment = {
+  [KoriEnvironmentBrand]: typeof KoriEnvironmentBrand;
+};
+```
+
+## When Comments Are Not Needed
+
+- Simple wrapper functions
+- Functions with obvious behavior from types
+- Standard getters/setters
+- Self-evident utility functions
