@@ -62,11 +62,25 @@ export type KoriHandlerContext<Env, Req, Res> = {
 
 ## Internal Implementation (`@internal`)
 
+**Use `@internal` only for exported members that are internal implementation.**
+
+- ✅ Exported functions/types that should not be used externally
+- ❌ Non-exported constants, functions, or types (already internal by definition)
+
+```typescript
+// ✅ Exported but internal
+/** @internal */
+export function createKoriHandlerContext() {}
+
+// ❌ Not exported - @internal is redundant
+const KoriRequestBrand = Symbol('kori-request');
+```
+
 ### ✅ Basic Pattern
 
 ```typescript
 /** @internal */
-function createSysLogger(ctx: HandlerCtxState) {
+export function createSysLogger(ctx: HandlerCtxState) {
   return KoriLoggerUtils.createSysLogger({
     logger: getLoggerInternal(ctx),
   });
@@ -77,7 +91,7 @@ function createSysLogger(ctx: HandlerCtxState) {
 
 ```typescript
 /** @internal Caches logger per request for performance */
-function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
+export function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
   ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
   return ctx.loggerCache;
 }
@@ -88,11 +102,15 @@ function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
 ```typescript
 // ❌ Same description as function name
 /** @internal Create plugin logger */
-function createPluginLogger() {}
+export function createPluginLogger() {}
 
 // ❌ Repeating obvious content
 /** @internal Get logger internal */
-function getLoggerInternal() {}
+export function getLoggerInternal() {}
+
+// ❌ Using @internal on non-exported members
+/** @internal */
+function helperFunction() {} // Should not use @internal
 ```
 
 ## Package-internal API (`@packageInternal`)

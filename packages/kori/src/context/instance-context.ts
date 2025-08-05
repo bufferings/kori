@@ -4,34 +4,154 @@ import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
 
+/**
+ * Instance context provides access to environment and utilities for
+ * Kori instance-level operations and configuration.
+ *
+ * The instance context manages instance-wide state, logging, and deferred
+ * callbacks that execute during instance shutdown.
+ *
+ * @template Env - Environment type containing instance-specific data and configuration
+ */
 export type KoriInstanceContext<Env extends KoriEnvironment> = {
+  /** Current environment containing instance-specific data and configuration */
   env: Env;
 
+  /**
+   * Extends the environment object with additional properties.
+   *
+   * **Performance Note**: This method mutates the existing environment object
+   * rather than creating a new one for hot path optimization.
+   *
+   * @param envExt - Additional properties to add to the environment
+   * @returns The same context instance with extended environment type
+   *
+   * @example
+   * ```typescript
+   * // Setup database and cache during instance startup
+   * const instanceCtx = ctx.withEnv({
+   *   db: await connectDatabase(process.env.DATABASE_URL),
+   *   cache: await connectRedis(process.env.REDIS_URL),
+   *   config: {
+   *     maxConnections: 100,
+   *     timeout: 5000
+   *   }
+   * });
+   *
+   * // Now available throughout the application
+   * app.get('/users', (ctx) => {
+   *   return ctx.env.db.users.findMany();
+   * });
+   * ```
+   */
   withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
 
+  /**
+   * Registers a callback to be executed when the instance shuts down.
+   *
+   * Deferred callbacks are executed in LIFO order (last registered, first executed)
+   * and are used for cleanup operations like closing database connections,
+   * releasing resources, or finalizing logs during shutdown.
+   *
+   * @param callback - Function to execute during instance lifecycle
+   *
+   * @example
+   * ```typescript
+   * // Cleanup during instance shutdown
+   * ctx.defer(async (ctx) => {
+   *   ctx.log().info('Starting shutdown cleanup');
+   *
+   *   // Close database connections
+   *   await ctx.env.db.close();
+   *
+   *   // Close cache connections
+   *   await ctx.env.cache.quit();
+   *
+   *   // Cleanup temporary files
+   *   await fs.rmdir(ctx.env.tempDir, { recursive: true });
+   *
+   *   ctx.log().info('Shutdown cleanup completed');
+   * });
+   * ```
+   */
   defer(callback: (ctx: KoriInstanceContext<Env>) => MaybePromise<void>): void;
 
+  /**
+   * Gets the instance logger for this Kori instance.
+   *
+   * Uses channel 'app' and name 'instance' for instance-level logging.
+   *
+   * @returns Instance logger instance
+   */
   log(): KoriLogger;
+
+  /**
+   * Creates a system logger for internal operations.
+   *
+   * Uses channel 'sys' for framework-level logging, distinguished from regular instance logs.
+   *
+   * @returns System logger instance
+   */
   createSysLogger(): KoriLogger;
+
+  /**
+   * Creates a plugin-specific logger.
+   *
+   * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
+   * making debugging and monitoring easier.
+   *
+   * @param pluginName - Name of the plugin for log identification
+   * @returns Plugin logger instance
+   *
+   * @example
+   * ```typescript
+   * // In database plugin startup
+   * const dbLogger = ctx.createPluginLogger('database-plugin');
+   * dbLogger.info('Database plugin initialized', {
+   *   host: process.env.DB_HOST,
+   *   pool: { min: 2, max: 10 }
+   * });
+   *
+   * // In cache plugin startup
+   * const cacheLogger = ctx.createPluginLogger('redis-cache');
+   * cacheLogger.info('Cache plugin initialized', {
+   *   mode: 'cluster',
+   *   nodes: redisClusterNodes
+   * });
+   * ```
+   */
   createPluginLogger(pluginName: string): KoriLogger;
 };
 
-// --- Internal Implementation ---
-
+/** Base instance context type for internal use */
 type KoriInstanceContextBase = KoriInstanceContext<KoriEnvironment>;
 
+/** Internal state structure for instance context */
 type InstanceCtxState = {
   env: KoriEnvironment;
   deferStack: ((ctx: KoriInstanceContextBase) => MaybePromise<void>)[];
   instanceLogger: KoriLogger;
 };
 
+/**
+ * Creates a system logger for framework operations.
+ *
+ * @param ctx - Instance context state
+ * @returns System logger instance
+ */
 function createSysLogger(ctx: InstanceCtxState) {
   return KoriLoggerUtils.createSysLogger({
     logger: ctx.instanceLogger,
   });
 }
 
+/**
+ * Creates a plugin logger with plugin identification.
+ *
+ * @param ctx - Instance context state
+ * @param pluginName - Name of the plugin for log identification
+ * @returns Plugin logger instance
+ */
 function createPluginLogger(ctx: InstanceCtxState, pluginName: string) {
   return KoriLoggerUtils.createPluginLogger({
     logger: ctx.instanceLogger,
@@ -39,6 +159,7 @@ function createPluginLogger(ctx: InstanceCtxState, pluginName: string) {
   });
 }
 
+/** Shared methods prototype for memory efficiency */
 const instanceContextPrototype = {
   withEnv<EnvExt extends object>(this: InstanceCtxState, envExt: EnvExt) {
     Object.assign(this.env, envExt);
@@ -62,6 +183,16 @@ const instanceContextPrototype = {
   },
 };
 
+/**
+ * Creates a new instance context.
+ *
+ * @packageInternal Framework infrastructure for creating instance contexts
+ *
+ * @param params - Context creation parameters
+ * @param params.env - Environment object
+ * @param params.instanceLogger - Logger instance for this context
+ * @returns New instance context
+ */
 export function createKoriInstanceContext<Env extends KoriEnvironment>({
   env,
   instanceLogger,
@@ -76,7 +207,17 @@ export function createKoriInstanceContext<Env extends KoriEnvironment>({
   return ctx as unknown as KoriInstanceContext<Env>;
 }
 
-// Internal function to execute deferred callbacks for instance context
+/**
+ * Executes all deferred callbacks registered during instance operations.
+ *
+ * @packageInternal Framework infrastructure for executing deferred callbacks
+ *
+ * Callbacks are executed in LIFO order (last registered, first executed).
+ * If any callback throws an error, it's logged but doesn't prevent other
+ * callbacks from executing.
+ *
+ * @param ctx - Instance context containing deferred callbacks
+ */
 export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextBase): Promise<void> {
   const ctxState = ctx as unknown as InstanceCtxState;
   const deferStack = ctxState.deferStack;
