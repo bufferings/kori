@@ -1,15 +1,9 @@
-export { matchesMediaType, parseAcceptHeader } from './accept.js';
-export {
-  ContentType,
-  ContentTypeUtf8,
-  type ContentTypeUtf8Value,
-  type ContentTypeValue,
-  DEFAULT_CONTENT_TYPE,
-} from './content-types.js';
+export { ContentType, ContentTypeUtf8, type ContentTypeUtf8Value, type ContentTypeValue } from './content-types.js';
 export {
   type Cookie,
+  type CookieConstraint,
+  type CookieError,
   type CookieOptions,
-  type CookieValue,
   deleteCookie,
   parseCookies,
   serializeCookie,
@@ -20,5 +14,5 @@ export {
   HttpResponseHeader,
   type HttpResponseHeaderName,
 } from './headers.js';
-export { getMethodString } from './method.js';
+export { getMethodString } from './methods.js';
 export { HttpStatus, type HttpStatusCode } from './status-codes.js';

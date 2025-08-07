@@ -6,7 +6,7 @@ export {
   type KoriRequest,
   type KoriResponse,
 } from './context/index.js';
-export { type KoriError, type KoriValidationConfigError } from './error/index.js';
+export { type KoriCookieError, type KoriError, type KoriValidationConfigError } from './error/index.js';
 export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch-handler/index.js';
 export {
   type KoriOnErrorHook,
@@ -17,7 +17,11 @@ export {
 export {
   ContentType,
   type ContentTypeValue,
-  DEFAULT_CONTENT_TYPE,
+  type Cookie,
+  type CookieConstraint,
+  type CookieError,
+  type CookieOptions,
+  deleteCookie,
   getMethodString,
   HttpRequestHeader,
   type HttpRequestHeaderName,
@@ -25,6 +29,8 @@ export {
   type HttpResponseHeaderName,
   HttpStatus,
   type HttpStatusCode,
+  parseCookies,
+  serializeCookie,
 } from './http/index.js';
 export {
   createKori,

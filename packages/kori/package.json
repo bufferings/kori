@@ -55,7 +55,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "entities": "6.0.1",
     "hono": "4.8.4"
   },
   "devDependencies": {

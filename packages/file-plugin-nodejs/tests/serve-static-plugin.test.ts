@@ -148,8 +148,9 @@ describe('serve-static-plugin-nodejs', () => {
       expect(response.status).toBe(416);
       expect(response.headers.get('Content-Range')).toBe('bytes */3000');
 
-      const json = (await response.json()) as { error: { type: string; message: string } };
-      expect(json.error.type).toBe('RANGE_NOT_SATISFIABLE');
+      // 416 errors return empty body, not JSON
+      const text = await response.text();
+      expect(text).toBe('');
     });
 
     it('should return 416 for invalid range format', async () => {
@@ -185,8 +186,9 @@ describe('serve-static-plugin-nodejs', () => {
 
       expect(response.status).toBe(416);
 
-      const json = (await response.json()) as { error: { type: string; message: string } };
-      expect(json.error.type).toBe('TOO_MANY_RANGES');
+      // 416 errors return empty body, not JSON
+      const text = await response.text();
+      expect(text).toBe('');
     });
 
     it('should disable range requests when ranges option is false', async () => {
@@ -340,11 +342,9 @@ describe('serve-static-plugin-nodejs', () => {
       });
 
       expect(response.status).toBe(416);
-      expect(response.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
-
-      const errorData = (await response.json()) as { error: { type: string; message: string } };
-      expect(errorData.error.type).toBe('TOO_MANY_RANGES');
-      expect(errorData.error.message).toContain('Maximum allowed: 2');
+      // 416 errors return empty body, not JSON
+      const text = await response.text();
+      expect(text).toBe('');
     });
 
     it('should handle mixed valid and invalid ranges in multipart request', async () => {

@@ -23,6 +23,13 @@ export const HttpRequestHeader = {
   X_FORWARDED_PROTO: 'x-forwarded-proto',
 } as const;
 
+/**
+ * Union type for HTTP request header names.
+ *
+ * Includes all predefined header constants from HttpRequestHeader plus any custom
+ * header names as strings. The `string & {}` pattern maintains TypeScript
+ * autocompletion for predefined headers while allowing arbitrary strings.
+ */
 export type HttpRequestHeaderName = (typeof HttpRequestHeader)[keyof typeof HttpRequestHeader] | (string & {});
 
 /**
@@ -59,4 +66,11 @@ export const HttpResponseHeader = {
   X_XSS_PROTECTION: 'x-xss-protection',
 } as const;
 
+/**
+ * Union type for HTTP response header names.
+ *
+ * Includes all predefined header constants from HttpResponseHeader plus any custom
+ * header names as strings. The `string & {}` pattern maintains TypeScript
+ * autocompletion for predefined headers while allowing arbitrary strings.
+ */
 export type HttpResponseHeaderName = (typeof HttpResponseHeader)[keyof typeof HttpResponseHeader] | (string & {});

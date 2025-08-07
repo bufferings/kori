@@ -1,5 +1,5 @@
 import { type KoriRequest } from '../context/index.js';
-import { DEFAULT_CONTENT_TYPE } from '../http/index.js';
+import { ContentType } from '../http/index.js';
 import {
   type KoriRequestSchemaDefault,
   type KoriRequestSchemaContentDefault,
@@ -36,6 +36,9 @@ function findMatchingMediaType({
 
   return undefined;
 }
+
+/** Default content-type for request validation when no Content-Type header is present */
+const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
 export function resolveRequestBodySchema({
   req,

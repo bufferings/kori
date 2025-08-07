@@ -1,3 +1,4 @@
+import { KoriCookieError } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -6,7 +7,6 @@ import {
   ContentType,
   ContentTypeUtf8,
   type CookieOptions,
-  type CookieValue,
   serializeCookie,
   deleteCookie,
 } from '../http/index.js';
@@ -84,8 +84,9 @@ export type KoriResponse = {
    * @param value - Cookie value
    * @param options - Cookie options (path, domain, secure, etc.)
    * @returns The same response instance for method chaining
+   * @throws {KoriCookieError} When cookie validation fails (invalid name, prefix constraints, age limits, etc.)
    */
-  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
+  setCookie(name: string, value: string, options?: CookieOptions): KoriResponse;
 
   /**
    * Clears a cookie by setting it to expire.
@@ -95,6 +96,7 @@ export type KoriResponse = {
    * @param name - Cookie name to clear
    * @param options - Cookie options for path and domain matching
    * @returns The same response instance for method chaining
+   * @throws {KoriCookieError} When cookie name validation fails (invalid characters, RFC 6265 non-compliance, etc.)
    */
   clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
 
@@ -492,14 +494,20 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
   res.headers.delete(name);
 }
 
-function setCookieInternal(res: ResState, name: string, value: CookieValue, options?: CookieOptions): void {
-  const cookieValue = serializeCookie(name, value, options);
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
+function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
+  const result = serializeCookie(name, value, options);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
+  }
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
 }
 
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
-  const cookieValue = deleteCookie(name, options);
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
+  const result = deleteCookie(name, options);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
+  }
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
 }
 
 /** Configuration for body setter functions */
@@ -689,7 +697,7 @@ const sharedMethods = {
     return this as unknown as KoriResponse;
   },
 
-  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse {
+  setCookie(name: string, value: string, options?: CookieOptions): KoriResponse {
     setCookieInternal(this, name, value, options);
     return this as unknown as KoriResponse;
   },

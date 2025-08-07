@@ -1,11 +1,13 @@
-import { parseCookies } from '../http/index.js';
+import { KoriCookieError } from '../error/index.js';
 import {
+  parseCookies,
+  type CookieError,
   type ContentTypeValue,
   ContentType,
-  DEFAULT_CONTENT_TYPE,
   type HttpRequestHeaderName,
   HttpRequestHeader,
 } from '../http/index.js';
+import { type KoriResult, ok } from '../util/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
 
@@ -127,6 +129,7 @@ export type KoriRequest = {
    * Cookies are parsed and cached on first access.
    *
    * @returns Object containing all cookie key-value pairs
+   * @throws {KoriCookieError} When cookie header parsing fails (malformed format, etc.)
    */
   cookies(): Record<string, string>;
 
@@ -135,8 +138,50 @@ export type KoriRequest = {
    *
    * @param name - Cookie name
    * @returns Cookie value or undefined if not present
+   * @throws {KoriCookieError} When cookie header parsing fails (malformed format, etc.)
    */
   cookie(name: string): string | undefined;
+
+  /**
+   * Gets all cookies as a key-value object with Result-based error handling.
+   *
+   * This method provides safe cookie parsing that returns a Result instead of
+   * throwing exceptions, allowing for explicit error handling.
+   *
+   * @returns Result containing all cookie key-value pairs or structured error details
+   *
+   * @example
+   * ```typescript
+   * const result = ctx.req.cookiesSafe();
+   * if (result.ok) {
+   *   console.log('Cookies:', result.value);
+   * } else {
+   *   console.log('Parse error:', result.error.message);
+   * }
+   * ```
+   */
+  cookiesSafe(): KoriResult<Record<string, string>, CookieError>;
+
+  /**
+   * Gets a specific cookie value by name with Result-based error handling.
+   *
+   * This method provides safe cookie parsing that returns a Result instead of
+   * throwing exceptions, allowing for explicit error handling.
+   *
+   * @param name - Cookie name
+   * @returns Result containing cookie value (or undefined) or structured error details
+   *
+   * @example
+   * ```typescript
+   * const result = ctx.req.cookieSafe('sessionId');
+   * if (result.ok) {
+   *   console.log('Session ID:', result.value);
+   * } else {
+   *   console.log('Parse error:', result.error.message);
+   * }
+   * ```
+   */
+  cookieSafe(name: string): KoriResult<string | undefined, CookieError>;
 
   /**
    * Parses the request body as JSON.
@@ -285,17 +330,40 @@ function getContentTypeInternal(req: ReqState): ContentTypeValue | undefined {
 }
 
 function getCookiesInternal(req: ReqState): Record<string, string> {
-  if (req.cookiesCache) {
-    return req.cookiesCache;
+  const result = getCookiesSafeInternal(req);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
   }
-
-  const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  req.cookiesCache = parseCookies(cookieHeader);
-  return req.cookiesCache;
+  return result.value;
 }
 
 function getCookieInternal(req: ReqState, name: string): string | undefined {
-  return getCookiesInternal(req)[name];
+  const result = getCookieSafeInternal(req, name);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
+  }
+  return result.value;
+}
+
+function getCookiesSafeInternal(req: ReqState): KoriResult<Record<string, string>, CookieError> {
+  if (req.cookiesCache) {
+    return ok(req.cookiesCache);
+  }
+
+  const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
+  const result = parseCookies(cookieHeader);
+  if (result.ok) {
+    req.cookiesCache = result.value;
+  }
+  return result;
+}
+
+function getCookieSafeInternal(req: ReqState, name: string): KoriResult<string | undefined, CookieError> {
+  const result = getCookiesSafeInternal(req);
+  if (!result.ok) {
+    return result;
+  }
+  return ok(result.value[name]);
 }
 
 function getBodyJsonInternal(req: ReqState): Promise<unknown> {
@@ -322,6 +390,9 @@ function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null
   // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
   return req.raw.clone().body;
 }
+
+/** Default content-type for request body parsing when no Content-Type header is present */
+const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
 function parseBodyInternal(req: ReqState): Promise<unknown> {
   const ct = getContentTypeInternal(req) ?? DEFAULT_CONTENT_TYPE;
@@ -378,6 +449,12 @@ const sharedMethods = {
   },
   cookie(name: string): string | undefined {
     return getCookieInternal(this, name);
+  },
+  cookiesSafe(): KoriResult<Record<string, string>, CookieError> {
+    return getCookiesSafeInternal(this);
+  },
+  cookieSafe(name: string): KoriResult<string | undefined, CookieError> {
+    return getCookieSafeInternal(this, name);
   },
 
   bodyJson(): Promise<unknown> {
