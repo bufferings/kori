@@ -182,10 +182,10 @@ describe('Cookie utilities', () => {
         expect(result2.value).toBe('session_id=abc123; SameSite=Lax');
       }
 
-      const result3 = serializeCookie('session_id', 'abc123', { sameSite: 'none' });
+      const result3 = serializeCookie('session_id', 'abc123', { sameSite: 'none', secure: true });
       expect(result3.ok).toBe(true);
       if (result3.ok) {
-        expect(result3.value).toBe('session_id=abc123; SameSite=None');
+        expect(result3.value).toBe('session_id=abc123; Secure; SameSite=None');
       }
     });
 
@@ -491,10 +491,31 @@ describe('Cookie validation and errors', () => {
       const valid = serializeCookie('session', 'value', { partitioned: true, secure: true });
       expect(valid.ok).toBe(true);
 
-      const invalid = serializeCookie('session', 'value', { partitioned: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      const invalid = serializeCookie('session', 'value', { partitioned: true } as any);
       expect(invalid.ok).toBe(false);
       if (!invalid.ok) {
         expect(invalid.error.type).toBe('PARTITIONED_REQUIRES_SECURE');
+      }
+    });
+  });
+
+  describe('SameSite None requires Secure', () => {
+    test('should error when SameSite=None without Secure (runtime)', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      const result = serializeCookie('session', 'value', { sameSite: 'none' } as any);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.type).toBe('SAMESITE_NONE_REQUIRES_SECURE');
+      }
+    });
+
+    test('should succeed when SameSite=None with Secure', () => {
+      const result = serializeCookie('session', 'value', { sameSite: 'none', secure: true });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toContain('SameSite=None');
+        expect(result.value).toContain('Secure');
       }
     });
   });

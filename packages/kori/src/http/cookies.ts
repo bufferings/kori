@@ -39,8 +39,26 @@ export type CookieError =
   | { type: 'EXPIRES_LIMIT_EXCEEDED'; futureTime: number; limit: number; message: string }
   /** Partitioned cookie missing required Secure attribute */
   | { type: 'PARTITIONED_REQUIRES_SECURE'; message: string }
+  /** SameSite=None requires Secure attribute */
+  | { type: 'SAMESITE_NONE_REQUIRES_SECURE'; message: string }
   /** Cookie header parsing or serialization failure */
   | { type: 'PARSE_ERROR'; original: string; message: string };
+
+type SameSiteValue = 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none';
+
+/**
+ * SameSite=None requires Secure=true at the type level.
+ */
+type SameSiteConstraint =
+  | { sameSite?: Exclude<SameSiteValue, 'None' | 'none'>; secure?: boolean }
+  | { sameSite: 'None' | 'none'; secure: true };
+
+/**
+ * Partitioned cookies require Secure=true at the type level.
+ */
+type PartitionedConstraint =
+  | { partitioned?: false | undefined; secure?: boolean }
+  | { partitioned: true; secure: true };
 
 /**
  * Configuration options for cookie attributes.
@@ -61,17 +79,12 @@ export type CookieOptions = {
   domain?: string;
   /** Path scope, controls which URL paths receive the cookie */
   path?: string;
-  /** Restrict transmission to HTTPS connections only */
-  secure?: boolean;
   /** Prevent JavaScript access via document.cookie */
   httpOnly?: boolean;
-  /** SameSite CSRF protection: Strict (strictest), Lax (default), None (requires Secure) */
-  sameSite?: 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none';
   /** Priority hint for cookie eviction (Chrome extension) */
   priority?: 'Low' | 'Medium' | 'High' | 'low' | 'medium' | 'high';
-  /** Partitioned storage in third-party contexts (requires Secure) */
-  partitioned?: boolean;
-};
+} & SameSiteConstraint &
+  PartitionedConstraint;
 
 /**
  * Type-level cookie prefix constraints.
@@ -419,6 +432,14 @@ export function serializeCookie<Name extends string>(
     return err({
       type: 'PARTITIONED_REQUIRES_SECURE',
       message: 'Partitioned cookies must have secure: true',
+    });
+  }
+
+  // Validate SameSite=None requires Secure
+  if (options.sameSite && (options.sameSite === 'none' || options.sameSite === 'None') && !options.secure) {
+    return err({
+      type: 'SAMESITE_NONE_REQUIRES_SECURE',
+      message: 'SameSite=None cookies must have secure: true',
     });
   }
 
