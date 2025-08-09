@@ -488,7 +488,7 @@ describe('Cookie validation and errors', () => {
 
   describe('Partitioned cookie constraints', () => {
     test('should enforce secure requirement for partitioned cookies', () => {
-      const valid = serializeCookie('session', 'value', { partitioned: true, secure: true });
+      const valid = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'None' });
       expect(valid.ok).toBe(true);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
