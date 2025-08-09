@@ -125,7 +125,7 @@ const validCookieNameRegEx = /^[\w!#$%&'*.^`|~+-]+$/;
  * Allows ASCII characters 32-126 except: " ; \ (double quote, semicolon, backslash)
  * Intentionally permits comma and space despite RFC restrictions due to real-world usage.
  */
-const validCookieValueRegEx = /^[ !#-:<-[\]-~]*$/;
+const validCookieValueRegEx = /^[\x20-\x21\x23-\x3A\x3C-\x5B\x5D-\x7E]*$/;
 
 /**
  * Maximum cookie age in seconds (400 days as per RFC 6265bis draft).
