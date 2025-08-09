@@ -1,1 +1,1 @@
-export { KoriError, KoriValidationConfigError } from './kori-error.js';
+export { KoriCookieError, KoriError, KoriValidationConfigError } from './kori-error.js';

@@ -83,7 +83,7 @@ describe('Send File Plugin', () => {
     it('should create plugin with correct name and version', () => {
       const plugin = sendFilePlugin();
 
-      expect(plugin.name).toBe('send-file-plugin-nodejs');
+      expect(plugin.name).toBe('send-file-nodejs');
       expect(plugin.version).toBe('0.1.0');
       expect(plugin.apply).toBeDefined();
     });
@@ -93,7 +93,7 @@ describe('Send File Plugin', () => {
     it('should handle basic file sending concepts', () => {
       // Test basic plugin structure without complex mocking
       const plugin = sendFilePlugin();
-      expect(plugin.name).toBe('send-file-plugin-nodejs');
+      expect(plugin.name).toBe('send-file-nodejs');
       expect(typeof plugin.apply).toBe('function');
     });
 

@@ -17,6 +17,22 @@ import { type MaybePromise } from '../util/index.js';
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
 
+/**
+ * HTTP request methods supported by Kori.
+ *
+ * Supports standard HTTP methods and custom methods via the `custom` property.
+ * Custom methods must be uppercase strings for HTTP specification compliance.
+ *
+ * @example
+ * ```typescript
+ * // Standard HTTP methods
+ * const getMethod: HttpMethod = 'GET';
+ * const postMethod: HttpMethod = 'POST';
+ *
+ * // Custom HTTP method
+ * const customMethod: HttpMethod = { custom: 'CUSTOM' };
+ * ```
+ */
 export type HttpMethod =
   | 'GET'
   | 'POST'

@@ -5,7 +5,7 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
-import { asciiOnlySource, noDuplicateExportFrom, noIndexImports } from './rules/index.js';
+import { asciiOnlySource, noBarrelInternal, noDuplicateExportFrom, noIndexImports } from './rules/index.js';
 
 export const baseConfig = tseslint.config(
   // Ignore patterns
@@ -114,6 +114,7 @@ export const koriConfig = [
           'ascii-only-source': asciiOnlySource,
           'no-duplicate-export-from': noDuplicateExportFrom,
           'no-index-imports': noIndexImports,
+          'no-barrel-internal': noBarrelInternal,
         },
       },
     },
@@ -121,6 +122,7 @@ export const koriConfig = [
       'kori/ascii-only-source': 'error',
       'kori/no-duplicate-export-from': 'error',
       'kori/no-index-imports': 'error',
+      'kori/no-barrel-internal': 'error',
     },
   },
   // Disable no-index-imports for test files

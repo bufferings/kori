@@ -251,8 +251,61 @@ type CookieOptions = {
   httpOnly?: boolean;
   maxAge?: number;
   expires?: Date;
-  sameSite?: 'strict' | 'lax' | 'none';
+  sameSite?: 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none';
+  partitioned?: boolean;
 };
+```
+
+### Cookie constraints
+
+Kori validates cookie options to prevent invalid Set-Cookie headers.
+
+- SameSite=None requires Secure
+  - If sameSite is set to None, secure must be true
+  - Comparison is case-insensitive; the output is canonicalized to `SameSite=None`
+- Partitioned requires Secure and SameSite=None
+  - If partitioned is true, both secure must be true and sameSite must be None
+
+Example:
+
+```typescript
+ctx.res.setCookie('id', 'abc', {
+  secure: true,
+  sameSite: 'None',
+  partitioned: true,
+  path: '/',
+});
+```
+
+### Cookie errors
+
+Kori validates cookie options and throws a typed `KoriCookieError` when they are invalid.
+
+Common error types include:
+
+- INVALID_NAME: Cookie name is empty or not RFC 6265 compliant
+- PREFIX_VIOLATION: Violates `__Secure-` or `__Host-` prefix requirements
+- AGE_LIMIT_EXCEEDED / EXPIRES_LIMIT_EXCEEDED: Exceeds 400-day limits
+- SAMESITE_NONE_REQUIRES_SECURE: `SameSite=None` must have `secure: true`
+- PARTITIONED_REQUIRES_SECURE: `partitioned: true` requires `secure: true`
+- PARTITIONED_REQUIRES_SAMESITE_NONE: `partitioned: true` requires `SameSite=None`
+
+```typescript
+app.post('/cookie', {
+  handler: (ctx) => {
+    try {
+      ctx.res.setCookie('id', 'v', {
+        secure: true,
+        sameSite: 'None',
+        partitioned: true,
+      });
+      return ctx.res.json({ ok: true });
+    } catch (e) {
+      // e is KoriCookieError
+      return ctx.res.badRequest({ message: 'Invalid cookie options' });
+    }
+  },
+});
 ```
 
 ### `res.clearCookie(name, options?)`

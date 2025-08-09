@@ -19,10 +19,10 @@ describe('Lazy Log Data Initialization', () => {
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'info',
+        channel: 'test',
+        name: 'test',
         message: 'Test message',
-        meta: expect.objectContaining({
-          data: { expensive: 'data' },
-        }) as object,
+        meta: { expensive: 'data' },
       }) as object,
     );
 
@@ -49,10 +49,10 @@ describe('Lazy Log Data Initialization', () => {
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'info',
+        channel: 'test',
+        name: 'test',
         message: 'Regular data test',
-        meta: expect.objectContaining({
-          data: { user: 'john', action: 'login' },
-        }) as object,
+        meta: { user: 'john', action: 'login' },
       }) as object,
     );
   });
@@ -71,14 +71,16 @@ describe('Lazy Log Data Initialization', () => {
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'info',
+        channel: 'test',
+        name: 'test',
         message: 'Undefined factory test',
-        // meta should not be present when factory returns undefined
+        meta: {}, // meta is always present but empty when factory returns undefined
       }),
     );
 
-    // Verify that meta field is not present
+    // Verify that meta field is present but empty
     const call = mockReporter.mock.calls[0];
-    expect(call?.[0]).not.toHaveProperty('meta');
+    expect(call?.[0]).toHaveProperty('meta', {});
   });
 
   it('should handle expensive computations in factory', () => {
@@ -110,11 +112,13 @@ describe('Lazy Log Data Initialization', () => {
     expect(mockReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         level: 'warn',
+        channel: 'test',
+        name: 'test',
         message: 'Warn with expensive computation',
         meta: expect.objectContaining({
-          data: expect.objectContaining({
-            computedData: { result: 'expensive-computation-result' },
-          }) as object,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          timestamp: expect.any(Number),
+          computedData: { result: 'expensive-computation-result' },
         }) as object,
       }) as object,
     );

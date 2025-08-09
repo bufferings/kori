@@ -1,3 +1,4 @@
+import { KoriCookieError } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -6,7 +7,6 @@ import {
   ContentType,
   ContentTypeUtf8,
   type CookieOptions,
-  type CookieValue,
   serializeCookie,
   deleteCookie,
 } from '../http/index.js';
@@ -15,61 +15,456 @@ import { type KoriRequest } from './request.js';
 
 const KoriResponseBrand = Symbol('kori-response');
 
-const DefaultHeaders = {
-  json: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
-  }),
-  text: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_PLAIN,
-  }),
-  html: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
-  }),
-  stream: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
-  }),
-  empty: new Headers(), // No Content-Type for empty responses
-  none: new Headers(), // No Content-Type for uninitialized responses
-} as const;
+/**
+ * Options for customizing error responses.
+ */
+export type ErrorResponseOptions = {
+  /** Custom error message (overrides default message) */
+  message?: string;
+  /** Application-specific error code */
+  code?: string;
+  /** Additional error details (any format) */
+  details?: unknown;
+  /** Any additional custom fields */
+  [key: string]: unknown;
+};
 
+/**
+ * Kori response object for building HTTP responses with method chaining.
+ */
 export type KoriResponse = {
   [KoriResponseBrand]: typeof KoriResponseBrand;
 
+  /**
+   * Sets the HTTP status code.
+   *
+   * @param statusCode - HTTP status code to set
+   * @returns The same response instance for method chaining
+   */
   status(statusCode: HttpStatusCode): KoriResponse;
 
+  /**
+   * Sets a response header, replacing any existing value.
+   *
+   * Header names are normalized to lowercase (Content-Type becomes content-type).
+   *
+   * @param name - Header name
+   * @param value - Header value
+   * @returns The same response instance for method chaining
+   */
   setHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
+
+  /**
+   * Appends a value to a response header.
+   *
+   * Header names are normalized to lowercase (Content-Type becomes content-type).
+   *
+   * @param name - Header name
+   * @param value - Header value to append
+   * @returns The same response instance for method chaining
+   */
   appendHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
+
+  /**
+   * Removes a response header.
+   *
+   * Header names are normalized to lowercase (Content-Type becomes content-type).
+   *
+   * @param name - Header name to remove
+   * @returns The same response instance for method chaining
+   */
   removeHeader(name: HttpResponseHeaderName): KoriResponse;
 
-  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse;
+  /**
+   * Sets a cookie in the response.
+   *
+   * Cookie names are case-sensitive (sessionId and SessionId are different cookies).
+   *
+   * @param name - Cookie name
+   * @param value - Cookie value
+   * @param options - Cookie options (path, domain, secure, etc.)
+   * @returns The same response instance for method chaining
+   * @throws {KoriCookieError} When cookie validation fails (invalid name, prefix constraints, age limits, etc.)
+   */
+  setCookie(name: string, value: string, options?: CookieOptions): KoriResponse;
+
+  /**
+   * Clears a cookie by setting it to expire.
+   *
+   * Cookie names are case-sensitive (sessionId and SessionId are different cookies).
+   *
+   * @param name - Cookie name to clear
+   * @param options - Cookie options for path and domain matching
+   * @returns The same response instance for method chaining
+   * @throws {KoriCookieError} When cookie name validation fails (invalid characters, RFC 6265 non-compliance, etc.)
+   */
   clearCookie(name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): KoriResponse;
 
+  /**
+   * Sets the response body to JSON with application/json content-type header.
+   *
+   * @param body - Object to serialize as JSON
+   * @returns The same response instance for method chaining
+   */
   json<T>(body: T): KoriResponse;
+
+  /**
+   * Sets the response body to plain text with text/plain content-type header.
+   *
+   * @param body - Text content
+   * @returns The same response instance for method chaining
+   */
   text(body: string): KoriResponse;
+
+  /**
+   * Sets the response body to HTML with text/html content-type header.
+   *
+   * @param body - HTML content
+   * @returns The same response instance for method chaining
+   */
   html(body: string): KoriResponse;
+
+  /**
+   * Sets the response to have no body content.
+   *
+   * Uses HTTP status 204 No Content by default.
+   * No content-type header is set for empty responses.
+   *
+   * @returns The same response instance for method chaining
+   */
   empty(): KoriResponse;
+
+  /**
+   * Sets the response body to a readable stream with application/octet-stream content-type header.
+   *
+   * @param body - ReadableStream for the response body
+   * @returns The same response instance for method chaining
+   */
   stream(body: ReadableStream): KoriResponse;
 
+  /**
+   * Creates a 400 Bad Request error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.badRequest();
+   * // -> {
+   * //      "error": {
+   * //        "type": "BAD_REQUEST",
+   * //        "message": "Bad Request"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.badRequest({ message: "Invalid email format", field: "email", userId: "123" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "BAD_REQUEST",
+   * //        "message": "Invalid email format",
+   * //        "field": "email",
+   * //        "userId": "123"
+   * //      }
+   * //    }
+   * ```
+   */
   badRequest(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 401 Unauthorized error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.unauthorized();
+   * // -> {
+   * //      "error": {
+   * //        "type": "UNAUTHORIZED",
+   * //        "message": "Unauthorized"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.unauthorized({ message: "Invalid token", sessionId: "abc123", expired: true });
+   * // -> {
+   * //      "error": {
+   * //        "type": "UNAUTHORIZED",
+   * //        "message": "Invalid token",
+   * //        "sessionId": "abc123",
+   * //        "expired": true
+   * //      }
+   * //    }
+   * ```
+   */
   unauthorized(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 403 Forbidden error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.forbidden();
+   * // -> {
+   * //      "error": {
+   * //        "type": "FORBIDDEN",
+   * //        "message": "Forbidden"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.forbidden({ message: "Insufficient permissions", resource: "user:123", action: "delete" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "FORBIDDEN",
+   * //        "message": "Insufficient permissions",
+   * //        "resource": "user:123",
+   * //        "action": "delete"
+   * //      }
+   * //    }
+   * ```
+   */
   forbidden(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 404 Not Found error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.notFound();
+   * // -> {
+   * //      "error": {
+   * //        "type": "NOT_FOUND",
+   * //        "message": "Not Found"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.notFound({ message: "User not found", resourceId: "user-123", resourceType: "User" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "NOT_FOUND",
+   * //        "message": "User not found",
+   * //        "resourceId": "user-123",
+   * //        "resourceType": "User"
+   * //      }
+   * //    }
+   * ```
+   */
   notFound(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 405 Method Not Allowed error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.methodNotAllowed();
+   * // -> {
+   * //      "error": {
+   * //        "type": "METHOD_NOT_ALLOWED",
+   * //        "message": "Method Not Allowed"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.methodNotAllowed({ message: "POST not allowed", allowed: ["GET", "PUT"], endpoint: "/api/users" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "METHOD_NOT_ALLOWED",
+   * //        "message": "POST not allowed",
+   * //        "allowed": ["GET", "PUT"],
+   * //        "endpoint": "/api/users"
+   * //      }
+   * //    }
+   * ```
+   */
   methodNotAllowed(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 415 Unsupported Media Type error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.unsupportedMediaType();
+   * // -> {
+   * //      "error": {
+   * //        "type": "UNSUPPORTED_MEDIA_TYPE",
+   * //        "message": "Unsupported Media Type"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.unsupportedMediaType({ message: "JSON required", expected: "application/json", received: "text/plain" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "UNSUPPORTED_MEDIA_TYPE",
+   * //        "message": "JSON required",
+   * //        "expected": "application/json",
+   * //        "received": "text/plain"
+   * //      }
+   * //    }
+   * ```
+   */
   unsupportedMediaType(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 408 Request Timeout error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.timeout();
+   * // -> {
+   * //      "error": {
+   * //        "type": "TIMEOUT",
+   * //        "message": "Request Timeout"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.timeout({ message: "Operation timed out", operation: "database_query", timeoutMs: 5000 });
+   * // -> {
+   * //      "error": {
+   * //        "type": "TIMEOUT",
+   * //        "message": "Operation timed out",
+   * //        "operation": "database_query",
+   * //        "timeoutMs": 5000
+   * //      }
+   * //    }
+   * ```
+   */
   timeout(options?: ErrorResponseOptions): KoriResponse;
+
+  /**
+   * Creates a 500 Internal Server Error response.
+   *
+   * @param options - Error response options (message, code, details, and custom fields)
+   * @returns The same response instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * // Default message
+   * res.internalError();
+   * // -> {
+   * //      "error": {
+   * //        "type": "INTERNAL_SERVER_ERROR",
+   * //        "message": "Internal Server Error"
+   * //      }
+   * //    }
+   *
+   * // Custom message and fields
+   * res.internalError({ message: "Database connection failed", errorId: "err_001", operation: "user_lookup" });
+   * // -> {
+   * //      "error": {
+   * //        "type": "INTERNAL_SERVER_ERROR",
+   * //        "message": "Database connection failed",
+   * //        "errorId": "err_001",
+   * //        "operation": "user_lookup"
+   * //      }
+   * //    }
+   * ```
+   */
   internalError(options?: ErrorResponseOptions): KoriResponse;
 
+  /**
+   * Gets the final HTTP status code that will be used.
+   *
+   * @returns HTTP status code (defaults to 200 OK)
+   */
   getStatus(): HttpStatusCode;
+
+  /**
+   * Gets a copy of the response headers.
+   *
+   * @returns New Headers object with current response headers
+   */
   getHeadersCopy(): Headers;
+
+  /**
+   * Gets a specific response header value.
+   *
+   * Header names are normalized to lowercase (Content-Type becomes content-type).
+   *
+   * @param name - Header name
+   * @returns Header value or undefined if not set
+   */
   getHeader(name: HttpResponseHeaderName): string | undefined;
+
+  /**
+   * Gets the content-type header value.
+   *
+   * @returns content-type value or undefined if not set
+   */
   getContentType(): string | undefined;
+
+  /**
+   * Gets the response body content.
+   *
+   * @returns The body content
+   */
   getBody(): unknown;
+
+  /**
+   * Checks if the response is ready to be sent.
+   *
+   * @returns True if response content has been configured
+   */
   isReady(): boolean;
+
+  /**
+   * Checks if the response body is a stream.
+   *
+   * @returns True if the body is a ReadableStream
+   */
   isStream(): boolean;
 
+  /**
+   * Builds the final Web API Response object.
+   *
+   * Typically called by the Kori framework automatically.
+   * **Note**: This method can only be called once per response instance.
+   *
+   * @returns Web API Response object
+   * @throws Error if called more than once
+   */
   build(): Response;
 };
 
+/**
+ * Type guard to check if a value is a KoriResponse.
+ *
+ * @param value - Value to check
+ * @returns True if the value is a KoriResponse
+ */
+export function isKoriResponse(value: unknown): value is KoriResponse {
+  return typeof value === 'object' && value !== null && KoriResponseBrand in value;
+}
+
+/** Internal state structure for response object */
 type ResState = {
   [KoriResponseBrand]: typeof KoriResponseBrand;
 
@@ -81,10 +476,6 @@ type ResState = {
   req: KoriRequest;
   aborted: boolean;
 };
-
-export function isKoriResponse(value: unknown): value is KoriResponse {
-  return typeof value === 'object' && value !== null && KoriResponseBrand in value;
-}
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   res.headers ??= new Headers();
@@ -103,16 +494,23 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
   res.headers.delete(name);
 }
 
-function setCookieInternal(res: ResState, name: string, value: CookieValue, options?: CookieOptions): void {
-  const cookieValue = serializeCookie(name, value, options);
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
+function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
+  const result = serializeCookie(name, value, options);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
+  }
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
 }
 
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
-  const cookieValue = deleteCookie(name, options);
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, cookieValue);
+  const result = deleteCookie(name, options);
+  if (!result.ok) {
+    throw new KoriCookieError(result.error);
+  }
+  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
 }
 
+/** Configuration for body setter functions */
 type BodyConfig<T> = {
   res: ResState;
   body: T;
@@ -133,6 +531,7 @@ function setBodyHtmlInternal({ res, body }: BodyConfig<string>): void {
   res.bodyValue = body;
 }
 
+/** Configuration for empty body setter */
 type EmptyBodyConfig = {
   res: ResState;
 };
@@ -147,6 +546,7 @@ function setBodyStreamInternal({ res, body }: BodyConfig<ReadableStream>): void 
   res.bodyValue = body;
 }
 
+/** Error type constants for error responses */
 type ErrorType =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
@@ -157,6 +557,7 @@ type ErrorType =
   | 'TIMEOUT'
   | 'INTERNAL_SERVER_ERROR';
 
+/** Structure of error response body */
 type ErrorResponseBodyJson = {
   error: {
     type: ErrorType;
@@ -181,13 +582,7 @@ function createErrorResponseBodyJson(options: {
   };
 }
 
-type ErrorResponseOptions = {
-  message?: string;
-  code?: string;
-  details?: unknown;
-  [key: string]: unknown;
-};
-
+/** Configuration for error response creation */
 type ErrorConfig = {
   res: ResState;
   errorType: ErrorType;
@@ -222,6 +617,31 @@ function getFinalStatusCode(res: ResState): HttpStatusCode {
   }
 }
 
+/**
+ * Pre-built Headers objects for each response body type.
+ *
+ * Avoids creating new Headers and setting content-type on every response
+ * for better performance. Used when no custom headers are set.
+ */
+const DefaultHeaders = {
+  json: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
+  }),
+  text: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_PLAIN,
+  }),
+  html: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
+  }),
+  stream: new Headers({
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
+  }),
+  // No content-type for empty responses
+  empty: new Headers(),
+  // No content-type for uninitialized responses
+  none: new Headers(),
+} as const;
+
 function getFinalHeaders(res: ResState): Headers {
   if (!res.headers) {
     const defaultHeaders = DefaultHeaders[res.bodyKind];
@@ -252,6 +672,12 @@ function getFinalHeaders(res: ResState): Headers {
   }
 }
 
+/**
+ * Shared methods prototype for memory efficiency.
+ *
+ * All response instances share the same method implementations to reduce
+ * memory usage. Methods are bound to individual ResState objects at runtime.
+ */
 const sharedMethods = {
   status(code: HttpStatusCode): KoriResponse {
     this.statusCode = code;
@@ -271,7 +697,7 @@ const sharedMethods = {
     return this as unknown as KoriResponse;
   },
 
-  setCookie(name: string, value: CookieValue, options?: CookieOptions): KoriResponse {
+  setCookie(name: string, value: string, options?: CookieOptions): KoriResponse {
     setCookieInternal(this, name, value, options);
     return this as unknown as KoriResponse;
   },
@@ -431,6 +857,14 @@ const sharedMethods = {
   },
 } satisfies Omit<KoriResponse, typeof KoriResponseBrand> & ThisType<ResState>;
 
+/**
+ * Creates a new Kori response object.
+ *
+ * @packageInternal Framework infrastructure for creating response objects
+ *
+ * @param req - Associated request object for context
+ * @returns New KoriResponse instance
+ */
 export function createKoriResponse(req: KoriRequest): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 

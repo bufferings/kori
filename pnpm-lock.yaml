@@ -30,7 +30,7 @@ importers:
   .:
     devDependencies:
       '@changesets/cli':
-        specifier: ^2.29.5
+        specifier: 2.29.5
         version: 2.29.5
       '@korix/eslint-config':
         specifier: workspace:*
@@ -308,9 +308,6 @@ importers:
 
   packages/kori:
     dependencies:
-      entities:
-        specifier: 6.0.1
-        version: 6.0.1
       hono:
         specifier: 4.8.4
         version: 4.8.4
@@ -5317,7 +5314,7 @@ snapshots:
 
   '@types/etag@1.8.4':
     dependencies:
-      '@types/node': 20.11.17
+      '@types/node': 22.16.5
 
   '@types/har-format@1.2.16': {}
 

@@ -22,7 +22,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.5",
+    "@changesets/cli": "2.29.5",
     "@korix/eslint-config": "workspace:*",
     "@korix/script": "workspace:*",
     "eslint": "catalog:",

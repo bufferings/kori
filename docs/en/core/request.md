@@ -422,6 +422,31 @@ app.get('/session', {
 });
 ```
 
+#### Cookie parsing errors
+
+Cookie parsing follows RFC 6265 rules. If the `Cookie` header is malformed, the following methods may throw a typed `KoriCookieError`:
+
+- `req.cookies()`
+- `req.cookie(name)`
+
+For explicit error handling without exceptions, use the Result-based helpers:
+
+- `req.cookiesSafe()` returns `KoriResult<Record<string, string>, CookieError>`
+- `req.cookieSafe(name)` returns `KoriResult<string | undefined, CookieError>`
+
+```typescript
+app.get('/cookie-safe', {
+  handler: (ctx) => {
+    const result = ctx.req.cookiesSafe();
+    if (result.ok) {
+      return ctx.res.json({ cookies: result.value });
+    }
+    // result.error.type is one of CookieError types (e.g., PARSE_ERROR)
+    return ctx.res.badRequest({ message: 'Invalid Cookie header' });
+  },
+});
+```
+
 **Cookie validation:**
 
 ```typescript
