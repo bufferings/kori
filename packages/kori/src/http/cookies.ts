@@ -563,9 +563,22 @@ export function deleteCookie(
   name: string,
   options: Pick<CookieOptions, 'path' | 'domain'> = {},
 ): KoriResult<string, CookieError> {
-  return serializeCookie(name, '', {
-    ...options,
+  const base: CookieOptions = {
     expires: new Date(0),
     maxAge: 0,
-  } as CookieConstraint<typeof name>);
+    path: options.path,
+    domain: options.domain,
+  };
+
+  if (name.startsWith('__Host-')) {
+    // __Host- deletion must satisfy prefix rules
+    return serializeCookie(name, '', { ...base, secure: true, path: '/', domain: undefined });
+  }
+
+  if (name.startsWith('__Secure-')) {
+    // __Secure- deletion must be secure
+    return serializeCookie(name, '', { ...base, secure: true });
+  }
+
+  return serializeCookie(name, '', base);
 }
