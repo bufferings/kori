@@ -498,6 +498,22 @@ describe('Cookie validation and errors', () => {
         expect(invalid.error.type).toBe('PARTITIONED_REQUIRES_SECURE');
       }
     });
+
+    test('should require SameSite=None for partitioned cookies', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      const invalid = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'lax' } as any);
+      expect(invalid.ok).toBe(false);
+      if (!invalid.ok) {
+        expect(invalid.error.type).toBe('PARTITIONED_REQUIRES_SAMESITE_NONE');
+      }
+
+      const valid = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'None' });
+      expect(valid.ok).toBe(true);
+      if (valid.ok) {
+        expect(valid.value).toContain('Partitioned');
+        expect(valid.value).toContain('SameSite=None');
+      }
+    });
   });
 
   describe('SameSite None requires Secure', () => {

@@ -41,6 +41,8 @@ export type CookieError =
   | { type: 'PARTITIONED_REQUIRES_SECURE'; message: string }
   /** SameSite=None requires Secure attribute */
   | { type: 'SAMESITE_NONE_REQUIRES_SECURE'; message: string }
+  /** Partitioned cookie requires SameSite=None */
+  | { type: 'PARTITIONED_REQUIRES_SAMESITE_NONE'; message: string }
   /** Cookie header parsing or serialization failure */
   | { type: 'PARSE_ERROR'; original: string; message: string };
 
@@ -442,6 +444,14 @@ export function serializeCookie<Name extends string>(
     return err({
       type: 'SAMESITE_NONE_REQUIRES_SECURE',
       message: 'SameSite=None cookies must have secure: true',
+    });
+  }
+
+  // Validate Partitioned requires SameSite=None
+  if (opt.partitioned && sameSiteLower !== 'none') {
+    return err({
+      type: 'PARTITIONED_REQUIRES_SAMESITE_NONE',
+      message: 'Partitioned cookies must set SameSite=None',
     });
   }
 
