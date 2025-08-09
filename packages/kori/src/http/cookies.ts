@@ -350,6 +350,7 @@ export function serializeCookie<Name extends string>(
   options?: CookieConstraint<Name>,
 ): KoriResult<string, CookieError> {
   const opt: Partial<CookieOptions> = options ?? {};
+  const sameSiteLower = typeof opt.sameSite === 'string' ? opt.sameSite.toLowerCase() : undefined;
   // Validate cookie name
   if (!name) {
     return err({
@@ -437,7 +438,7 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate SameSite=None requires Secure
-  if (opt.sameSite && (opt.sameSite === 'none' || opt.sameSite === 'None') && !opt.secure) {
+  if (sameSiteLower === 'none' && !opt.secure) {
     return err({
       type: 'SAMESITE_NONE_REQUIRES_SECURE',
       message: 'SameSite=None cookies must have secure: true',
@@ -474,9 +475,9 @@ export function serializeCookie<Name extends string>(
       cookie += '; Secure';
     }
 
-    if (opt.sameSite) {
-      const sameSite = opt.sameSite.charAt(0).toUpperCase() + opt.sameSite.slice(1);
-      cookie += `; SameSite=${sameSite}`;
+    if (sameSiteLower) {
+      const sameSiteCap = sameSiteLower.charAt(0).toUpperCase() + sameSiteLower.slice(1);
+      cookie += `; SameSite=${sameSiteCap}`;
     }
 
     if (opt.priority) {
