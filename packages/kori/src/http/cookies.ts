@@ -11,6 +11,12 @@
 
 import { type KoriResult, ok, err } from '../util/index.js';
 
+/** Cookie prefix for Secure-only cookies requiring HTTPS */
+const SECURE_PREFIX = '__Secure-' as const;
+
+/** Cookie prefix for Host-locked cookies with strict path and domain rules */
+const HOST_PREFIX = '__Host-' as const;
+
 /**
  * Parsed cookie data structure.
  *
@@ -105,9 +111,9 @@ export type CookieOptions = {
  *
  * @template Name - Cookie name literal type for prefix detection
  */
-export type CookieConstraint<Name> = Name extends `__Secure-${string}`
+export type CookieConstraint<Name> = Name extends `${typeof SECURE_PREFIX}${string}`
   ? CookieOptions & { secure: true }
-  : Name extends `__Host-${string}`
+  : Name extends `${typeof HOST_PREFIX}${string}`
     ? CookieOptions & { secure: true; path: '/'; domain?: never }
     : CookieOptions;
 
@@ -369,38 +375,38 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate prefix constraints
-  if (name.startsWith('__Secure-') && !opt.secure) {
+  if (name.startsWith(SECURE_PREFIX) && !opt.secure) {
     return err({
       type: 'PREFIX_VIOLATION',
-      prefix: '__Secure-',
+      prefix: SECURE_PREFIX,
       required: 'secure: true',
-      message: '__Secure- cookies must have secure: true',
+      message: `${SECURE_PREFIX} cookies must have secure: true`,
     });
   }
 
-  if (name.startsWith('__Host-')) {
+  if (name.startsWith(HOST_PREFIX)) {
     if (!opt.secure) {
       return err({
         type: 'PREFIX_VIOLATION',
-        prefix: '__Host-',
+        prefix: HOST_PREFIX,
         required: 'secure: true',
-        message: '__Host- cookies must have secure: true',
+        message: `${HOST_PREFIX} cookies must have secure: true`,
       });
     }
     if (opt.path !== '/') {
       return err({
         type: 'PREFIX_VIOLATION',
-        prefix: '__Host-',
+        prefix: HOST_PREFIX,
         required: 'path: "/"',
-        message: '__Host- cookies must have path: "/"',
+        message: `${HOST_PREFIX} cookies must have path: "/"`,
       });
     }
     if (opt.domain) {
       return err({
         type: 'PREFIX_VIOLATION',
-        prefix: '__Host-',
+        prefix: HOST_PREFIX,
         required: 'no domain attribute',
-        message: '__Host- cookies must not have domain attribute',
+        message: `${HOST_PREFIX} cookies must not have domain attribute`,
       });
     }
   }
@@ -570,12 +576,12 @@ export function deleteCookie(
     domain: options.domain,
   };
 
-  if (name.startsWith('__Host-')) {
+  if (name.startsWith(HOST_PREFIX)) {
     // __Host- deletion must satisfy prefix rules
     return serializeCookie(name, '', { ...base, secure: true, path: '/', domain: undefined });
   }
 
-  if (name.startsWith('__Secure-')) {
+  if (name.startsWith(SECURE_PREFIX)) {
     // __Secure- deletion must be secure
     return serializeCookie(name, '', { ...base, secure: true });
   }
