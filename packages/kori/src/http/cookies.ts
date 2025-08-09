@@ -83,8 +83,6 @@ export type CookieOptions = {
   path?: string;
   /** Prevent JavaScript access via document.cookie */
   httpOnly?: boolean;
-  /** Priority hint for cookie eviction (Chrome extension) */
-  priority?: 'Low' | 'Medium' | 'High' | 'low' | 'medium' | 'high';
 } & SameSiteConstraint &
   PartitionedConstraint;
 
@@ -488,11 +486,6 @@ export function serializeCookie<Name extends string>(
     if (sameSiteLower) {
       const sameSiteCap = sameSiteLower.charAt(0).toUpperCase() + sameSiteLower.slice(1);
       cookie += `; SameSite=${sameSiteCap}`;
-    }
-
-    if (opt.priority) {
-      const priority = opt.priority.charAt(0).toUpperCase() + opt.priority.slice(1);
-      cookie += `; Priority=${priority}`;
     }
 
     if (opt.partitioned) {
