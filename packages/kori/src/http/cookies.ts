@@ -347,8 +347,9 @@ export function parseCookies(cookieHeader?: string, targetName?: string): KoriRe
 export function serializeCookie<Name extends string>(
   name: Name,
   value: string,
-  options: CookieConstraint<Name> = {} as CookieConstraint<Name>,
+  options?: CookieConstraint<Name>,
 ): KoriResult<string, CookieError> {
+  const opt: Partial<CookieOptions> = options ?? {};
   // Validate cookie name
   if (!name) {
     return err({
@@ -367,7 +368,7 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate prefix constraints
-  if (name.startsWith('__Secure-') && !options.secure) {
+  if (name.startsWith('__Secure-') && !opt.secure) {
     return err({
       type: 'PREFIX_VIOLATION',
       prefix: '__Secure-',
@@ -377,7 +378,7 @@ export function serializeCookie<Name extends string>(
   }
 
   if (name.startsWith('__Host-')) {
-    if (!options.secure) {
+    if (!opt.secure) {
       return err({
         type: 'PREFIX_VIOLATION',
         prefix: '__Host-',
@@ -385,7 +386,7 @@ export function serializeCookie<Name extends string>(
         message: '__Host- cookies must have secure: true',
       });
     }
-    if (options.path !== '/') {
+    if (opt.path !== '/') {
       return err({
         type: 'PREFIX_VIOLATION',
         prefix: '__Host-',
@@ -393,7 +394,7 @@ export function serializeCookie<Name extends string>(
         message: '__Host- cookies must have path: "/"',
       });
     }
-    if (options.domain) {
+    if (opt.domain) {
       return err({
         type: 'PREFIX_VIOLATION',
         prefix: '__Host-',
@@ -404,19 +405,19 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate age limits (RFC 6265bis draft)
-  if (typeof options.maxAge === 'number' && options.maxAge >= 0) {
-    if (options.maxAge > MAX_COOKIE_AGE_SECONDS) {
-      return err({
-        type: 'AGE_LIMIT_EXCEEDED',
-        maxAge: options.maxAge,
-        limit: MAX_COOKIE_AGE_SECONDS,
-        message: `Max-Age should not exceed 400 days (${MAX_COOKIE_AGE_SECONDS} seconds)`,
-      });
-    }
+  const maxAge = opt.maxAge;
+  if (typeof maxAge === 'number' && maxAge >= 0 && maxAge > MAX_COOKIE_AGE_SECONDS) {
+    return err({
+      type: 'AGE_LIMIT_EXCEEDED',
+      maxAge,
+      limit: MAX_COOKIE_AGE_SECONDS,
+      message: `Max-Age should not exceed 400 days (${MAX_COOKIE_AGE_SECONDS} seconds)`,
+    });
   }
 
-  if (options.expires) {
-    const futureTime = options.expires.getTime() - Date.now();
+  const expires = opt.expires;
+  if (expires) {
+    const futureTime = expires.getTime() - Date.now();
     if (futureTime > MAX_COOKIE_AGE_SECONDS * 1000) {
       return err({
         type: 'EXPIRES_LIMIT_EXCEEDED',
@@ -428,7 +429,7 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate partitioned constraint
-  if (options.partitioned && !options.secure) {
+  if (opt.partitioned && !opt.secure) {
     return err({
       type: 'PARTITIONED_REQUIRES_SECURE',
       message: 'Partitioned cookies must have secure: true',
@@ -436,7 +437,7 @@ export function serializeCookie<Name extends string>(
   }
 
   // Validate SameSite=None requires Secure
-  if (options.sameSite && (options.sameSite === 'none' || options.sameSite === 'None') && !options.secure) {
+  if (opt.sameSite && (opt.sameSite === 'none' || opt.sameSite === 'None') && !opt.secure) {
     return err({
       type: 'SAMESITE_NONE_REQUIRES_SECURE',
       message: 'SameSite=None cookies must have secure: true',
@@ -449,41 +450,41 @@ export function serializeCookie<Name extends string>(
     let cookie = `${name}=${encodedValue}`;
 
     // Add attributes
-    if (typeof options.maxAge === 'number' && options.maxAge >= 0) {
-      cookie += `; Max-Age=${Math.floor(options.maxAge)}`;
+    if (typeof maxAge === 'number' && maxAge >= 0) {
+      cookie += `; Max-Age=${Math.floor(maxAge)}`;
     }
 
-    if (options.domain) {
-      cookie += `; Domain=${options.domain}`;
+    if (opt.domain) {
+      cookie += `; Domain=${opt.domain}`;
     }
 
-    if (options.path) {
-      cookie += `; Path=${options.path}`;
+    if (opt.path) {
+      cookie += `; Path=${opt.path}`;
     }
 
-    if (options.expires) {
-      cookie += `; Expires=${options.expires.toUTCString()}`;
+    if (expires) {
+      cookie += `; Expires=${expires.toUTCString()}`;
     }
 
-    if (options.httpOnly) {
+    if (opt.httpOnly) {
       cookie += '; HttpOnly';
     }
 
-    if (options.secure) {
+    if (opt.secure) {
       cookie += '; Secure';
     }
 
-    if (options.sameSite) {
-      const sameSite = options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1);
+    if (opt.sameSite) {
+      const sameSite = opt.sameSite.charAt(0).toUpperCase() + opt.sameSite.slice(1);
       cookie += `; SameSite=${sameSite}`;
     }
 
-    if (options.priority) {
-      const priority = options.priority.charAt(0).toUpperCase() + options.priority.slice(1);
+    if (opt.priority) {
+      const priority = opt.priority.charAt(0).toUpperCase() + opt.priority.slice(1);
       cookie += `; Priority=${priority}`;
     }
 
-    if (options.partitioned) {
+    if (opt.partitioned) {
       cookie += '; Partitioned';
     }
 
