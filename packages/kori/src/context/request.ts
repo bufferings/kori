@@ -229,7 +229,7 @@ type BodyCache = {
 /** Internal state structure for request object */
 type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
-  rawRequestValue: Request;
+  rawRequest: Request;
   pathParamsValue: Record<string, string>;
   pathTemplateValue: string;
   bodyCache: BodyCache;
@@ -246,12 +246,12 @@ type ReqState = {
 };
 
 function getUrlInternal(req: ReqState): URL {
-  req.urlCache ??= new URL(req.rawRequestValue.url);
+  req.urlCache ??= new URL(req.rawRequest.url);
   return req.urlCache;
 }
 
 function getMethodInternal(req: ReqState): string {
-  req.methodCache ??= req.rawRequestValue.method;
+  req.methodCache ??= req.rawRequest.method;
   return req.methodCache;
 }
 
@@ -285,7 +285,7 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const rawHeaders = new Headers(req.rawRequestValue.headers);
+  const rawHeaders = new Headers(req.rawRequest.headers);
   const obj: Record<string, string> = {};
   rawHeaders.forEach((v, k) => {
     obj[k] = v;
@@ -345,28 +345,28 @@ function getCookieInternal(req: ReqState, name: string): string | undefined {
 }
 
 function getBodyJsonInternal(req: ReqState): Promise<unknown> {
-  req.bodyCache.json ??= req.rawRequestValue.clone().json();
+  req.bodyCache.json ??= req.rawRequest.clone().json();
   return req.bodyCache.json;
 }
 
 function getBodyTextInternal(req: ReqState): Promise<string> {
-  req.bodyCache.text ??= req.rawRequestValue.clone().text();
+  req.bodyCache.text ??= req.rawRequest.clone().text();
   return req.bodyCache.text;
 }
 
 function getBodyFormDataInternal(req: ReqState): Promise<FormData> {
-  req.bodyCache.formData ??= req.rawRequestValue.clone().formData();
+  req.bodyCache.formData ??= req.rawRequest.clone().formData();
   return req.bodyCache.formData;
 }
 
 function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
-  req.bodyCache.arrayBuffer ??= req.rawRequestValue.clone().arrayBuffer();
+  req.bodyCache.arrayBuffer ??= req.rawRequest.clone().arrayBuffer();
   return req.bodyCache.arrayBuffer;
 }
 
 function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null {
   // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
-  return req.rawRequestValue.clone().body;
+  return req.rawRequest.clone().body;
 }
 
 function parseBodyInternal(req: ReqState): Promise<unknown> {
@@ -387,7 +387,7 @@ function parseBodyInternal(req: ReqState): Promise<unknown> {
 /** Shared methods prototype for memory efficiency */
 const sharedMethods = {
   raw(): Request {
-    return this.rawRequestValue;
+    return this.rawRequest;
   },
 
   url(): URL {
@@ -470,7 +470,7 @@ export function createKoriRequest({
   const obj = Object.create(sharedMethods) as ReqState;
 
   obj[KoriRequestBrand] = KoriRequestBrand;
-  obj.rawRequestValue = rawRequest;
+  obj.rawRequest = rawRequest;
   obj.pathParamsValue = pathParams;
   obj.pathTemplateValue = pathTemplate;
   obj.bodyCache = {};
