@@ -480,7 +480,7 @@ app.get('/events', {
 
 ## Error Response Methods
 
-Error methods provide automatic content negotiation based on the `Accept` header.
+Error methods always return JSON responses.
 
 ### `res.badRequest(options?)`
 

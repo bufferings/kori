@@ -6,100 +6,64 @@ describe('Cookie utilities', () => {
   describe('parseCookies', () => {
     test('should parse simple cookie', () => {
       const result = parseCookies('session_id=abc123');
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toEqual({ session_id: 'abc123' });
-      }
+      expect(result).toEqual({ session_id: 'abc123' });
     });
 
     test('should parse multiple cookies', () => {
       const result = parseCookies('session_id=abc123; username=john; theme=dark');
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toEqual({
-          session_id: 'abc123',
-          username: 'john',
-          theme: 'dark',
-        });
-      }
+      expect(result).toEqual({
+        session_id: 'abc123',
+        username: 'john',
+        theme: 'dark',
+      });
     });
 
     test('should handle URL encoded values', () => {
       const result = parseCookies('message=hello%20world; name=john%40example.com');
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toEqual({
-          message: 'hello world',
-          name: 'john@example.com',
-        });
-      }
+      expect(result).toEqual({
+        message: 'hello world',
+        name: 'john@example.com',
+      });
     });
 
     test('should handle empty cookie header', () => {
       const result1 = parseCookies('');
-      expect(result1.ok).toBe(true);
-      if (result1.ok) {
-        expect(result1.value).toEqual({});
-      }
+      expect(result1).toEqual({});
 
       const result2 = parseCookies(undefined);
-      expect(result2.ok).toBe(true);
-      if (result2.ok) {
-        expect(result2.value).toEqual({});
-      }
+      expect(result2).toEqual({});
     });
 
     test('should handle malformed cookies', () => {
       // Cookie without value
       const result1 = parseCookies('session_id=; username=john');
-      expect(result1.ok).toBe(true);
-      if (result1.ok) {
-        expect(result1.value).toEqual({ session_id: '', username: 'john' });
-      }
+      expect(result1).toEqual({ session_id: '', username: 'john' });
 
       // Cookie without equals sign
       const result2 = parseCookies('session_id; username=john');
-      expect(result2.ok).toBe(true);
-      if (result2.ok) {
-        expect(result2.value).toEqual({ username: 'john' });
-      }
+      expect(result2).toEqual({ username: 'john' });
 
       // Extra spaces
       const result3 = parseCookies('  session_id = abc123  ;  username = john  ');
-      expect(result3.ok).toBe(true);
-      if (result3.ok) {
-        expect(result3.value).toEqual({ session_id: 'abc123', username: 'john' });
-      }
+      expect(result3).toEqual({ session_id: 'abc123', username: 'john' });
     });
 
     test('should handle malformed URI encoding gracefully', () => {
       // Malformed percent encoding
       const result1 = parseCookies('session_id=%ZZ; username=john');
-      expect(result1.ok).toBe(true);
-      if (result1.ok) {
-        expect(result1.value).toEqual({ session_id: '%ZZ', username: 'john' });
-      }
+      expect(result1).toEqual({ session_id: '%ZZ', username: 'john' });
 
       // Incomplete percent encoding
       const result2 = parseCookies('data=%2; valid=test');
-      expect(result2.ok).toBe(true);
-      if (result2.ok) {
-        expect(result2.value).toEqual({ data: '%2', valid: 'test' });
-      }
+      expect(result2).toEqual({ data: '%2', valid: 'test' });
 
       // Invalid UTF-8 sequence
       const result3 = parseCookies('token=%C0%80; user=alice');
-      expect(result3.ok).toBe(true);
-      if (result3.ok) {
-        expect(result3.value).toEqual({ token: '%C0%80', user: 'alice' });
-      }
+      expect(result3).toEqual({ token: '%C0%80', user: 'alice' });
 
       // Multiple malformed values should not affect parsing of valid ones
       const result4 = parseCookies('bad1=%ZZ; good=valid; bad2=%2; another=test');
-      expect(result4.ok).toBe(true);
-      if (result4.ok) {
-        expect(result4.value).toEqual({ bad1: '%ZZ', good: 'valid', bad2: '%2', another: 'test' });
-      }
+      expect(result4).toEqual({ bad1: '%ZZ', good: 'valid', bad2: '%2', another: 'test' });
     });
   });
 
@@ -394,7 +358,7 @@ describe('Cookie validation and errors', () => {
       expect(valid.ok).toBe(true);
 
       // Invalid __Secure- cookie without secure
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+
       const invalid = serializeCookie('__Secure-token', 'value', {} as any);
       expect(invalid.ok).toBe(false);
       if (!invalid.ok) {
@@ -412,7 +376,7 @@ describe('Cookie validation and errors', () => {
       expect(valid.ok).toBe(true);
 
       // Invalid __Host- cookie without secure
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+
       const invalid1 = serializeCookie('__Host-session', 'value', { path: '/' } as any);
       expect(invalid1.ok).toBe(false);
       if (!invalid1.ok) {
@@ -424,7 +388,7 @@ describe('Cookie validation and errors', () => {
       }
 
       // Invalid __Host- cookie without path: '/'
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+
       const invalid2 = serializeCookie('__Host-session', 'value', { secure: true, path: '/admin' } as any);
       expect(invalid2.ok).toBe(false);
       if (!invalid2.ok) {
@@ -436,12 +400,11 @@ describe('Cookie validation and errors', () => {
       }
 
       // Invalid __Host- cookie with domain
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       const invalid3 = serializeCookie('__Host-session', 'value', {
         secure: true,
         path: '/',
         domain: 'example.com',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       expect(invalid3.ok).toBe(false);
       if (!invalid3.ok) {
@@ -491,7 +454,6 @@ describe('Cookie validation and errors', () => {
       const valid = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'None' });
       expect(valid.ok).toBe(true);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       const invalid = serializeCookie('session', 'value', { partitioned: true } as any);
       expect(invalid.ok).toBe(false);
       if (!invalid.ok) {
@@ -500,7 +462,6 @@ describe('Cookie validation and errors', () => {
     });
 
     test('should require SameSite=None for partitioned cookies', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       const invalid = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'lax' } as any);
       expect(invalid.ok).toBe(false);
       if (!invalid.ok) {
@@ -518,7 +479,6 @@ describe('Cookie validation and errors', () => {
 
   describe('SameSite None requires Secure', () => {
     test('should error when SameSite=None without Secure (runtime)', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       const result = serializeCookie('session', 'value', { sameSite: 'none' } as any);
       expect(result.ok).toBe(false);
       if (!result.ok) {

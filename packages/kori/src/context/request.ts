@@ -1,13 +1,10 @@
-import { KoriCookieError } from '../error/index.js';
 import {
   parseCookies,
-  type CookieError,
   type ContentTypeValue,
   ContentType,
   type HttpRequestHeaderName,
   HttpRequestHeader,
 } from '../http/index.js';
-import { type KoriResult, ok } from '../util/index.js';
 
 const KoriRequestBrand = Symbol('kori-request');
 
@@ -85,6 +82,9 @@ export type KoriRequest = {
   /**
    * Gets all request headers as a lowercase-keyed object.
    *
+   * Header names are normalized to lowercase for case-insensitive access.
+   * Header values are returned verbatim; no normalization is applied.
+   *
    * Headers are cached on first access for performance.
    *
    * @returns Object containing all header key-value pairs
@@ -94,6 +94,9 @@ export type KoriRequest = {
   /**
    * Gets a specific header value by name.
    *
+   * Name matching is case-insensitive. The returned value is the
+   * original header value (verbatim), without normalization.
+   *
    * @param name - Header name (case-insensitive)
    * @returns Header value or undefined if not present
    */
@@ -102,7 +105,17 @@ export type KoriRequest = {
   /**
    * Gets the full content-type header value including parameters.
    *
-   * @returns Full content-type string or undefined if not present
+   * Returns a normalized value:
+   * - Lowercases the media type and parameter names/values
+   * - Normalizes separators to a single "; " (semicolon + single space)
+   * - Removes spaces around "=" in parameters (e.g., "charset = UTF-8" -> "charset=utf-8")
+   * - Preserves parameter order and values
+   *
+   * Examples:
+   * - "Application/JSON; Charset=UTF-8" -> "application/json; charset=utf-8"
+   * - "  Text/HTML ; Charset = UTF-8  " -> "text/html; charset=utf-8"
+   *
+   * @returns Full content-type string (normalized) or undefined if not present
    *
    * @example
    * ```typescript
@@ -114,7 +127,10 @@ export type KoriRequest = {
   /**
    * Gets the main content-type value without parameters.
    *
-   * @returns content-type without parameters or undefined if not present
+   * Returns the media type normalized to lowercase (parameters removed).
+   * For example, "Application/JSON; Charset=UTF-8" becomes "application/json".
+   *
+   * @returns Content type without parameters (lowercased) or undefined if not present
    *
    * @example
    * ```typescript
@@ -129,7 +145,6 @@ export type KoriRequest = {
    * Cookies are parsed and cached on first access.
    *
    * @returns Object containing all cookie key-value pairs
-   * @throws {KoriCookieError} When cookie header parsing fails (malformed format, etc.)
    */
   cookies(): Record<string, string>;
 
@@ -138,50 +153,8 @@ export type KoriRequest = {
    *
    * @param name - Cookie name
    * @returns Cookie value or undefined if not present
-   * @throws {KoriCookieError} When cookie header parsing fails (malformed format, etc.)
    */
   cookie(name: string): string | undefined;
-
-  /**
-   * Gets all cookies as a key-value object with Result-based error handling.
-   *
-   * This method provides safe cookie parsing that returns a Result instead of
-   * throwing exceptions, allowing for explicit error handling.
-   *
-   * @returns Result containing all cookie key-value pairs or structured error details
-   *
-   * @example
-   * ```typescript
-   * const result = ctx.req.cookiesSafe();
-   * if (result.ok) {
-   *   console.log('Cookies:', result.value);
-   * } else {
-   *   console.log('Parse error:', result.error.message);
-   * }
-   * ```
-   */
-  cookiesSafe(): KoriResult<Record<string, string>, CookieError>;
-
-  /**
-   * Gets a specific cookie value by name with Result-based error handling.
-   *
-   * This method provides safe cookie parsing that returns a Result instead of
-   * throwing exceptions, allowing for explicit error handling.
-   *
-   * @param name - Cookie name
-   * @returns Result containing cookie value (or undefined) or structured error details
-   *
-   * @example
-   * ```typescript
-   * const result = ctx.req.cookieSafe('sessionId');
-   * if (result.ok) {
-   *   console.log('Session ID:', result.value);
-   * } else {
-   *   console.log('Parse error:', result.error.message);
-   * }
-   * ```
-   */
-  cookieSafe(name: string): KoriResult<string | undefined, CookieError>;
 
   /**
    * Parses the request body as JSON.
@@ -256,7 +229,7 @@ type BodyCache = {
 /** Internal state structure for request object */
 type ReqState = {
   [KoriRequestBrand]: typeof KoriRequestBrand;
-  raw: Request;
+  rawRequest: Request;
   pathParamsValue: Record<string, string>;
   pathTemplateValue: string;
   bodyCache: BodyCache;
@@ -266,15 +239,19 @@ type ReqState = {
   queriesCache?: Record<string, string | string[]>;
   headersCache?: Record<string, string>;
   cookiesCache?: Record<string, string>;
+  fullContentTypeCache?: string;
+  contentTypeCache?: ContentTypeValue | undefined;
+  hasFullContentTypeCache?: boolean;
+  hasContentTypeCache?: boolean;
 };
 
 function getUrlInternal(req: ReqState): URL {
-  req.urlCache ??= new URL(req.raw.url);
+  req.urlCache ??= new URL(req.rawRequest.url);
   return req.urlCache;
 }
 
 function getMethodInternal(req: ReqState): string {
-  req.methodCache ??= req.raw.method;
+  req.methodCache ??= req.rawRequest.method;
   return req.methodCache;
 }
 
@@ -308,7 +285,7 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const rawHeaders = new Headers(req.raw.headers);
+  const rawHeaders = new Headers(req.rawRequest.headers);
   const obj: Record<string, string> = {};
   rawHeaders.forEach((v, k) => {
     obj[k] = v;
@@ -322,82 +299,80 @@ function getHeaderInternal(req: ReqState, name: HttpRequestHeaderName): string |
 }
 
 function getFullContentTypeInternal(req: ReqState): string | undefined {
-  return getHeaderInternal(req, HttpRequestHeader.CONTENT_TYPE)?.trim().toLowerCase();
+  if (req.hasFullContentTypeCache) {
+    return req.fullContentTypeCache;
+  }
+  const value = getHeaderInternal(req, HttpRequestHeader.CONTENT_TYPE);
+  if (!value) {
+    req.hasFullContentTypeCache = true;
+    req.fullContentTypeCache = undefined;
+    return undefined;
+  }
+  const normalized = value
+    .toLowerCase()
+    .split(';')
+    .map((part) => part.trim().replace(/\s*=\s*/g, '='))
+    .join('; ');
+  req.hasFullContentTypeCache = true;
+  req.fullContentTypeCache = normalized;
+  return normalized;
 }
 
 function getContentTypeInternal(req: ReqState): ContentTypeValue | undefined {
-  return getFullContentTypeInternal(req)?.split(';')[0]?.trim() as ContentTypeValue | undefined;
+  if (req.hasContentTypeCache) {
+    return req.contentTypeCache;
+  }
+  const full = getFullContentTypeInternal(req);
+  const media = full?.split(';')[0]?.trim() as ContentTypeValue | undefined;
+  req.hasContentTypeCache = true;
+  req.contentTypeCache = media;
+  return media;
 }
 
 function getCookiesInternal(req: ReqState): Record<string, string> {
-  const result = getCookiesSafeInternal(req);
-  if (!result.ok) {
-    throw new KoriCookieError(result.error);
+  if (req.cookiesCache) {
+    return req.cookiesCache;
   }
-  return result.value;
+  const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
+  const parsed = parseCookies(cookieHeader);
+  req.cookiesCache = parsed;
+  return parsed;
 }
 
 function getCookieInternal(req: ReqState, name: string): string | undefined {
-  const result = getCookieSafeInternal(req, name);
-  if (!result.ok) {
-    throw new KoriCookieError(result.error);
-  }
-  return result.value;
-}
-
-function getCookiesSafeInternal(req: ReqState): KoriResult<Record<string, string>, CookieError> {
-  if (req.cookiesCache) {
-    return ok(req.cookiesCache);
-  }
-
-  const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  const result = parseCookies(cookieHeader);
-  if (result.ok) {
-    req.cookiesCache = result.value;
-  }
-  return result;
-}
-
-function getCookieSafeInternal(req: ReqState, name: string): KoriResult<string | undefined, CookieError> {
-  const result = getCookiesSafeInternal(req);
-  if (!result.ok) {
-    return result;
-  }
-  return ok(result.value[name]);
+  const allCookies = getCookiesInternal(req);
+  return allCookies[name];
 }
 
 function getBodyJsonInternal(req: ReqState): Promise<unknown> {
-  req.bodyCache.json ??= req.raw.clone().json();
+  req.bodyCache.json ??= req.rawRequest.clone().json();
   return req.bodyCache.json;
 }
 
 function getBodyTextInternal(req: ReqState): Promise<string> {
-  req.bodyCache.text ??= req.raw.clone().text();
+  req.bodyCache.text ??= req.rawRequest.clone().text();
   return req.bodyCache.text;
 }
 
 function getBodyFormDataInternal(req: ReqState): Promise<FormData> {
-  req.bodyCache.formData ??= req.raw.clone().formData();
+  req.bodyCache.formData ??= req.rawRequest.clone().formData();
   return req.bodyCache.formData;
 }
 
 function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
-  req.bodyCache.arrayBuffer ??= req.raw.clone().arrayBuffer();
+  req.bodyCache.arrayBuffer ??= req.rawRequest.clone().arrayBuffer();
   return req.bodyCache.arrayBuffer;
 }
 
 function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null {
   // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
-  return req.raw.clone().body;
+  return req.rawRequest.clone().body;
 }
 
-/** Default content-type for request body parsing when no Content-Type header is present */
-const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
-
 function parseBodyInternal(req: ReqState): Promise<unknown> {
-  const ct = getContentTypeInternal(req) ?? DEFAULT_CONTENT_TYPE;
+  const ct = getContentTypeInternal(req) ?? ContentType.APPLICATION_JSON;
   switch (ct) {
-    case DEFAULT_CONTENT_TYPE:
+    case ContentType.APPLICATION_JSON:
       return getBodyJsonInternal(req);
     case ContentType.APPLICATION_FORM_URLENCODED:
     case ContentType.MULTIPART_FORM_DATA:
@@ -412,7 +387,7 @@ function parseBodyInternal(req: ReqState): Promise<unknown> {
 /** Shared methods prototype for memory efficiency */
 const sharedMethods = {
   raw(): Request {
-    return this.raw;
+    return this.rawRequest;
   },
 
   url(): URL {
@@ -449,12 +424,6 @@ const sharedMethods = {
   },
   cookie(name: string): string | undefined {
     return getCookieInternal(this, name);
-  },
-  cookiesSafe(): KoriResult<Record<string, string>, CookieError> {
-    return getCookiesSafeInternal(this);
-  },
-  cookieSafe(name: string): KoriResult<string | undefined, CookieError> {
-    return getCookieSafeInternal(this, name);
   },
 
   bodyJson(): Promise<unknown> {
@@ -501,9 +470,11 @@ export function createKoriRequest({
   const obj = Object.create(sharedMethods) as ReqState;
 
   obj[KoriRequestBrand] = KoriRequestBrand;
-  obj.raw = rawRequest;
+  obj.rawRequest = rawRequest;
   obj.pathParamsValue = pathParams;
   obj.pathTemplateValue = pathTemplate;
   obj.bodyCache = {};
+  obj.hasFullContentTypeCache = false;
+  obj.hasContentTypeCache = false;
   return obj as unknown as KoriRequest;
 }

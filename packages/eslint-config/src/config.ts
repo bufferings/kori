@@ -125,11 +125,20 @@ export const koriConfig = [
       'kori/no-barrel-internal': 'error',
     },
   },
-  // Disable no-index-imports for test files
+  // Disable strict rules for test files and allow any for test utilities
   {
-    files: ['**/tests/**/*.ts'],
+    files: ['**/tests/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
     rules: {
       'kori/no-index-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-array-destructuring': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 ];

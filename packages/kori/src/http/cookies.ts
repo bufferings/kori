@@ -49,8 +49,8 @@ export type CookieError =
   | { type: 'SAMESITE_NONE_REQUIRES_SECURE'; message: string }
   /** Partitioned cookie requires SameSite=None */
   | { type: 'PARTITIONED_REQUIRES_SAMESITE_NONE'; message: string }
-  /** Cookie header parsing or serialization failure */
-  | { type: 'PARSE_ERROR'; original: string; message: string };
+  /** Cookie serialization failure */
+  | { type: 'SERIALIZE_ERROR'; original: string; message: string };
 
 type SameSiteValue = 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none';
 
@@ -163,114 +163,86 @@ function safeDecodeURIComponent(value: string): string {
  * Parses HTTP Cookie header value into a record of cookie names and values.
  *
  * Performs RFC 6265 compliant parsing with proper URI decoding and validation.
- * Handles malformed cookies gracefully by skipping invalid entries rather than
- * failing the entire operation.
+ * Malformed cookie pairs are gracefully skipped (lenient) to maximize robustness
+ * against real-world HTTP traffic variations. This function never throws.
  *
  * **Performance Note**: When `targetName` is provided, enables fast-path optimization
  * with early string search and loop termination for significant performance improvement
  * in scenarios with many cookies.
  *
- * **Error Handling**: Malformed cookie pairs are silently skipped to maintain
- * robustness against real-world HTTP traffic variations.
- *
  * @param cookieHeader - Raw Cookie header value from HTTP request, may be undefined
  * @param targetName - Specific cookie name to extract, enables performance optimization
- * @returns Result containing either parsed cookie record or structured error details
+ * @returns Parsed cookie record (empty object when header is missing or no matches)
  *
  * @example
  * Basic parsing of all cookies:
  * ```typescript
- * const result = parseCookies('sessionId=abc123; theme=dark; userId=42');
- * if (result.ok) {
- *   console.log(result.value.sessionId); // 'abc123'
- *   console.log(result.value.theme);     // 'dark'
- * }
+ * const cookies = parseCookies('sessionId=abc123; theme=dark; userId=42');
+ * console.log(cookies.sessionId); // 'abc123'
+ * console.log(cookies.theme);     // 'dark'
  * ```
  *
  * @example
  * Fast-path optimization for single cookie:
  * ```typescript
- * const result = parseCookies(
+ * const cookies = parseCookies(
  *   'a=1; b=2; sessionId=abc123; c=3; d=4',
  *   'sessionId'
  * );
  * // Only parses sessionId, skips others for performance
- * if (result.ok) {
- *   console.log(result.value.sessionId); // 'abc123'
- * }
- * ```
- *
- * @example
- * Error handling with structured errors:
- * ```typescript
- * const result = parseCookies('malformed;;;cookie=header');
- * if (!result.ok) {
- *   switch (result.error.type) {
- *     case 'PARSE_ERROR':
- *       console.log('Original:', result.error.original);
- *       break;
- *   }
- * }
+ * console.log(cookies.sessionId); // 'abc123'
  * ```
  */
-export function parseCookies(cookieHeader?: string, targetName?: string): KoriResult<Cookie, CookieError> {
+export function parseCookies(cookieHeader?: string, targetName?: string): Cookie {
   if (!cookieHeader) {
-    return ok({});
+    return {};
   }
 
   // Fast-path: return immediately if the target cookie is not in the header
   if (targetName && !cookieHeader.includes(targetName)) {
-    return ok({});
+    return {};
   }
 
-  try {
-    const pairs = cookieHeader.trim().split(';');
-    const parsedCookie: Cookie = {};
+  const pairs = cookieHeader.trim().split(';');
+  const parsedCookie: Cookie = {};
 
-    for (let pairStr of pairs) {
-      pairStr = pairStr.trim();
-      const valueStartPos = pairStr.indexOf('=');
+  for (let pairStr of pairs) {
+    pairStr = pairStr.trim();
+    const valueStartPos = pairStr.indexOf('=');
 
-      if (valueStartPos === -1) {
-        continue; // Skip malformed pairs
-      }
-
-      const cookieName = pairStr.substring(0, valueStartPos).trim();
-      if (!validCookieNameRegEx.test(cookieName)) {
-        continue; // Skip invalid names
-      }
-
-      // Fast-path: if looking for specific cookie name, skip others
-      if (targetName && targetName !== cookieName) {
-        continue;
-      }
-
-      let cookieValue = pairStr.substring(valueStartPos + 1).trim();
-
-      // Remove surrounding quotes if present
-      if (cookieValue.startsWith('"') && cookieValue.endsWith('"')) {
-        cookieValue = cookieValue.slice(1, -1);
-      }
-
-      if (validCookieValueRegEx.test(cookieValue)) {
-        // Safely decode URI component if needed
-        parsedCookie[cookieName] = cookieValue.includes('%') ? safeDecodeURIComponent(cookieValue) : cookieValue;
-
-        // Fast-path: if found target cookie, break early
-        if (targetName && cookieName === targetName) {
-          break;
-        }
-      }
+    if (valueStartPos === -1) {
+      continue; // Skip malformed pairs
     }
 
-    return ok(parsedCookie);
-  } catch (error) {
-    return err({
-      type: 'PARSE_ERROR',
-      original: cookieHeader,
-      message: `Failed to parse cookie header: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    });
+    const cookieName = pairStr.substring(0, valueStartPos).trim();
+    if (!validCookieNameRegEx.test(cookieName)) {
+      continue; // Skip invalid names
+    }
+
+    // Fast-path: if looking for specific cookie name, skip others
+    if (targetName && targetName !== cookieName) {
+      continue;
+    }
+
+    let cookieValue = pairStr.substring(valueStartPos + 1).trim();
+
+    // Remove surrounding quotes if present
+    if (cookieValue.startsWith('"') && cookieValue.endsWith('"')) {
+      cookieValue = cookieValue.slice(1, -1);
+    }
+
+    if (validCookieValueRegEx.test(cookieValue)) {
+      // Safely decode URI component if needed
+      parsedCookie[cookieName] = cookieValue.includes('%') ? safeDecodeURIComponent(cookieValue) : cookieValue;
+
+      // Fast-path: if found target cookie, break early
+      if (targetName && cookieName === targetName) {
+        break;
+      }
+    }
   }
+
+  return parsedCookie;
 }
 
 /**
@@ -501,7 +473,7 @@ export function serializeCookie<Name extends string>(
     return ok(cookie);
   } catch (error) {
     return err({
-      type: 'PARSE_ERROR',
+      type: 'SERIALIZE_ERROR',
       original: `${name}=${value}`,
       message: `Failed to serialize cookie: ${error instanceof Error ? error.message : 'Unknown error'}`,
     });

@@ -1,0 +1,92 @@
+---
+description: 'Kori testing policy: spec-first, regression-safe, refactor-friendly'
+globs: ['**/tests/**/*.ts', '**/*.test.ts', '**/*.spec.ts']
+alwaysApply: true
+---
+
+## Kori Testing Policy
+
+### Goals
+
+- Verify public, observable behavior defined by API contracts across the framework (routing, context, plugins, validation, logging, HTTP, adapters).
+- Detect regressions in behaviors that must not break.
+- Remain robust against refactoring and internal implementation changes.
+
+### Scope and priorities
+
+- Prefer specification-driven tests over implementation-driven tests.
+- Pin critical behaviors that would hurt users if they changed.
+- Keep tests small, focused, and clear.
+
+### What to test (spec-driven)
+
+- Public API contracts and invariants
+  - Inputs, outputs, and observable side effects
+  - Protocol and semantics where applicable (e.g., headers, status, content negotiation)
+  - Execution order guarantees (e.g., hook/defer LIFO or well-defined ordering)
+  - Configuration defaults and override behavior
+- Errors and edge cases
+  - Validation errors, malformed input, missing configuration
+  - Safe-return variants that must not throw
+- Interaction outcomes
+  - User-visible effects of combining modules (e.g., plugin-modified context affects handler)
+  - Cross-module flows (routing → validation → handler → response build)
+- Type contracts
+  - Type guards, generic transformations, context type evolution (compile-time)
+
+### What not to test (avoid implementation coupling)
+
+- Object identity or caching internals (e.g., same instance returns, reference equality)
+- Specific log message strings or channels; only assert logging occurred
+- Internal optimizations (prebuilt structures, clone counts, micro-allocations)
+- Control flow details that are not part of public contracts
+- Private helper types or inference paths
+
+### Test layering
+
+- Contract unit tests (primary)
+  - Validate each public API’s behavior and error handling in isolation
+- Narrow integration tests (selective)
+  - Validate small, realistic flows across modules (e.g., plugin modifies context then handler observes it)
+- System smoke tests (optional and small)
+  - Minimal end-to-end paths to catch wiring regressions (router → handler → response)
+- Property/fuzz tests (where valuable)
+  - Parsing/serialization-heavy paths (cookies, headers, schemas) with focused generators
+
+### Mocking and fixtures
+
+- Use real platform primitives where practical (WHATWG Request/Response, URL, Web Streams).
+- Keep mocks minimal. For logging, use a thin spy object and only assert that methods were called.
+- Prefer explicit inputs over global state. Avoid implicit environment assumptions.
+
+### Stability and reliability
+
+- Avoid time, randomness, and concurrency flakiness; fix clocks and seeds when needed.
+- Streams: assert contract-only (e.g., returns a new stream), not byte-level details unless required.
+- Minimize snapshots; use them only for stable shapes that are part of the contract.
+
+### Naming and structure
+
+- One test, one contract. Name tests as short contract sentences.
+- Arrange as: setup, act, assert. Keep assertions close to the behavior under test.
+- Fail with actionable messages that describe the broken contract.
+
+### Project conventions for tests
+
+- ESM only; include .js extensions in imports.
+- Use type imports for types.
+- Source files (including tests) must be ASCII only.
+- Prefer functions over classes in helpers/fixtures.
+- Follow Kori terminology and naming conventions.
+
+### Type testing
+
+- Validate public, observable type contracts (type guards, generic transformations, context type evolution).
+- Prefer compile-time type tests with expectTypeOf as the primary tool.
+- Keep assertions small and contract-focused; use `@ts-expect-error` for negative cases.
+- Avoid coupling to internal helper types or inference paths.
+
+### Import style
+
+- Always explicitly import test utilities (describe, test, expect, vi, expectTypeOf).
+- Avoid vitest globals configuration for explicit dependency management and IDE support.
