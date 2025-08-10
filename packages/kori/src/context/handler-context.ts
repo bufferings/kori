@@ -1,4 +1,5 @@
-import { KoriLoggerUtils, type KoriLoggerFactory, serializeError, type KoriLogger } from '../logging/index.js';
+import { type KoriLoggerFactory, type KoriLogger } from '../logging/index.js';
+import { createPluginLogger, createRequestLogger, createSystemLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -123,7 +124,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    *
    * @returns System logger instance
    */
-  createSysLogger(): KoriLogger;
+  createSystemLogger(): KoriLogger;
 
   /**
    * Creates a plugin-specific logger.
@@ -175,7 +176,7 @@ type HandlerCtxState = {
  * @returns Cached request-scoped logger instance
  */
 function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
-  ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
+  ctx.loggerCache ??= createRequestLogger(ctx.loggerFactory);
   return ctx.loggerCache;
 }
 
@@ -185,8 +186,8 @@ function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
  * @param ctx - Handler context state
  * @returns System-scoped logger instance
  */
-function createSysLogger(ctx: HandlerCtxState) {
-  return KoriLoggerUtils.createSysLogger({
+function createSystemLoggerInternal(ctx: HandlerCtxState) {
+  return createSystemLogger({
     logger: getLoggerInternal(ctx),
   });
 }
@@ -198,8 +199,8 @@ function createSysLogger(ctx: HandlerCtxState) {
  * @param pluginName - Name of the plugin for log identification
  * @returns Plugin-scoped logger instance
  */
-function createPluginLogger(ctx: HandlerCtxState, pluginName: string) {
-  return KoriLoggerUtils.createPluginLogger({
+function createPluginLoggerInternal(ctx: HandlerCtxState, pluginName: string) {
+  return createPluginLogger({
     logger: getLoggerInternal(ctx),
     pluginName,
   });
@@ -223,11 +224,11 @@ const handlerContextPrototype = {
   log(this: HandlerCtxState) {
     return getLoggerInternal(this);
   },
-  createSysLogger(this: HandlerCtxState) {
-    return createSysLogger(this);
+  createSystemLogger(this: HandlerCtxState) {
+    return createSystemLoggerInternal(this);
   },
   createPluginLogger(this: HandlerCtxState, pluginName: string) {
-    return createPluginLogger(this, pluginName);
+    return createPluginLoggerInternal(this, pluginName);
   },
 };
 
@@ -292,10 +293,11 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await callback(ctx);
     } catch (err) {
-      ctx.createSysLogger().error('Defer callback error:', {
+      const sys = ctx.createSystemLogger();
+      sys.error('Defer callback error:', {
         type: 'defer-callback',
         callbackIndex: i,
-        err: serializeError(err),
+        err: sys.serializeError(err),
       });
     }
   }

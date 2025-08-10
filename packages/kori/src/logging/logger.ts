@@ -1,36 +1,100 @@
-import { createConsoleReporter } from './console-log-reporter.js';
+import { createLogEntry, type KoriLogLevel, type KoriLogMetaOrFactory } from './log-entry.js';
+import { type KoriLogReporter } from './log-reporter.js';
 
-export type KoriLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-
-export type KoriLogMeta = Record<string, unknown>;
-export type KoriLogMetaFactory = () => KoriLogMeta | undefined;
-export type KoriLogMetaOrFactory = KoriLogMeta | KoriLogMetaFactory;
-
-export type KoriLogEntry = {
-  time: number;
-  level: KoriLogLevel;
-  channel: string;
-  name: string;
-  message: string;
-  meta?: Record<string, unknown>;
-};
-
-export type KoriLogReporter = (entry: KoriLogEntry) => void;
-
-export type KoriLoggerFactory = (loggerOptions: { channel: string; name: string }) => KoriLogger;
-
+/**
+ * Main logging interface with channel organization and hierarchical naming.
+ *
+ * Supports:
+ * - Five standard log levels with automatic filtering
+ * - Lazy metadata evaluation for performance
+ * - Channel-based organization for different subsystems
+ * - Hierarchical logger names with inherited configuration
+ * - Persistent bindings for contextual data
+ */
 export type KoriLogger = {
+  /**
+   * Log debug message (lowest priority).
+   *
+   * @param message - Log message to output
+   * @param meta - Optional metadata or factory function for lazy evaluation
+   */
   debug(message: string, meta?: KoriLogMetaOrFactory): void;
+
+  /**
+   * Log informational message.
+   *
+   * @param message - Log message to output
+   * @param meta - Optional metadata or factory function for lazy evaluation
+   */
   info(message: string, meta?: KoriLogMetaOrFactory): void;
+
+  /**
+   * Log warning message.
+   *
+   * @param message - Log message to output
+   * @param meta - Optional metadata or factory function for lazy evaluation
+   */
   warn(message: string, meta?: KoriLogMetaOrFactory): void;
+
+  /**
+   * Log error message.
+   *
+   * @param message - Log message to output
+   * @param meta - Optional metadata or factory function for lazy evaluation
+   */
   error(message: string, meta?: KoriLogMetaOrFactory): void;
+
+  /**
+   * Log fatal error message (highest priority).
+   *
+   * @param message - Log message to output
+   * @param meta - Optional metadata or factory function for lazy evaluation
+   */
   fatal(message: string, meta?: KoriLogMetaOrFactory): void;
 
+  /**
+   * Check if a log level would be output.
+   *
+   * @param level - Log level to check
+   * @returns True if the level would be logged, false otherwise
+   */
   isLevelEnabled(level: KoriLogLevel): boolean;
 
+  /**
+   * Create logger for different channel while preserving name and bindings.
+   *
+   * @param channelName - New channel name for the logger
+   * @returns New logger instance with the specified channel
+   */
   channel(channelName: string): KoriLogger;
+
+  /**
+   * Create child logger with hierarchical name and optional additional bindings.
+   *
+   * @param options - Configuration for the child logger
+   * @param options.name - Child logger name (will be appended to parent name)
+   * @param options.channelName - Optional channel name override
+   * @param options.bindings - Optional additional bindings to merge with parent
+   * @returns New child logger instance with hierarchical name
+   */
   child(options: { name: string; channelName?: string; bindings?: Record<string, unknown> }): KoriLogger;
+
+  /**
+   * Add persistent key-value data to all future log entries.
+   *
+   * @param bindings - Key-value pairs to add to this logger instance
+   * @returns Same logger instance for method chaining
+   */
   addBindings(bindings: Record<string, unknown>): KoriLogger;
+
+  /**
+   * Serialize an unknown error value into a safe, JSON-serializable object
+   * for inclusion in log metadata.
+   *
+   * @param error - Any value that might represent an error
+   * @returns Serializable representation of the error
+   */
+  serializeError(error: unknown): Record<string, unknown>;
 };
 
 const LOG_LEVELS: Record<KoriLogLevel, number> = {
@@ -41,51 +105,45 @@ const LOG_LEVELS: Record<KoriLogLevel, number> = {
   fatal: 5,
 };
 
-function createLogEntry({
-  level,
-  channel,
-  name,
-  message,
-  bindings,
-  meta,
-}: {
-  level: KoriLogLevel;
-  channel: string;
-  name: string;
-  message: string;
-  bindings: Record<string, unknown>;
-  meta?: KoriLogMeta;
-}): KoriLogEntry {
-  return {
-    time: Date.now(),
-    level,
-    channel,
-    name,
-    message,
-    meta: { ...bindings, ...(meta ?? {}) },
-  };
+function isLevelEnabled(currentLevel: KoriLogLevel, minLevel: KoriLogLevel): boolean {
+  return LOG_LEVELS[currentLevel] >= LOG_LEVELS[minLevel];
 }
 
-function createKoriLogger(options: {
+function createChildName({ parentName, childName }: { parentName: string; childName: string }): string {
+  return parentName ? `${parentName}.${childName}` : childName;
+}
+
+/**
+ * Creates a logger instance with specified configuration.
+ *
+ * Manages internal state for bindings and provides all logging functionality
+ * including level filtering, metadata handling, and reporter output.
+ *
+ * @internal Used within logging module for framework infrastructure
+ *
+ * @param options - Configuration for the logger instance
+ * @param options.channel - Channel name for organizing logs
+ * @param options.name - Hierarchical logger name
+ * @param options.level - Minimum log level to output
+ * @param options.bindings - Initial key-value bindings for all log entries
+ * @param options.reporters - Output destinations for log entries
+ * @param options.errorSerializer - Function to serialize errors for logging
+ * @returns Configured logger instance
+ */
+export function createKoriLogger(options: {
   channel: string;
   name: string;
   level: KoriLogLevel;
   bindings: Record<string, unknown>;
   reporters: KoriLogReporter[];
+  errorSerializer: (error: unknown) => Record<string, unknown>;
 }): KoriLogger {
   let _bindings = { ...options.bindings };
 
-  function isLevelEnabled(level: KoriLogLevel): boolean {
-    return LOG_LEVELS[level] >= LOG_LEVELS[options.level];
-  }
-
   function log(level: KoriLogLevel, message: string, metaOrFactory?: KoriLogMetaOrFactory): void {
-    if (!isLevelEnabled(level)) {
+    if (!isLevelEnabled(level, options.level)) {
       return;
     }
-
-    // Resolve factory function lazily only when logging is enabled
-    const meta = typeof metaOrFactory === 'function' ? metaOrFactory() : metaOrFactory;
 
     const logEntry = createLogEntry({
       level,
@@ -93,7 +151,7 @@ function createKoriLogger(options: {
       name: options.name,
       message,
       bindings: _bindings,
-      meta,
+      meta: metaOrFactory,
     });
 
     for (const reporter of options.reporters) {
@@ -105,10 +163,6 @@ function createKoriLogger(options: {
     }
   }
 
-  function createChildName({ parentName, childName }: { parentName: string; childName: string }): string {
-    return parentName ? `${parentName}.${childName}` : childName;
-  }
-
   const logger: KoriLogger = {
     debug: (message, meta) => log('debug', message, meta),
     info: (message, meta) => log('info', message, meta),
@@ -116,7 +170,7 @@ function createKoriLogger(options: {
     error: (message, meta) => log('error', message, meta),
     fatal: (message, meta) => log('fatal', message, meta),
 
-    isLevelEnabled,
+    isLevelEnabled: (level) => isLevelEnabled(level, options.level),
 
     channel: (channelName) => {
       return createKoriLogger({
@@ -125,6 +179,7 @@ function createKoriLogger(options: {
         level: options.level,
         bindings: _bindings,
         reporters: options.reporters,
+        errorSerializer: options.errorSerializer,
       });
     },
 
@@ -135,32 +190,17 @@ function createKoriLogger(options: {
         level: options.level,
         bindings: { ..._bindings, ...childOptions.bindings },
         reporters: options.reporters,
+        errorSerializer: options.errorSerializer,
       });
     },
 
     addBindings: (bindings) => {
       _bindings = { ..._bindings, ...bindings };
-      return logger; // Return self for chaining
+      return logger;
     },
+
+    serializeError: (error: unknown) => options.errorSerializer(error),
   };
 
   return logger;
-}
-
-export type KoriLoggerOptions = {
-  level?: KoriLogLevel;
-  bindings?: Record<string, unknown>;
-  reporters?: KoriLogReporter[];
-};
-
-export function createKoriLoggerFactory({ level, bindings, reporters }: KoriLoggerOptions = {}): KoriLoggerFactory {
-  return ({ channel, name }: { channel: string; name: string }) => {
-    return createKoriLogger({
-      channel,
-      name,
-      level: level ?? 'info',
-      bindings: bindings ?? {},
-      reporters: reporters ?? [createConsoleReporter()],
-    });
-  };
 }

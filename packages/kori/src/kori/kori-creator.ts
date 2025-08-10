@@ -1,6 +1,6 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { createKoriLoggerFactory, KoriLoggerUtils } from '../logging/index.js';
-import { type KoriLoggerOptions, type KoriLoggerFactory } from '../logging/index.js';
+import { createKoriLoggerFactory, createInstanceLogger } from '../logging/index.js';
+import { type KoriLoggerFactoryOptions, type KoriLoggerFactory } from '../logging/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
 import { createHonoRouter, type KoriRouter } from '../router/index.js';
@@ -33,7 +33,7 @@ type CreateKoriOptions<
   router?: KoriRouter;
 } & (
   | { loggerFactory: KoriLoggerFactory; loggerOptions?: never }
-  | { loggerFactory?: never; loggerOptions: KoriLoggerOptions }
+  | { loggerFactory?: never; loggerOptions: KoriLoggerFactoryOptions }
   | { loggerFactory?: never; loggerOptions?: never }
 );
 
@@ -45,7 +45,7 @@ export function createKori<
 ): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
   const router = options?.router ?? createHonoRouter();
   const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
-  const instanceLogger = KoriLoggerUtils.createInstanceLogger(loggerFactory);
+  const instanceLogger = createInstanceLogger(loggerFactory);
 
   const shared = {
     router,

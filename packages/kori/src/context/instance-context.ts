@@ -1,5 +1,5 @@
-import { KoriLoggerUtils } from '../logging/index.js';
-import { serializeError, type KoriLogger } from '../logging/index.js';
+import { type KoriLogger } from '../logging/index.js';
+import { createPluginLogger, createSystemLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -92,7 +92,7 @@ export type KoriInstanceContext<Env extends KoriEnvironment> = {
    *
    * @returns System logger instance
    */
-  createSysLogger(): KoriLogger;
+  createSystemLogger(): KoriLogger;
 
   /**
    * Creates a plugin-specific logger.
@@ -139,8 +139,8 @@ type InstanceCtxState = {
  * @param ctx - Instance context state
  * @returns System logger instance
  */
-function createSysLogger(ctx: InstanceCtxState) {
-  return KoriLoggerUtils.createSysLogger({
+function createSystemLoggerInternal(ctx: InstanceCtxState) {
+  return createSystemLogger({
     logger: ctx.instanceLogger,
   });
 }
@@ -152,8 +152,8 @@ function createSysLogger(ctx: InstanceCtxState) {
  * @param pluginName - Name of the plugin for log identification
  * @returns Plugin logger instance
  */
-function createPluginLogger(ctx: InstanceCtxState, pluginName: string) {
-  return KoriLoggerUtils.createPluginLogger({
+function createPluginLoggerInternal(ctx: InstanceCtxState, pluginName: string) {
+  return createPluginLogger({
     logger: ctx.instanceLogger,
     pluginName,
   });
@@ -174,12 +174,12 @@ const instanceContextPrototype = {
     return this.instanceLogger;
   },
 
-  createSysLogger(this: InstanceCtxState) {
-    return createSysLogger(this);
+  createSystemLogger(this: InstanceCtxState) {
+    return createSystemLoggerInternal(this);
   },
 
   createPluginLogger(this: InstanceCtxState, pluginName: string) {
-    return createPluginLogger(this, pluginName);
+    return createPluginLoggerInternal(this, pluginName);
   },
 };
 
@@ -227,9 +227,10 @@ export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextB
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      ctx.createSysLogger().error('Instance defer callback error', {
+      const sys = ctx.createSystemLogger();
+      sys.error('Instance defer callback error', {
         type: 'defer-callback',
-        err: serializeError(err),
+        err: sys.serializeError(err),
       });
     }
   }

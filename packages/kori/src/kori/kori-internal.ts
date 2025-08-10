@@ -2,7 +2,8 @@ import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../co
 import { type KoriFetchHandler } from '../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { getMethodString } from '../http/index.js';
-import { KoriLoggerUtils, type KoriLogger } from '../logging/index.js';
+import { type KoriLogger } from '../logging/index.js';
+import { createPluginLogger, createSystemLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
@@ -99,13 +100,13 @@ export function createKoriInternal<
     log() {
       return _shared.instanceLogger;
     },
-    createSysLogger() {
-      return KoriLoggerUtils.createSysLogger({
+    createSystemLogger() {
+      return createSystemLogger({
         logger: _shared.instanceLogger,
       });
     },
     createPluginLogger(pluginName: string) {
-      return KoriLoggerUtils.createPluginLogger({
+      return createPluginLogger({
         logger: _shared.instanceLogger,
         pluginName,
       });

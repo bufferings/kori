@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createKoriLoggerFactory, type KoriLogMeta, type KoriLogMetaFactory } from '../../src/logging/logger.js';
+import { type KoriLogMeta, type KoriLogMetaFactory } from '../../src/logging/log-entry.js';
+import { createKoriLoggerFactory } from '../../src/logging/logger-factory.js';
 
 describe('Lazy Log Data Initialization', () => {
   it('should execute factory function only when log level is enabled', () => {
@@ -116,7 +117,6 @@ describe('Lazy Log Data Initialization', () => {
         name: 'test',
         message: 'Warn with expensive computation',
         meta: expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           timestamp: expect.any(Number),
           computedData: { result: 'expensive-computation-result' },
         }) as object,

@@ -16,13 +16,6 @@ Guidelines for writing comments and JSDoc in the Kori project.
 
 ## Public API
 
-### ✅ Required
-
-- Type parameter descriptions (`@template`)
-- Parameter descriptions (`@param`)
-- Return value descriptions (`@returns`)
-- Usage examples (`@example`)
-
 ````typescript
 /**
  * Handler context provides access to environment, request, response, and utilities
@@ -54,6 +47,29 @@ export type KoriHandlerContext<Env, Req, Res> = {
 };
 ````
 
+### ✅ Required
+
+- Type parameter descriptions (`@template`)
+- Parameter descriptions (`@param`)
+- Return value descriptions (`@returns`)
+
+### 📝 Recommended When Helpful
+
+- Usage examples (`@example`) - when the usage is not obvious from the function signature
+
+#### When to Include Examples
+
+- Complex APIs with multiple options or chaining methods
+- Non-obvious usage patterns or parameter combinations
+- Functions where type information alone doesn't clarify intended usage
+- APIs that have common misconceptions or edge cases
+
+#### When Examples Can Be Omitted
+
+- Simple, self-explanatory functions (e.g., `getUserId()`, `setName(name: string)`)
+- Standard getters/setters with obvious behavior
+- Functions where usage is clear from type definitions and parameter names
+
 ### 📝 Highlight Important Details
 
 - **Performance reasons** (mutation, caching, etc.)
@@ -80,8 +96,8 @@ const KoriRequestBrand = Symbol('kori-request');
 
 ```typescript
 /** @internal */
-export function createSysLogger(ctx: HandlerCtxState) {
-  return KoriLoggerUtils.createSysLogger({
+export function createSystemLogger(ctx: HandlerCtxState) {
+  return loggerHelpers.createSystemLogger({
     logger: getLoggerInternal(ctx),
   });
 }
@@ -92,7 +108,7 @@ export function createSysLogger(ctx: HandlerCtxState) {
 ```typescript
 /** @internal Caches logger per request for performance */
 export function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
-  ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
+  ctx.loggerCache ??= loggerHelpers.createRequestLogger(ctx.loggerFactory);
   return ctx.loggerCache;
 }
 ```
