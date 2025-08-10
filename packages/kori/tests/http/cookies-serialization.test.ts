@@ -19,6 +19,14 @@ describe('serializeCookie', () => {
         expect(result.value).toBe('message=hello%20world');
       }
     });
+
+    test('should URL-encode semicolons and double quotes', () => {
+      const result = serializeCookie('msg', 'hello;world "x"');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBe('msg=hello%3Bworld%20%22x%22');
+      }
+    });
   });
 
   describe('options', () => {

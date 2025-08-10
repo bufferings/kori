@@ -17,7 +17,7 @@ describe('parseCookies', () => {
     });
   });
 
-  test('should handle URL encoded values', () => {
+  test('should parse URL-encoded values', () => {
     const result = parseCookies('message=hello%20world; name=john%40example.com');
     expect(result).toEqual({
       message: 'hello world',
@@ -25,22 +25,37 @@ describe('parseCookies', () => {
     });
   });
 
-  // TODO: Implement quoted-string support (RFC 6265)
-  // test('should handle quoted values (RFC 6265 compliant)', () => {
-  //   // Properly quoted values with spaces
-  //   const result1 = parseCookies('message="hello world"; name="john doe"');
-  //   expect(result1).toEqual({ message: 'hello world', name: 'john doe' });
+  test('should parse simple quoted value', () => {
+    const result = parseCookies('a="b"');
+    expect(result).toEqual({ a: 'b' });
+  });
 
-  //   // Quoted values with special characters
-  //   const result2 = parseCookies('data="value; with=special"; id=123');
-  //   expect(result2).toEqual({ data: 'value; with=special', id: '123' });
+  test('should parse quoted values with spaces', () => {
+    const result = parseCookies('message="hello world"; name="john doe"');
+    expect(result).toEqual({ message: 'hello world', name: 'john doe' });
+  });
 
-  //   // Empty quoted values
-  //   const result3 = parseCookies('empty=""; nonempty="test"');
-  //   expect(result3).toEqual({ empty: '', nonempty: 'test' });
-  // });
+  test('should parse empty quoted values', () => {
+    const result = parseCookies('empty=""; nonempty="test"');
+    expect(result).toEqual({ empty: '', nonempty: 'test' });
+  });
 
-  test('should handle unquoted values with spaces gracefully (lenient RFC 6265)', () => {
+  test('should ignore cookies with unmatched quotes', () => {
+    // Per RFC 6265, semicolons are not allowed in cookie values.
+    // Parsing splits on ';' first, so a quoted segment containing ';' is
+    // broken into separate tokens and the ones with unmatched quotes are invalid.
+    const header = 'bad="value; good=ok; another="oops';
+    const result = parseCookies(header);
+    expect(result).toEqual({ good: 'ok' });
+  });
+
+  test('should parse percent-encoded special characters in values', () => {
+    const header = 'msg=hello%3Bworld%20%22x%22';
+    const result = parseCookies(header);
+    expect(result).toEqual({ msg: 'hello;world "x"' });
+  });
+
+  test('should parse unquoted values with spaces (lenient RFC 6265)', () => {
     // RFC 6265 technically requires quotes for values with spaces: name="hello world"
     // But we accept unquoted values for browser compatibility and practical usage
 
@@ -57,7 +72,7 @@ describe('parseCookies', () => {
     expect(result3).toEqual({ encoded: 'hello world', unencoded: 'hello world' });
   });
 
-  test('should handle empty cookie header', () => {
+  test('should parse empty cookie header', () => {
     const result1 = parseCookies('');
     expect(result1).toEqual({});
 
@@ -65,7 +80,7 @@ describe('parseCookies', () => {
     expect(result2).toEqual({});
   });
 
-  test('should handle malformed cookie formats gracefully', () => {
+  test('should parse malformed cookie formats gracefully', () => {
     // Cookie without value
     const result1 = parseCookies('session_id=; username=john');
     expect(result1).toEqual({ session_id: '', username: 'john' });
