@@ -1,4 +1,4 @@
-import { KoriCookieError } from '../error/index.js';
+import { KoriCookieError, KoriSetCookieHeaderError } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -48,9 +48,12 @@ export type KoriResponse = {
    *
    * Header names are normalized to lowercase (Content-Type becomes content-type).
    *
+   * Note: 'set-cookie' header is not allowed via this API. Use setCookie/clearCookie instead.
+   *
    * @param name - Header name
    * @param value - Header value
    * @returns The same response instance for method chaining
+   * @throws {KoriSetCookieHeaderError} When name is 'set-cookie'
    */
   setHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
 
@@ -59,9 +62,12 @@ export type KoriResponse = {
    *
    * Header names are normalized to lowercase (Content-Type becomes content-type).
    *
+   * Note: 'set-cookie' header is not allowed via this API. Use setCookie/clearCookie instead.
+   *
    * @param name - Header name
    * @param value - Header value to append
    * @returns The same response instance for method chaining
+   * @throws {KoriSetCookieHeaderError} When name is 'set-cookie'
    */
   appendHeader(name: HttpResponseHeaderName, value: string): KoriResponse;
 
@@ -69,6 +75,10 @@ export type KoriResponse = {
    * Removes a response header.
    *
    * Header names are normalized to lowercase (Content-Type becomes content-type).
+   *
+   * Note: When name is 'set-cookie', removes all pending set-cookie headers at once.
+   * Individual cookie removal is not supported; use clearCookie(name, scope) to instruct
+   * clients to delete a specific cookie.
    *
    * @param name - Header name to remove
    * @returns The same response instance for method chaining
@@ -79,6 +89,9 @@ export type KoriResponse = {
    * Sets a cookie in the response.
    *
    * Cookie names are case-sensitive (sessionId and SessionId are different cookies).
+   *
+   * Note: The 'set-cookie' header is guarded in setHeader/appendHeader. Cookies must be
+   * managed via setCookie/clearCookie to ensure validation and correct multi-header emission.
    *
    * @param name - Cookie name
    * @param value - Cookie value
@@ -92,6 +105,9 @@ export type KoriResponse = {
    * Clears a cookie by setting it to expire.
    *
    * Cookie names are case-sensitive (sessionId and SessionId are different cookies).
+   *
+   * Note: The 'set-cookie' header is guarded in setHeader/appendHeader. Cookies must be
+   * managed via setCookie/clearCookie to ensure validation and correct multi-header emission.
    *
    * @param name - Cookie name to clear
    * @param options - Cookie options for path and domain matching
@@ -478,13 +494,24 @@ type ResState = {
 };
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
+  if (name.toLowerCase() === HttpResponseHeader.SET_COOKIE) {
+    throw new KoriSetCookieHeaderError();
+  }
   res.headers ??= new Headers();
   res.headers.set(name, value);
 }
 
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
+  if (name.toLowerCase() === HttpResponseHeader.SET_COOKIE) {
+    throw new KoriSetCookieHeaderError();
+  }
   res.headers ??= new Headers();
   res.headers.append(name, value);
+}
+
+function appendSetCookieHeaderInternal(res: ResState, value: string): void {
+  res.headers ??= new Headers();
+  res.headers.append(HttpResponseHeader.SET_COOKIE, value);
 }
 
 function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void {
@@ -499,7 +526,7 @@ function setCookieInternal(res: ResState, name: string, value: string, options?:
   if (!result.ok) {
     throw new KoriCookieError(result.error);
   }
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
+  appendSetCookieHeaderInternal(res, result.value);
 }
 
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
@@ -507,7 +534,7 @@ function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieO
   if (!result.ok) {
     throw new KoriCookieError(result.error);
   }
-  appendHeaderInternal(res, HttpResponseHeader.SET_COOKIE, result.value);
+  appendSetCookieHeaderInternal(res, result.value);
 }
 
 /** Configuration for body setter functions */

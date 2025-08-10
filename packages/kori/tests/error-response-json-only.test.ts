@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { describe, it, expect } from 'vitest';
 
 import { createKori } from '../src/index.js';
@@ -27,7 +25,7 @@ describe('Error Response JSON Only', () => {
     const htmlBody = await htmlResponse.json();
 
     expect(htmlResponse.status).toBe(400);
-    expect(htmlResponse.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+    expect(htmlResponse.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
     expect(htmlBody).toEqual({
       error: {
         type: 'BAD_REQUEST',
@@ -46,7 +44,7 @@ describe('Error Response JSON Only', () => {
     const jsonBody = await jsonResponse.json();
 
     expect(jsonResponse.status).toBe(400);
-    expect(jsonResponse.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+    expect(jsonResponse.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
     expect(jsonBody).toEqual({
       error: {
         type: 'BAD_REQUEST',
@@ -65,7 +63,7 @@ describe('Error Response JSON Only', () => {
     const wildcardBody = await wildcardResponse.json();
 
     expect(wildcardResponse.status).toBe(400);
-    expect(wildcardResponse.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+    expect(wildcardResponse.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
     expect(wildcardBody).toEqual({
       error: {
         type: 'BAD_REQUEST',
@@ -98,7 +96,7 @@ describe('Error Response JSON Only', () => {
       const body = await response.json();
 
       expect(response.status).toBe(testCase.status);
-      expect(response.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+      expect(response.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
       expect(body.error.type).toBe(testCase.type);
     }
   });
@@ -115,7 +113,7 @@ describe('Error Response JSON Only', () => {
     const body = await response.json();
 
     expect(response.status).toBe(400);
-    expect(response.headers.get('Content-Type')).toBe('application/json;charset=utf-8');
+    expect(response.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
     expect(body).toEqual({
       error: {
         type: 'BAD_REQUEST',

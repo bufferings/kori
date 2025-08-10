@@ -34,9 +34,9 @@ export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | 
  * for text-based content types in HTTP responses to ensure proper character encoding.
  */
 export const ContentTypeUtf8 = {
-  APPLICATION_JSON: 'application/json;charset=utf-8',
-  TEXT_PLAIN: 'text/plain;charset=utf-8',
-  TEXT_HTML: 'text/html;charset=utf-8',
+  APPLICATION_JSON: 'application/json; charset=utf-8',
+  TEXT_PLAIN: 'text/plain; charset=utf-8',
+  TEXT_HTML: 'text/html; charset=utf-8',
 } as const;
 
 /**
