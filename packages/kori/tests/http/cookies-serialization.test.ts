@@ -354,7 +354,7 @@ describe('serializeCookie', () => {
 
   describe('partitioned cookie constraints', () => {
     test('should accept valid partitioned cookie', () => {
-      const result = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'None' });
+      const result = serializeCookie('session', 'value', { partitioned: true, secure: true, sameSite: 'none' });
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toContain('Partitioned');
