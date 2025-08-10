@@ -1,9 +1,10 @@
 /**
  * @module
- * Modern Cookie utilities with Result-based error handling.
+ * Modern Cookie utilities with robust parsing and safe serialization.
  *
  * Provides RFC 6265 compliant cookie parsing and serialization with:
- * - Result-based error handling for safety
+ * - Lenient parsing that never throws exceptions
+ * - Result-based serialization for safety
  * - TypeScript prefix constraints (__Secure-, __Host-)
  * - 400-day limit enforcement
  * - Zero external dependencies
