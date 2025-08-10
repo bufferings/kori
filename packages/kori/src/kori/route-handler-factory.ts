@@ -7,6 +7,7 @@ import {
   type KoriResponse,
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
+import { createSystemLogger } from '../logging/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -118,7 +119,7 @@ function createHookExecutor<
             break;
           }
         } catch (hookError) {
-          const sys = currentCtx.createSystemLogger();
+          const sys = createSystemLogger({ logger: currentCtx.log() });
           sys.error('Error hook execution failed', {
             type: 'error-hook',
             err: sys.serializeError(hookError),
@@ -127,7 +128,7 @@ function createHookExecutor<
       }
 
       if (!isErrHandled) {
-        const sys = currentCtx.createSystemLogger();
+        const sys = createSystemLogger({ logger: currentCtx.log() });
         sys.error('Unhandled error in route handler', {
           err: sys.serializeError(err),
         });
@@ -182,7 +183,7 @@ function createRequestValidationErrorHandler<
 
     // 4. Default validation error handling with 400 status
     // Log error occurrence for monitoring
-    const sys = ctx.createSystemLogger();
+    const sys = createSystemLogger({ logger: ctx.log() });
     sys.warn('Request validation failed', {
       type: 'request-validation',
       err: sys.serializeError(err),
@@ -230,7 +231,7 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    const sys = ctx.createSystemLogger();
+    const sys = createSystemLogger({ logger: ctx.log() });
     sys.warn('Response validation failed', {
       type: 'response-validation',
       err: sys.serializeError(err),

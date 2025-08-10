@@ -1,5 +1,4 @@
-import { type KoriLogger } from '../logging/index.js';
-import { createPluginLogger, createSystemLogger } from '../logging/index.js';
+import { type KoriLogger, createPluginLogger, createSystemLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -86,15 +85,6 @@ export type KoriInstanceContext<Env extends KoriEnvironment> = {
   log(): KoriLogger;
 
   /**
-   * Creates a system logger for internal operations.
-   *
-   * Uses channel 'sys' for framework-level logging, distinguished from regular instance logs.
-   *
-   * @returns System logger instance
-   */
-  createSystemLogger(): KoriLogger;
-
-  /**
    * Creates a plugin-specific logger.
    *
    * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
@@ -134,18 +124,6 @@ type InstanceCtxState = {
 };
 
 /**
- * Creates a system logger for framework operations.
- *
- * @param ctx - Instance context state
- * @returns System logger instance
- */
-function createSystemLoggerInternal(ctx: InstanceCtxState) {
-  return createSystemLogger({
-    logger: ctx.instanceLogger,
-  });
-}
-
-/**
  * Creates a plugin logger with plugin identification.
  *
  * @param ctx - Instance context state
@@ -172,10 +150,6 @@ const instanceContextPrototype = {
 
   log(this: InstanceCtxState) {
     return this.instanceLogger;
-  },
-
-  createSystemLogger(this: InstanceCtxState) {
-    return createSystemLoggerInternal(this);
   },
 
   createPluginLogger(this: InstanceCtxState, pluginName: string) {
@@ -227,7 +201,7 @@ export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextB
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      const sys = ctx.createSystemLogger();
+      const sys = createSystemLogger({ logger: ctxState.instanceLogger });
       sys.error('Instance defer callback error', {
         type: 'defer-callback',
         err: sys.serializeError(err),

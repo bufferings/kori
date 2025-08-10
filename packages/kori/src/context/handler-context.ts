@@ -1,5 +1,10 @@
-import { type KoriLoggerFactory, type KoriLogger } from '../logging/index.js';
-import { createPluginLogger, createRequestLogger, createSystemLogger } from '../logging/index.js';
+import {
+  type KoriLoggerFactory,
+  type KoriLogger,
+  createSystemLogger,
+  createPluginLogger,
+  createRequestLogger,
+} from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -118,15 +123,6 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
   log(): KoriLogger;
 
   /**
-   * Creates a system logger for internal operations.
-   *
-   * Uses channel 'sys' for framework-level logging, distinguished from regular request logs.
-   *
-   * @returns System logger instance
-   */
-  createSystemLogger(): KoriLogger;
-
-  /**
    * Creates a plugin-specific logger.
    *
    * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
@@ -181,18 +177,6 @@ function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
 }
 
 /**
- * Creates a system-scoped logger for framework operations.
- *
- * @param ctx - Handler context state
- * @returns System-scoped logger instance
- */
-function createSystemLoggerInternal(ctx: HandlerCtxState) {
-  return createSystemLogger({
-    logger: getLoggerInternal(ctx),
-  });
-}
-
-/**
  * Creates a plugin-scoped logger with plugin identification.
  *
  * @param ctx - Handler context state
@@ -223,9 +207,6 @@ const handlerContextPrototype = {
 
   log(this: HandlerCtxState) {
     return getLoggerInternal(this);
-  },
-  createSystemLogger(this: HandlerCtxState) {
-    return createSystemLoggerInternal(this);
   },
   createPluginLogger(this: HandlerCtxState, pluginName: string) {
     return createPluginLoggerInternal(this, pluginName);
@@ -293,7 +274,7 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await callback(ctx);
     } catch (err) {
-      const sys = ctx.createSystemLogger();
+      const sys = createSystemLogger({ logger: getLoggerInternal(ctxState) });
       sys.error('Defer callback error:', {
         type: 'defer-callback',
         callbackIndex: i,
