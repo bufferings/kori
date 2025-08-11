@@ -1,4 +1,4 @@
-import { type KoriLogger, createPluginLogger, createSystemLogger } from '../logging/index.js';
+import { type KoriLogger, createSystemLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -83,34 +83,6 @@ export type KoriInstanceContext<Env extends KoriEnvironment> = {
    * @returns Instance logger instance
    */
   log(): KoriLogger;
-
-  /**
-   * Creates a plugin-specific logger.
-   *
-   * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
-   * making debugging and monitoring easier.
-   *
-   * @param pluginName - Name of the plugin for log identification
-   * @returns Plugin logger instance
-   *
-   * @example
-   * ```typescript
-   * // In database plugin startup
-   * const dbLogger = ctx.createPluginLogger('database-plugin');
-   * dbLogger.info('Database plugin initialized', {
-   *   host: process.env.DB_HOST,
-   *   pool: { min: 2, max: 10 }
-   * });
-   *
-   * // In cache plugin startup
-   * const cacheLogger = ctx.createPluginLogger('redis-cache');
-   * cacheLogger.info('Cache plugin initialized', {
-   *   mode: 'cluster',
-   *   nodes: redisClusterNodes
-   * });
-   * ```
-   */
-  createPluginLogger(pluginName: string): KoriLogger;
 };
 
 /** Base instance context type for internal use */
@@ -122,20 +94,6 @@ type InstanceCtxState = {
   deferStack: ((ctx: KoriInstanceContextBase) => MaybePromise<void>)[];
   instanceLogger: KoriLogger;
 };
-
-/**
- * Creates a plugin logger with plugin identification.
- *
- * @param ctx - Instance context state
- * @param pluginName - Name of the plugin for log identification
- * @returns Plugin logger instance
- */
-function createPluginLoggerInternal(ctx: InstanceCtxState, pluginName: string) {
-  return createPluginLogger({
-    logger: ctx.instanceLogger,
-    pluginName,
-  });
-}
 
 /** Shared methods prototype for memory efficiency */
 const instanceContextPrototype = {
@@ -150,10 +108,6 @@ const instanceContextPrototype = {
 
   log(this: InstanceCtxState) {
     return this.instanceLogger;
-  },
-
-  createPluginLogger(this: InstanceCtxState, pluginName: string) {
-    return createPluginLoggerInternal(this, pluginName);
   },
 };
 
@@ -201,7 +155,7 @@ export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextB
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      const sys = createSystemLogger({ logger: ctxState.instanceLogger });
+      const sys = createSystemLogger({ baseLogger: ctxState.instanceLogger });
       sys.error('Instance defer callback error', {
         type: 'defer-callback',
         err: sys.serializeError(err),

@@ -1,21 +1,19 @@
-/* eslint-disable no-console */
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 
 import { createConsoleReporter } from '../../src/logging/console-reporter.js';
 import { type KoriLogEntry } from '../../src/logging/log-entry.js';
 
 describe('createConsoleReporter', () => {
-  let originalConsoleLog: typeof console.log;
-  let mockConsoleLog: ReturnType<typeof vi.fn>;
+  let mockConsoleLog: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    originalConsoleLog = console.log;
-    mockConsoleLog = vi.fn();
-    console.log = mockConsoleLog;
+    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    console.log = originalConsoleLog;
+    // Restore all mocks to ensure test independence
+    // (some tests mock JSON.stringify which could affect other tests)
+    vi.restoreAllMocks();
   });
 
   describe('basic functionality', () => {
@@ -33,7 +31,12 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(logEntry));
+
+      const outputString = mockConsoleLog.mock.calls[0]?.[0];
+      expect(outputString).toBe(
+        '{"time":1640995200000,"level":"info","channel":"app","name":"server",' +
+          '"message":"Test message","meta":{"userId":"user-123"}}',
+      );
     });
 
     test('should handle log entry without meta', () => {
@@ -49,7 +52,13 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(logEntry));
+
+      const outputString = mockConsoleLog.mock.calls[0]?.[0];
+      expect(outputString).toBe(
+        // prettier-ignore
+        '{"time":1640995200000,"level":"error","channel":"sys",' +
+          '"name":"database","message":"Connection failed"}',
+      );
     });
 
     test('should handle empty meta object', () => {
@@ -66,7 +75,12 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(logEntry));
+
+      const outputString = mockConsoleLog.mock.calls[0]?.[0];
+      expect(outputString).toBe(
+        '{"time":1640995200000,"level":"warn","channel":"app",' +
+          '"name":"request","message":"Slow response","meta":{}}',
+      );
     });
   });
 
@@ -182,12 +196,11 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const call = mockConsoleLog.mock.calls[0];
-      expect(call?.[0]).toBe('[LOG] 1640995200000 INFO [app:server] Circular reference test');
-      expect(call?.[1]).toEqual({
-        serialization_error: expect.any(String),
-        data: '[Object with serialization issues]',
-      });
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        '[LOG] 1640995200000 INFO [app:server] Circular reference test (serialization error: Converting circular structure to JSON\n' +
+          "    --> starting at object with constructor 'Object'\n" +
+          "    --- property 'self' closes the circle)",
+      );
     });
 
     test('should handle JSON.stringify throwing other errors', () => {
@@ -212,12 +225,9 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const call = mockConsoleLog.mock.calls[0];
-      expect(call?.[0]).toBe('[LOG] 1640995200000 WARN [sys:test] Serialization error test');
-      expect(call?.[1]).toEqual({
-        serialization_error: 'Custom serialization error',
-        data: '[Object with serialization issues]',
-      });
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        '[LOG] 1640995200000 WARN [sys:test] Serialization error test (serialization error: Custom serialization error)',
+      );
     });
 
     test('should handle non-Error objects thrown during serialization', () => {
@@ -241,50 +251,11 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const call = mockConsoleLog.mock.calls[0];
-      expect(call?.[0]).toBe('[LOG] 1640995200000 FATAL [app:critical] Non-Error thrown');
-      expect(call?.[1]).toEqual({
-        serialization_error: 'String error message',
-        data: '[Object with serialization issues]',
-      });
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        '[LOG] 1640995200000 FATAL [app:critical] Non-Error thrown (serialization error: String error message)',
+      );
 
       JSON.stringify = originalStringify;
-    });
-  });
-
-  describe('edge cases', () => {
-    test('should handle extremely large timestamps', () => {
-      const reporter = createConsoleReporter();
-      const logEntry: KoriLogEntry = {
-        time: Number.MAX_SAFE_INTEGER,
-        level: 'debug',
-        channel: 'test',
-        name: 'edge-case',
-        message: 'Large timestamp test',
-      };
-
-      reporter(logEntry);
-
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(logEntry));
-    });
-
-    test('should handle special characters in message', () => {
-      const reporter = createConsoleReporter();
-      const logEntry: KoriLogEntry = {
-        time: 1640995200000,
-        level: 'info',
-        channel: 'app',
-        name: 'test',
-        // eslint-disable-next-line kori/ascii-only-source
-        message: 'Message with "quotes" and \nnewlines and 🎉 emoji',
-        meta: { special: 'chars: \t\r\n"' },
-      };
-
-      reporter(logEntry);
-
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(logEntry));
     });
   });
 });

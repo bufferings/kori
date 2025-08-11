@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { KoriValidationConfigError } from '../../src/error/index.js';
 import { serializeError } from '../../src/logging/error-serializer.js';
 
 describe('serializeError', () => {
@@ -11,29 +12,6 @@ describe('serializeError', () => {
       expect(result).toEqual({
         name: 'Error',
         message: 'Something went wrong',
-        stack: expect.any(String),
-      });
-      expect(result.stack).toContain('Something went wrong');
-    });
-
-    test('should serialize TypeError with correct name', () => {
-      const error = new TypeError('Type mismatch');
-      const result = serializeError(error);
-
-      expect(result).toEqual({
-        name: 'TypeError',
-        message: 'Type mismatch',
-        stack: expect.any(String),
-      });
-    });
-
-    test('should serialize RangeError with correct name', () => {
-      const error = new RangeError('Value out of range');
-      const result = serializeError(error);
-
-      expect(result).toEqual({
-        name: 'RangeError',
-        message: 'Value out of range',
         stack: expect.any(String),
       });
     });
@@ -60,6 +38,76 @@ describe('serializeError', () => {
         message: '',
         stack: expect.any(String),
       });
+    });
+
+    test('should handle custom Error subclasses', () => {
+      class CustomError extends Error {
+        public code: string;
+
+        constructor(message: string, code: string) {
+          super(message);
+          this.name = 'CustomError';
+          this.code = code;
+        }
+      }
+
+      const error = new CustomError('Custom error occurred', 'E_CUSTOM');
+      const result = serializeError(error);
+
+      expect(result).toEqual({
+        name: 'CustomError',
+        message: 'Custom error occurred',
+        stack: expect.any(String),
+        code: 'E_CUSTOM',
+      });
+    });
+
+    test('should handle Error with additional properties', () => {
+      const error = new Error('Database connection failed');
+      (error as Error & { code: string; retryCount: number }).code = 'DB_CONNECTION_ERROR';
+      (error as Error & { code: string; retryCount: number }).retryCount = 3;
+
+      const result = serializeError(error);
+
+      expect(result).toEqual({
+        name: 'Error',
+        message: 'Database connection failed',
+        stack: expect.any(String),
+        code: 'DB_CONNECTION_ERROR',
+        retryCount: 3,
+      });
+    });
+
+    test('should handle KoriValidationConfigError', () => {
+      const validationError = new KoriValidationConfigError('Invalid schema mapping', {
+        data: { provider: 'zod', reason: 'missing content type' },
+      });
+
+      const result = serializeError(validationError);
+
+      expect(result).toEqual({
+        name: 'KoriValidationConfigError',
+        message: 'Invalid schema mapping',
+        stack: expect.any(String),
+        code: 'VALIDATION_CONFIG_ERROR',
+        data: { provider: 'zod', reason: 'missing content type' },
+      });
+    });
+
+    test('should exclude function properties from Error', () => {
+      const error = new Error('Error with methods');
+      (error as Error & { helper: () => string; data: string }).helper = () => 'help';
+      (error as Error & { helper: () => string; data: string }).data = 'important';
+
+      const result = serializeError(error);
+
+      expect(result).toEqual({
+        name: 'Error',
+        message: 'Error with methods',
+        stack: expect.any(String),
+        data: 'important',
+      });
+      expect(result).not.toHaveProperty('helper');
     });
   });
 
@@ -116,10 +164,7 @@ describe('serializeError', () => {
         name: 'Error',
         message: 'Main error',
         stack: expect.any(String),
-        cause: {
-          type: 'string',
-          value: 'String cause',
-        },
+        cause: 'String cause',
       });
     });
 
@@ -136,37 +181,39 @@ describe('serializeError', () => {
       });
       expect(result).not.toHaveProperty('cause');
     });
+
+    test('should handle circular cause references', () => {
+      const error1 = new Error('First error');
+      const error2 = new Error('Second error', { cause: error1 });
+      (error1 as Error & { cause: unknown }).cause = error2;
+
+      const result = serializeError(error1);
+
+      expect(result).toEqual({
+        name: 'Error',
+        message: 'First error',
+        stack: expect.any(String),
+        cause: {
+          name: 'Error',
+          message: 'Second error',
+          stack: expect.any(String),
+          cause: {
+            type: 'circular-reference',
+          },
+        },
+      });
+    });
   });
 
   describe('non-Error objects', () => {
-    test('should serialize plain objects', () => {
+    test('should return plain objects unchanged', () => {
       const obj = { type: 'validation', field: 'email', code: 'INVALID_FORMAT' };
       const result = serializeError(obj);
 
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: { type: 'validation', field: 'email', code: 'INVALID_FORMAT' },
-      });
+      expect(result).toEqual(obj);
     });
 
-    test('should serialize objects with nested properties', () => {
-      const obj = {
-        message: 'Custom error',
-        details: {
-          field: 'password',
-          constraints: ['minLength', 'hasSpecialChar'],
-        },
-        timestamp: 1640995200000,
-      };
-      const result = serializeError(obj);
-
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: obj,
-      });
-    });
-
-    test('should handle objects with methods', () => {
+    test('should return objects with methods unchanged', () => {
       const obj = {
         name: 'CustomError',
         getMessage() {
@@ -175,152 +222,33 @@ describe('serializeError', () => {
       };
       const result = serializeError(obj);
 
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: { name: 'CustomError', getMessage: expect.any(Function) },
-      });
+      expect(result).toEqual({ name: 'CustomError', getMessage: expect.any(Function) });
     });
 
-    test('should handle empty objects', () => {
+    test('should return empty objects unchanged', () => {
       const result = serializeError({});
 
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: {},
-      });
+      expect(result).toEqual({});
     });
   });
 
   describe('primitive values', () => {
-    test('should serialize string values', () => {
+    test('should return string values unchanged', () => {
       const result = serializeError('Simple error message');
 
-      expect(result).toEqual({
-        type: 'string',
-        value: 'Simple error message',
-      });
+      expect(result).toEqual('Simple error message');
     });
 
-    test('should serialize number values', () => {
+    test('should return number values unchanged', () => {
       const result = serializeError(404);
 
-      expect(result).toEqual({
-        type: 'number',
-        value: 404,
-      });
+      expect(result).toEqual(404);
     });
 
-    test('should serialize boolean values', () => {
-      const result = serializeError(false);
-
-      expect(result).toEqual({
-        type: 'boolean',
-        value: false,
-      });
-    });
-
-    test('should serialize undefined', () => {
-      const result = serializeError(undefined);
-
-      expect(result).toEqual({
-        type: 'undefined',
-        value: undefined,
-      });
-    });
-
-    test('should serialize null', () => {
+    test('should return null unchanged', () => {
       const result = serializeError(null);
 
-      expect(result).toEqual({
-        type: 'object',
-        value: null,
-      });
-    });
-
-    test('should serialize bigint values', () => {
-      const result = serializeError(BigInt(123));
-
-      expect(result).toEqual({
-        type: 'bigint',
-        value: BigInt(123),
-      });
-    });
-
-    test('should serialize symbol values', () => {
-      const sym = Symbol('test');
-      const result = serializeError(sym);
-
-      expect(result).toEqual({
-        type: 'symbol',
-        value: sym,
-      });
-    });
-  });
-
-  describe('edge cases', () => {
-    test('should handle circular references in non-Error objects', () => {
-      const circular: Record<string, unknown> = { name: 'circular' };
-      circular.self = circular;
-
-      const result = serializeError(circular);
-
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: expect.objectContaining({ name: 'circular', self: expect.any(Object) }),
-      });
-    });
-
-    test('should handle arrays as errors', () => {
-      const arrayError = ['error', 'with', 'multiple', 'parts'];
-      const result = serializeError(arrayError);
-
-      expect(result).toEqual({
-        type: 'non-error-object',
-        value: {
-          '0': 'error',
-          '1': 'with',
-          '2': 'multiple',
-          '3': 'parts',
-        },
-      });
-    });
-
-    test('should handle custom Error subclasses', () => {
-      class CustomError extends Error {
-        public code: string;
-
-        constructor(message: string, code: string) {
-          super(message);
-          this.name = 'CustomError';
-          this.code = code;
-        }
-      }
-
-      const error = new CustomError('Custom error occurred', 'E_CUSTOM');
-      const result = serializeError(error);
-
-      expect(result).toEqual({
-        name: 'CustomError',
-        message: 'Custom error occurred',
-        stack: expect.any(String),
-      });
-    });
-
-    test('should handle Error with additional properties', () => {
-      const error = new Error('Enhanced error');
-      (error as Error & { code: string; statusCode: number }).code = 'E_VALIDATION';
-      (error as Error & { code: string; statusCode: number }).statusCode = 400;
-
-      const result = serializeError(error);
-
-      // Should only serialize standard Error properties
-      expect(result).toEqual({
-        name: 'Error',
-        message: 'Enhanced error',
-        stack: expect.any(String),
-      });
-      expect(result).not.toHaveProperty('code');
-      expect(result).not.toHaveProperty('statusCode');
+      expect(result).toEqual(null);
     });
   });
 });

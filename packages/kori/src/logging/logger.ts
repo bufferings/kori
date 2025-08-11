@@ -1,3 +1,4 @@
+import { type KoriErrorSerializer } from './error-serializer.js';
 import { createLogEntry, type KoriLogLevel, type KoriLogMetaOrFactory } from './log-entry.js';
 import { type KoriLogReporter } from './log-reporter.js';
 
@@ -94,7 +95,7 @@ export type KoriLogger = {
    * @param error - Any value that might represent an error
    * @returns Serializable representation of the error
    */
-  serializeError(error: unknown): Record<string, unknown>;
+  serializeError(error: unknown): unknown;
 };
 
 const LOG_LEVELS: Record<KoriLogLevel, number> = {
@@ -136,7 +137,7 @@ export function createKoriLogger(options: {
   level: KoriLogLevel;
   bindings: Record<string, unknown>;
   reporters: KoriLogReporter[];
-  errorSerializer: (error: unknown) => Record<string, unknown>;
+  errorSerializer: KoriErrorSerializer;
 }): KoriLogger {
   let _bindings = { ...options.bindings };
 
@@ -199,7 +200,7 @@ export function createKoriLogger(options: {
       return logger;
     },
 
-    serializeError: (error: unknown) => options.errorSerializer(error),
+    serializeError: options.errorSerializer,
   };
 
   return logger;

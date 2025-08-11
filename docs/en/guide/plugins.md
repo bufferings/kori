@@ -34,24 +34,37 @@ For example, a logging plugin might use multiple hooks:
 ```typescript
 import {
   defineKoriPlugin,
+  createPluginLogger,
   type KoriEnvironment,
   type KoriRequest,
   type KoriResponse,
   type KoriPlugin,
 } from '@korix/kori';
 
-// Simple logging plugin structure
+// Better logging plugin with dedicated logger
 export function loggingPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
 >(): KoriPlugin<Env, Req, Res, unknown, { startTime: number }, unknown> {
   return defineKoriPlugin({
-    name: 'simple-logging',
-    apply: (kori) =>
-      kori.onRequest((ctx) => {
+    name: 'request-logging',
+    apply: (kori) => {
+      const log = createPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'request-logging',
+      });
+
+      log.info('Request logging plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        const requestLog = createPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'request-logging',
+        });
+
         // Log when request starts
-        ctx.log().info('Request started', {
+        requestLog.info('Request started', {
           method: ctx.req.method(),
           path: ctx.req.url().pathname,
         });
@@ -59,14 +72,15 @@ export function loggingPlugin<
         // Defer response logging
         ctx.defer(() => {
           const duration = Date.now() - ctx.req.startTime;
-          ctx.log().info('Request completed', {
+          requestLog.info('Request completed', {
             status: ctx.res.getStatus(),
             duration: `${duration}ms`,
           });
         });
 
         return ctx.withReq({ startTime: Date.now() });
-      }),
+      });
+    },
   });
 }
 ```
@@ -235,6 +249,95 @@ const requestIdPlugin = <
         return ctx.withReq({ requestId });
       }),
   });
+```
+
+## Plugin Logging
+
+Plugins should use dedicated loggers to provide better organization and debugging capabilities. Use `createPluginLogger()` to create plugin-specific loggers that are automatically namespaced.
+
+### Plugin-Specific Loggers
+
+```typescript
+import {
+  defineKoriPlugin,
+  createPluginLogger,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriPlugin,
+} from '@korix/kori';
+
+export function authPlugin<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res> {
+  return defineKoriPlugin({
+    name: 'auth',
+    apply: (kori) => {
+      // Instance-level plugin logger
+      const log = createPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'auth',
+      });
+
+      log.info('Auth plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        // Request-level plugin logger
+        const requestLog = createPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'auth',
+        });
+
+        requestLog.info('Checking authentication', {
+          path: ctx.req.url().pathname,
+        });
+
+        // Your authentication logic here...
+      });
+    },
+  });
+}
+```
+
+### Benefits of Plugin Loggers
+
+Plugin-specific loggers provide several advantages:
+
+- **Namespace isolation**: Logs are automatically prefixed with `plugin.{pluginName}`
+- **Better debugging**: Easy to filter logs by specific plugins
+- **Consistent formatting**: Inherits all bindings from the base logger
+- **Channel separation**: Plugin logs use dedicated channels for organization
+
+### Logger Output
+
+Plugin loggers automatically namespace their output:
+
+```json
+{
+  "time": 1754201824386,
+  "level": "info",
+  "channel": "plugin.auth",
+  "name": "request",
+  "message": "Checking authentication",
+  "meta": {
+    "path": "/api/users"
+  }
+}
+```
+
+Compare this with regular context logging:
+
+```json
+{
+  "time": 1754201824386,
+  "level": "info",
+  "channel": "app",
+  "name": "request",
+  "message": "Processing request",
+  "meta": {}
+}
 ```
 
 ## Official Plugins

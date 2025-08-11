@@ -47,6 +47,8 @@ export {
 } from './kori/index.js';
 export {
   createKoriLoggerFactory,
+  createPluginLogger,
+  createSystemLogger,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,

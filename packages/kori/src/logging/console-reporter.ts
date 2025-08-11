@@ -35,11 +35,8 @@ export function createConsoleReporter(filter?: (entry: KoriLogEntry) => boolean)
       // Fallback for serialization errors (e.g., circular references)
       // eslint-disable-next-line no-console
       console.log(
-        `[LOG] ${entry.time} ${entry.level.toUpperCase()} [${entry.channel}:${entry.name}] ${entry.message}`,
-        {
-          serialization_error: error instanceof Error ? error.message : String(error),
-          data: '[Object with serialization issues]',
-        },
+        `[LOG] ${entry.time} ${entry.level.toUpperCase()} [${entry.channel}:${entry.name}] ${entry.message} ` +
+          `(serialization error: ${error instanceof Error ? error.message : String(error)})`,
       );
     }
   };

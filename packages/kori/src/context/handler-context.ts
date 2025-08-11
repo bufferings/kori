@@ -1,10 +1,4 @@
-import {
-  type KoriLoggerFactory,
-  type KoriLogger,
-  createSystemLogger,
-  createPluginLogger,
-  createRequestLogger,
-} from '../logging/index.js';
+import { type KoriLoggerFactory, type KoriLogger, createSystemLogger, createRequestLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -121,35 +115,6 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * @returns Request logger instance
    */
   log(): KoriLogger;
-
-  /**
-   * Creates a plugin-specific logger.
-   *
-   * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
-   * making debugging and monitoring easier.
-   *
-   * @param pluginName - Name of the plugin for log identification
-   * @returns Plugin logger instance
-   *
-   * @example
-   * ```typescript
-   * // In auth plugin
-   * const authLogger = ctx.createPluginLogger('auth-plugin');
-   * authLogger.info('Authentication attempt', {
-   *   method: 'jwt',
-   *   userId: token.sub,
-   *   ip: ctx.req.headers.get('x-forwarded-for')
-   * });
-   *
-   * // In rate limit plugin
-   * const rateLimitLogger = ctx.createPluginLogger('rate-limiter');
-   * rateLimitLogger.warn('Rate limit exceeded', {
-   *   ip: clientIp,
-   *   attempts: requestCount
-   * });
-   * ```
-   */
-  createPluginLogger(pluginName: string): KoriLogger;
 };
 
 /** Base handler context type for internal use */
@@ -176,20 +141,6 @@ function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
   return ctx.loggerCache;
 }
 
-/**
- * Creates a plugin-scoped logger with plugin identification.
- *
- * @param ctx - Handler context state
- * @param pluginName - Name of the plugin for log identification
- * @returns Plugin-scoped logger instance
- */
-function createPluginLoggerInternal(ctx: HandlerCtxState, pluginName: string) {
-  return createPluginLogger({
-    logger: getLoggerInternal(ctx),
-    pluginName,
-  });
-}
-
 /** Shared methods prototype for memory efficiency */
 const handlerContextPrototype = {
   withReq<ReqExt extends object>(this: HandlerCtxState, reqExt: ReqExt) {
@@ -207,9 +158,6 @@ const handlerContextPrototype = {
 
   log(this: HandlerCtxState) {
     return getLoggerInternal(this);
-  },
-  createPluginLogger(this: HandlerCtxState, pluginName: string) {
-    return createPluginLoggerInternal(this, pluginName);
   },
 };
 
@@ -274,7 +222,7 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await callback(ctx);
     } catch (err) {
-      const sys = createSystemLogger({ logger: getLoggerInternal(ctxState) });
+      const sys = createSystemLogger({ baseLogger: getLoggerInternal(ctxState) });
       sys.error('Defer callback error:', {
         type: 'defer-callback',
         callbackIndex: i,

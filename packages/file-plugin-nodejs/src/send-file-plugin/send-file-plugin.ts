@@ -1,4 +1,4 @@
-import { defineKoriPlugin } from '@korix/kori';
+import { defineKoriPlugin, createPluginLogger } from '@korix/kori';
 import { type KoriEnvironment, type KoriPlugin, type KoriRequest, type KoriResponse } from '@korix/kori';
 
 import { PLUGIN_VERSION } from '../version/index.js';
@@ -25,11 +25,11 @@ export function sendFilePlugin<Env extends KoriEnvironment, Req extends KoriRequ
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.createPluginLogger(PLUGIN_NAME);
+      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
       log.info('Send file plugin initialized', { root });
 
       return kori.onRequest((ctx) => {
-        const requestLog = ctx.createPluginLogger(PLUGIN_NAME);
+        const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
 
         const sendFile = (filePath: string, sendFileOptions?: SendFileOptions) =>
           handleFileResponse({

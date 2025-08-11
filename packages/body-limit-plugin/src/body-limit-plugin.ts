@@ -7,6 +7,7 @@ import {
   type KoriHandlerContext,
   HttpStatus,
   type KoriLogger,
+  createPluginLogger,
 } from '@korix/kori';
 
 import { PLUGIN_VERSION } from './version.js';
@@ -197,7 +198,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
       return kori
         .onRequest((ctx) => {
           const { req, res } = ctx;
-          const requestLog = ctx.createPluginLogger(PLUGIN_NAME);
+          const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
 
           // Skip methods that don't typically have bodies
           if (!METHODS_WITH_BODY.has(req.method())) {
