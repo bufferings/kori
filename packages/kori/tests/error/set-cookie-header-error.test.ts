@@ -8,7 +8,7 @@ describe('KoriSetCookieHeaderError', () => {
 
     expect(error.message).toBe('set-cookie must use setCookie/clearCookie');
     expect(error.name).toBe('KoriSetCookieHeaderError');
-    expect(error.code).toBe('SET_COOKIE_HEADER_GUARD');
+    expect(error.code).toBe('SET_COOKIE_HEADER_ERROR');
     expect(error.data).toBeUndefined();
     expect(error.cause).toBeUndefined();
   });

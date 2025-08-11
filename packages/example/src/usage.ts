@@ -38,7 +38,7 @@ const loggerFactory = createKoriLoggerFactory({
 type RequestIdExtension = { requestId: string };
 
 const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, RequestIdExtension, unknown>({
+  defineKoriPlugin<Env, Req, Res, object, RequestIdExtension, object>({
     name: 'requestId',
     apply: (k) =>
       k.onRequest((ctx) => {
@@ -58,7 +58,7 @@ const requestIdPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, R
 type TimingExtension = { startTime: number };
 
 const timingPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
-  defineKoriPlugin<Env, Req, Res, unknown, TimingExtension, unknown>({
+  defineKoriPlugin<Env, Req, Res, object, TimingExtension, object>({
     name: 'timing',
     apply: (k) =>
       k.onRequest((ctx) => {

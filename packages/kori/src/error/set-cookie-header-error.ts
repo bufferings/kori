@@ -16,11 +16,11 @@ import { KoriError } from './kori-error.js';
  */
 export class KoriSetCookieHeaderError extends KoriError {
   /**
-   * Creates a KoriSetCookieHeaderError with code "SET_COOKIE_HEADER_GUARD".
+   * Creates a KoriSetCookieHeaderError with code "SET_COOKIE_HEADER_ERROR".
    */
   constructor() {
     super('set-cookie must use setCookie/clearCookie', {
-      code: 'SET_COOKIE_HEADER_GUARD',
+      code: 'SET_COOKIE_HEADER_ERROR',
     });
   }
 }

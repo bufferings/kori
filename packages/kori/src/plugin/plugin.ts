@@ -16,32 +16,23 @@ const KoriPluginBrand = Symbol('kori-plugin');
  * @template Req - Base request type
  * @template Res - Base response type
  * @template EnvExt - Environment extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template ReqExt - Request extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template ResExt - Response extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template RequestValidator - Request validation type constraint.
  *   Typically not used in plugins, defaults to any to preserve types.
  * @template ResponseValidator - Response validation type constraint.
  *   Typically not used in plugins, defaults to any to preserve types.
- *
- * @example
- * ```typescript
- * const authPlugin = defineKoriPlugin({
- *   name: 'auth',
- *   version: '1.0.0',
- *   apply: (kori) => kori.withReq({ userId: string })
- * });
- * ```
  */
 export type KoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  EnvExt = unknown,
-  ReqExt = unknown,
-  ResExt = unknown,
+  EnvExt extends object = object,
+  ReqExt extends object = object,
+  ResExt extends object = object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestValidator extends KoriRequestValidatorDefault | undefined = any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,11 +67,11 @@ export type KoriPlugin<
  * @template Req - Base request type
  * @template Res - Base response type
  * @template EnvExt - Environment extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template ReqExt - Request extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template ResExt - Response extensions added by this plugin.
- *   Defaults to unknown, which means no extensions.
+ *   Defaults to an empty object, which means no extensions.
  * @template RequestValidator - Request validation type constraint.
  *   Typically not used in plugins, defaults to any to preserve types.
  * @template ResponseValidator - Response validation type constraint.
@@ -94,24 +85,28 @@ export type KoriPlugin<
  * @returns Kori plugin object ready for use
  *
  * @example
+ * Creating polymorphic plugins that work with any Kori instance:
  * ```typescript
- * const corsPlugin = defineKoriPlugin({
- *   name: 'cors',
- *   version: '1.0.0',
- *   apply: (kori) => kori
- *     .onRequest((ctx) => {
- *       ctx.res.headers['access-control-allow-origin'] = '*';
- *     })
- * });
+ * const authPlugin = <Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>() =>
+ *   defineKoriPlugin<Env, Req, Res, { region: string }, { userId: string }>({
+ *     name: 'auth',
+ *     version: '1.0.0',
+ *     apply: (kori) => kori
+ *       .onStart((ctx) => ctx.withEnv({ region: 'us-west' }))
+ *       .onRequest((ctx) => ctx.withReq({ userId: 'user-123' }))
+ *   });
+ *
+ * // Polymorphic form ensures type information flows correctly
+ * const app = createKori().applyPlugin(authPlugin());
  * ```
  */
 export function defineKoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  EnvExt = unknown,
-  ReqExt = unknown,
-  ResExt = unknown,
+  EnvExt extends object = object,
+  ReqExt extends object = object,
+  ResExt extends object = object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestValidator extends KoriRequestValidatorDefault | undefined = any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

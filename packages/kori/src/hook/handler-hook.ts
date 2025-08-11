@@ -12,15 +12,17 @@ import { type MaybePromise } from '../util/index.js';
  * @template Env - Environment type
  * @template Req - Request type
  * @template Res - Response type
- * @template ReqExt - Additional request properties
- * @template ResExt - Additional response properties
+ * @template ReqExt - Additional request properties.
+ *   Defaults to an empty object, which means no extensions.
+ * @template ResExt - Additional response properties.
+ *   Defaults to an empty object, which means no extensions.
  */
 export type OnRequestReturnValue<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  ReqExt = unknown,
-  ResExt = unknown,
+  ReqExt extends object = object,
+  ResExt extends object = object,
 > = KoriHandlerContext<Env, Req & ReqExt, Res & ResExt> | KoriResponse | void;
 
 /**
@@ -33,8 +35,10 @@ export type OnRequestReturnValue<
  * @template Env - Environment type
  * @template Req - Request type
  * @template Res - Response type
- * @template ReqExt - Additional request properties to be added
- * @template ResExt - Additional response properties to be added
+ * @template ReqExt - Additional request properties to be added.
+ *   Defaults to an empty object, which means no extensions.
+ * @template ResExt - Additional response properties to be added.
+ *   Defaults to an empty object, which means no extensions.
  *
  * @param ctx - Handler context for accessing request, response, and utilities
  * @returns Extended context, early response, or void to continue processing
@@ -63,8 +67,8 @@ export type KoriOnRequestHook<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  ReqExt = unknown,
-  ResExt = unknown,
+  ReqExt extends object = object,
+  ResExt extends object = object,
 > = (ctx: KoriHandlerContext<Env, Req, Res>) => MaybePromise<OnRequestReturnValue<Env, Req, Res, ReqExt, ResExt>>;
 
 /**

@@ -46,7 +46,7 @@ export type KoriInternal<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 > = Kori<Env, Req, Res, RequestValidator, ResponseValidator> & {
-  _collectStartHooks(): KoriOnStartHook<Env, unknown>[];
+  _collectStartHooks(): KoriOnStartHook<Env>[];
   _collectRouteDefinitions(): KoriRouteDefinition[];
 };
 
@@ -102,7 +102,7 @@ export function createKoriInternal<
 
     _collectStartHooks() {
       const childHooks = _children.flatMap((child) => child._collectStartHooks());
-      return [..._startHooks, ...childHooks] as KoriOnStartHook<Env, unknown>[];
+      return [..._startHooks, ...childHooks] as KoriOnStartHook<Env>[];
     },
 
     _collectRouteDefinitions() {
@@ -110,12 +110,12 @@ export function createKoriInternal<
       return [..._routeDefinitions, ...childDefinitions];
     },
 
-    onStart<EnvExt>(hook: KoriOnStartHook<Env, EnvExt>) {
+    onStart<EnvExt extends object>(hook: KoriOnStartHook<Env, EnvExt>) {
       _startHooks.push(hook);
       return _internal as unknown as Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
     },
 
-    onRequest<ReqExt, ResExt>(hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>) {
+    onRequest<ReqExt extends object, ResExt extends object>(hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>) {
       _requestHooks.push(hook);
       return _internal as unknown as Kori<Env, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
     },
@@ -125,7 +125,7 @@ export function createKoriInternal<
       return _internal;
     },
 
-    applyPlugin<EnvExt, ReqExt, ResExt>(
+    applyPlugin<EnvExt extends object, ReqExt extends object, ResExt extends object>(
       plugin: KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt, RequestValidator, ResponseValidator>,
     ) {
       return plugin.apply(_internal) as unknown as Kori<
@@ -137,7 +137,7 @@ export function createKoriInternal<
       >;
     },
 
-    createChild<EnvExt, ReqExt, ResExt>(childOptions: {
+    createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions: {
       configure: (
         kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
       ) => KoriInternal<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;

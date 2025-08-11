@@ -18,7 +18,7 @@ export type SendFileExtension = {
 
 export function sendFilePlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: SendFileOption = {},
-): KoriPlugin<Env, Req, Res, unknown, unknown, SendFileExtension> {
+): KoriPlugin<Env, Req, Res, object, object, SendFileExtension> {
   const { root } = options;
 
   return defineKoriPlugin({

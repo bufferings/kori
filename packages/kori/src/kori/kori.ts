@@ -80,23 +80,23 @@ export type Kori<
   log(): KoriLogger;
 
   // Lifecycle Hooks
-  onStart<EnvExt>(
+  onStart<EnvExt extends object>(
     hook: KoriOnStartHook<Env, EnvExt>,
   ): Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
 
   // Handler Hooks
-  onRequest<ReqExt, ResExt>(
+  onRequest<ReqExt extends object, ResExt extends object>(
     hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>,
   ): Kori<Env, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
   onError(hook: KoriOnErrorHook<Env, Req, Res>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
 
   // Plugin
-  applyPlugin<EnvExt, ReqExt, ResExt>(
+  applyPlugin<EnvExt extends object, ReqExt extends object, ResExt extends object>(
     plugin: KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt, RequestValidator, ResponseValidator>,
   ): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
 
   // Child Creation
-  createChild<EnvExt, ReqExt, ResExt>(childOptions?: {
+  createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions?: {
     configure: (
       kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
     ) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
