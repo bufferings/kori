@@ -39,6 +39,7 @@ describe('createKoriLoggerFactory', () => {
 
       logger.info('Empty bindings test');
 
+      expect(mockReporter).toHaveBeenCalledTimes(1);
       const logEntry = mockReporter.mock.calls[0]?.[0];
       expect(logEntry).toEqual(
         expect.objectContaining({
