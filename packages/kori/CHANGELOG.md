@@ -1,5 +1,99 @@
 # @korix/kori
 
+## 0.1.3
+
+### Patch Changes
+
+- 7166746: Simplify cookie handling and improve API safety
+
+  This release introduces breaking changes to cookie handling:
+
+  **Breaking Changes:**
+
+  - **Remove Result-based cookie methods**: `req.cookiesSafe()` and `req.cookieSafe()` methods have been removed
+  - **Lenient cookie parsing**: Cookie parsing now never throws exceptions and silently skips malformed entries instead of throwing `KoriCookieError`
+  - **Set-Cookie header protection**: Direct manipulation of "set-cookie" header via `res.setHeader()` and `res.appendHeader()` is now prohibited and throws `KoriSetCookieHeaderError`. Use `res.setCookie()` and `res.clearCookie()` instead
+
+  **Migration Guide:**
+
+  ```typescript
+  // Before
+  const result = ctx.req.cookiesSafe();
+  if (result.ok) {
+    console.log(result.value);
+  } else {
+    console.error(result.error);
+  }
+
+  // After
+  const cookies = ctx.req.cookies(); // Never throws, returns empty object for malformed headers
+
+  // Before
+  res.setHeader('set-cookie', 'sessionId=123; Path=/');
+
+  // After
+  res.setCookie('sessionId', '123', { path: '/' }); // Use dedicated cookie methods
+  ```
+
+  **Non-breaking Changes:**
+
+  - Normalize Content-Type header format with proper spacing after semicolon
+  - Add comprehensive test coverage for cookie handling
+  - Improve TypeScript configuration for test files
+
+- 90dee5e: Improve context API documentation and clean up internal exports
+
+  - Add comprehensive TSDoc comments to KoriRequest, KoriResponse, and KoriInstanceContext with examples
+  - Apply @packageInternal tags to framework infrastructure functions
+  - Remove internal creation functions from public API exports (createKoriEnvironment, createKoriHandlerContext, createKoriInstanceContext, createKoriRequest, createKoriResponse)
+  - Refactor internal variable names for clarity
+
+  Note: Removed functions were internal framework functions not intended for direct user consumption.
+
+- 965c6be: Refactor logging system and add plugin logger support
+
+  This release significantly improves the logging infrastructure with better plugin integration and simplified API design.
+
+  **Breaking Changes in @korix/kori:**
+
+  The following context methods have been removed and replaced with standalone functions:
+
+  - `ctx.createSysLogger()` → `createSystemLogger({ baseLogger: ctx.log() })`
+  - `ctx.createPluginLogger(name)` → `createPluginLogger({ baseLogger: ctx.log(), pluginName: name })`
+
+  **New Features:**
+
+  - Add `createPluginLogger()` function for better plugin log organization
+  - Add `createSystemLogger()` function for framework internal logging
+  - Plugin loggers automatically namespace logs under `plugin.{pluginName}` channels
+  - Simplified logging system with removal of complex lazy initialization
+
+  **Improvements:**
+
+  - All official plugins now use dedicated plugin loggers for better debugging
+  - Enhanced plugin logging documentation with comprehensive examples
+  - Streamlined context logger implementation and test coverage
+  - Better error handling and serialization in logging infrastructure
+
+  **Migration Guide:**
+
+  ```typescript
+  // Before
+  const sysLog = ctx.createSysLogger();
+  const pluginLog = ctx.createPluginLogger('my-plugin');
+
+  // After
+  import { createSystemLogger, createPluginLogger } from '@korix/kori';
+
+  const sysLog = createSystemLogger({ baseLogger: ctx.log() });
+  const pluginLog = createPluginLogger({
+    baseLogger: ctx.log(),
+    pluginName: 'my-plugin',
+  });
+  ```
+
+  All official plugins and adapters have been updated to use the new logging API internally, but their public APIs remain unchanged.
+
 ## 0.1.2
 
 ### Patch Changes
