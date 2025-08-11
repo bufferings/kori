@@ -5,6 +5,36 @@ import { type KoriResponseValidatorDefault } from '../response-validation/index.
 
 const KoriPluginBrand = Symbol('kori-plugin');
 
+/**
+ * Plugin definition for extending Kori instances with additional functionality.
+ *
+ * Plugins can extend environment, request, and response types while maintaining
+ * type safety throughout the application. They follow a functional composition
+ * pattern where each plugin transforms a Kori instance into an enhanced version.
+ *
+ * @template Env - Base environment type
+ * @template Req - Base request type
+ * @template Res - Base response type
+ * @template EnvExt - Environment extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template ReqExt - Request extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template ResExt - Response extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template RequestValidator - Request validation type constraint.
+ *   Typically not used in plugins, defaults to any to preserve types.
+ * @template ResponseValidator - Response validation type constraint.
+ *   Typically not used in plugins, defaults to any to preserve types.
+ *
+ * @example
+ * ```typescript
+ * const authPlugin = defineKoriPlugin({
+ *   name: 'auth',
+ *   version: '1.0.0',
+ *   apply: (kori) => kori.withReq({ userId: string })
+ * });
+ * ```
+ */
 export type KoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
@@ -18,28 +48,63 @@ export type KoriPlugin<
   ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
 > = {
   [KoriPluginBrand]: typeof KoriPluginBrand;
+
+  /** Plugin name. Useful for distinguishing between different plugins. */
   name: string;
+
+  /** Plugin version. Helpful for identifying which version of the plugin this is. */
   version?: string;
+
+  /**
+   * Function that receives a Kori instance and returns an enhanced version.
+   * Adds new functionality and types to the Kori instance.
+   *
+   * @param kori - The Kori instance to enhance
+   * @returns Enhanced Kori instance with extended types
+   */
   apply: (
     kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
   ) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
 };
 
-export type KoriPluginDefault = KoriPlugin<
-  KoriEnvironment,
-  KoriRequest,
-  KoriResponse,
-  unknown,
-  unknown,
-  unknown,
-  KoriRequestValidatorDefault | undefined,
-  KoriResponseValidatorDefault | undefined
->;
-
-export function isKoriPlugin(value: unknown): value is KoriPluginDefault {
-  return typeof value === 'object' && value !== null && KoriPluginBrand in value;
-}
-
+/**
+ * Creates a type-safe Kori plugin.
+ *
+ * Extends Kori functionality and types with type inference support.
+ *
+ * @template Env - Base environment type
+ * @template Req - Base request type
+ * @template Res - Base response type
+ * @template EnvExt - Environment extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template ReqExt - Request extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template ResExt - Response extensions added by this plugin.
+ *   Defaults to unknown, which means no extensions.
+ * @template RequestValidator - Request validation type constraint.
+ *   Typically not used in plugins, defaults to any to preserve types.
+ * @template ResponseValidator - Response validation type constraint.
+ *   Typically not used in plugins, defaults to any to preserve types.
+ *
+ * @param params - Plugin configuration
+ * @param params.name - Plugin name, useful for distinguishing between different plugins
+ * @param params.version - Plugin version, helpful for identifying which version this is
+ * @param params.apply - Function that receives a Kori instance and returns an enhanced version.
+ *   Adds new functionality and types to the Kori instance.
+ * @returns Kori plugin object ready for use
+ *
+ * @example
+ * ```typescript
+ * const corsPlugin = defineKoriPlugin({
+ *   name: 'cors',
+ *   version: '1.0.0',
+ *   apply: (kori) => kori
+ *     .onRequest((ctx) => {
+ *       ctx.res.headers['access-control-allow-origin'] = '*';
+ *     })
+ * });
+ * ```
+ */
 export function defineKoriPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
