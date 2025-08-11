@@ -1,38 +1,95 @@
 /**
- * Safely serializes error objects for logging purposes.
- * Handles Error instances, unknown values, and prevents information loss.
+ * Type definition for an error serializer function.
+ *
+ * @param error - Any value that might be an error
+ * @returns Serialized representation safe for logging
  */
-export function serializeError(error: unknown): Record<string, unknown> {
-  if (error instanceof Error) {
-    const serialized: Record<string, unknown> = {
-      name: error.name,
-      message: error.message,
-    };
+export type KoriErrorSerializer = (error: unknown) => unknown;
 
-    // Include stack trace if available
-    if (error.stack) {
-      serialized.stack = error.stack;
-    }
-
-    // Include cause if available (ES2022 Error cause)
-    if ('cause' in error && error.cause !== undefined) {
-      serialized.cause = serializeError(error.cause);
-    }
-
-    return serialized;
+function serializeErrorInstance(error: Error, visited: Set<Error>): Record<string, unknown> {
+  // Circular reference check
+  if (visited.has(error)) {
+    return { type: 'circular-reference' };
   }
 
-  // Handle non-Error objects
-  if (error !== null && typeof error === 'object') {
-    return {
-      type: 'non-error-object',
-      value: { ...error },
-    };
+  visited.add(error);
+  const serialized: Record<string, unknown> = {};
+
+  // Add standard Error properties (non-enumerable)
+  if (error.name) {
+    serialized.name = error.name;
+  }
+  if (error.message !== undefined) {
+    serialized.message = error.message;
+  }
+  if (error.stack) {
+    serialized.stack = error.stack;
   }
 
-  // Handle primitives and null
-  return {
-    type: typeof error,
-    value: error,
-  };
+  // Handle cause property explicitly (might be non-enumerable)
+  if ('cause' in error && error.cause !== undefined) {
+    if (error.cause instanceof Error) {
+      serialized.cause = serializeErrorInstance(error.cause, visited);
+    } else {
+      serialized.cause = error.cause; // Primitive values and objects directly
+    }
+  }
+
+  // Get all enumerable properties including custom ones
+  for (const key in error) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    const value = (error as any)[key];
+    if (typeof value !== 'function' && key !== 'cause') {
+      serialized[key] = value;
+    }
+  }
+
+  return serialized;
+}
+
+/**
+ * Serializes Error instances for safe logging, with fallback for non-Error values.
+ *
+ * **Error Processing**: Converts Error objects to serializable format preserving
+ * standard properties (name, message, stack), custom properties, and ES2022 cause
+ * chains with circular reference protection.
+ *
+ * **Non-Error Values**: Returns the value unchanged, allowing primitives and
+ * objects to be logged directly.
+ *
+ * @param error - Any value that might be an error (typically from catch blocks)
+ * @returns For Error instances: serialized object; for others: the original value
+ *
+ * @example
+ * ```typescript
+ * // Error serialization
+ * try {
+ *   throw new Error('Database failed', { cause: new Error('Connection timeout') });
+ * } catch (e) {
+ *   req.log().error('Database operation failed', { err: serializeError(e) });
+ *   // err metadata: { name: 'Error', message: 'Database failed',
+ *   //                cause: { name: 'Error', message: 'Connection timeout', stack: '...' } }
+ * }
+ *
+ * // KoriValidationConfigError with custom properties
+ * const validationError = new KoriValidationConfigError('Invalid schema mapping', {
+ *   data: { provider: 'zod', reason: 'missing content type' }
+ * });
+ * serializeError(validationError);
+ * // Returns: { name: 'KoriValidationConfigError', message: 'Invalid schema mapping',
+ * //           code: 'VALIDATION_CONFIG_ERROR',
+ * //           data: { provider: 'zod', reason: 'missing content type' }, stack: '...' }
+ *
+ * // Non-Error values pass through unchanged
+ * serializeError('simple string');    // Returns: 'simple string'
+ * serializeError({ code: 404 });      // Returns: { code: 404 }
+ * serializeError(null);               // Returns: null
+ * ```
+ */
+export function serializeError(error: unknown): unknown {
+  if (!(error instanceof Error)) {
+    return error;
+  }
+
+  return serializeErrorInstance(error, new Set<Error>());
 }

@@ -7,7 +7,7 @@ import {
   type KoriResponse,
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
-import { serializeError } from '../logging/index.js';
+import { createSystemLogger } from '../logging/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidatorError,
@@ -119,16 +119,18 @@ function createHookExecutor<
             break;
           }
         } catch (hookError) {
-          currentCtx.createSysLogger().error('Error hook execution failed', {
+          const sys = createSystemLogger({ baseLogger: currentCtx.log() });
+          sys.error('Error hook execution failed', {
             type: 'error-hook',
-            err: serializeError(hookError),
+            err: sys.serializeError(hookError),
           });
         }
       }
 
       if (!isErrHandled) {
-        currentCtx.createSysLogger().error('Unhandled error in route handler', {
-          err: serializeError(err),
+        const sys = createSystemLogger({ baseLogger: currentCtx.log() });
+        sys.error('Unhandled error in route handler', {
+          err: sys.serializeError(err),
         });
         currentCtx.res.internalError();
       }
@@ -181,9 +183,10 @@ function createRequestValidationErrorHandler<
 
     // 4. Default validation error handling with 400 status
     // Log error occurrence for monitoring
-    ctx.createSysLogger().warn('Request validation failed', {
+    const sys = createSystemLogger({ baseLogger: ctx.log() });
+    sys.warn('Request validation failed', {
       type: 'request-validation',
-      err: serializeError(err),
+      err: sys.serializeError(err),
     });
 
     // Return minimal error information to client
@@ -228,9 +231,10 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    ctx.createSysLogger().warn('Response validation failed', {
+    const sys = createSystemLogger({ baseLogger: ctx.log() });
+    sys.warn('Response validation failed', {
       type: 'response-validation',
-      err: serializeError(err),
+      err: sys.serializeError(err),
     });
     return undefined;
   };

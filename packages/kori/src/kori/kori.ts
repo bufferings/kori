@@ -78,8 +78,6 @@ export type Kori<
 > = {
   // Logger
   log(): KoriLogger;
-  createSysLogger(): KoriLogger;
-  createPluginLogger(pluginName: string): KoriLogger;
 
   // Lifecycle Hooks
   onStart<EnvExt>(

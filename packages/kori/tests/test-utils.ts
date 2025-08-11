@@ -19,6 +19,7 @@ export function createLoggerStub(): KoriLogger {
     error: vi.fn(),
     fatal: vi.fn(),
     isLevelEnabled: () => true,
+    serializeError: vi.fn(() => ({})),
   } as unknown as KoriLogger;
 
   base.channel = () => base;
@@ -59,6 +60,7 @@ export function createSimpleLoggerStub(): KoriLogger {
       // No-op for testing
     },
     isLevelEnabled: () => true,
+    serializeError: () => ({}),
   } as unknown as KoriLogger;
 
   base.channel = () => base;

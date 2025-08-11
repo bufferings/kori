@@ -1,4 +1,4 @@
-import { KoriLoggerUtils, type KoriLoggerFactory, serializeError, type KoriLogger } from '../logging/index.js';
+import { type KoriLoggerFactory, type KoriLogger, createSystemLogger, createRequestLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -53,7 +53,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * }
    * ```
    */
-  withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
+  withReq<ReqExt extends object>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
 
   /**
    * Extends the response object with additional properties.
@@ -77,7 +77,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * return apiCtx.res.success({ message: 'User created' });
    * ```
    */
-  withRes<ResExt>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
+  withRes<ResExt extends object>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
 
   /**
    * Registers a callback to be executed after the handler completes but before the response is sent.
@@ -115,44 +115,6 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * @returns Request logger instance
    */
   log(): KoriLogger;
-
-  /**
-   * Creates a system logger for internal operations.
-   *
-   * Uses channel 'sys' for framework-level logging, distinguished from regular request logs.
-   *
-   * @returns System logger instance
-   */
-  createSysLogger(): KoriLogger;
-
-  /**
-   * Creates a plugin-specific logger.
-   *
-   * Uses channel 'plugin.{pluginName}' to identify log entries by their source plugin,
-   * making debugging and monitoring easier.
-   *
-   * @param pluginName - Name of the plugin for log identification
-   * @returns Plugin logger instance
-   *
-   * @example
-   * ```typescript
-   * // In auth plugin
-   * const authLogger = ctx.createPluginLogger('auth-plugin');
-   * authLogger.info('Authentication attempt', {
-   *   method: 'jwt',
-   *   userId: token.sub,
-   *   ip: ctx.req.headers.get('x-forwarded-for')
-   * });
-   *
-   * // In rate limit plugin
-   * const rateLimitLogger = ctx.createPluginLogger('rate-limiter');
-   * rateLimitLogger.warn('Rate limit exceeded', {
-   *   ip: clientIp,
-   *   attempts: requestCount
-   * });
-   * ```
-   */
-  createPluginLogger(pluginName: string): KoriLogger;
 };
 
 /** Base handler context type for internal use */
@@ -175,34 +137,8 @@ type HandlerCtxState = {
  * @returns Cached request-scoped logger instance
  */
 function getLoggerInternal(ctx: HandlerCtxState): KoriLogger {
-  ctx.loggerCache ??= KoriLoggerUtils.createRequestLogger(ctx.loggerFactory);
+  ctx.loggerCache ??= createRequestLogger(ctx.loggerFactory);
   return ctx.loggerCache;
-}
-
-/**
- * Creates a system-scoped logger for framework operations.
- *
- * @param ctx - Handler context state
- * @returns System-scoped logger instance
- */
-function createSysLogger(ctx: HandlerCtxState) {
-  return KoriLoggerUtils.createSysLogger({
-    logger: getLoggerInternal(ctx),
-  });
-}
-
-/**
- * Creates a plugin-scoped logger with plugin identification.
- *
- * @param ctx - Handler context state
- * @param pluginName - Name of the plugin for log identification
- * @returns Plugin-scoped logger instance
- */
-function createPluginLogger(ctx: HandlerCtxState, pluginName: string) {
-  return KoriLoggerUtils.createPluginLogger({
-    logger: getLoggerInternal(ctx),
-    pluginName,
-  });
 }
 
 /** Shared methods prototype for memory efficiency */
@@ -222,12 +158,6 @@ const handlerContextPrototype = {
 
   log(this: HandlerCtxState) {
     return getLoggerInternal(this);
-  },
-  createSysLogger(this: HandlerCtxState) {
-    return createSysLogger(this);
-  },
-  createPluginLogger(this: HandlerCtxState, pluginName: string) {
-    return createPluginLogger(this, pluginName);
   },
 };
 
@@ -256,7 +186,7 @@ export function createKoriHandlerContext<
   env: Env;
   req: Req;
   res: Res;
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  loggerFactory: KoriLoggerFactory;
 }): KoriHandlerContext<Env, Req, Res> {
   const ctx = Object.create(handlerContextPrototype) as HandlerCtxState;
   ctx.env = env;
@@ -292,10 +222,11 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await callback(ctx);
     } catch (err) {
-      ctx.createSysLogger().error('Defer callback error:', {
+      const sys = createSystemLogger({ baseLogger: getLoggerInternal(ctxState) });
+      sys.error('Defer callback error:', {
         type: 'defer-callback',
         callbackIndex: i,
-        err: serializeError(err),
+        err: sys.serializeError(err),
       });
     }
   }

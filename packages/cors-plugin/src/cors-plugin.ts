@@ -7,6 +7,7 @@ import {
   HttpStatus,
   type KoriHandlerContext,
   type KoriLogger,
+  createPluginLogger,
 } from '@korix/kori';
 
 import { type CorsPluginOptions } from './cors-plugin-options.js';
@@ -155,7 +156,7 @@ export function corsPlugin<Env extends KoriEnvironment, Req extends KoriRequest,
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = kori.createPluginLogger(PLUGIN_NAME);
+      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
       validateCorsOptions(log, options);
 
       log.info('CORS plugin initialized', {

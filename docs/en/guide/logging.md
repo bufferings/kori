@@ -161,3 +161,37 @@ app.get('/profile', (ctx) => {
 ```
 
 The metadata function is executed lazily - only when the log level is enabled, avoiding unnecessary computation.
+
+## Plugin Development
+
+When developing plugins, use `createPluginLogger()` for better log organization:
+
+```typescript
+export function myPlugin<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res> {
+  return defineKoriPlugin({
+    name: 'my-plugin',
+    version: '0.0.0',
+    apply(kori) {
+      const log = createPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'my-plugin',
+      });
+      log.info('Plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        const requestLog = createPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'my-plugin',
+        });
+        requestLog.info('Processing request');
+      });
+    },
+  });
+}
+```
+
+Plugin loggers automatically namespace your logs under `plugin.{pluginName}` channel for better organization and debugging.
