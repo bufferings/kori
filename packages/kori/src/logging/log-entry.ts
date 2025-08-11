@@ -34,7 +34,7 @@ export type KoriLogEntry = {
   /** Log message */
   message: string;
   /** Combined bindings and metadata */
-  meta?: Record<string, unknown>;
+  meta?: KoriLogMeta;
 };
 
 /**
@@ -67,12 +67,16 @@ export function createLogEntry({
   // Resolve factory function lazily for performance
   const resolvedMeta = typeof meta === 'function' ? meta() : meta;
 
+  // Combine bindings and resolved meta
+  const combinedMeta = { ...bindings, ...(resolvedMeta ?? {}) };
+  const hasMetaContent = Object.keys(combinedMeta).length > 0;
+
   return {
     time: Date.now(),
     level,
     channel,
     name,
     message,
-    meta: { ...bindings, ...(resolvedMeta ?? {}) },
+    ...(hasMetaContent ? { meta: combinedMeta } : {}),
   };
 }

@@ -186,7 +186,7 @@ export function createKoriHandlerContext<
   env: Env;
   req: Req;
   res: Res;
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  loggerFactory: KoriLoggerFactory;
 }): KoriHandlerContext<Env, Req, Res> {
   const ctx = Object.create(handlerContextPrototype) as HandlerCtxState;
   ctx.env = env;

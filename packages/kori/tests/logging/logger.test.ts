@@ -41,7 +41,6 @@ describe('KoriLogger', () => {
         channel: 'test',
         name: 'logger',
         message: 'Test message',
-        meta: {},
       });
 
       vi.useRealTimers();
@@ -65,12 +64,13 @@ describe('KoriLogger', () => {
     test('should handle empty meta object', () => {
       logger.info('Test message', {});
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      const logEntry = mockReporter.mock.calls[0]?.[0];
+      expect(logEntry).toEqual(
         expect.objectContaining({
           message: 'Test message',
-          meta: {},
         }),
       );
+      expect(logEntry).not.toHaveProperty('meta');
     });
   });
 

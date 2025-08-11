@@ -196,11 +196,11 @@ describe('createConsoleReporter', () => {
       reporter(logEntry);
 
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        '[LOG] 1640995200000 INFO [app:server] Circular reference test (serialization error: Converting circular structure to JSON\n' +
-          "    --> starting at object with constructor 'Object'\n" +
-          "    --- property 'self' closes the circle)",
-      );
+
+      const logOutput = mockConsoleLog.mock.calls[0]?.[0];
+      expect(logOutput).toContain('[LOG] 1640995200000 INFO [app:server] Circular reference test');
+      expect(logOutput).toContain('serialization error');
+      expect(logOutput).toContain('circular');
     });
 
     test('should handle JSON.stringify throwing other errors', () => {

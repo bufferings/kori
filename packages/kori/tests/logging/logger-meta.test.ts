@@ -117,11 +117,13 @@ describe('KoriLogger meta handling', () => {
       logger.info('Undefined factory test', metaFactory);
 
       expect(metaFactory).toHaveBeenCalledTimes(1);
-      expect(mockReporter).toHaveBeenCalledWith(
+      const logEntry = mockReporter.mock.calls[0]?.[0];
+      expect(logEntry).toEqual(
         expect.objectContaining({
-          meta: {},
+          message: 'Undefined factory test',
         }),
       );
+      expect(logEntry).not.toHaveProperty('meta');
     });
 
     test('should combine bindings with meta factory result', () => {

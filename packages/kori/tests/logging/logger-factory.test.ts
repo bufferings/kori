@@ -39,11 +39,16 @@ describe('createKoriLoggerFactory', () => {
 
       logger.info('Empty bindings test');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      const logEntry = mockReporter.mock.calls[0]?.[0];
+      expect(logEntry).toEqual(
         expect.objectContaining({
-          meta: {},
+          channel: 'test',
+          name: 'bindings',
+          level: 'info',
+          message: 'Empty bindings test',
         }),
       );
+      expect(logEntry).not.toHaveProperty('meta');
     });
   });
 
