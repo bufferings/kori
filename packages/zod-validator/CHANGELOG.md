@@ -1,5 +1,15 @@
 # @korix/zod-validator
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [7166746]
+- Updated dependencies [90dee5e]
+- Updated dependencies [965c6be]
+  - @korix/kori@0.1.3
+  - @korix/zod-schema@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
