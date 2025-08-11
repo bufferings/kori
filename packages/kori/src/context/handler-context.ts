@@ -53,7 +53,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * }
    * ```
    */
-  withReq<ReqExt>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
+  withReq<ReqExt extends object>(reqExt: ReqExt): KoriHandlerContext<Env, Req & ReqExt, Res>;
 
   /**
    * Extends the response object with additional properties.
@@ -77,7 +77,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * return apiCtx.res.success({ message: 'User created' });
    * ```
    */
-  withRes<ResExt>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
+  withRes<ResExt extends object>(resExt: ResExt): KoriHandlerContext<Env, Req, Res & ResExt>;
 
   /**
    * Registers a callback to be executed after the handler completes but before the response is sent.

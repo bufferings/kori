@@ -80,11 +80,9 @@ function isValidContentLength(value: string): boolean {
     return false;
   }
 
-  // Ensure parsed value exactly matches original string (catches leading zeros issues)
-  if (parsed.toString() !== value) {
-    return false;
-  }
-
+  // Allow leading zeros as per RFC 7230/9110 ABNF (1*DIGIT)
+  // While RFC 9110 5.6 recommends minimal decimal form,
+  // rejecting syntactically valid values may cause interoperability issues
   return true;
 }
 
@@ -191,7 +189,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
     version: PLUGIN_VERSION,
     apply: (kori) => {
       // Instance-level logger for plugin initialization
-      const log = kori.log().channel(PLUGIN_NAME);
+      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
       log.info(`Plugin initialized with max size: ${maxSize} bytes`);
 
       // Setup request monitoring for chunked transfer encoding and error handling
@@ -296,7 +294,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         .onError((ctx, error) => {
           if (error instanceof BodySizeLimitError) {
             const { req } = ctx;
-            const requestLog = ctx.log().channel(PLUGIN_NAME);
+            const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
             const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
 
             requestLog.warn('Request body size exceeds limit', {

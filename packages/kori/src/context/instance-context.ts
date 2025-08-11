@@ -43,7 +43,7 @@ export type KoriInstanceContext<Env extends KoriEnvironment> = {
    * });
    * ```
    */
-  withEnv<EnvExt>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
+  withEnv<EnvExt extends object>(envExt: EnvExt): KoriInstanceContext<Env & EnvExt>;
 
   /**
    * Registers a callback to be executed when the instance shuts down.
