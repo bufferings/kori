@@ -77,3 +77,6 @@ export function createKoriSchema<Provider extends symbol, Definition, Output>(
     definition,
   };
 }
+
+// Back-compat re-exports for tests referring to old locations
+export type { InferSchemaOutput, InferSchemaProvider } from './infer.js';
