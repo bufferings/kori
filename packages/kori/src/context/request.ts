@@ -285,10 +285,9 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const rawHeaders = new Headers(req.rawRequest.headers);
   const obj: Record<string, string> = {};
-  rawHeaders.forEach((v, k) => {
-    obj[k] = v;
+  req.rawRequest.headers.forEach((v, k) => {
+    obj[k.toLowerCase()] = v;
   });
   req.headersCache = obj;
   return obj;

@@ -147,6 +147,7 @@ const handlerContextPrototype = {
     Object.assign(this.req, reqExt);
     return this;
   },
+
   withRes<ResExt extends object>(this: HandlerCtxState, resExt: ResExt) {
     Object.assign(this.res, resExt);
     return this;
