@@ -1,4 +1,4 @@
-export { type KoriZodRequestParts, type KoriZodRequestSchema, zodRequestSchema } from './zod-request-schema.js';
+export { type KoriZodRequestSchema, zodRequestSchema } from './zod-request-schema.js';
 export { type KoriZodResponseSchema, zodResponseSchema } from './zod-response-schema.js';
 export {
   createKoriZodSchema,
@@ -6,4 +6,5 @@ export {
   type KoriZodSchema,
   type KoriZodSchemaDefault,
   type KoriZodSchemaProvider,
+  ZodSchemaProvider,
 } from './zod-schema.js';

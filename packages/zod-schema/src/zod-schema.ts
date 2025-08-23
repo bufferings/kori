@@ -1,27 +1,21 @@
-import {
-  type KoriSchema,
-  type KoriSchemaProvider,
-  createKoriSchema,
-  isKoriSchema,
-  getKoriSchemaBrand,
-} from '@korix/kori';
+import { type KoriSchema, createKoriSchema, getKoriSchemaProvider, isKoriSchema } from '@korix/kori';
 import { type z } from 'zod';
 
-const ZodSchemaBrand = Symbol('zod-schema-brand');
+export const ZodSchemaProvider = Symbol('zod-schema-provider');
 
-export type KoriZodSchemaProvider = KoriSchemaProvider<'zod'>;
+export type KoriZodSchemaProvider = typeof ZodSchemaProvider;
 
-export type KoriZodSchema<T extends z.ZodType> = KoriSchema<T, z.output<T>>;
+export type KoriZodSchema<T extends z.ZodType> = KoriSchema<KoriZodSchemaProvider, T, z.output<T>>;
 
 export type KoriZodSchemaDefault = KoriZodSchema<z.ZodType>;
 
 export const createKoriZodSchema = <T extends z.ZodType>(schema: T): KoriZodSchema<T> => {
-  return createKoriSchema(ZodSchemaBrand, schema);
+  return createKoriSchema(ZodSchemaProvider, schema);
 };
 
 export function isKoriZodSchema(value: unknown): value is KoriZodSchemaDefault {
   if (!isKoriSchema(value)) {
     return false;
   }
-  return getKoriSchemaBrand(value) === ZodSchemaBrand;
+  return getKoriSchemaProvider(value) === ZodSchemaProvider;
 }

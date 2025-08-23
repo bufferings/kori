@@ -4,9 +4,9 @@ import {
   ok,
   err,
   type KoriResponseValidator,
-  createResponseValidator,
+  createKoriResponseValidator,
 } from '@korix/kori';
-import { type KoriZodSchemaProvider, type KoriZodSchemaDefault } from '@korix/zod-schema';
+import { type KoriZodSchemaProvider, type KoriZodSchemaDefault, ZodSchemaProvider } from '@korix/zod-schema';
 import { type $ZodIssue } from 'zod/v4/core';
 
 export type KoriZodResponseValidationError = {
@@ -22,31 +22,34 @@ export type KoriZodResponseValidator = KoriResponseValidator<
 >;
 
 export function createKoriZodResponseValidator(): KoriZodResponseValidator {
-  return createResponseValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodResponseValidationError>({
-    validateBody: <S extends KoriZodSchemaDefault>({
-      schema,
-      body,
-    }: {
-      schema: S;
-      body: unknown;
-    }): KoriResult<InferSchemaOutput<S>, KoriZodResponseValidationError> => {
-      try {
-        const result = schema.def.safeParse(body);
+  return createKoriResponseValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodResponseValidationError>(
+    ZodSchemaProvider,
+    {
+      validateBody: <S extends KoriZodSchemaDefault>({
+        schema,
+        body,
+      }: {
+        schema: S;
+        body: unknown;
+      }): KoriResult<InferSchemaOutput<S>, KoriZodResponseValidationError> => {
+        try {
+          const result = schema.definition.safeParse(body);
 
-        if (!result.success) {
+          if (!result.success) {
+            return err({
+              message: 'Response validation failed',
+              issues: result.error.issues,
+            });
+          }
+
+          return ok(result.data as InferSchemaOutput<S>);
+        } catch (error) {
           return err({
-            message: 'Response validation failed',
-            issues: result.error.issues,
+            message: 'An error occurred during response validation',
+            errors: error instanceof Error ? error.message : String(error),
           });
         }
-
-        return ok(result.data as InferSchemaOutput<S>);
-      } catch (error) {
-        return err({
-          message: 'An error occurred during response validation',
-          errors: error instanceof Error ? error.message : String(error),
-        });
-      }
+      },
     },
-  });
+  );
 }
