@@ -32,7 +32,6 @@ export class KoriCookieError extends KoriError {
   constructor(cookieError: CookieError) {
     super(`Cookie operation failed: ${cookieError.message}`, {
       code: 'COOKIE_ERROR',
-      data: cookieError,
     });
     this.cookieError = cookieError;
   }

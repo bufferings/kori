@@ -25,18 +25,18 @@ export class KoriError extends Error {
    * Creates a KoriError.
    *
    * @param message - Human-readable error message
-   * @param options - Optional details
+   * @param options - Error details (defaults to empty object)
    * @param options.code - Machine-readable error code
    * @param options.data - Arbitrary structured data for debugging
    * @param options.cause - Underlying error to preserve the cause chain
    */
-  constructor(message: string, options?: { code?: string; data?: unknown; cause?: Error }) {
+  constructor(message: string, options: { code?: string; data?: unknown; cause?: Error } = {}) {
     super(message);
     this.name = new.target.name;
-    this.code = options?.code;
-    this.data = options?.data;
+    this.code = options.code;
+    this.data = options.data;
 
-    if (options?.cause) {
+    if (options.cause) {
       this.cause = options.cause;
     }
 
