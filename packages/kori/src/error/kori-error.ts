@@ -5,7 +5,7 @@
  * diagnostics. Supports error cause chaining.
  *
  * @example
- * ```ts
+ * ```typescript
  * try {
  *   throw new Error('low-level');
  * } catch (cause) {

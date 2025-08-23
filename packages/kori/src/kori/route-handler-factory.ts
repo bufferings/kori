@@ -8,19 +8,20 @@ import {
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
 import { createSystemLogger } from '../logging/index.js';
+import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
+import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
 import {
   resolveRequestValidationFunction,
-  type InferRequestValidatorError,
+  type InferRequestValidationError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-} from '../request-validation/index.js';
+} from '../validation-request/index.js';
 import {
   resolveResponseValidationFunction,
-  type KoriResponseValidatorDefault,
   type InferResponseValidationError,
-} from '../response-validation/index.js';
-import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
-import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';
+  type KoriResponseValidatorDefault,
+} from '../validation-response/index.js';
 
 import {
   type KoriHandler,
@@ -157,7 +158,7 @@ function createRequestValidationErrorHandler<
   routeHandler?: KoriRouteRequestValidationErrorHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  error: InferRequestValidatorError<RequestValidator>,
+  error: InferRequestValidationError<RequestValidator>,
 ) => Promise<KoriResponse> {
   return async (ctx, err) => {
     // 1. Try route handler first
@@ -290,7 +291,7 @@ export function createRouteHandler<
       if (!validationResult.ok) {
         return await requestValidationErrorHandler(
           ctx,
-          validationResult.error as InferRequestValidatorError<RequestValidator>,
+          validationResult.error as InferRequestValidationError<RequestValidator>,
         );
       }
 

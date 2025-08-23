@@ -7,7 +7,7 @@ import { KoriError } from './kori-error.js';
  * emission. Use res.setCookie/clearCookie instead.
  *
  * @example
- * ```ts
+ * ```typescript
  * // Do not do this:
  * res.setHeader('set-cookie', 'sid=1; Path=/');
  * // It will throw KoriSetCookieHeaderError. Use setCookie instead:

@@ -4,15 +4,16 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../context/index.js';
-import {
-  type WithValidatedRequest,
-  type InferRequestValidatorError,
-  type KoriRequestValidatorDefault,
-} from '../request-validation/index.js';
-import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validation/index.js';
 import { type WithPathParams } from '../router/index.js';
-import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';
+import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
 import { type MaybePromise } from '../util/index.js';
+import {
+  type InferRequestValidationError,
+  type KoriRequestValidatorDefault,
+  type WithValidatedRequest,
+} from '../validation-request/index.js';
+import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../validation-response/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
@@ -61,7 +62,7 @@ export type KoriInstanceRequestValidationErrorHandler<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
 > = (
   ctx: KoriHandlerContext<Env, Req, Res>,
-  err: InferRequestValidatorError<RequestValidator>,
+  err: InferRequestValidationError<RequestValidator>,
 ) => MaybePromise<KoriResponse | void>;
 
 export type KoriRouteRequestValidationErrorHandler<
@@ -75,7 +76,7 @@ export type KoriRouteRequestValidationErrorHandler<
   ? RequestSchema extends KoriRequestSchemaDefault
     ? (
         ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-        err: InferRequestValidatorError<RequestValidator>,
+        err: InferRequestValidationError<RequestValidator>,
       ) => MaybePromise<KoriResponse | void>
     : never
   : never;

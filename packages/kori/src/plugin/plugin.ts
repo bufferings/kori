@@ -1,7 +1,7 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { type Kori } from '../kori/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
+import { type KoriRequestValidatorDefault } from '../validation-request/index.js';
+import { type KoriResponseValidatorDefault } from '../validation-response/index.js';
 
 const KoriPluginBrand = Symbol('kori-plugin');
 

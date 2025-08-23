@@ -44,6 +44,14 @@ alwaysApply: true
 - Plugin function names should follow the pattern `<name>Plugin` in camelCase
 - Avoid inconsistent casing like `scalarUIPlugin` or `openAPIPlugin`
 
+### Default vs Base (short rule)
+
+- Default: use for permissive/wildcard generic defaults (e.g., `symbol`, `unknown`).
+  - Examples: `KoriSchemaDefault`, `KoriRequestSchemaDefault`, `KoriResponseSchemaMediaTypeDefault`.
+- Base: use for fixed core compositions (framework core types bound).
+  - Examples: `KoriHandlerContextBase`, `KoriInstanceContextBase`.
+- Do not choose based on visibility (internal/public). Choose based on meaning above.
+
 ## Module System
 
 - Use ESM (ECMAScript Modules) format

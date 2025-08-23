@@ -6,7 +6,7 @@ import { KoriError } from './kori-error.js';
  * This wraps configuration-time problems (not per-request validation errors).
  *
  * @example
- * ```ts
+ * ```typescript
  * // When constructing a validator with invalid configuration:
  * throw new KoriValidationConfigError('invalid schema mapping', {
  *   data: { provider: 'zod', reason: 'missing content type' },

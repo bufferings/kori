@@ -1,12 +1,13 @@
-// Request validation error types (field-based object structure)
-
-export type KoriFieldValidationError<TValidatorError> = {
+export type KoriFieldValidationError<ValidationError> = {
   stage: 'validation';
-  error: TValidatorError;
+  error: ValidationError;
 };
 
 export type KoriBodyValidationError<TValidatorError> =
-  | KoriFieldValidationError<TValidatorError>
+  | {
+      stage: 'validation';
+      error: TValidatorError;
+    }
   | {
       stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';

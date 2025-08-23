@@ -3,9 +3,10 @@ import { type KoriFetchHandler } from '../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
-import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';
+import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
+import { type KoriRequestValidatorDefault } from '../validation-request/index.js';
+import { type KoriResponseValidatorDefault } from '../validation-response/index.js';
 
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
 import {
