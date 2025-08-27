@@ -18,8 +18,8 @@
  * ```
  */
 export class KoriError extends Error {
-  public readonly code?: string;
-  public readonly data?: unknown;
+  public code?: string;
+  public data?: unknown;
 
   /**
    * Creates a KoriError.

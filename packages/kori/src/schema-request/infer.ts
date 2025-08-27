@@ -1,12 +1,12 @@
 import { type InferSchemaOutput } from '../schema/index.js';
 
-import { type KoriRequestSchemaBodyItem } from './body.js';
+import { type KoriRequestSchemaContentBodyItem } from './body-content.js';
 import { type KoriRequestSchema } from './request-schema.js';
 
 /**
  * Extracts the provider symbol from a request schema.
  *
- * @template S - The request schema to extract provider from
+ * @template S Request schema type
  */
 export type InferRequestSchemaProvider<S> =
   S extends KoriRequestSchema<
@@ -21,11 +21,11 @@ export type InferRequestSchemaProvider<S> =
     : never;
 
 /**
- * Extracts the path parameters schema from a request schema.
+ * Extracts the path parameters output type from a request schema.
  *
- * @template S - The request schema to extract params from
+ * @template S Request schema type
  */
-export type InferRequestSchemaParams<S> =
+export type InferRequestSchemaParamsOutput<S> =
   S extends KoriRequestSchema<
     infer _Provider,
     infer Params,
@@ -34,15 +34,15 @@ export type InferRequestSchemaParams<S> =
     infer _Body,
     infer _BodyMapping
   >
-    ? Params
+    ? InferSchemaOutput<Params>
     : never;
 
 /**
- * Extracts the headers schema from a request schema.
+ * Extracts the headers output type from a request schema.
  *
- * @template S - The request schema to extract headers from
+ * @template S Request schema type
  */
-export type InferRequestSchemaHeaders<S> =
+export type InferRequestSchemaHeadersOutput<S> =
   S extends KoriRequestSchema<
     infer _Provider,
     infer _Params,
@@ -51,15 +51,15 @@ export type InferRequestSchemaHeaders<S> =
     infer _Body,
     infer _BodyMapping
   >
-    ? Headers
+    ? InferSchemaOutput<Headers>
     : never;
 
 /**
- * Extracts the query parameters schema from a request schema.
+ * Extracts the query parameters output type from a request schema.
  *
- * @template S - The request schema to extract queries from
+ * @template S Request schema type
  */
-export type InferRequestSchemaQueries<S> =
+export type InferRequestSchemaQueriesOutput<S> =
   S extends KoriRequestSchema<
     infer _Provider,
     infer _Params,
@@ -68,18 +68,18 @@ export type InferRequestSchemaQueries<S> =
     infer _Body,
     infer _BodyMapping
   >
-    ? Queries
+    ? InferSchemaOutput<Queries>
     : never;
 
 /**
- * Extracts and transforms the body schema from a request schema.
+ * Extracts and transforms the body output type from a request schema.
  *
- * For simple bodies, returns the schema directly.
+ * For simple bodies, returns the schema output type directly.
  * For content bodies, returns a union of { mediaType, value } objects.
  *
- * @template S - The request schema to extract body from
+ * @template S Request schema type
  */
-export type InferRequestSchemaBody<S> =
+export type InferRequestSchemaBodyOutput<S> =
   S extends KoriRequestSchema<
     infer _Provider,
     infer _Params,
@@ -89,7 +89,7 @@ export type InferRequestSchemaBody<S> =
     infer BodyMapping
   >
     ? [Body] extends [never]
-      ? BodyMapping extends Record<string, KoriRequestSchemaBodyItem<infer _AnySchema>>
+      ? BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<infer _AnySchema>>
         ? {
             [K in keyof BodyMapping]: BodyMapping[K] extends { schema: infer SchemaInner }
               ? { mediaType: K; value: InferSchemaOutput<SchemaInner> }

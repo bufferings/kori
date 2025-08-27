@@ -23,7 +23,7 @@ export type KoriRequestValidatorMethods<Schema extends KoriSchemaDefault, ErrorT
 };
 
 export type KoriRequestValidator<Provider extends symbol, Schema extends KoriSchemaDefault, ErrorType> = {
-  readonly [ProviderKey]: Provider;
+  [ProviderKey]: Provider;
 } & KoriRequestValidatorMethods<Schema, ErrorType>;
 
 export type KoriRequestValidatorDefault = KoriRequestValidator<symbol, KoriSchemaDefault, unknown>;

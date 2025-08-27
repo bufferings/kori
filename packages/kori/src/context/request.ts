@@ -333,7 +333,7 @@ function getCookiesInternal(req: ReqState): Record<string, string> {
     return req.cookiesCache;
   }
   const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  const parsed = parseCookies(cookieHeader);
+  const parsed = parseCookies({ cookieHeader });
   req.cookiesCache = parsed;
   return parsed;
 }

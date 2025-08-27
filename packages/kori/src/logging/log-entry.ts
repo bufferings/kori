@@ -46,17 +46,16 @@ export type KoriLogEntry = {
  *
  * @internal Used within logging module for framework infrastructure
  *
- * @param options - Parameters for log entry creation
+ * @param options - Options for log entry creation
+ * @param options.level - Log level (trace, debug, info, warn, error, fatal)
+ * @param options.channel - Channel name for categorizing logs
+ * @param options.name - Logger name (hierarchical, e.g., "app.auth.login")
+ * @param options.message - Log message text
+ * @param options.bindings - Persistent key-value pairs attached to logger
+ * @param options.meta - Additional metadata or factory function for lazy evaluation
  * @returns Complete log entry ready for reporters
  */
-export function createLogEntry({
-  level,
-  channel,
-  name,
-  message,
-  bindings,
-  meta,
-}: {
+export function createLogEntry(options: {
   level: KoriLogLevel;
   channel: string;
   name: string;
@@ -64,6 +63,7 @@ export function createLogEntry({
   bindings: Record<string, unknown>;
   meta?: KoriLogMetaOrFactory;
 }): KoriLogEntry {
+  const { level, channel, name, message, bindings, meta } = options;
   // Resolve factory function lazily for performance
   const resolvedMeta = typeof meta === 'function' ? meta() : meta;
 

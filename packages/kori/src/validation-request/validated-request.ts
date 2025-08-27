@@ -1,20 +1,19 @@
 import { type KoriRequest } from '../context/index.js';
-import { type InferSchemaOutput } from '../schema/index.js';
 import {
-  type InferRequestSchemaBody,
-  type InferRequestSchemaHeaders,
-  type InferRequestSchemaParams,
-  type InferRequestSchemaQueries,
+  type InferRequestSchemaBodyOutput,
+  type InferRequestSchemaHeadersOutput,
+  type InferRequestSchemaParamsOutput,
+  type InferRequestSchemaQueriesOutput,
   type KoriRequestSchemaDefault,
 } from '../schema-request/index.js';
 
 import { type KoriRequestValidatorDefault } from './validator.js';
 
 export type InferValidationOutput<S extends KoriRequestSchemaDefault> = {
-  validatedParams(): InferSchemaOutput<InferRequestSchemaParams<S>>;
-  validatedQueries(): InferSchemaOutput<InferRequestSchemaQueries<S>>;
-  validatedHeaders(): InferSchemaOutput<InferRequestSchemaHeaders<S>>;
-  validatedBody(): InferRequestSchemaBody<S>;
+  validatedParams(): InferRequestSchemaParamsOutput<S>;
+  validatedQueries(): InferRequestSchemaQueriesOutput<S>;
+  validatedHeaders(): InferRequestSchemaHeadersOutput<S>;
+  validatedBody(): InferRequestSchemaBodyOutput<S>;
 };
 
 export type WithValidatedRequest<

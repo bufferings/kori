@@ -1,5 +1,10 @@
 import { type KoriRequest } from '../context/index.js';
-import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { KoriValidationConfigError } from '../error/index.js';
+import {
+  getKoriRequestSchemaProvider,
+  isKoriRequestSchema,
+  type KoriRequestSchemaDefault,
+} from '../schema-request/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriRequestValidationError } from './error.js';
@@ -7,7 +12,7 @@ import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
 import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
-import { type KoriRequestValidatorDefault } from './validator.js';
+import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from './validator.js';
 
 export type KoriRequestValidationSuccess = {
   params: unknown;
@@ -23,9 +28,22 @@ export function resolveRequestValidationFunction({
   requestValidator?: KoriRequestValidatorDefault;
   requestSchema?: KoriRequestSchemaDefault;
 }): ((req: KoriRequest) => Promise<KoriResult<KoriRequestValidationSuccess, KoriRequestValidationError>>) | undefined {
-  // TODO: How to handle invalid providers?
   if (!requestValidator || !requestSchema) {
     return undefined;
+  }
+
+  // Runtime provider compatibility check
+  if (!isKoriRequestSchema(requestSchema)) {
+    throw new KoriValidationConfigError('Invalid request schema: missing provider information');
+  }
+
+  const validatorProvider = getKoriRequestValidatorProvider(requestValidator);
+  const schemaProvider = getKoriRequestSchemaProvider(requestSchema);
+
+  if (validatorProvider !== schemaProvider) {
+    throw new KoriValidationConfigError(
+      `Request validator and schema provider mismatch: validator uses ${String(validatorProvider)}, schema uses ${String(schemaProvider)}`,
+    );
   }
 
   return async (req) => {

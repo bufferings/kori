@@ -171,14 +171,15 @@ function safeDecodeURIComponent(value: string): string {
  * with early string search and loop termination for significant performance improvement
  * in scenarios with many cookies.
  *
- * @param cookieHeader - Raw Cookie header value from HTTP request, may be undefined
- * @param targetName - Specific cookie name to extract, enables performance optimization
+ * @param options - Parsing options
+ * @param options.cookieHeader - Raw Cookie header value from HTTP request, may be undefined
+ * @param options.targetName - Specific cookie name to extract, enables performance optimization
  * @returns Parsed cookie record (empty object when header is missing or no matches)
  *
  * @example
  * Basic parsing of all cookies:
  * ```typescript
- * const cookies = parseCookies('sessionId=abc123; theme=dark; userId=42');
+ * const cookies = parseCookies({ cookieHeader: 'sessionId=abc123; theme=dark; userId=42' });
  * console.log(cookies.sessionId); // 'abc123'
  * console.log(cookies.theme);     // 'dark'
  * ```
@@ -186,15 +187,17 @@ function safeDecodeURIComponent(value: string): string {
  * @example
  * Fast-path optimization for single cookie:
  * ```typescript
- * const cookies = parseCookies(
- *   'a=1; b=2; sessionId=abc123; c=3; d=4',
- *   'sessionId'
- * );
+ * const cookies = parseCookies({
+ *   cookieHeader: 'a=1; b=2; sessionId=abc123; c=3; d=4',
+ *   targetName: 'sessionId'
+ * });
  * // Only parses sessionId, skips others for performance
  * console.log(cookies.sessionId); // 'abc123'
  * ```
  */
-export function parseCookies(cookieHeader?: string, targetName?: string): Cookie {
+export function parseCookies(options: { cookieHeader?: string; targetName?: string } = {}): Cookie {
+  const { cookieHeader, targetName } = options;
+
   if (!cookieHeader) {
     return {};
   }

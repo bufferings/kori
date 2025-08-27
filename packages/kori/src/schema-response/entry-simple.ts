@@ -1,10 +1,10 @@
 import { type KoriSchemaDefault } from '../schema/index.js';
 
 /**
- * Simple response body schema with optional metadata.
+ * Simple response entry with optional metadata.
  *
- * This type is used for application/json responses.
- * Use KoriResponseSchemaBody for other content types.
+ * This type is for application/json content type.
+ * Use KoriResponseSchemaContentEntry for other content types.
  *
  * @template Headers - Schema for response headers
  * @template S - The Kori schema type for the response body
@@ -27,7 +27,7 @@ import { type KoriSchemaDefault } from '../schema/index.js';
  * }
  * ```
  */
-export type KoriResponseSchemaSimpleBody<Headers extends KoriSchemaDefault, S extends KoriSchemaDefault> =
+export type KoriResponseSchemaSimpleEntry<Headers extends KoriSchemaDefault, S extends KoriSchemaDefault> =
   | S
   | {
       description?: string;
@@ -38,6 +38,6 @@ export type KoriResponseSchemaSimpleBody<Headers extends KoriSchemaDefault, S ex
     };
 
 /**
- * Default simple response body accepting any schema definition.
+ * Default simple response entry accepting any schema definition.
  */
-export type KoriResponseSchemaSimpleBodyDefault = KoriResponseSchemaSimpleBody<KoriSchemaDefault, KoriSchemaDefault>;
+export type KoriResponseSchemaSimpleEntryDefault = KoriResponseSchemaSimpleEntry<KoriSchemaDefault, KoriSchemaDefault>;

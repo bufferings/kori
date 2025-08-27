@@ -20,7 +20,7 @@ export type KoriLoggerOptions = {
 export type KoriLoggerFactory = (loggerOptions: KoriLoggerOptions) => KoriLogger;
 
 /**
- * Configuration options for creating a logger factory.
+ * Options for creating a logger factory.
  */
 export type KoriLoggerFactoryOptions = {
   /** Minimum log level to output (defaults to 'info') */
@@ -54,13 +54,10 @@ export type KoriLoggerFactoryOptions = {
  * const dbLogger = loggerFactory({ channel: 'database', name: 'connection' });
  * ```
  */
-export function createKoriLoggerFactory({
-  level,
-  bindings,
-  reporters,
-  errorSerializer,
-}: KoriLoggerFactoryOptions = {}): KoriLoggerFactory {
-  return ({ channel, name }: KoriLoggerOptions) => {
+export function createKoriLoggerFactory(options: KoriLoggerFactoryOptions = {}): KoriLoggerFactory {
+  const { level, bindings, reporters, errorSerializer } = options;
+  return (loggerOptions: KoriLoggerOptions) => {
+    const { channel, name } = loggerOptions;
     return createKoriLogger({
       channel,
       name,

@@ -12,9 +12,9 @@ const OutputKey = Symbol('schema-output');
  * @template Output - The output type produced by the schema
  */
 export type KoriSchema<Provider extends symbol, Definition, Output> = {
-  readonly [ProviderKey]: Provider;
-  readonly definition: Definition;
-  readonly [OutputKey]?: Output;
+  [ProviderKey]: Provider;
+  definition: Definition;
+  [OutputKey]?: Output;
 };
 
 /**
@@ -64,19 +64,18 @@ export function getKoriSchemaProvider<S extends KoriSchemaDefault>(schema: S): S
  * @template Definition - The schema definition type from a schema library
  * @template Output - The output type produced by the schema
  *
- * @param provider - Symbol that identifies the schema provider
- * @param definition - The schema definition from a schema library
+ * @param options - Options for schema creation
+ * @param options.provider - Symbol that identifies the schema provider
+ * @param options.definition - The schema definition from a schema library
  * @returns Kori schema ready for type-safe schema handling
  */
-export function createKoriSchema<Provider extends symbol, Definition, Output>(
-  provider: Provider,
-  definition: Definition,
-): KoriSchema<Provider, Definition, Output> {
+export function createKoriSchema<Provider extends symbol, Definition, Output>(options: {
+  provider: Provider;
+  definition: Definition;
+}): KoriSchema<Provider, Definition, Output> {
+  const { provider, definition } = options;
   return {
     [ProviderKey]: provider,
     definition,
   };
 }
-
-// Back-compat re-exports for tests referring to old locations
-export type { InferSchemaOutput, InferSchemaProvider } from './infer.js';

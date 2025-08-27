@@ -22,7 +22,7 @@ import { KoriError } from './kori-error.js';
  * ```
  */
 export class KoriCookieError extends KoriError {
-  public readonly cookieError: CookieError;
+  public cookieError: CookieError;
 
   /**
    * Creates a KoriCookieError wrapping a CookieError.

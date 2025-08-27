@@ -1,41 +1,53 @@
 import { type InferSchemaOutput } from '../schema/index.js';
 
-import { type KoriResponseSchemaBodyItem } from './body.js';
 import { type KoriResponseSchema } from './response-schema.js';
 
 /**
  * Extracts the provider symbol from a response schema.
  *
- * @template S - The response schema to extract provider from
+ * @template S Response schema type
  */
 export type InferResponseSchemaProvider<S> =
-  S extends KoriResponseSchema<infer Provider, infer _Headers, infer _Body, infer _BodyMapping> ? Provider : never;
+  S extends KoriResponseSchema<infer Provider, infer _Responses> ? Provider : never;
 
 /**
- * Extracts the headers schema from a response schema.
+ * Extracts the output type for a single response entry.
  *
- * @template S - The response schema to extract headers from
+ * @template Entry Response entry type
  */
-export type InferResponseSchemaHeaders<S> =
-  S extends KoriResponseSchema<infer _Provider, infer Headers, infer _Body, infer _BodyMapping> ? Headers : never;
+type InferResponseSchemaBodyOutput<Entry> = Entry extends { content: infer M }
+  ? {
+      [K in keyof M]: M[K] extends { schema: infer S }
+        ? { mediaType: K; value: InferSchemaOutput<S> }
+        : { mediaType: K; value: InferSchemaOutput<M[K]> };
+    }[keyof M]
+  : Entry extends { schema: infer S2 }
+    ? InferSchemaOutput<S2>
+    : InferSchemaOutput<Entry>;
 
 /**
- * Extracts and transforms the body schema from a response schema.
- *
- * For simple bodies, returns the schema directly.
- * For content bodies, returns a union of { mediaType, value } objects.
- *
- * @template S - The response schema to extract body from
+ * Map an exact code string (e.g. "404") to its class wildcard ("4XX").
  */
-export type InferResponseSchemaBody<S> =
-  S extends KoriResponseSchema<infer _Provider, infer _Headers, infer Body, infer BodyMapping>
-    ? Body extends object
-      ? Body
-      : BodyMapping extends Record<string, KoriResponseSchemaBodyItem<infer _AnySchema>>
-        ? {
-            [K in keyof BodyMapping]: BodyMapping[K] extends { schema: infer SchemaInner }
-              ? { mediaType: K; value: InferSchemaOutput<SchemaInner> }
-              : { mediaType: K; value: InferSchemaOutput<BodyMapping[K]> };
-          }[keyof BodyMapping]
-        : never
-    : never;
+type ClassOf<C extends string> = C extends `${infer D}${infer _Rest}` ? `${D}XX` : never;
+
+/**
+ * Extracts the response schema body output type for a specific status code.
+ *
+ * Resolution order: exact -> class wildcard (e.g. "4XX") -> "default".
+ *
+ * @template S Response schema type
+ * @template StatusCode Status code as string (e.g. "200", "404")
+ */
+export type InferResponseSchemaBodyOutputByStatusCode<S, StatusCode extends string> = S extends {
+  responses: infer R;
+}
+  ? R extends Record<string, unknown>
+    ? StatusCode extends keyof R
+      ? InferResponseSchemaBodyOutput<R[StatusCode]>
+      : ClassOf<StatusCode> extends keyof R
+        ? InferResponseSchemaBodyOutput<R[ClassOf<StatusCode>]>
+        : 'default' extends keyof R
+          ? InferResponseSchemaBodyOutput<R['default']>
+          : never
+    : never
+  : never;

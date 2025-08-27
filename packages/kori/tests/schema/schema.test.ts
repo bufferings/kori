@@ -1,19 +1,14 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
-import {
-  type InferSchemaOutput,
-  type InferSchemaProvider,
-  createKoriSchema,
-  getKoriSchemaProvider,
-  isKoriSchema,
-} from '../../src/schema/schema.js';
+import { type InferSchemaOutput, type InferSchemaProvider } from '../../src/schema/infer.js';
+import { createKoriSchema, getKoriSchemaProvider, isKoriSchema } from '../../src/schema/schema.js';
 
 const TestBrand = Symbol('test-schema');
 
 describe('KoriSchema', () => {
   test('createKoriSchema creates valid schemas', () => {
     const definition = { type: 'string', minLength: 1 };
-    const schema = createKoriSchema(TestBrand, definition);
+    const schema = createKoriSchema({ provider: TestBrand, definition });
 
     expect(schema.definition).toBe(definition);
     expect(getKoriSchemaProvider(schema)).toBe(TestBrand);
@@ -29,9 +24,12 @@ describe('KoriSchema', () => {
     type TestDef = { type: 'string'; minLength: number };
     type TestOut = string;
 
-    const schema = createKoriSchema<typeof TestBrand, TestDef, TestOut>(TestBrand, {
-      type: 'string',
-      minLength: 1,
+    const schema = createKoriSchema<typeof TestBrand, TestDef, TestOut>({
+      provider: TestBrand,
+      definition: {
+        type: 'string',
+        minLength: 1,
+      },
     });
 
     expectTypeOf(schema.definition).toEqualTypeOf<TestDef>();

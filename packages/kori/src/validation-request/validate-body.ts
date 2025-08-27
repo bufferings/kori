@@ -1,7 +1,7 @@
 import { type KoriRequest } from '../context/index.js';
 import { ContentType } from '../http/index.js';
 import { type KoriSchemaDefault, isKoriSchema } from '../schema/index.js';
-import { type KoriRequestSchemaBodyDefault, type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { type KoriRequestSchemaContentBodyDefault, type KoriRequestSchemaDefault } from '../schema-request/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriBodyValidationError } from './error.js';
@@ -12,7 +12,7 @@ function findMatchingMediaType({
   contentSchema,
 }: {
   requestContentType: string;
-  contentSchema: KoriRequestSchemaBodyDefault['content'];
+  contentSchema: KoriRequestSchemaContentBodyDefault['content'];
 }): string | undefined {
   // 1. Exact match
   if (requestContentType in contentSchema) {

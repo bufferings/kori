@@ -4,11 +4,11 @@ import { type KoriSchemaDefault } from '../schema/index.js';
  * Individual content type definition within a request body.
  *
  * Supports schema directly or schema with examples. Note that description
- * is handled at the container level (KoriRequestSchemaBody), not here.
+ * is handled at the container level (KoriRequestSchemaContentBody), not here.
  *
  * @template S - The Kori schema type for this content type
  */
-export type KoriRequestSchemaBodyItem<S extends KoriSchemaDefault> =
+export type KoriRequestSchemaContentBodyItem<S extends KoriSchemaDefault> =
   | S
   | {
       schema: S;
@@ -16,14 +16,14 @@ export type KoriRequestSchemaBodyItem<S extends KoriSchemaDefault> =
     };
 
 /**
- * Default body item accepting any schema definition.
+ * Default content body item accepting any schema definition.
  */
-export type KoriRequestSchemaBodyItemDefault = KoriRequestSchemaBodyItem<KoriSchemaDefault>;
+export type KoriRequestSchemaContentBodyItemDefault = KoriRequestSchemaContentBodyItem<KoriSchemaDefault>;
 
 /**
- * Default body mapping accepting any media type definitions.
+ * Default content body mapping accepting any media type definitions.
  */
-export type KoriRequestSchemaBodyMappingDefault = Record<string, KoriRequestSchemaBodyItemDefault>;
+export type KoriRequestSchemaContentBodyMappingDefault = Record<string, KoriRequestSchemaContentBodyItemDefault>;
 
 /**
  * Request body schema with explicit content type specification.
@@ -57,7 +57,7 @@ export type KoriRequestSchemaBodyMappingDefault = Record<string, KoriRequestSche
  * }
  * ```
  */
-export type KoriRequestSchemaBody<BodyMapping extends KoriRequestSchemaBodyMappingDefault> = {
+export type KoriRequestSchemaContentBody<BodyMapping extends KoriRequestSchemaContentBodyMappingDefault> = {
   description?: string;
   content: BodyMapping;
 };
@@ -65,4 +65,5 @@ export type KoriRequestSchemaBody<BodyMapping extends KoriRequestSchemaBodyMappi
 /**
  * Default request body accepting any content type mapping definitions.
  */
-export type KoriRequestSchemaBodyDefault = KoriRequestSchemaBody<KoriRequestSchemaBodyMappingDefault>;
+export type KoriRequestSchemaContentBodyDefault =
+  KoriRequestSchemaContentBody<KoriRequestSchemaContentBodyMappingDefault>;

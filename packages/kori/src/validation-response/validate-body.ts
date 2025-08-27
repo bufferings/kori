@@ -1,9 +1,9 @@
 import { type KoriResponse } from '../context/index.js';
 import { isKoriSchema } from '../schema/index.js';
 import {
-  type KoriResponseSchemaBodyDefault,
+  type KoriResponseSchemaContentEntryDefault,
   type KoriResponseSchemaDefault,
-  type KoriResponseSchemaSimpleBodyDefault,
+  type KoriResponseSchemaSimpleEntryDefault,
 } from '../schema-response/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
@@ -16,20 +16,22 @@ function resolveResponseBodySchema({
 }: {
   responseSchema: KoriResponseSchemaDefault;
   statusCode: number;
-}): KoriResponseSchemaSimpleBodyDefault | KoriResponseSchemaBodyDefault | undefined {
+}): KoriResponseSchemaSimpleEntryDefault | KoriResponseSchemaContentEntryDefault | undefined {
   const statusCodeStr = statusCode.toString();
 
-  if (statusCodeStr in responseSchema) {
-    return responseSchema[statusCodeStr as keyof typeof responseSchema];
+  const responses = responseSchema.responses;
+
+  if (statusCodeStr in responses) {
+    return responses[statusCodeStr as keyof typeof responses];
   }
 
   const wildcardPattern = `${statusCodeStr[0]}XX`;
-  if (wildcardPattern in responseSchema) {
-    return responseSchema[wildcardPattern as keyof typeof responseSchema];
+  if (wildcardPattern in responses) {
+    return responses[wildcardPattern as keyof typeof responses];
   }
 
-  if ('default' in responseSchema) {
-    return responseSchema.default;
+  if ('default' in responses) {
+    return responses.default;
   }
 
   return undefined;
@@ -41,7 +43,7 @@ async function validateBodyWithSchema({
   res,
 }: {
   validator: KoriResponseValidatorDefault;
-  bodySchema: KoriResponseSchemaSimpleBodyDefault | KoriResponseSchemaBodyDefault | undefined;
+  bodySchema: KoriResponseSchemaSimpleEntryDefault | KoriResponseSchemaContentEntryDefault | undefined;
   res: KoriResponse;
 }): Promise<KoriResult<unknown, KoriResponseBodyValidationError<unknown>>> {
   // Skip validation for streaming responses

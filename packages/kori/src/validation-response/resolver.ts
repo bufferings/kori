@@ -1,10 +1,10 @@
 import { type KoriResponse } from '../context/index.js';
-import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
+import { getKoriResponseSchemaProvider, type KoriResponseSchemaDefault } from '../schema-response/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseValidationError } from './error.js';
 import { validateResponseBody } from './validate-body.js';
-import { type KoriResponseValidatorDefault } from './validator.js';
+import { getKoriResponseValidatorProvider, type KoriResponseValidatorDefault } from './validator.js';
 
 export type KoriResponseValidationSuccess = {
   body: unknown;
@@ -19,8 +19,12 @@ export function resolveResponseValidationFunction({
 }):
   | ((res: KoriResponse) => Promise<KoriResult<KoriResponseValidationSuccess, KoriResponseValidationError>>)
   | undefined {
-  // TODO: How to handle invalid providers?
   if (!responseValidator || !responseSchema) {
+    return undefined;
+  }
+
+  // Provider compatibility check
+  if (getKoriResponseValidatorProvider(responseValidator) !== getKoriResponseSchemaProvider(responseSchema)) {
     return undefined;
   }
 

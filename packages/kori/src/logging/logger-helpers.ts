@@ -65,7 +65,7 @@ export function createRequestLogger(loggerFactory: KoriLoggerFactory): KoriLogge
  *
  * Preserves all bindings from the base logger while redirecting to the system channel.
  *
- * @param options - Parameters for logger creation
+ * @param options - Options for logger creation
  * @param options.baseLogger - Base logger to retarget to the system channel (preserves bindings)
  * @returns System-channel logger with inherited bindings
  */
@@ -79,7 +79,7 @@ export function createSystemLogger(options: { baseLogger: KoriLogger }): KoriLog
  *
  * Preserves all bindings from the base logger while redirecting to the plugin channel.
  *
- * @param options - Parameters for logger creation
+ * @param options - Options for logger creation
  * @param options.baseLogger - Base logger to retarget to the plugin channel (preserves bindings)
  * @param options.pluginName - Plugin name appended to the plugin channel
  * @returns Plugin-channel logger with inherited bindings

@@ -10,6 +10,7 @@ import {
   createPluginLogger,
 } from '@korix/kori';
 
+import { BodySizeLimitError } from './body-size-limit-error.js';
 import { PLUGIN_VERSION } from './version.js';
 
 export type BodyLimitOptions = {
@@ -87,21 +88,6 @@ function isValidContentLength(value: string): boolean {
 }
 
 /**
- * Custom error class for body size limit exceeded
- */
-class BodySizeLimitError extends Error {
-  constructor(
-    public readonly actualSize: number,
-    public readonly maxSize: number,
-    message?: string,
-  ) {
-    super(message ?? `Body size ${actualSize} exceeds limit ${maxSize}`);
-    this.name = 'BodySizeLimitError';
-    Object.setPrototypeOf(this, BodySizeLimitError.prototype);
-  }
-}
-
-/**
  * Creates a monitored stream that validates chunk sizes in real-time without buffering.
  * This maintains the memory efficiency and streaming benefits of chunked transfer encoding.
  */
@@ -128,7 +114,7 @@ function createMonitoredStream({
         });
 
         // Throw custom error that can be caught and converted to HTTP response
-        const error = new BodySizeLimitError(totalSize, maxSize);
+        const error = new BodySizeLimitError({ actualSize: totalSize, maxSize });
         controller.error(error);
         return;
       }
@@ -251,7 +237,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
                 remoteAddress: xForwardedFor || req.headers()['x-real-ip'],
               });
 
-              throw new BodySizeLimitError(contentLength, maxSize);
+              throw new BodySizeLimitError({ actualSize: contentLength, maxSize });
             }
 
             return;

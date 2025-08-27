@@ -11,7 +11,7 @@ export type KoriResponseValidatorMethods<Schema extends KoriSchemaDefault, Error
 };
 
 export type KoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaDefault, ErrorType> = {
-  readonly [ProviderKey]: Provider;
+  [ProviderKey]: Provider;
 } & KoriResponseValidatorMethods<Schema, ErrorType>;
 
 export type KoriResponseValidatorDefault = KoriResponseValidator<symbol, KoriSchemaDefault, unknown>;

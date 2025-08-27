@@ -6,7 +6,9 @@
  */
 export type KoriErrorSerializer = (error: unknown) => unknown;
 
-function serializeErrorInstance(error: Error, visited: Set<Error>): Record<string, unknown> {
+function serializeErrorInstance(options: { error: Error; visited: Set<Error> }): Record<string, unknown> {
+  const { error, visited } = options;
+
   // Circular reference check
   if (visited.has(error)) {
     return { type: 'circular-reference' };
@@ -29,7 +31,7 @@ function serializeErrorInstance(error: Error, visited: Set<Error>): Record<strin
   // Handle cause property explicitly (might be non-enumerable)
   if ('cause' in error && error.cause !== undefined) {
     if (error.cause instanceof Error) {
-      serialized.cause = serializeErrorInstance(error.cause, visited);
+      serialized.cause = serializeErrorInstance({ error: error.cause, visited });
     } else {
       serialized.cause = error.cause; // Primitive values and objects directly
     }
@@ -91,5 +93,5 @@ export function serializeError(error: unknown): unknown {
     return error;
   }
 
-  return serializeErrorInstance(error, new Set<Error>());
+  return serializeErrorInstance({ error, visited: new Set<Error>() });
 }

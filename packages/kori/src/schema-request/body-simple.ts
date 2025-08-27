@@ -1,12 +1,12 @@
 import { type KoriSchemaDefault } from '../schema/index.js';
 
 /**
- * Simple request body schema with optional metadata.
+ * Simple request body schema with description and examples.
  *
- * This type is for application/json content type.
- * Use KoriRequestSchemaBody for other content types.
+ * This type is for the application/json content type.
+ * Use KoriRequestSchemaContentBody for other content types.
  *
- * @template S - The Kori schema type for the request body
+ * @template S - Kori schema type for the request body
  *
  * @example
  * ```typescript

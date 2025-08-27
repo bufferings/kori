@@ -72,13 +72,13 @@ export type KoriLogger = {
   /**
    * Create child logger with hierarchical name and optional additional bindings.
    *
-   * @param options - Configuration for the child logger
-   * @param options.name - Child logger name (will be appended to parent name)
-   * @param options.channelName - Optional channel name override
-   * @param options.bindings - Optional additional bindings to merge with parent
+   * @param childOptions - Options for child logger creation
+   * @param childOptions.name - Child logger name (will be appended to parent name)
+   * @param childOptions.channelName - Optional channel name override
+   * @param childOptions.bindings - Optional additional bindings to merge with parent
    * @returns New child logger instance with hierarchical name
    */
-  child(options: { name: string; channelName?: string; bindings?: Record<string, unknown> }): KoriLogger;
+  child(childOptions: { name: string; channelName?: string; bindings?: Record<string, unknown> }): KoriLogger;
 
   /**
    * Add persistent key-value data to all future log entries.
@@ -106,7 +106,8 @@ const LOG_LEVELS: Record<KoriLogLevel, number> = {
   fatal: 5,
 };
 
-function isLevelEnabled(currentLevel: KoriLogLevel, minLevel: KoriLogLevel): boolean {
+function isLevelEnabled(options: { currentLevel: KoriLogLevel; minLevel: KoriLogLevel }): boolean {
+  const { currentLevel, minLevel } = options;
   return LOG_LEVELS[currentLevel] >= LOG_LEVELS[minLevel];
 }
 
@@ -122,7 +123,7 @@ function createChildName({ parentName, childName }: { parentName: string; childN
  *
  * @internal Used within logging module for framework infrastructure
  *
- * @param options - Configuration for the logger instance
+ * @param options - Options for logger creation
  * @param options.channel - Channel name for organizing logs
  * @param options.name - Hierarchical logger name
  * @param options.level - Minimum log level to output
@@ -142,7 +143,7 @@ export function createKoriLogger(options: {
   let _bindings = { ...options.bindings };
 
   function log(level: KoriLogLevel, message: string, metaOrFactory?: KoriLogMetaOrFactory): void {
-    if (!isLevelEnabled(level, options.level)) {
+    if (!isLevelEnabled({ currentLevel: level, minLevel: options.level })) {
       return;
     }
 
@@ -171,7 +172,7 @@ export function createKoriLogger(options: {
     error: (message, meta) => log('error', message, meta),
     fatal: (message, meta) => log('fatal', message, meta),
 
-    isLevelEnabled: (level) => isLevelEnabled(level, options.level),
+    isLevelEnabled: (level) => isLevelEnabled({ currentLevel: level, minLevel: options.level }),
 
     channel: (channelName) => {
       return createKoriLogger({

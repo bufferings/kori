@@ -20,6 +20,45 @@ alwaysApply: true
 
 - Prefer `type` over `interface`
 - Use `never` as default type parameter instead of `{}`
+- Do not use `readonly` modifier in type definitions, class properties, or object properties
+
+### `readonly` Modifier
+
+- **Do not use `readonly` modifier** in type definitions, class properties, or object properties
+- Rely on developer discipline rather than language-level immutability constraints
+- Prioritize code simplicity and consistency over shallow immutability protection
+
+**Rationale:**
+
+- `readonly` provides only shallow immutability and doesn't prevent deep mutations
+- Adds visual noise without significant practical benefit
+- "Things that shouldn't be changed, shouldn't be changed" - trust developer judgment
+- Maintains consistency across the entire codebase
+- Allows flexibility when modifications are genuinely needed
+
+**Examples:**
+
+```typescript
+// ❌ Avoid
+type Config = {
+  readonly name: string;
+  readonly options: readonly string[];
+};
+
+class MyError extends Error {
+  constructor(public readonly code: string) {}
+}
+
+// ✅ Prefer
+type Config = {
+  name: string;
+  options: string[];
+};
+
+class MyError extends Error {
+  constructor(public code: string) {}
+}
+```
 
 ## File Organization
 
