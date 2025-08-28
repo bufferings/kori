@@ -1,24 +1,24 @@
 import { type KoriRequest } from '../context/index.js';
-import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
+import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriFieldValidationError } from './error.js';
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 
-export async function validateRequestHeaders({
+export async function validateRequestParams({
   validator,
   schema,
   req,
 }: {
   validator: KoriRequestValidatorDefault;
-  schema: KoriRequestSchemaDefault['headers'];
+  schema: KoriRequestSchemaDefault['params'];
   req: KoriRequest;
 }): Promise<KoriResult<unknown, KoriFieldValidationError<unknown>>> {
   if (!schema) {
     return ok(undefined);
   }
 
-  const result = await validator.validateHeaders({ schema, headers: req.headers() });
+  const result = await validator.validateParams({ schema, params: req.pathParams() });
   if (result.ok) {
     return result;
   }

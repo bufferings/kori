@@ -5,7 +5,7 @@ import {
   type InferRequestSchemaParamsOutput,
   type InferRequestSchemaQueriesOutput,
   type KoriRequestSchemaDefault,
-} from '../schema-request/index.js';
+} from '../request-schema/index.js';
 
 import { type KoriRequestValidatorDefault } from './request-validator.js';
 

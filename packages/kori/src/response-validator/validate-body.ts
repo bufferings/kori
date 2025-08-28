@@ -4,7 +4,7 @@ import {
   type KoriResponseSchemaContentEntryDefault,
   type KoriResponseSchemaDefault,
   type KoriResponseSchemaSimpleEntryDefault,
-} from '../schema-response/index.js';
+} from '../response-schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseBodyValidationError } from './error.js';

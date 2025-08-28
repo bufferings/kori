@@ -97,7 +97,7 @@ export {
   type KoriRequestSchemaDefault,
   type KoriRequestSchemaSimpleBody,
   type KoriRequestSchemaSimpleBodyDefault,
-} from './schema-request/index.js';
+} from './request-schema/index.js';
 export {
   createKoriResponseSchema,
   getKoriResponseSchemaProvider,
@@ -115,7 +115,7 @@ export {
   type KoriResponseSchemaSimpleEntry,
   type KoriResponseSchemaSimpleEntryDefault,
   type KoriResponseSchemaStatusCode,
-} from './schema-response/index.js';
+} from './response-schema/index.js';
 export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';
 export {
   createKoriRequestValidator,
@@ -132,7 +132,7 @@ export {
   type KoriRequestValidatorMethods,
   resolveRequestValidationFunction,
   type WithValidatedRequest,
-} from './validator-request/index.js';
+} from './request-validator/index.js';
 export {
   createKoriResponseValidator,
   getKoriResponseValidatorProvider,
@@ -145,4 +145,4 @@ export {
   type KoriResponseValidatorDefault,
   resolveResponseValidationFunction,
   validateResponseBody,
-} from './validator-response/index.js';
+} from './response-validator/index.js';

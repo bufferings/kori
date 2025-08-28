@@ -1,5 +1,5 @@
 import { type KoriResponse } from '../context/index.js';
-import { getKoriResponseSchemaProvider, type KoriResponseSchemaDefault } from '../schema-response/index.js';
+import { getKoriResponseSchemaProvider, type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseValidationError } from './error.js';

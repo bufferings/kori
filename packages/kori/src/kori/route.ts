@@ -5,15 +5,15 @@ import {
   type KoriResponse,
 } from '../context/index.js';
 import { type WithPathParams } from '../router/index.js';
-import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
-import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
+import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
+import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { type MaybePromise } from '../util/index.js';
 import {
   type InferRequestValidationError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-} from '../validator-request/index.js';
-import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../validator-response/index.js';
+} from '../request-validator/index.js';
+import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validator/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';

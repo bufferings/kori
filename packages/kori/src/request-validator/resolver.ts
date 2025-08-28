@@ -4,7 +4,7 @@ import {
   getKoriRequestSchemaProvider,
   isKoriRequestSchema,
   type KoriRequestSchemaDefault,
-} from '../schema-request/index.js';
+} from '../request-schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriRequestValidationError } from './error.js';

@@ -9,19 +9,19 @@ import {
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
 import { createSystemLogger } from '../logging/index.js';
 import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
-import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
-import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
+import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
+import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import {
   resolveRequestValidationFunction,
   type InferRequestValidationError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-} from '../validator-request/index.js';
+} from '../request-validator/index.js';
 import {
   resolveResponseValidationFunction,
   type InferResponseValidationError,
   type KoriResponseValidatorDefault,
-} from '../validator-response/index.js';
+} from '../response-validator/index.js';
 
 import {
   type KoriHandler,
