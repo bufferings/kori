@@ -12,7 +12,7 @@ import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
 import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
-import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from './validator.js';
+import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from './request-validator.js';
 
 export type KoriRequestValidationSuccess = {
   params: unknown;

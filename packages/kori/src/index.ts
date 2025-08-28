@@ -132,7 +132,7 @@ export {
   type KoriRequestValidatorMethods,
   resolveRequestValidationFunction,
   type WithValidatedRequest,
-} from './validation-request/index.js';
+} from './validator-request/index.js';
 export {
   createKoriResponseValidator,
   getKoriResponseValidatorProvider,
@@ -145,4 +145,4 @@ export {
   type KoriResponseValidatorDefault,
   resolveResponseValidationFunction,
   validateResponseBody,
-} from './validation-response/index.js';
+} from './validator-response/index.js';

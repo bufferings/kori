@@ -16,12 +16,12 @@ import {
   type InferRequestValidationError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-} from '../validation-request/index.js';
+} from '../validator-request/index.js';
 import {
   resolveResponseValidationFunction,
   type InferResponseValidationError,
   type KoriResponseValidatorDefault,
-} from '../validation-response/index.js';
+} from '../validator-response/index.js';
 
 import {
   type KoriHandler,

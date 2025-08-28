@@ -1,10 +1,10 @@
 import { type InferRequestSchemaProvider, type KoriRequestSchemaDefault } from '../schema-request/index.js';
 import { type InferResponseSchemaProvider, type KoriResponseSchemaDefault } from '../schema-response/index.js';
-import { type InferRequestValidationProvider, type KoriRequestValidatorDefault } from '../validation-request/index.js';
+import { type InferRequestValidationProvider, type KoriRequestValidatorDefault } from '../validator-request/index.js';
 import {
   type InferResponseValidationProvider,
   type KoriResponseValidatorDefault,
-} from '../validation-response/index.js';
+} from '../validator-response/index.js';
 
 export type RequestProviderCompatibility<
   RequestValidator extends KoriRequestValidatorDefault | undefined,

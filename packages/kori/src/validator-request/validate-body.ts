@@ -5,7 +5,7 @@ import { type KoriRequestSchemaContentBodyDefault, type KoriRequestSchemaDefault
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriBodyValidationError } from './error.js';
-import { type KoriRequestValidatorDefault } from './validator.js';
+import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 function findMatchingMediaType({
   requestContentType,

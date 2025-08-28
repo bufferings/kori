@@ -1,5 +1,5 @@
 import { type KoriRequestValidationError } from './error.js';
-import { type KoriRequestValidator } from './validator.js';
+import { type KoriRequestValidator } from './request-validator.js';
 
 /**
  * Extracts the provider symbol from a request validator.

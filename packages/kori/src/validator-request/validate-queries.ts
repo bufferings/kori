@@ -3,7 +3,7 @@ import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriFieldValidationError } from './error.js';
-import { type KoriRequestValidatorDefault } from './validator.js';
+import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 export async function validateRequestQueries({
   validator,

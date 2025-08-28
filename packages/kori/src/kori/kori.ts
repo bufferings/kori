@@ -5,8 +5,8 @@ import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
 import { type KoriRequestSchemaDefault } from '../schema-request/index.js';
 import { type KoriResponseSchemaDefault } from '../schema-response/index.js';
-import { type KoriRequestValidatorDefault } from '../validation-request/index.js';
-import { type KoriResponseValidatorDefault } from '../validation-response/index.js';
+import { type KoriRequestValidatorDefault } from '../validator-request/index.js';
+import { type KoriResponseValidatorDefault } from '../validator-response/index.js';
 
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
 import {

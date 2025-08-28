@@ -7,7 +7,7 @@ import {
   type KoriRequestSchemaDefault,
 } from '../schema-request/index.js';
 
-import { type KoriRequestValidatorDefault } from './validator.js';
+import { type KoriRequestValidatorDefault } from './request-validator.js';
 
 export type InferValidationOutput<S extends KoriRequestSchemaDefault> = {
   validatedParams(): InferRequestSchemaParamsOutput<S>;

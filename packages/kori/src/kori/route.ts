@@ -12,8 +12,8 @@ import {
   type InferRequestValidationError,
   type KoriRequestValidatorDefault,
   type WithValidatedRequest,
-} from '../validation-request/index.js';
-import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../validation-response/index.js';
+} from '../validator-request/index.js';
+import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../validator-response/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
