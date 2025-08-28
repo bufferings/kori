@@ -1,7 +1,7 @@
 import { type InferSchemaOutput } from '../schema/index.js';
 
 import { type KoriRequestSchemaContentBodyItem } from './body-content.js';
-import { type KoriRequestSchema } from './request-schema.js';
+import { type KoriRequestSchema } from './schema.js';
 
 /**
  * Extracts the provider symbol from a request schema.

@@ -13,4 +13,4 @@ export {
   type KoriRequestValidator,
   type KoriRequestValidatorDefault,
   type KoriRequestValidatorMethods,
-} from './request-validator.js';
+} from './validator.js';

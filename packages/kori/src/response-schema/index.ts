@@ -15,4 +15,4 @@ export {
   type KoriResponseSchemaDefault,
   type KoriResponseSchemaEntry,
   type KoriResponseSchemaStatusCode,
-} from './response-schema.js';
+} from './schema.js';

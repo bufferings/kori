@@ -19,4 +19,4 @@ export {
   isKoriRequestSchema,
   type KoriRequestSchema,
   type KoriRequestSchemaDefault,
-} from './request-schema.js';
+} from './schema.js';

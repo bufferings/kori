@@ -1,6 +1,6 @@
 import { type InferSchemaOutput } from '../schema/index.js';
 
-import { type KoriResponseSchema } from './response-schema.js';
+import { type KoriResponseSchema } from './schema.js';
 
 /**
  * Extracts the provider symbol from a response schema.
