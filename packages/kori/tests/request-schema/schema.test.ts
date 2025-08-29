@@ -1,16 +1,16 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
-import { createKoriSchema } from '../../src/schema/schema.js';
 import {
   createKoriRequestSchema,
   getKoriRequestSchemaProvider,
   isKoriRequestSchema,
   type KoriRequestSchema,
-} from '../../src/schema-request/index.js';
+} from '../../src/request-schema/index.js';
+import { createKoriSchema } from '../../src/schema/schema.js';
 
 const TestProvider = Symbol('test-provider');
 
-describe('KoriRequestSchema', () => {
+describe('createKoriRequestSchema', () => {
   test('creates schema with provider', () => {
     const _requestSchema = createKoriRequestSchema({
       provider: TestProvider,
@@ -189,8 +189,8 @@ describe('KoriRequestSchema', () => {
   });
 });
 
-describe('Runtime functions', () => {
-  test('isKoriRequestSchema identifies request schemas', () => {
+describe('isKoriRequestSchema', () => {
+  test('identifies request schemas', () => {
     const requestSchema = createKoriRequestSchema({
       provider: TestProvider,
     });
@@ -200,8 +200,10 @@ describe('Runtime functions', () => {
     expect(isKoriRequestSchema(null)).toBe(false);
     expect(isKoriRequestSchema(undefined)).toBe(false);
   });
+});
 
-  test('getKoriRequestSchemaProvider returns provider', () => {
+describe('getKoriRequestSchemaProvider', () => {
+  test('returns provider', () => {
     const requestSchema = createKoriRequestSchema({
       provider: TestProvider,
     });

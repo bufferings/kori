@@ -1,11 +1,11 @@
 import { describe, expectTypeOf, test } from 'vitest';
 
-import { createKoriSchema } from '../../src/schema/schema.js';
 import {
   type InferResponseSchemaBodyOutputByStatusCode,
   type InferResponseSchemaProvider,
-} from '../../src/schema-response/infer.js';
-import { createKoriResponseSchema } from '../../src/schema-response/response-schema.js';
+} from '../../src/response-schema/infer.js';
+import { createKoriResponseSchema } from '../../src/response-schema/schema.js';
+import { createKoriSchema } from '../../src/schema/schema.js';
 
 const TestProvider = Symbol('test-provider');
 

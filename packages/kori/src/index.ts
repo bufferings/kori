@@ -62,24 +62,6 @@ export {
 } from './logging/index.js';
 export { defineKoriPlugin, type KoriPlugin } from './plugin/index.js';
 export {
-  createHonoRouter,
-  type KoriCompiledRouter,
-  type KoriRouteOptions,
-  type KoriRouter,
-  type KoriRouterHandler,
-  type KoriRoutingMatch,
-  type WithPathParams,
-} from './router/index.js';
-export {
-  createKoriSchema,
-  getKoriSchemaProvider,
-  type InferSchemaOutput,
-  type InferSchemaProvider,
-  isKoriSchema,
-  type KoriSchema,
-  type KoriSchemaDefault,
-} from './schema/index.js';
-export {
   createKoriRequestSchema,
   getKoriRequestSchemaProvider,
   type InferRequestSchemaBodyOutput,
@@ -99,6 +81,21 @@ export {
   type KoriRequestSchemaSimpleBodyDefault,
 } from './request-schema/index.js';
 export {
+  createKoriRequestValidator,
+  getKoriRequestValidatorProvider,
+  type InferRequestValidationError,
+  type InferRequestValidationProvider,
+  type InferValidationOutput,
+  isKoriRequestValidator,
+  type KoriBodyValidationError,
+  type KoriFieldValidationError,
+  type KoriRequestValidationError,
+  type KoriRequestValidator,
+  type KoriRequestValidatorDefault,
+  resolveRequestValidationFunction,
+  type WithValidatedRequest,
+} from './request-validator/index.js';
+export {
   createKoriResponseSchema,
   getKoriResponseSchemaProvider,
   type InferResponseSchemaBodyOutputByStatusCode,
@@ -116,23 +113,6 @@ export {
   type KoriResponseSchemaSimpleEntryDefault,
   type KoriResponseSchemaStatusCode,
 } from './response-schema/index.js';
-export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';
-export {
-  createKoriRequestValidator,
-  getKoriRequestValidatorProvider,
-  type InferRequestValidationError,
-  type InferRequestValidationProvider,
-  type InferValidationOutput,
-  isKoriRequestValidator,
-  type KoriBodyValidationError,
-  type KoriFieldValidationError,
-  type KoriRequestValidationError,
-  type KoriRequestValidator,
-  type KoriRequestValidatorDefault,
-  type KoriRequestValidatorMethods,
-  resolveRequestValidationFunction,
-  type WithValidatedRequest,
-} from './request-validator/index.js';
 export {
   createKoriResponseValidator,
   getKoriResponseValidatorProvider,
@@ -146,3 +126,22 @@ export {
   resolveResponseValidationFunction,
   validateResponseBody,
 } from './response-validator/index.js';
+export {
+  createHonoRouter,
+  type KoriCompiledRouter,
+  type KoriRouteOptions,
+  type KoriRouter,
+  type KoriRouterHandler,
+  type KoriRoutingMatch,
+  type WithPathParams,
+} from './router/index.js';
+export {
+  createKoriSchema,
+  getKoriSchemaProvider,
+  type InferSchemaOutput,
+  type InferSchemaProvider,
+  isKoriSchema,
+  type KoriSchema,
+  type KoriSchemaDefault,
+} from './schema/index.js';
+export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';

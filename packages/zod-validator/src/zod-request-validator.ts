@@ -49,45 +49,43 @@ function validateZodSchema<S extends KoriZodSchemaDefault>(
 }
 
 export function createKoriZodRequestValidator(): KoriZodRequestValidator {
-  return createKoriRequestValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodRequestValidationError>(
-    ZodSchemaProvider,
-    {
-      validateParams: <S extends KoriZodSchemaDefault>({
-        schema,
-        params,
-      }: {
-        schema: S;
-        params: Record<string, string | undefined>;
-      }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
-        return validateZodSchema(schema, params);
-      },
-      validateQueries: <S extends KoriZodSchemaDefault>({
-        schema,
-        queries,
-      }: {
-        schema: S;
-        queries: Record<string, string | string[] | undefined>;
-      }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
-        return validateZodSchema(schema, queries);
-      },
-      validateHeaders: <S extends KoriZodSchemaDefault>({
-        schema,
-        headers,
-      }: {
-        schema: S;
-        headers: Record<string, string | string[] | undefined>;
-      }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
-        return validateZodSchema(schema, headers);
-      },
-      validateBody: <S extends KoriZodSchemaDefault>({
-        schema,
-        body,
-      }: {
-        schema: S;
-        body: unknown;
-      }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
-        return validateZodSchema(schema, body);
-      },
+  return createKoriRequestValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodRequestValidationError>({
+    provider: ZodSchemaProvider,
+    validateParams: <S extends KoriZodSchemaDefault>({
+      schema,
+      params,
+    }: {
+      schema: S;
+      params: Record<string, string | undefined>;
+    }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
+      return validateZodSchema(schema, params);
     },
-  );
+    validateQueries: <S extends KoriZodSchemaDefault>({
+      schema,
+      queries,
+    }: {
+      schema: S;
+      queries: Record<string, string | string[] | undefined>;
+    }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
+      return validateZodSchema(schema, queries);
+    },
+    validateHeaders: <S extends KoriZodSchemaDefault>({
+      schema,
+      headers,
+    }: {
+      schema: S;
+      headers: Record<string, string | string[] | undefined>;
+    }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
+      return validateZodSchema(schema, headers);
+    },
+    validateBody: <S extends KoriZodSchemaDefault>({
+      schema,
+      body,
+    }: {
+      schema: S;
+      body: unknown;
+    }): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> => {
+      return validateZodSchema(schema, body);
+    },
+  });
 }

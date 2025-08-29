@@ -12,5 +12,4 @@ export {
   isKoriRequestValidator,
   type KoriRequestValidator,
   type KoriRequestValidatorDefault,
-  type KoriRequestValidatorMethods,
 } from './validator.js';
