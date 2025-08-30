@@ -5,7 +5,11 @@ import {
   isKoriRequestSchema,
   type KoriRequestSchemaDefault,
 } from '../../request-schema/index.js';
-import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import {
+  getKoriRequestValidatorProvider,
+  isKoriRequestValidator,
+  type KoriRequestValidatorDefault,
+} from '../../request-validator/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
 import { validateRequestBody } from './validate-body.js';
@@ -35,6 +39,10 @@ export function resolveInternalRequestValidator({
 }): ((req: KoriRequest) => Promise<KoriResult<RequestValidationSuccess, RequestValidationErrorDefault>>) | undefined {
   if (!requestValidator || !requestSchema) {
     return undefined;
+  }
+
+  if (!isKoriRequestValidator(requestValidator)) {
+    throw new KoriValidationConfigError('Invalid request validator: missing provider information');
   }
 
   if (!isKoriRequestSchema(requestSchema)) {

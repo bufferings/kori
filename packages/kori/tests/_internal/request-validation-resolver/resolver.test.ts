@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect } from 'vitest';
 
 import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../../src/request-validator/index.js';
@@ -10,369 +10,311 @@ import { resolveInternalRequestValidator } from '../../../src/_internal/request-
 const TestProvider = Symbol('test-provider');
 const DifferentProvider = Symbol('different-provider');
 
+const testSchema = createKoriSchema({ provider: TestProvider, definition: { type: 'object' } });
+
+const testRequestValidator = createKoriRequestValidator({
+  provider: TestProvider,
+  validateParams: () => ok({ id: '123', validated: true }),
+  validateQueries: () => ok({ page: 1, validated: true }),
+  validateHeaders: () => ok({ auth: 'token', validated: true }),
+  validateBody: () => ok({ name: 'test', validated: true }),
+});
+
+const testRequestSchema = createKoriRequestSchema({
+  provider: TestProvider,
+  params: testSchema,
+  queries: testSchema,
+  headers: testSchema,
+  body: testSchema,
+});
+
+const mockRequest = {
+  pathParams: () => ({ id: '123' }),
+  queryParams: () => ({ page: '1' }),
+  headers: () => ({ authorization: 'Bearer token' }),
+  parseBody: () => Promise.resolve({ name: 'test' }),
+  contentType: () => 'application/json',
+} as any;
+
 describe('resolveInternalRequestValidator', () => {
-  test('returns undefined when validator is not provided', () => {
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+  describe('Basic validation', () => {
+    test('returns undefined when validator is not provided', () => {
+      const result = resolveInternalRequestValidator({
+        requestValidator: undefined,
+        requestSchema: testRequestSchema,
+      });
+
+      expect(result).toBeUndefined();
     });
 
-    const result = resolveInternalRequestValidator({
-      requestValidator: undefined,
-      requestSchema,
+    test('returns undefined when schema is not provided', () => {
+      const result = resolveInternalRequestValidator({
+        requestValidator: testRequestValidator,
+        requestSchema: undefined,
+      });
+
+      expect(result).toBeUndefined();
     });
 
-    expect(result).toBeUndefined();
+    test('throws error when validator is invalid', () => {
+      expect(() => {
+        resolveInternalRequestValidator({
+          requestValidator: {} as any, // Invalid validator
+          requestSchema: testRequestSchema,
+        });
+      }).toThrow(
+        expect.objectContaining({
+          name: 'KoriValidationConfigError',
+          message: expect.stringContaining('Invalid request validator: missing provider information'),
+        }),
+      );
+    });
+
+    test('throws error when schema is invalid', () => {
+      expect(() => {
+        resolveInternalRequestValidator({
+          requestValidator: testRequestValidator,
+          requestSchema: {} as any, // Invalid schema
+        });
+      }).toThrow(
+        expect.objectContaining({
+          name: 'KoriValidationConfigError',
+          message: expect.stringContaining('Invalid request schema: missing provider information'),
+        }),
+      );
+    });
+
+    test('throws error when validator and schema have different providers', () => {
+      const differentRequestSchema = createKoriRequestSchema({ provider: DifferentProvider });
+
+      expect(() => {
+        resolveInternalRequestValidator({
+          requestValidator: testRequestValidator,
+          requestSchema: differentRequestSchema,
+        });
+      }).toThrow(
+        expect.objectContaining({
+          name: 'KoriValidationConfigError',
+          message: expect.stringContaining('Request validator and schema provider mismatch'),
+        }),
+      );
+    });
   });
 
-  test('returns undefined when schema is not provided', () => {
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+  describe('Request component validation', () => {
+    test('validates request with only params schema defined', async () => {
+      const v = resolveInternalRequestValidator({
+        requestValidator: testRequestValidator,
+        requestSchema: createKoriRequestSchema({
+          provider: TestProvider,
+          params: testSchema,
+        }),
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockRequest);
+      expect(result.ok).toBe(true);
+      if (!result.ok) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.value).toEqual({
+        params: { id: '123', validated: true },
+        queries: undefined,
+        headers: undefined,
+        body: undefined,
+      });
     });
 
-    const result = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema: undefined,
-    });
+    test('validates request with all schemas defined', async () => {
+      const v = resolveInternalRequestValidator({
+        requestValidator: testRequestValidator,
+        requestSchema: testRequestSchema,
+      });
 
-    expect(result).toBeUndefined();
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockRequest);
+      expect(result.ok).toBe(true);
+      if (!result.ok) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.value).toEqual({
+        params: { id: '123', validated: true },
+        queries: { page: 1, validated: true },
+        headers: { auth: 'token', validated: true },
+        body: { name: 'test', validated: true },
+      });
+    });
   });
 
-  test('throws error when validator and schema have different providers', () => {
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
-    });
+  describe('Error aggregation', () => {
+    test('aggregates validation errors from multiple components', async () => {
+      const requestValidator = createKoriRequestValidator({
+        provider: TestProvider,
+        validateParams: () => err('params error'),
+        validateQueries: () => ok({ page: 1 }),
+        validateHeaders: () => err('headers error'),
+        validateBody: () => ok({ name: 'test' }),
+      });
 
-    const requestSchema = createKoriRequestSchema({
-      provider: DifferentProvider,
-    });
+      const requestSchema = createKoriRequestSchema({
+        provider: TestProvider,
+        params: testSchema,
+        headers: testSchema,
+      });
 
-    expect(() => {
-      resolveInternalRequestValidator({
+      const v = resolveInternalRequestValidator({
         requestValidator,
         requestSchema,
       });
-    }).toThrow('Request validator and schema provider mismatch');
-  });
 
-  test('validates request with only params schema defined', async () => {
-    const paramsSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
 
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: vi.fn(() => ok({ id: '123' })),
-      validateQueries: vi.fn(() => ok({ page: 1 })),
-      validateHeaders: vi.fn(() => ok({ auth: 'token' })),
-      validateBody: vi.fn(() => ok({ name: 'test' })),
-    });
+      const result = await v(mockRequest);
+      expect(result.ok).toBe(false);
+      if (result.ok) {
+        expect.unreachable('for type narrowing');
+      }
 
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      params: paramsSchema,
-    });
-
-    const validateFn = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema,
-    });
-
-    expect(validateFn).toBeDefined();
-    if (!validateFn) {
-      return;
-    }
-
-    const mockReq = {
-      pathParams: vi.fn(() => ({ id: '123' })),
-      queryParams: vi.fn(() => ({ page: '1' })),
-      headers: vi.fn(() => ({ authorization: 'Bearer token' })),
-      parseBody: vi.fn(() => Promise.resolve({ name: 'test' })),
-      contentType: vi.fn(() => 'application/json'),
-    } as any;
-
-    const result = await validateFn(mockReq);
-
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value).toEqual({
-        params: { id: '123' },
-        queries: undefined, // No queries schema defined
-        headers: undefined, // No headers schema defined
-        body: undefined, // No body schema defined
-      });
-    }
-
-    // Verify only params validation was called since only params schema is defined
-    expect(requestValidator.validateParams).toHaveBeenCalledWith({
-      schema: paramsSchema,
-      params: { id: '123' },
-    });
-    expect(requestValidator.validateQueries).not.toHaveBeenCalled();
-    expect(requestValidator.validateHeaders).not.toHaveBeenCalled();
-    expect(requestValidator.validateBody).not.toHaveBeenCalled();
-  });
-
-  test('validates request with all schemas defined', async () => {
-    const paramsSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-    const queriesSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-    const headersSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-    const bodySchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: vi.fn(() => ok({ id: '123' })),
-      validateQueries: vi.fn(() => ok({ page: 1 })),
-      validateHeaders: vi.fn(() => ok({ auth: 'token' })),
-      validateBody: vi.fn(() => ok({ name: 'test' })),
-    });
-
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      params: paramsSchema,
-      queries: queriesSchema,
-      headers: headersSchema,
-      body: bodySchema,
-    });
-
-    const validateFn = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema,
-    });
-
-    expect(validateFn).toBeDefined();
-    if (!validateFn) {
-      return;
-    }
-
-    const mockReq = {
-      pathParams: vi.fn(() => ({ id: '123' })),
-      queryParams: vi.fn(() => ({ page: '1' })),
-      headers: vi.fn(() => ({ authorization: 'Bearer token' })),
-      parseBody: vi.fn(() => Promise.resolve({ name: 'test' })),
-      contentType: vi.fn(() => 'application/json'),
-    } as any;
-
-    const result = await validateFn(mockReq);
-
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value).toEqual({
-        params: { id: '123' },
-        queries: { page: 1 },
-        headers: { auth: 'token' },
-        body: { name: 'test' },
-      });
-    }
-
-    // Verify all validation methods were called
-    expect(requestValidator.validateParams).toHaveBeenCalledWith({
-      schema: paramsSchema,
-      params: { id: '123' },
-    });
-    expect(requestValidator.validateQueries).toHaveBeenCalledWith({
-      schema: queriesSchema,
-      queries: { page: '1' },
-    });
-    expect(requestValidator.validateHeaders).toHaveBeenCalledWith({
-      schema: headersSchema,
-      headers: { authorization: 'Bearer token' },
-    });
-    expect(requestValidator.validateBody).toHaveBeenCalledWith({
-      schema: bodySchema,
-      body: { name: 'test' },
-    });
-  });
-
-  test('aggregates validation errors from multiple components', async () => {
-    const paramsSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-    const headersSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: vi.fn(() => err('params error')),
-      validateQueries: vi.fn(() => ok({ page: 1 })),
-      validateHeaders: vi.fn(() => err('headers error')),
-      validateBody: vi.fn(() => ok({ name: 'test' })),
-    });
-
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      params: paramsSchema,
-      headers: headersSchema,
-    });
-
-    const validateFn = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema,
-    });
-
-    expect(validateFn).toBeDefined();
-    if (!validateFn) {
-      return;
-    }
-
-    const mockReq = {
-      pathParams: vi.fn(() => ({})),
-      queryParams: vi.fn(() => ({})),
-      headers: vi.fn(() => ({})),
-      parseBody: vi.fn(() => Promise.resolve({})),
-      contentType: vi.fn(() => 'application/json'),
-    } as any;
-
-    const result = await validateFn(mockReq);
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
       expect(result.error).toEqual({
         params: { stage: 'validation', error: 'params error' },
         headers: { stage: 'validation', error: 'headers error' },
       });
       expect(result.error.queries).toBeUndefined();
       expect(result.error.body).toBeUndefined();
-    }
-
-    // Verify validation methods were called for defined schemas
-    expect(requestValidator.validateParams).toHaveBeenCalledWith({
-      schema: paramsSchema,
-      params: {},
-    });
-    expect(requestValidator.validateHeaders).toHaveBeenCalledWith({
-      schema: headersSchema,
-      headers: {},
-    });
-    expect(requestValidator.validateQueries).not.toHaveBeenCalled();
-    expect(requestValidator.validateBody).not.toHaveBeenCalled();
-  });
-
-  test('returns success with partial validation errors when some components succeed', async () => {
-    const paramsSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-    const queriesSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
     });
 
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: vi.fn(() => ok({ id: '123' })),
-      validateQueries: vi.fn(() => err('queries error')),
-      validateHeaders: vi.fn(() => ok({ auth: 'token' })),
-      validateBody: vi.fn(() => ok({ name: 'test' })),
-    });
+    test('returns error when single component fails', async () => {
+      const requestValidator = createKoriRequestValidator({
+        provider: TestProvider,
+        validateParams: () => ok({ id: '123' }),
+        validateQueries: () => err('queries error'),
+        validateHeaders: () => ok({ auth: 'token' }),
+        validateBody: () => ok({ name: 'test' }),
+      });
 
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      params: paramsSchema,
-      queries: queriesSchema,
-    });
+      const requestSchema = createKoriRequestSchema({
+        provider: TestProvider,
+        params: testSchema,
+        queries: testSchema,
+      });
 
-    const validateFn = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema,
-    });
+      const v = resolveInternalRequestValidator({
+        requestValidator,
+        requestSchema,
+      });
 
-    expect(validateFn).toBeDefined();
-    if (!validateFn) {
-      return;
-    }
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
 
-    const mockReq = {
-      pathParams: vi.fn(() => ({ id: '123' })),
-      queryParams: vi.fn(() => ({ invalid: 'data' })),
-      headers: vi.fn(() => ({})),
-      parseBody: vi.fn(() => Promise.resolve({})),
-      contentType: vi.fn(() => 'application/json'),
-    } as any;
+      const result = await v(mockRequest);
+      expect(result.ok).toBe(false);
+      if (result.ok) {
+        expect.unreachable('for type narrowing');
+      }
 
-    const result = await validateFn(mockReq);
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
       expect(result.error).toEqual({
         queries: { stage: 'validation', error: 'queries error' },
       });
       expect(result.error.params).toBeUndefined();
       expect(result.error.headers).toBeUndefined();
       expect(result.error.body).toBeUndefined();
-    }
-  });
-
-  test('handles empty request schema with no validation', async () => {
-    const requestValidator = createKoriRequestValidator({
-      provider: TestProvider,
-      validateParams: vi.fn(() => ok({ id: '123' })),
-      validateQueries: vi.fn(() => ok({ page: 1 })),
-      validateHeaders: vi.fn(() => ok({ auth: 'token' })),
-      validateBody: vi.fn(() => ok({ name: 'test' })),
     });
 
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-    });
+    test('handles empty request schema with no validation', async () => {
+      const requestValidator = createKoriRequestValidator({
+        provider: TestProvider,
+        validateParams: () => ok({ id: '123' }),
+        validateQueries: () => ok({ page: 1 }),
+        validateHeaders: () => ok({ auth: 'token' }),
+        validateBody: () => ok({ name: 'test' }),
+      });
 
-    const validateFn = resolveInternalRequestValidator({
-      requestValidator,
-      requestSchema,
-    });
+      const requestSchema = createKoriRequestSchema({
+        provider: TestProvider,
+      });
 
-    expect(validateFn).toBeDefined();
-    if (!validateFn) {
-      return;
-    }
+      const v = resolveInternalRequestValidator({
+        requestValidator,
+        requestSchema,
+      });
 
-    const mockReq = {
-      pathParams: vi.fn(() => ({})),
-      queryParams: vi.fn(() => ({})),
-      headers: vi.fn(() => ({})),
-      parseBody: vi.fn(() => Promise.resolve({})),
-      contentType: vi.fn(() => 'application/json'),
-    } as any;
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
 
-    const result = await validateFn(mockReq);
+      const result = await v(mockRequest);
+      expect(result.ok).toBe(true);
+      if (!result.ok) {
+        expect.unreachable('for type narrowing');
+      }
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
       expect(result.value).toEqual({
         params: undefined,
         queries: undefined,
         headers: undefined,
         body: undefined,
       });
-    }
+    });
+  });
 
-    // Verify no validation methods were called
-    expect(requestValidator.validateParams).not.toHaveBeenCalled();
-    expect(requestValidator.validateQueries).not.toHaveBeenCalled();
-    expect(requestValidator.validateHeaders).not.toHaveBeenCalled();
-    expect(requestValidator.validateBody).not.toHaveBeenCalled();
+  describe('Body parsing errors', () => {
+    test('handles body parsing errors', async () => {
+      const requestValidator = createKoriRequestValidator({
+        provider: TestProvider,
+        validateParams: () => ok({ id: '123', validated: true }),
+        validateQueries: () => ok({ page: 1, validated: true }),
+        validateHeaders: () => ok({ auth: 'token', validated: true }),
+        validateBody: () => ok({ name: 'test', validated: true }),
+      });
+
+      const requestSchema = createKoriRequestSchema({
+        provider: TestProvider,
+        body: testSchema,
+      });
+
+      const v = resolveInternalRequestValidator({
+        requestValidator,
+        requestSchema,
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const mockReq = {
+        ...mockRequest,
+        parseBody: () => Promise.reject(new Error('Invalid JSON')),
+      };
+
+      const result = await v(mockReq);
+      expect(result.ok).toBe(false);
+      if (result.ok) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.error.body).toEqual({
+        stage: 'pre-validation',
+        type: 'INVALID_BODY',
+        message: 'Failed to parse request body',
+        cause: expect.any(Error),
+      });
+    });
   });
 });
