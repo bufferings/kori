@@ -1,4 +1,4 @@
-import { resolveRequestValidationFunction } from '../_internal/request-validation-resolver/index.js';
+import { resolveInternalRequestValidator } from '../_internal/request-validation-resolver/index.js';
 import {
   executeHandlerDeferredCallbacks,
   isKoriResponse,
@@ -262,7 +262,7 @@ export function createRouteHandler<
     errorHooks: deps.errorHooks,
   });
 
-  const requestValidateFn = resolveRequestValidationFunction({
+  const requestValidateFn = resolveInternalRequestValidator({
     requestValidator: deps.requestValidator,
     requestSchema: routeParams.requestSchema,
   });

@@ -3,7 +3,7 @@ import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
-import { type KoriFieldValidationError } from './validation-result.js';
+import { type FieldValidationErrorDefault } from './validation-result.js';
 
 /** @internal */
 export async function validateRequestHeaders({
@@ -14,7 +14,7 @@ export async function validateRequestHeaders({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['headers'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriFieldValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, FieldValidationErrorDefault>> {
   if (!schema) {
     return ok(undefined);
   }

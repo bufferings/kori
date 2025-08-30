@@ -1,23 +1,20 @@
 /**
  * Validation error for individual request fields (params, queries, headers).
  *
- * @template ValidationError - Error type from the validation library
+ * @template ErrorType - Error type from the validation library
  */
-export type KoriFieldValidationError<ValidationError> = {
+export type FieldValidationError<ErrorType> = {
   stage: 'validation';
-  error: ValidationError;
+  error: ErrorType;
 };
 
 /**
  * Validation error for request body with pre-validation and validation stages.
  *
- * @template TValidatorError - Error type from the validation library
+ * @template ErrorType - Error type from the validation library
  */
-export type KoriBodyValidationError<TValidatorError> =
-  | {
-      stage: 'validation';
-      error: TValidatorError;
-    }
+export type BodyValidationError<ErrorType> =
+  | FieldValidationError<ErrorType>
   | {
       stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';
@@ -38,19 +35,34 @@ export type KoriBodyValidationError<TValidatorError> =
  * Contains validation errors for params, queries, headers, and body.
  * Each field is optional and only present when validation fails.
  *
- * @template TValidatorError - Error type from the validation library
+ * @template ErrorType - Error type from the validation library
  */
-export type KoriRequestValidationError<TValidatorError = unknown> = {
-  params?: KoriFieldValidationError<TValidatorError>;
-  queries?: KoriFieldValidationError<TValidatorError>;
-  headers?: KoriFieldValidationError<TValidatorError>;
-  body?: KoriBodyValidationError<TValidatorError>;
+export type RequestValidationError<ErrorType = unknown> = {
+  params?: FieldValidationError<ErrorType>;
+  queries?: FieldValidationError<ErrorType>;
+  headers?: FieldValidationError<ErrorType>;
+  body?: BodyValidationError<ErrorType>;
 };
+
+/**
+ * Default type alias for FieldValidationError with unknown error type.
+ */
+export type FieldValidationErrorDefault = FieldValidationError<unknown>;
+
+/**
+ * Default type alias for BodyValidationError with unknown error type.
+ */
+export type BodyValidationErrorDefault = BodyValidationError<unknown>;
+
+/**
+ * Default type alias for RequestValidationError with unknown error type.
+ */
+export type RequestValidationErrorDefault = RequestValidationError<unknown>;
 
 /**
  * Successful validation result containing validated data from all request components.
  */
-export type KoriRequestValidationSuccess = {
+export type RequestValidationSuccess = {
   params: unknown;
   queries: unknown;
   headers: unknown;

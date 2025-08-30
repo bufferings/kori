@@ -1,7 +1,7 @@
-export { resolveRequestValidationFunction } from './resolver.js';
+export { resolveInternalRequestValidator } from './resolver.js';
 export {
-  type KoriBodyValidationError,
-  type KoriFieldValidationError,
-  type KoriRequestValidationError,
-  type KoriRequestValidationSuccess,
+  type BodyValidationError,
+  type FieldValidationError,
+  type RequestValidationError,
+  type RequestValidationSuccess,
 } from './validation-result.js';

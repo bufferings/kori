@@ -5,14 +5,14 @@ import { type KoriRequestValidatorDefault } from '../../request-validator/index.
 import { type KoriSchemaDefault, isKoriSchema } from '../../schema/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
-import { type KoriBodyValidationError } from './validation-result.js';
+import { type BodyValidationErrorDefault } from './validation-result.js';
 
 function findMatchingMediaType({
-  requestContentType,
   contentSchema,
+  requestContentType,
 }: {
-  requestContentType: string;
   contentSchema: KoriRequestSchemaContentBodyDefault['content'];
+  requestContentType: string;
 }): string | undefined {
   // 1. Exact match
   if (requestContentType in contentSchema) {
@@ -38,12 +38,12 @@ function findMatchingMediaType({
 const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
 function resolveRequestBodySchema({
-  req,
   bodySchema,
+  req,
 }: {
-  req: KoriRequest;
   bodySchema: NonNullable<KoriRequestSchemaDefault['body']>;
-}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, KoriBodyValidationError<unknown>> {
+  req: KoriRequest;
+}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, BodyValidationErrorDefault> {
   const requestContentType = req.contentType() ?? DEFAULT_CONTENT_TYPE;
 
   if (!('content' in bodySchema)) {
@@ -62,7 +62,7 @@ function resolveRequestBodySchema({
 
     return ok({ schema });
   } else {
-    // KoriRequestSchemaBody
+    // KoriRequestSchemaContentBody
     const contentSchema = bodySchema.content;
 
     const matchedMediaType = findMatchingMediaType({ contentSchema, requestContentType });
@@ -86,7 +86,7 @@ function resolveRequestBodySchema({
   }
 }
 
-async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
   try {
     const body = await req.parseBody();
     return ok(body);
@@ -108,7 +108,7 @@ async function validateParsedBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriSchemaDefault;
   body: unknown;
-}): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
   const result = await validator.validateBody({ schema, body });
   if (result.ok) {
     return result;
@@ -129,12 +129,12 @@ export async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, KoriBodyValidationError<unknown>>> {
+}): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
   if (!schema) {
     return ok(undefined);
   }
 
-  const resolveResult = resolveRequestBodySchema({ req, bodySchema: schema });
+  const resolveResult = resolveRequestBodySchema({ bodySchema: schema, req });
   if (!resolveResult.ok) {
     return resolveResult;
   }

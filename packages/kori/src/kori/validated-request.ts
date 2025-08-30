@@ -1,4 +1,4 @@
-import { type KoriRequestValidationError } from '../_internal/request-validation-resolver/index.js';
+import { type RequestValidationError } from '../_internal/request-validation-resolver/index.js';
 import { type KoriRequest } from '../context/index.js';
 import {
   type InferRequestSchemaBodyOutput,
@@ -46,5 +46,5 @@ export type InferValidatedRequest<
  */
 export type InferRequestValidationFailure<V> =
   V extends KoriRequestValidator<infer _Provider, infer _Schema, infer ErrorType>
-    ? KoriRequestValidationError<ErrorType>
+    ? RequestValidationError<ErrorType>
     : never;

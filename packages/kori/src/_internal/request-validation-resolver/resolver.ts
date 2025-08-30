@@ -12,33 +12,31 @@ import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
 import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
-import { type KoriRequestValidationError, type KoriRequestValidationSuccess } from './validation-result.js';
+import { type RequestValidationErrorDefault, type RequestValidationSuccess } from './validation-result.js';
 
 /**
- * Creates a request validation function from validator and schema.
+ * Resolves a request validation function from validator and schema.
  *
  * Validates all request components (params, queries, headers, body) in parallel
  * and returns aggregated results or errors.
  *
- * @packageInternal
  * @param options - Configuration for validation function
  * @param options.requestValidator - The request validator to use
  * @param options.requestSchema - The request schema to validate against
  * @returns Validation function or undefined if validator/schema not provided
  * @throws {KoriValidationConfigError} When validator and schema providers don't match
  */
-export function resolveRequestValidationFunction({
+export function resolveInternalRequestValidator({
   requestValidator,
   requestSchema,
 }: {
   requestValidator?: KoriRequestValidatorDefault;
   requestSchema?: KoriRequestSchemaDefault;
-}): ((req: KoriRequest) => Promise<KoriResult<KoriRequestValidationSuccess, KoriRequestValidationError>>) | undefined {
+}): ((req: KoriRequest) => Promise<KoriResult<RequestValidationSuccess, RequestValidationErrorDefault>>) | undefined {
   if (!requestValidator || !requestSchema) {
     return undefined;
   }
 
-  // Runtime provider compatibility check
   if (!isKoriRequestSchema(requestSchema)) {
     throw new KoriValidationConfigError('Invalid request schema: missing provider information');
   }
@@ -71,7 +69,7 @@ export function resolveRequestValidationFunction({
       });
     }
 
-    const errors: KoriRequestValidationError<unknown> = {};
+    const errors: RequestValidationErrorDefault = {};
     if (!paramsResult.ok) {
       errors.params = paramsResult.error;
     }
