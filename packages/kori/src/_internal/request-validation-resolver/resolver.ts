@@ -1,25 +1,18 @@
-import { type KoriRequest } from '../context/index.js';
-import { KoriValidationConfigError } from '../error/index.js';
+import { type KoriRequest } from '../../context/index.js';
+import { KoriValidationConfigError } from '../../error/index.js';
 import {
   getKoriRequestSchemaProvider,
   isKoriRequestSchema,
   type KoriRequestSchemaDefault,
-} from '../request-schema/index.js';
-import { ok, err, type KoriResult } from '../util/index.js';
+} from '../../request-schema/index.js';
+import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { ok, err, type KoriResult } from '../../util/index.js';
 
-import { type KoriRequestValidationError } from './error.js';
 import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
 import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
-import { getKoriRequestValidatorProvider, type KoriRequestValidatorDefault } from './validator.js';
-
-export type KoriRequestValidationSuccess = {
-  params: unknown;
-  queries: unknown;
-  headers: unknown;
-  body: unknown;
-};
+import { type KoriRequestValidationError, type KoriRequestValidationSuccess } from './validation-result.js';
 
 export function resolveRequestValidationFunction({
   requestValidator,

@@ -28,3 +28,10 @@ export type KoriRequestValidationError<TValidatorError = unknown> = {
   headers?: KoriFieldValidationError<TValidatorError>;
   body?: KoriBodyValidationError<TValidatorError>;
 };
+
+export type KoriRequestValidationSuccess = {
+  params: unknown;
+  queries: unknown;
+  headers: unknown;
+  body: unknown;
+};

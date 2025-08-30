@@ -83,17 +83,10 @@ export {
 export {
   createKoriRequestValidator,
   getKoriRequestValidatorProvider,
-  type InferRequestValidationError,
   type InferRequestValidationProvider,
-  type InferValidationOutput,
   isKoriRequestValidator,
-  type KoriBodyValidationError,
-  type KoriFieldValidationError,
-  type KoriRequestValidationError,
   type KoriRequestValidator,
   type KoriRequestValidatorDefault,
-  resolveRequestValidationFunction,
-  type WithValidatedRequest,
 } from './request-validator/index.js';
 export {
   createKoriResponseSchema,

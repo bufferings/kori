@@ -4,19 +4,17 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../context/index.js';
-import { type WithPathParams } from '../router/index.js';
 import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
+import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
+import { type InferRequestValidationFailure } from './validated-request.js';
 import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import { type MaybePromise } from '../util/index.js';
-import {
-  type InferRequestValidationError,
-  type KoriRequestValidatorDefault,
-  type WithValidatedRequest,
-} from '../request-validator/index.js';
 import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { type WithPathParams } from '../router/index.js';
+import { type MaybePromise } from '../util/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
+import { type InferValidatedRequest } from './validated-request.js';
 
 /**
  * HTTP request methods supported by Kori.
@@ -52,7 +50,7 @@ export type KoriHandler<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
   RequestSchema extends KoriRequestSchemaDefault | undefined,
 > = (
-  ctx: KoriHandlerContext<Env, WithValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>, Res>,
+  ctx: KoriHandlerContext<Env, InferValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>, Res>,
 ) => MaybePromise<KoriResponse>;
 
 export type KoriInstanceRequestValidationErrorHandler<
@@ -62,7 +60,7 @@ export type KoriInstanceRequestValidationErrorHandler<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
 > = (
   ctx: KoriHandlerContext<Env, Req, Res>,
-  err: InferRequestValidationError<RequestValidator>,
+  err: InferRequestValidationFailure<RequestValidator>,
 ) => MaybePromise<KoriResponse | void>;
 
 export type KoriRouteRequestValidationErrorHandler<
@@ -76,7 +74,7 @@ export type KoriRouteRequestValidationErrorHandler<
   ? RequestSchema extends KoriRequestSchemaDefault
     ? (
         ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-        err: InferRequestValidationError<RequestValidator>,
+        err: InferRequestValidationFailure<RequestValidator>,
       ) => MaybePromise<KoriResponse | void>
     : never
   : never;

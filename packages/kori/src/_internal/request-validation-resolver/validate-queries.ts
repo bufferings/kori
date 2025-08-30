@@ -1,9 +1,9 @@
-import { type KoriRequest } from '../context/index.js';
-import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { ok, err, type KoriResult } from '../util/index.js';
+import { type KoriRequest } from '../../context/index.js';
+import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
+import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { ok, err, type KoriResult } from '../../util/index.js';
 
-import { type KoriFieldValidationError } from './error.js';
-import { type KoriRequestValidatorDefault } from './validator.js';
+import { type KoriFieldValidationError } from './validation-result.js';
 
 export async function validateRequestQueries({
   validator,

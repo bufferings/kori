@@ -1,3 +1,5 @@
+import { resolveRequestValidationFunction } from '../_internal/request-validation-resolver/index.js';
+import { type InferRequestValidationFailure } from './validated-request.js';
 import {
   executeHandlerDeferredCallbacks,
   isKoriResponse,
@@ -8,20 +10,15 @@ import {
 } from '../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
 import { createSystemLogger } from '../logging/index.js';
-import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
 import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
+import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
 import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import {
-  resolveRequestValidationFunction,
-  type InferRequestValidationError,
-  type KoriRequestValidatorDefault,
-  type WithValidatedRequest,
-} from '../request-validator/index.js';
 import {
   resolveResponseValidationFunction,
   type InferResponseValidationError,
   type KoriResponseValidatorDefault,
 } from '../response-validator/index.js';
+import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
 
 import {
   type KoriHandler,
@@ -30,6 +27,7 @@ import {
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
+import { type InferValidatedRequest } from './validated-request.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
@@ -158,7 +156,7 @@ function createRequestValidationErrorHandler<
   routeHandler?: KoriRouteRequestValidationErrorHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  error: InferRequestValidationError<RequestValidator>,
+  error: InferRequestValidationFailure<RequestValidator>,
 ) => Promise<KoriResponse> {
   return async (ctx, err) => {
     // 1. Try route handler first
@@ -256,7 +254,7 @@ export function createRouteHandler<
 ): KoriRouterHandler<Env, WithPathParams<Req, Path>, Res> {
   type ValidatedContext = KoriHandlerContext<
     Env,
-    WithValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>,
+    InferValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>,
     Res
   >;
 
@@ -291,7 +289,7 @@ export function createRouteHandler<
       if (!validationResult.ok) {
         return await requestValidationErrorHandler(
           ctx,
-          validationResult.error as InferRequestValidationError<RequestValidator>,
+          validationResult.error as InferRequestValidationFailure<RequestValidator>,
         );
       }
 
