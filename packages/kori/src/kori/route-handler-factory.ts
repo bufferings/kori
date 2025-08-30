@@ -1,4 +1,5 @@
 import { resolveInternalRequestValidator } from '../_internal/request-validation-resolver/index.js';
+import { resolveInternalResponseValidator } from '../_internal/response-validation-resolver/index.js';
 import {
   executeHandlerDeferredCallbacks,
   isKoriResponse,
@@ -12,11 +13,7 @@ import { createSystemLogger } from '../logging/index.js';
 import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
 import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import {
-  resolveResponseValidationFunction,
-  type InferResponseValidationError,
-  type KoriResponseValidatorDefault,
-} from '../response-validator/index.js';
+import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
 import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
 
 import {
@@ -27,6 +24,7 @@ import {
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
 import { type InferRequestValidationFailure, type InferValidatedRequest } from './validated-request.js';
+import { type InferResponseValidationError } from './validated-response.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
@@ -267,7 +265,7 @@ export function createRouteHandler<
     requestSchema: routeParams.requestSchema,
   });
 
-  const responseValidateFn = resolveResponseValidationFunction({
+  const responseValidateFn = resolveInternalResponseValidator({
     responseValidator: deps.responseValidator,
     responseSchema: routeParams.responseSchema,
   });

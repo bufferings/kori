@@ -34,7 +34,6 @@ function findMatchingMediaType({
   return undefined;
 }
 
-/** Default content-type for request validation when no Content-Type header is present */
 const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
 function resolveRequestBodySchema({
@@ -44,35 +43,38 @@ function resolveRequestBodySchema({
   bodySchema: NonNullable<KoriRequestSchemaDefault['body']>;
   req: KoriRequest;
 }): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, BodyValidationErrorDefault> {
-  const requestContentType = req.contentType() ?? DEFAULT_CONTENT_TYPE;
+  const requestContentType = req.contentType();
 
   if (!('content' in bodySchema)) {
     // KoriRequestSchemaSimpleBody
     const schema = isKoriSchema(bodySchema) ? bodySchema : bodySchema.schema;
 
-    if (requestContentType !== DEFAULT_CONTENT_TYPE) {
-      return err({
-        stage: 'pre-validation',
-        type: 'UNSUPPORTED_MEDIA_TYPE',
-        message: 'Unsupported Media Type',
-        supportedTypes: [DEFAULT_CONTENT_TYPE],
-        requestedType: requestContentType,
-      });
+    if (requestContentType === undefined || requestContentType === DEFAULT_CONTENT_TYPE) {
+      return ok({ schema });
     }
 
-    return ok({ schema });
+    return err({
+      stage: 'pre-validation',
+      type: 'UNSUPPORTED_MEDIA_TYPE',
+      message: 'Unsupported Media Type',
+      supportedTypes: [DEFAULT_CONTENT_TYPE],
+      requestedType: requestContentType,
+    });
   } else {
     // KoriRequestSchemaContentBody
     const contentSchema = bodySchema.content;
 
-    const matchedMediaType = findMatchingMediaType({ contentSchema, requestContentType });
+    const matchedMediaType = findMatchingMediaType({
+      contentSchema,
+      requestContentType: requestContentType ?? DEFAULT_CONTENT_TYPE,
+    });
     if (!matchedMediaType) {
       return err({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: Object.keys(contentSchema),
-        requestedType: requestContentType,
+        requestedType: requestContentType ?? '',
       });
     }
 

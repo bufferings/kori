@@ -1,19 +1,28 @@
-import { type InferSchemaOutput, type KoriSchemaDefault } from '../schema/index.js';
-import { type MaybePromise, type KoriResult } from '../util/index.js';
+import { type InferSchemaOutput, type KoriSchemaDefault, type KoriSchemaFor } from '../schema/index.js';
+import { type KoriResult, type MaybePromise } from '../util/index.js';
 
-const ProviderKey = Symbol('schema-provider');
+const ProviderKey = Symbol('response-validator-provider');
 
-export type KoriResponseValidatorMethods<Schema extends KoriSchemaDefault, ErrorType> = {
-  validateBody<S extends Schema>(params: {
+/**
+ * Response validator for validating HTTP response components.
+ *
+ * Provides type-safe validation methods for response body using schema definitions.
+ *
+ * @template Provider - Unique symbol identifying the validator provider
+ * @template Schema - Kori schema type for validation
+ * @template ErrorType - Error type returned by validation methods
+ */
+export type KoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaFor<Provider>, ErrorType> = {
+  [ProviderKey]: Provider;
+  validateBody<S extends Schema>(options: {
     schema: S;
     body: unknown;
   }): MaybePromise<KoriResult<InferSchemaOutput<S>, ErrorType>>;
 };
 
-export type KoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaDefault, ErrorType> = {
-  [ProviderKey]: Provider;
-} & KoriResponseValidatorMethods<Schema, ErrorType>;
-
+/**
+ * Default response validator type with generic provider and error types.
+ */
 export type KoriResponseValidatorDefault = KoriResponseValidator<symbol, KoriSchemaDefault, unknown>;
 
 /**
@@ -38,12 +47,32 @@ export function getKoriResponseValidatorProvider<V extends KoriResponseValidator
   return validator[ProviderKey];
 }
 
-export function createKoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaDefault, ErrorType>(
-  provider: Provider,
-  methods: KoriResponseValidatorMethods<Schema, ErrorType>,
-): KoriResponseValidator<Provider, Schema, ErrorType> {
+/**
+ * Creates a Kori response validator with provider identification.
+ *
+ * @template Provider - Unique symbol identifying the validator provider
+ * @template Schema - Kori schema type for validation
+ * @template ErrorType - Error type for validation results
+ *
+ * @param options - Options for creating the validator
+ * @param options.provider - Symbol that identifies the validator provider
+ * @param options.validateBody - Validation method for response body
+ * @returns Kori response validator ready for type-safe validation
+ */
+export function createKoriResponseValidator<
+  Provider extends symbol,
+  Schema extends KoriSchemaFor<Provider>,
+  ErrorType,
+>(options: {
+  provider: Provider;
+  validateBody: (options: {
+    schema: Schema;
+    body: unknown;
+  }) => MaybePromise<KoriResult<InferSchemaOutput<Schema>, ErrorType>>;
+}): KoriResponseValidator<Provider, Schema, ErrorType> {
+  const { provider, validateBody } = options;
   return {
     [ProviderKey]: provider,
-    ...methods,
+    validateBody,
   };
 }

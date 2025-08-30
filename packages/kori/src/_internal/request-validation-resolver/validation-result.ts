@@ -20,7 +20,7 @@ export type BodyValidationError<ErrorType> =
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;
       supportedTypes: string[];
-      requestedType?: string;
+      requestedType: string;
     }
   | {
       stage: 'pre-validation';

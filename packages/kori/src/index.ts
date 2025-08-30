@@ -109,15 +109,9 @@ export {
 export {
   createKoriResponseValidator,
   getKoriResponseValidatorProvider,
-  type InferResponseValidationError,
-  type InferResponseValidationProvider,
   isKoriResponseValidator,
-  type KoriResponseBodyValidationError,
-  type KoriResponseValidationError,
   type KoriResponseValidator,
   type KoriResponseValidatorDefault,
-  resolveResponseValidationFunction,
-  validateResponseBody,
 } from './response-validator/index.js';
 export {
   createHonoRouter,
