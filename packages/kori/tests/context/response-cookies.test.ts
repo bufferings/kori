@@ -1,8 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
+import { KoriCookieError } from '../../src/error/index.js';
+
 import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse } from '../../src/context/response.js';
-import { KoriCookieError } from '../../src/error/index.js';
 
 const mockReq = { header: () => undefined } as unknown as KoriRequest;
 

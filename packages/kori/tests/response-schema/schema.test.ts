@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
+import { createKoriSchema } from '../../src/schema/index.js';
+
 import {
   createKoriResponseSchema,
   getKoriResponseSchemaProvider,
   isKoriResponseSchema,
   type KoriResponseSchema,
-} from '../../src/response-schema/index.js';
-import { createKoriSchema } from '../../src/schema/schema.js';
+} from '../../src/response-schema/schema.js';
 
 const TestProvider = Symbol('test-provider');
 

@@ -6,7 +6,6 @@ import {
 } from '../context/index.js';
 import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type InferRequestValidationFailure } from './validated-request.js';
 import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { type InferResponseValidationError, type KoriResponseValidatorDefault } from '../response-validator/index.js';
 import { type WithPathParams } from '../router/index.js';
@@ -14,7 +13,7 @@ import { type MaybePromise } from '../util/index.js';
 
 import { type Kori } from './kori.js';
 import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
-import { type InferValidatedRequest } from './validated-request.js';
+import { type InferRequestValidationFailure, type InferValidatedRequest  } from './validated-request.js';
 
 /**
  * HTTP request methods supported by Kori.

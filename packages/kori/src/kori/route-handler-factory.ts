@@ -1,5 +1,4 @@
 import { resolveRequestValidationFunction } from '../_internal/request-validation-resolver/index.js';
-import { type InferRequestValidationFailure } from './validated-request.js';
 import {
   executeHandlerDeferredCallbacks,
   isKoriResponse,
@@ -27,7 +26,7 @@ import {
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
 } from './route.js';
-import { type InferValidatedRequest } from './validated-request.js';
+import { type InferRequestValidationFailure, type InferValidatedRequest } from './validated-request.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;

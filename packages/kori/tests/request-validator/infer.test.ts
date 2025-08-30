@@ -1,7 +1,9 @@
 import { describe, expectTypeOf, test } from 'vitest';
 
-import { createKoriRequestValidator, type InferRequestValidationProvider } from '../../src/request-validator/index.js';
 import { ok } from '../../src/util/index.js';
+
+import { type InferRequestValidationProvider } from '../../src/request-validator/infer.js';
+import { createKoriRequestValidator } from '../../src/request-validator/validator.js';
 
 const TestProvider = Symbol('test-provider');
 

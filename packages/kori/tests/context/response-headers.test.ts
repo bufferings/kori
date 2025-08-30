@@ -1,8 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
+import { KoriSetCookieHeaderError } from '../../src/error/index.js';
+
 import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse } from '../../src/context/response.js';
-import { KoriSetCookieHeaderError } from '../../src/error/index.js';
 
 const mockRequest = { header: () => 'application/json' } as unknown as KoriRequest;
 

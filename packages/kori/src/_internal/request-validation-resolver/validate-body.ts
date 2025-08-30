@@ -120,6 +120,7 @@ async function validateParsedBody({
   });
 }
 
+/** @internal */
 export async function validateRequestBody({
   validator,
   schema,

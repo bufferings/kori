@@ -1,6 +1,6 @@
 import { type InferRequestSchemaProvider, type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type InferResponseSchemaProvider, type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { type InferRequestValidationProvider, type KoriRequestValidatorDefault } from '../request-validator/index.js';
+import { type InferResponseSchemaProvider, type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import {
   type InferResponseValidationProvider,
   type KoriResponseValidatorDefault,

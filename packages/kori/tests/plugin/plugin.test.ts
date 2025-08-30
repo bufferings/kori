@@ -1,7 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
-import { createKori, type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../src/index.js';
-import { defineKoriPlugin } from '../../src/plugin/index.js';
+import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../src/context/index.js';
+import { createKori } from '../../src/kori/index.js';
+
+import { defineKoriPlugin } from '../../src/plugin/plugin.js';
 
 describe('defineKoriPlugin', () => {
   test('returns a plugin object with name and optional version', () => {

@@ -29,6 +29,16 @@ export const baseConfig = tseslint.config(
 
   // Plugins and rules
   {
+    // WHY:
+    // - We want a blank line between "index.*" imports and other parent-relative imports.
+    // - import-x normally groups all parent-relative (../...) imports together, so index and non-index merge.
+    // - By marking any "index.*" as internal via internal-regex, they move to the "internal" group.
+    // - With 'newlines-between': 'always', this guarantees a blank line between internal (index.*) and parent.
+    // Ref: How imports are grouped and internal-regex in import-x/order.
+    //      https://raw.githubusercontent.com/un-ts/eslint-plugin-import-x/refs/heads/master/docs/rules/order.md
+    settings: {
+      'import-x/internal-regex': '.*/index\\.(js|ts|tsx)$',
+    },
     plugins: {
       'unused-imports': unusedImports,
       'simple-import-sort': simpleImportSort,
@@ -76,14 +86,9 @@ export const baseConfig = tseslint.config(
       'import-x/order': [
         'error',
         {
+          // Place internal (index.* via internal-regex) before parent to force a visual separation
+          // via 'newlines-between': 'always'.
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'object', 'type'],
-          pathGroups: [
-            {
-              pattern: './**/index.{js,ts,tsx}',
-              group: 'parent',
-              position: 'after',
-            },
-          ],
           alphabetize: {
             order: 'asc',
             caseInsensitive: true,

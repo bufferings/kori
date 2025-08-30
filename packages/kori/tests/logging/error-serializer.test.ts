@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { KoriValidationConfigError } from '../../src/error/index.js';
+
 import { serializeError } from '../../src/logging/error-serializer.js';
 
 describe('serializeError', () => {

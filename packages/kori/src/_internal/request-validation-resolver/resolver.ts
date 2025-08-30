@@ -14,6 +14,19 @@ import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
 import { type KoriRequestValidationError, type KoriRequestValidationSuccess } from './validation-result.js';
 
+/**
+ * Creates a request validation function from validator and schema.
+ *
+ * Validates all request components (params, queries, headers, body) in parallel
+ * and returns aggregated results or errors.
+ *
+ * @packageInternal
+ * @param options - Configuration for validation function
+ * @param options.requestValidator - The request validator to use
+ * @param options.requestSchema - The request schema to validate against
+ * @returns Validation function or undefined if validator/schema not provided
+ * @throws {KoriValidationConfigError} When validator and schema providers don't match
+ */
 export function resolveRequestValidationFunction({
   requestValidator,
   requestSchema,

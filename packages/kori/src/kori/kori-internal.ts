@@ -4,11 +4,11 @@ import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } fr
 import { getMethodString } from '../http/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
-import { type KoriRouter, type KoriRouterHandler } from '../router/index.js';
 import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
+import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { type KoriRouter, type KoriRouterHandler } from '../router/index.js';
 
 import { createFetchHandler } from './fetch-handler-factory.js';
 import { type Kori, type KoriRouteDefinition } from './kori.js';

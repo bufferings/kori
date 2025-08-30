@@ -1,9 +1,9 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { createKoriLoggerFactory, createInstanceLogger } from '../logging/index.js';
 import { type KoriLoggerFactoryOptions, type KoriLoggerFactory } from '../logging/index.js';
-import { createHonoRouter, type KoriRouter } from '../router/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { createHonoRouter, type KoriRouter } from '../router/index.js';
 
 import { createKoriInternal, type KoriInternalShared } from './kori-internal.js';
 import { type Kori } from './kori.js';

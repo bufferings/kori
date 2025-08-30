@@ -1,13 +1,14 @@
 import { describe, expectTypeOf, test } from 'vitest';
 
+import { createKoriSchema } from '../../src/schema/index.js';
+
 import {
-  createKoriRequestSchema,
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaHeadersOutput,
   type InferRequestSchemaParamsOutput,
   type InferRequestSchemaQueriesOutput,
-} from '../../src/request-schema/index.js';
-import { createKoriSchema } from '../../src/schema/schema.js';
+} from '../../src/request-schema/infer.js';
+import { createKoriRequestSchema } from '../../src/request-schema/schema.js';
 
 const TestProvider = Symbol('test-provider');
 

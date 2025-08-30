@@ -1,11 +1,12 @@
 import { vi } from 'vitest';
 
+import { type KoriLogger, type KoriLoggerFactory } from '../src/logging/index.js';
+
 import { createKoriEnvironment, type KoriEnvironment } from '../src/context/environment.js';
 import { createKoriHandlerContext, type KoriHandlerContext } from '../src/context/handler-context.js';
 import { createKoriInstanceContext, type KoriInstanceContext } from '../src/context/instance-context.js';
 import { createKoriRequest, type KoriRequest } from '../src/context/request.js';
 import { createKoriResponse, type KoriResponse } from '../src/context/response.js';
-import { type KoriLogger, type KoriLoggerFactory } from '../src/logging/index.js';
 
 /**
  * Creates a stub logger for testing that satisfies the KoriLogger interface.

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { ok, err } from '../../src/util/index.js';
+import { ok, err } from '../../src/util/result.js';
 
 describe('Result utilities', () => {
   test('ok() creates success result', () => {

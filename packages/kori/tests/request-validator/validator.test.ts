@@ -1,12 +1,13 @@
 import { describe, test, expect } from 'vitest';
 
+import { createKoriSchema } from '../../src/schema/index.js';
+import { ok } from '../../src/util/index.js';
+
 import {
   createKoriRequestValidator,
   isKoriRequestValidator,
   getKoriRequestValidatorProvider,
-} from '../../src/request-validator/index.js';
-import { createKoriSchema } from '../../src/schema/index.js';
-import { ok } from '../../src/util/index.js';
+} from '../../src/request-validator/validator.js';
 
 const TestProvider = Symbol('test-provider');
 

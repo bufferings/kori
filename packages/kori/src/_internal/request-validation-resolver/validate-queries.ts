@@ -5,6 +5,7 @@ import { ok, err, type KoriResult } from '../../util/index.js';
 
 import { type KoriFieldValidationError } from './validation-result.js';
 
+/** @internal */
 export async function validateRequestQueries({
   validator,
   schema,

@@ -1,10 +1,10 @@
 import { type KoriResponse } from '../context/index.js';
-import { isKoriSchema } from '../schema/index.js';
 import {
   type KoriResponseSchemaContentEntryDefault,
   type KoriResponseSchemaDefault,
   type KoriResponseSchemaSimpleEntryDefault,
 } from '../response-schema/index.js';
+import { isKoriSchema } from '../schema/index.js';
 import { ok, err, type KoriResult } from '../util/index.js';
 
 import { type KoriResponseBodyValidationError } from './error.js';

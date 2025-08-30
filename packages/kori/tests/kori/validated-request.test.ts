@@ -1,11 +1,12 @@
 import { describe, expectTypeOf, test } from 'vitest';
 
 import { type KoriRequest } from '../../src/context/index.js';
-import { type InferValidatedRequest } from '../../src/kori/validated-request.js';
 import { createKoriRequestSchema } from '../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../src/request-validator/index.js';
 import { createKoriSchema } from '../../src/schema/index.js';
 import { ok } from '../../src/util/index.js';
+
+import { type InferValidatedRequest } from '../../src/kori/validated-request.js';
 
 const TestProvider = Symbol('test-provider');
 
