@@ -16,6 +16,8 @@ export {
 } from './hook/index.js';
 export {
   ContentType,
+  ContentTypeUtf8,
+  type ContentTypeUtf8Value,
   type ContentTypeValue,
   type Cookie,
   type CookieConstraint,
@@ -31,7 +33,7 @@ export {
   parseCookies,
   serializeCookie,
 } from './http/index.js';
-export { createKori, type Kori } from './kori/index.js';
+export { createKori, type CreateKoriOptions, type Kori } from './kori/index.js';
 export {
   createKoriLoggerFactory,
   createKoriPluginLogger,
@@ -46,6 +48,7 @@ export {
   type KoriLogMetaFactory,
   type KoriLogMetaOrFactory,
   type KoriLogReporter,
+  serializeError,
 } from './logging/index.js';
 export { defineKoriPlugin, type KoriPlugin } from './plugin/index.js';
 export {
@@ -96,20 +99,47 @@ export {
 export {
   createKoriResponseValidator,
   getKoriResponseValidatorProvider,
+  type InferResponseValidationProvider,
   isKoriResponseValidator,
   type KoriResponseValidator,
   type KoriResponseValidatorDefault,
 } from './response-validator/index.js';
-export { createHonoRouteMatcher, type KoriCompiledRouteMatcher, type KoriRouteMatcher } from './route-matcher/index.js';
 export {
+  createHonoRouteMatcher,
+  type KoriCompiledRouteMatcher,
+  type KoriRouteId,
+  type KoriRouteMatch,
+  type KoriRouteMatcher,
+} from './route-matcher/index.js';
+export {
+  type InferRequestValidationFailure,
+  type InferResponseValidationError,
   type KoriHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
+  type KoriRoute,
+  type KoriRouteDefinition,
+  type KoriRouteMethod,
   type KoriRoutePluginMetadata,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
+  normalizeRouteHttpMethod,
   type PathParams,
+  type RequestBodyValidationError,
+  type RequestBodyValidationErrorDefault,
+  type RequestFieldValidationError,
+  type RequestFieldValidationErrorDefault,
+  type RequestValidationError,
+  type RequestValidationErrorDefault,
+  type RequestValidationSuccess,
+  type ResponseBodyValidationError,
+  type ResponseBodyValidationErrorDefault,
+  type ResponseStatusCodeValidationError,
+  type ResponseValidationError,
+  type ResponseValidationErrorDefault,
+  type ResponseValidationSuccess,
   type RouteHttpMethod,
+  type ValidatedRequest,
   type WithPathParams,
 } from './routing/index.js';
 export {
@@ -120,5 +150,6 @@ export {
   isKoriSchema,
   type KoriSchema,
   type KoriSchemaDefault,
+  type KoriSchemaFor,
 } from './schema/index.js';
 export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';
