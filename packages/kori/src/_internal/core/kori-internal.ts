@@ -1,14 +1,16 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../../hook/index.js';
-import { type Kori } from '../../kori/index.js';
+import { type Kori, type CreateKoriOptions } from '../../kori/index.js';
 import { type KoriLogger } from '../../logging/index.js';
+import { createKoriLoggerFactory, createInstanceLogger } from '../../logging/index.js';
 import { type KoriPlugin } from '../../plugin/index.js';
 import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
 import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
 import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
 import { type KoriRouteMatcher, type KoriRouteId } from '../../route-matcher/index.js';
+import { createHonoRouteMatcher } from '../../route-matcher/index.js';
 import {
   type KoriHandler,
   type KoriInstanceRequestValidationErrorHandler,
@@ -24,7 +26,7 @@ import {
 import { normalizeRouteHttpMethod } from '../../routing/index.js';
 
 import { createFetchHandler } from './fetch-handler-factory.js';
-import { type createRouteRegistry } from './route-registry.js';
+import { createRouteRegistry, type RouteRegistry } from './route-registry.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriInternalAny = KoriInternal<any, any, any, any, any>;
@@ -37,10 +39,39 @@ type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
 export type KoriInternalShared = {
   root: KoriInternalAny;
   routeMatcher: KoriRouteMatcher;
-  routeRegistry: ReturnType<typeof createRouteRegistry>;
+  routeRegistry: RouteRegistry<KoriEnvironment, KoriRequest, KoriResponse>;
   loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
   instanceLogger: KoriLogger;
 };
+
+export function createKoriRoot<
+  RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
+>(
+  options?: CreateKoriOptions<RequestValidator, ResponseValidator>,
+): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
+  const routeMatcher = options?.routeMatcher ?? createHonoRouteMatcher();
+  const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
+  const instanceLogger = createInstanceLogger(loggerFactory);
+
+  const shared = {
+    routeMatcher,
+    routeRegistry: createRouteRegistry<KoriEnvironment, KoriRequest, KoriResponse>(),
+    loggerFactory,
+    instanceLogger,
+  } as unknown as KoriInternalShared;
+
+  const root = createKoriInternal<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator>({
+    shared,
+    requestValidator: options?.requestValidator,
+    responseValidator: options?.responseValidator,
+    onRequestValidationError: options?.onRequestValidationError,
+    onResponseValidationError: options?.onResponseValidationError,
+  });
+
+  shared.root = root;
+  return root;
+}
 
 export type KoriInternal<
   Env extends KoriEnvironment,
@@ -213,13 +244,16 @@ export function createKoriInternal<
         method: methodString,
         path: combinedPath,
         // Narrow Path for runtime; type params retained in type-level API
-        handler: handler as unknown as typeof handler,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        handler: handler as any,
         requestSchema,
         responseSchema,
-        onRequestValidationError,
-        onResponseValidationError,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        onRequestValidationError: onRequestValidationError as any,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        onResponseValidationError: onResponseValidationError as any,
         pluginMetadata,
-      } as unknown as Parameters<typeof _shared.routeRegistry.register>[0]);
+      });
 
       _shared.routeMatcher.addRoute({ method: methodString, path: combinedPath, routeId });
 

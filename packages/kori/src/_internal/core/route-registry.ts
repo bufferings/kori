@@ -25,10 +25,16 @@ export type RouteRecord<
   pluginMetadata?: KoriRoutePluginMetadata;
 };
 
-export function createRouteRegistry<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(): {
+export type RouteRegistry<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = {
   register<Path extends string>(record: RouteRecord<Env, Req, Res, Path>): KoriRouteId;
   get<Path extends string>(routeId: KoriRouteId): RouteRecord<Env, Req, Res, Path> | undefined;
-} {
+};
+
+export function createRouteRegistry<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): RouteRegistry<Env, Req, Res> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const idToRecord = new Map<KoriRouteId, RouteRecord<Env, Req, Res, any>>();
 
@@ -42,5 +48,5 @@ export function createRouteRegistry<Env extends KoriEnvironment, Req extends Kor
     get<Path extends string>(routeId: KoriRouteId): RouteRecord<Env, Req, Res, Path> | undefined {
       return idToRecord.get(routeId) as RouteRecord<Env, Req, Res, Path> | undefined;
     },
-  } as const;
+  };
 }
