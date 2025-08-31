@@ -112,7 +112,7 @@ export {
   type KoriRouteMatcher,
 } from './route-matcher/index.js';
 export {
-  type InferRequestValidationFailure,
+  type InferRequestValidationError,
   type InferResponseValidationError,
   type KoriHandler,
   type KoriInstanceRequestValidationErrorHandler,

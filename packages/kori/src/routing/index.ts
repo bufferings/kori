@@ -2,7 +2,7 @@ export { type KoriHandler } from './handler.js';
 export { type PathParams, type WithPathParams } from './path-params.js';
 export { type RequestProviderConstraint, type ResponseProviderConstraint } from './provider-constraint.js';
 export {
-  type InferRequestValidationFailure,
+  type InferRequestValidationError,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
 } from './request-validation-error-handler.js';

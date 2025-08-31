@@ -19,7 +19,7 @@ import {
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
-  type InferRequestValidationFailure,
+  type InferRequestValidationError,
   type ValidatedRequest,
   type InferResponseValidationError,
 } from '../../routing/index.js';
@@ -153,7 +153,7 @@ function createRequestValidationErrorHandler<
   routeHandler?: KoriRouteRequestValidationErrorHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  error: InferRequestValidationFailure<RequestValidator>,
+  error: InferRequestValidationError<RequestValidator>,
 ) => Promise<KoriResponse> {
   return async (ctx, err) => {
     // 1. Try route handler first
@@ -286,7 +286,7 @@ export function createRouteHandler<
       if (!validationResult.ok) {
         return await requestValidationErrorHandler(
           ctx,
-          validationResult.error as InferRequestValidationFailure<RequestValidator>,
+          validationResult.error as InferRequestValidationError<RequestValidator>,
         );
       }
 
