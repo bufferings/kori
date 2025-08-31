@@ -17,9 +17,9 @@ export {
 } from './logger-factory.js';
 export {
   createInstanceLogger,
-  createPluginLogger,
+  createKoriPluginLogger,
+  createKoriSystemLogger,
   createRequestLogger,
-  createSystemLogger,
   LoggerChannel,
   LoggerName,
 } from './logger-helpers.js';

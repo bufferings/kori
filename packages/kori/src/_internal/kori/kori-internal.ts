@@ -1,31 +1,32 @@
-import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { type KoriFetchHandler } from '../fetch-handler/index.js';
-import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
-import { getMethodString } from '../http/index.js';
-import { type KoriLogger } from '../logging/index.js';
-import { type KoriPlugin } from '../plugin/index.js';
-import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
-import { type KoriRouter, type KoriRouterHandler } from '../router/index.js';
-
-import { createFetchHandler } from './fetch-handler-factory.js';
-import { type Kori, type KoriRouteDefinition } from './kori.js';
-import { createRouteHandler } from './route-handler-factory.js';
-import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
+import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../context/index.js';
+import { type KoriFetchHandler } from '../../fetch-handler/index.js';
+import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../../hook/index.js';
+import { type Kori } from '../../kori/index.js';
+import { type KoriLogger } from '../../logging/index.js';
+import { type KoriPlugin } from '../../plugin/index.js';
+import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
+import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
+import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
+import { type KoriRouteMatcher, type KoriRouteId } from '../../route-matcher/index.js';
 import {
-  type HttpMethod,
   type KoriHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
+  type KoriRouteDefinition,
   type KoriRoutePluginMetadata,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
-} from './route.js';
+  type RequestProviderConstraint,
+  type ResponseProviderConstraint,
+  type RouteHttpMethod,
+} from '../../routing/index.js';
+import { normalizeRouteHttpMethod } from '../../routing/index.js';
+import { type createRouteRegistry } from '../route-executor/index.js';
+
+import { createFetchHandler } from './fetch-handler-factory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-type KoriRouterHandlerAny = KoriRouterHandler<any, any, any>;
 type KoriInternalAny = KoriInternal<any, any, any, any, any>;
 
 type KoriOnStartHookAny = KoriOnStartHook<any, any>;
@@ -35,7 +36,8 @@ type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
 
 export type KoriInternalShared = {
   root: KoriInternalAny;
-  router: KoriRouter;
+  routeMatcher: KoriRouteMatcher;
+  routeRegistry: ReturnType<typeof createRouteRegistry>;
   loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
   instanceLogger: KoriLogger;
 };
@@ -167,7 +169,7 @@ export function createKoriInternal<
       >;
     },
 
-    addRoute<
+    route<
       Path extends string,
       RequestSchema extends KoriRequestSchemaDefault | undefined = undefined,
       ResponseSchema extends KoriResponseSchemaDefault | undefined = undefined,
@@ -181,7 +183,7 @@ export function createKoriInternal<
       onResponseValidationError,
       pluginMetadata,
     }: {
-      method: HttpMethod;
+      method: RouteHttpMethod;
       path: Path;
       requestSchema?: RequestSchema;
       responseSchema?: ResponseSchema;
@@ -204,41 +206,22 @@ export function createKoriInternal<
       >;
       pluginMetadata?: KoriRoutePluginMetadata;
     }): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
-      const routeHandler = createRouteHandler<
-        Env,
-        Req,
-        Res,
-        Path,
-        RequestValidator,
-        ResponseValidator,
-        RequestSchema,
-        ResponseSchema
-      >(
-        {
-          requestValidator: _requestValidator,
-          responseValidator: _responseValidator,
-          onRequestValidationError: _onRequestValidationError,
-          onResponseValidationError: _onResponseValidationError,
-          requestHooks: _requestHooks,
-          errorHooks: _errorHooks,
-        },
-        {
-          requestSchema,
-          responseSchema,
-          handler,
-          onRequestValidationError,
-          onResponseValidationError,
-        },
-      );
-
       const combinedPath = `${_prefix}${path}`;
-      const methodString = getMethodString(method);
+      const methodString = normalizeRouteHttpMethod(method);
 
-      _shared.router.addRoute({
+      const routeId: KoriRouteId = _shared.routeRegistry.register({
         method: methodString,
         path: combinedPath,
-        handler: routeHandler as unknown as KoriRouterHandlerAny,
-      });
+        // Narrow Path for runtime; type params retained in type-level API
+        handler: handler as unknown as typeof handler,
+        requestSchema,
+        responseSchema,
+        onRequestValidationError,
+        onResponseValidationError,
+        pluginMetadata,
+      } as unknown as Parameters<typeof _shared.routeRegistry.register>[0]);
+
+      _shared.routeMatcher.addRoute({ method: methodString, path: combinedPath, routeId });
 
       _routeDefinitions.push({
         method,
@@ -280,21 +263,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'GET' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'GET' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -327,21 +310,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'POST' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'POST' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -374,21 +357,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'PUT' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'PUT' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -421,21 +404,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'DELETE' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'DELETE' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -468,21 +451,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'PATCH' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'PATCH' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -515,21 +498,21 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'HEAD' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'HEAD' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
@@ -562,30 +545,30 @@ export function createKoriInternal<
               ResponseSchema
             >;
             pluginMetadata?: KoriRoutePluginMetadata;
-          } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-            ResponseProviderCompatibility<ResponseValidator, ResponseSchema>),
+          } & RequestProviderConstraint<RequestValidator, RequestSchema> &
+            ResponseProviderConstraint<ResponseValidator, ResponseSchema>),
     ): Kori<Env, Req, Res, RequestValidator, ResponseValidator> {
       if (typeof handlerOrOptions === 'function') {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'OPTIONS' as const,
           path,
           handler: handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       } else {
-        return _internal.addRoute({
+        return _internal.route({
           method: 'OPTIONS' as const,
           path,
           ...handlerOrOptions,
-        } as Parameters<typeof _internal.addRoute>[0]);
+        } as Parameters<typeof _internal.route>[0]);
       }
     },
 
     generate(): KoriFetchHandler {
-      const compiledRouter = _shared.router.compile();
+      const compiledRouteMatcher = _shared.routeMatcher.compile();
       const allStartHooks = _shared.root._collectStartHooks();
       const loggerFactory = _shared.loggerFactory;
       return createFetchHandler({
-        compiledRouter,
+        compiledRouteMatcher,
         allStartHooks,
         loggerFactory,
         instanceLogger: _shared.instanceLogger,

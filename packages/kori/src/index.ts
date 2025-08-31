@@ -11,8 +11,8 @@ export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch
 export {
   type KoriOnErrorHook,
   type KoriOnRequestHook,
+  type KoriOnRequestHookReturn,
   type KoriOnStartHook,
-  type OnRequestReturnValue,
 } from './hook/index.js';
 export {
   ContentType,
@@ -22,7 +22,6 @@ export {
   type CookieError,
   type CookieOptions,
   deleteCookie,
-  getMethodString,
   HttpRequestHeader,
   type HttpRequestHeaderName,
   HttpResponseHeader,
@@ -32,23 +31,11 @@ export {
   parseCookies,
   serializeCookie,
 } from './http/index.js';
-export {
-  createKori,
-  type HttpMethod,
-  type Kori,
-  type KoriAddRoute,
-  type KoriHandler,
-  type KoriInstanceRequestValidationErrorHandler,
-  type KoriInstanceResponseValidationErrorHandler,
-  type KoriRouteDefinition,
-  type KoriRoutePluginMetadata,
-  type KoriRouteRequestValidationErrorHandler,
-  type KoriRouteResponseValidationErrorHandler,
-} from './kori/index.js';
+export { createKori, type Kori } from './kori/index.js';
 export {
   createKoriLoggerFactory,
-  createPluginLogger,
-  createSystemLogger,
+  createKoriPluginLogger,
+  createKoriSystemLogger,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,
@@ -113,15 +100,18 @@ export {
   type KoriResponseValidator,
   type KoriResponseValidatorDefault,
 } from './response-validator/index.js';
+export { createHonoRouteMatcher, type KoriCompiledRouteMatcher, type KoriRouteMatcher } from './route-matcher/index.js';
 export {
-  createHonoRouter,
-  type KoriCompiledRouter,
-  type KoriRouteOptions,
-  type KoriRouter,
-  type KoriRouterHandler,
-  type KoriRoutingMatch,
+  type KoriHandler,
+  type KoriInstanceRequestValidationErrorHandler,
+  type KoriInstanceResponseValidationErrorHandler,
+  type KoriRoutePluginMetadata,
+  type KoriRouteRequestValidationErrorHandler,
+  type KoriRouteResponseValidationErrorHandler,
+  type PathParams,
+  type RouteHttpMethod,
   type WithPathParams,
-} from './router/index.js';
+} from './routing/index.js';
 export {
   createKoriSchema,
   getKoriSchemaProvider,

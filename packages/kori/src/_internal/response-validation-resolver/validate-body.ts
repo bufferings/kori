@@ -5,10 +5,9 @@ import {
   type KoriResponseSchemaSimpleEntryDefault,
 } from '../../response-schema/index.js';
 import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
+import { type ResponseBodyValidationErrorDefault } from '../../routing/index.js';
 import { isKoriSchema } from '../../schema/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
-
-import { type BodyValidationErrorDefault } from './validation-result.js';
 
 const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
@@ -21,7 +20,7 @@ export async function validateResponseBody({
   validator: KoriResponseValidatorDefault;
   schemaEntry: KoriResponseSchemaSimpleEntryDefault | KoriResponseSchemaContentEntryDefault;
   res: KoriResponse;
-}): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, ResponseBodyValidationErrorDefault>> {
   // Skip validation for streaming responses
   if (res.isStream()) {
     return ok(undefined);

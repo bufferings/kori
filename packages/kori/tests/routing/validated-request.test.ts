@@ -6,11 +6,11 @@ import { createKoriRequestValidator } from '../../src/request-validator/index.js
 import { createKoriSchema } from '../../src/schema/index.js';
 import { ok } from '../../src/util/index.js';
 
-import { type InferValidatedRequest } from '../../src/kori/validated-request.js';
+import { type ValidatedRequest } from '../../src/routing/validated-request.js';
 
 const TestProvider = Symbol('test-provider');
 
-describe('InferValidatedRequest', () => {
+describe('ValidatedRequest', () => {
   test('extends request with validation methods when both validator and schema present', () => {
     const _validator = createKoriRequestValidator({
       provider: TestProvider,
@@ -46,9 +46,7 @@ describe('InferValidatedRequest', () => {
     });
 
     type BaseRequest = KoriRequest & { customProp: string };
-    type ValidatedRequest = InferValidatedRequest<BaseRequest, typeof _validator, typeof _requestSchema>;
-
-    expectTypeOf<ValidatedRequest>().toEqualTypeOf<
+    expectTypeOf<ValidatedRequest<BaseRequest, typeof _validator, typeof _requestSchema>>().toEqualTypeOf<
       BaseRequest & {
         validatedParams(): { id: string };
         validatedQueries(): { page: number };
@@ -72,9 +70,7 @@ describe('InferValidatedRequest', () => {
     });
 
     type BaseRequest = KoriRequest & { customProp: string };
-    type ValidatedRequest = InferValidatedRequest<BaseRequest, typeof _validator, typeof _requestSchema>;
-
-    expectTypeOf<ValidatedRequest>().toEqualTypeOf<
+    expectTypeOf<ValidatedRequest<BaseRequest, typeof _validator, typeof _requestSchema>>().toEqualTypeOf<
       BaseRequest & {
         validatedParams(): never;
         validatedQueries(): never;
@@ -96,9 +92,7 @@ describe('InferValidatedRequest', () => {
     });
 
     type BaseRequest = KoriRequest & { customProp: string };
-    type ValidatedRequest = InferValidatedRequest<BaseRequest, undefined, typeof _requestSchema>;
-
-    expectTypeOf<ValidatedRequest>().toEqualTypeOf<BaseRequest>();
+    expectTypeOf<ValidatedRequest<BaseRequest, undefined, typeof _requestSchema>>().toEqualTypeOf<BaseRequest>();
   });
 
   test('returns base request when schema is undefined', () => {
@@ -111,15 +105,11 @@ describe('InferValidatedRequest', () => {
     });
 
     type BaseRequest = KoriRequest & { customProp: string };
-    type ValidatedRequest = InferValidatedRequest<BaseRequest, typeof _validator, undefined>;
-
-    expectTypeOf<ValidatedRequest>().toEqualTypeOf<BaseRequest>();
+    expectTypeOf<ValidatedRequest<BaseRequest, typeof _validator, undefined>>().toEqualTypeOf<BaseRequest>();
   });
 
   test('returns base request when both validator and schema are undefined', () => {
     type BaseRequest = KoriRequest & { customProp: string };
-    type ValidatedRequest = InferValidatedRequest<BaseRequest, undefined, undefined>;
-
-    expectTypeOf<ValidatedRequest>().toEqualTypeOf<BaseRequest>();
+    expectTypeOf<ValidatedRequest<BaseRequest, undefined, undefined>>().toEqualTypeOf<BaseRequest>();
   });
 });

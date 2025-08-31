@@ -3,9 +3,9 @@ import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { createKoriLoggerFactory, type KoriLoggerFactory } from '../../src/logging/logger-factory.js';
 import {
   createInstanceLogger,
-  createPluginLogger,
+  createKoriPluginLogger,
   createRequestLogger,
-  createSystemLogger,
+  createKoriSystemLogger,
 } from '../../src/logging/logger-helpers.js';
 
 describe('logger helpers', () => {
@@ -84,7 +84,7 @@ describe('logger helpers', () => {
   describe('specialized logger creation', () => {
     test('should create system logger with sys channel', () => {
       const baseLogger = loggerFactory({ channel: 'app', name: 'server' });
-      const sysLogger = createSystemLogger({ baseLogger });
+      const sysLogger = createKoriSystemLogger({ baseLogger });
       sysLogger.warn('Internal framework warning');
 
       expect(mockReporter).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe('logger helpers', () => {
 
     test('should create plugin logger with namespaced channel', () => {
       const baseLogger = loggerFactory({ channel: 'app', name: 'request' });
-      const pluginLogger = createPluginLogger({
+      const pluginLogger = createKoriPluginLogger({
         baseLogger,
         pluginName: 'cors',
       });
@@ -120,7 +120,7 @@ describe('logger helpers', () => {
       const baseLogger = loggerFactory({ channel: 'app', name: 'server' });
       baseLogger.addBindings({ version: '1.0.0', environment: 'production' });
 
-      const sysLogger = createSystemLogger({ baseLogger });
+      const sysLogger = createKoriSystemLogger({ baseLogger });
       sysLogger.warn('System diagnostic');
 
       expect(mockReporter).toHaveBeenCalledWith(
@@ -138,7 +138,7 @@ describe('logger helpers', () => {
       const baseLogger = loggerFactory({ channel: 'app', name: 'request' });
       baseLogger.addBindings({ requestId: 'req-456', userId: 'user-789' });
 
-      const pluginLogger = createPluginLogger({
+      const pluginLogger = createKoriPluginLogger({
         baseLogger,
         pluginName: 'auth',
       });

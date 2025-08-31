@@ -10,13 +10,13 @@ import {
   isKoriRequestValidator,
   type KoriRequestValidatorDefault,
 } from '../../request-validator/index.js';
+import { type RequestValidationErrorDefault, type RequestValidationSuccess } from '../../routing/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
 import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
 import { validateRequestParams } from './validate-params.js';
 import { validateRequestQueries } from './validate-queries.js';
-import { type RequestValidationErrorDefault, type RequestValidationSuccess } from './validation-result.js';
 
 /**
  * Resolves a request validation function from validator and schema.

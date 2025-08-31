@@ -1,18 +1,19 @@
+import { createKoriInternal, type KoriInternalShared } from '../_internal/kori/index.js';
+import { createRouteRegistry } from '../_internal/route-executor/index.js';
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { createKoriLoggerFactory, createInstanceLogger } from '../logging/index.js';
 import { type KoriLoggerFactoryOptions, type KoriLoggerFactory } from '../logging/index.js';
 import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
 import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
-import { createHonoRouter, type KoriRouter } from '../router/index.js';
-
-import { createKoriInternal, type KoriInternalShared } from './kori-internal.js';
-import { type Kori } from './kori.js';
+import { createHonoRouteMatcher, type KoriRouteMatcher } from '../route-matcher/index.js';
 import {
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
-} from './route.js';
+} from '../routing/index.js';
 
-type CreateKoriOptions<
+import { type Kori } from './kori.js';
+
+export type CreateKoriOptions<
   RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
   ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
 > = {
@@ -30,7 +31,7 @@ type CreateKoriOptions<
     KoriResponse,
     ResponseValidator
   >;
-  router?: KoriRouter;
+  routeMatcher?: KoriRouteMatcher;
 } & (
   | { loggerFactory: KoriLoggerFactory; loggerOptions?: never }
   | { loggerFactory?: never; loggerOptions: KoriLoggerFactoryOptions }
@@ -43,12 +44,13 @@ export function createKori<
 >(
   options?: CreateKoriOptions<RequestValidator, ResponseValidator>,
 ): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
-  const router = options?.router ?? createHonoRouter();
+  const routeMatcher = options?.routeMatcher ?? createHonoRouteMatcher();
   const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
   const instanceLogger = createInstanceLogger(loggerFactory);
 
   const shared = {
-    router,
+    routeMatcher,
+    routeRegistry: createRouteRegistry<KoriEnvironment, KoriRequest, KoriResponse>(),
     loggerFactory,
     instanceLogger,
   } as unknown as KoriInternalShared;

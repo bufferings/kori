@@ -1,7 +1,7 @@
 /**
  * Validation error for response status code resolution.
  */
-export type StatusCodeValidationError = {
+export type ResponseStatusCodeValidationError = {
   type: 'NO_SCHEMA_FOR_STATUS_CODE';
   message: string;
   statusCode: number;
@@ -12,7 +12,7 @@ export type StatusCodeValidationError = {
  *
  * @template ErrorType - Error type from the validation library
  */
-export type BodyValidationError<ErrorType> =
+export type ResponseBodyValidationError<ErrorType> =
   | {
       stage: 'validation';
       error: ErrorType;
@@ -34,14 +34,14 @@ export type BodyValidationError<ErrorType> =
  * @template ErrorType - Error type from the validation library
  */
 export type ResponseValidationError<ErrorType = unknown> = {
-  statusCode?: StatusCodeValidationError;
-  body?: BodyValidationError<ErrorType>;
+  statusCode?: ResponseStatusCodeValidationError;
+  body?: ResponseBodyValidationError<ErrorType>;
 };
 
 /**
  * Default type alias for BodyValidationError with unknown error type.
  */
-export type BodyValidationErrorDefault = BodyValidationError<unknown>;
+export type ResponseBodyValidationErrorDefault = ResponseBodyValidationError<unknown>;
 
 /**
  * Default type alias for ResponseValidationError with unknown error type.

@@ -17,7 +17,7 @@ import { type MaybePromise } from '../util/index.js';
  * @template ResExt - Additional response properties.
  *   Defaults to an empty object, which means no extensions.
  */
-export type OnRequestReturnValue<
+export type KoriOnRequestHookReturn<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
@@ -69,7 +69,7 @@ export type KoriOnRequestHook<
   Res extends KoriResponse,
   ReqExt extends object = object,
   ResExt extends object = object,
-> = (ctx: KoriHandlerContext<Env, Req, Res>) => MaybePromise<OnRequestReturnValue<Env, Req, Res, ReqExt, ResExt>>;
+> = (ctx: KoriHandlerContext<Env, Req, Res>) => MaybePromise<KoriOnRequestHookReturn<Env, Req, Res, ReqExt, ResExt>>;
 
 /**
  * Hook function type for error handling operations.

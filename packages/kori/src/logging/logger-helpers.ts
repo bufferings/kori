@@ -69,7 +69,7 @@ export function createRequestLogger(loggerFactory: KoriLoggerFactory): KoriLogge
  * @param options.baseLogger - Base logger to retarget to the system channel (preserves bindings)
  * @returns System-channel logger with inherited bindings
  */
-export function createSystemLogger(options: { baseLogger: KoriLogger }): KoriLogger {
+export function createKoriSystemLogger(options: { baseLogger: KoriLogger }): KoriLogger {
   return options.baseLogger.channel(LoggerChannel.SYSTEM);
 }
 
@@ -84,7 +84,7 @@ export function createSystemLogger(options: { baseLogger: KoriLogger }): KoriLog
  * @param options.pluginName - Plugin name appended to the plugin channel
  * @returns Plugin-channel logger with inherited bindings
  */
-export function createPluginLogger(options: { baseLogger: KoriLogger; pluginName: string }): KoriLogger {
+export function createKoriPluginLogger(options: { baseLogger: KoriLogger; pluginName: string }): KoriLogger {
   const channelName = `${LoggerChannel.PLUGIN_PREFIX}.${options.pluginName}`;
   return options.baseLogger.channel(channelName);
 }

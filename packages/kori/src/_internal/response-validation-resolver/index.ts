@@ -1,6 +1,6 @@
-export { resolveInternalResponseValidator } from './resolver.js';
 export {
-  type BodyValidationError,
+  type ResponseBodyValidationError as BodyValidationError,
   type ResponseValidationError,
   type ResponseValidationSuccess,
-} from './validation-result.js';
+} from '../../routing/index.js';
+export { resolveInternalResponseValidator } from './resolver.js';

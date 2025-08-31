@@ -1,5 +1,3 @@
-import { resolveInternalRequestValidator } from '../_internal/request-validation-resolver/index.js';
-import { resolveInternalResponseValidator } from '../_internal/response-validation-resolver/index.js';
 import {
   executeHandlerDeferredCallbacks,
   isKoriResponse,
@@ -7,24 +5,26 @@ import {
   type KoriHandlerContext,
   type KoriRequest,
   type KoriResponse,
-} from '../context/index.js';
-import { type KoriOnRequestHook, type KoriOnErrorHook } from '../hook/index.js';
-import { createSystemLogger } from '../logging/index.js';
-import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
-import { type KoriRouterHandler, type WithPathParams } from '../router/index.js';
-
+} from '../../context/index.js';
+import { type KoriOnRequestHook, type KoriOnErrorHook } from '../../hook/index.js';
+import { createKoriSystemLogger } from '../../logging/index.js';
+import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
+import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
+import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
 import {
+  type WithPathParams,
   type KoriHandler,
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
   type KoriRouteRequestValidationErrorHandler,
   type KoriRouteResponseValidationErrorHandler,
-} from './route.js';
-import { type InferRequestValidationFailure, type InferValidatedRequest } from './validated-request.js';
-import { type InferResponseValidationError } from './validated-response.js';
+  type InferRequestValidationFailure,
+  type ValidatedRequest,
+  type InferResponseValidationError,
+} from '../../routing/index.js';
+import { resolveInternalRequestValidator } from '../request-validation-resolver/index.js';
+import { resolveInternalResponseValidator } from '../response-validation-resolver/index.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
@@ -115,7 +115,7 @@ function createHookExecutor<
             break;
           }
         } catch (hookError) {
-          const sys = createSystemLogger({ baseLogger: currentCtx.log() });
+          const sys = createKoriSystemLogger({ baseLogger: currentCtx.log() });
           sys.error('Error hook execution failed', {
             type: 'error-hook',
             err: sys.serializeError(hookError),
@@ -124,7 +124,7 @@ function createHookExecutor<
       }
 
       if (!isErrHandled) {
-        const sys = createSystemLogger({ baseLogger: currentCtx.log() });
+        const sys = createKoriSystemLogger({ baseLogger: currentCtx.log() });
         sys.error('Unhandled error in route handler', {
           err: sys.serializeError(err),
         });
@@ -179,7 +179,7 @@ function createRequestValidationErrorHandler<
 
     // 4. Default validation error handling with 400 status
     // Log error occurrence for monitoring
-    const sys = createSystemLogger({ baseLogger: ctx.log() });
+    const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
     sys.warn('Request validation failed', {
       type: 'request-validation',
       err: sys.serializeError(err),
@@ -227,7 +227,7 @@ function createResponseValidationErrorHandler<
     }
 
     // 3. Default handling (log warning but return void to use original response)
-    const sys = createSystemLogger({ baseLogger: ctx.log() });
+    const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
     sys.warn('Response validation failed', {
       type: 'response-validation',
       err: sys.serializeError(err),
@@ -248,10 +248,10 @@ export function createRouteHandler<
 >(
   deps: Dependencies<Env, Req, Res, RequestValidator, ResponseValidator>,
   routeParams: RouteParameters<Env, Req, Res, Path, RequestValidator, ResponseValidator, RequestSchema, ResponseSchema>,
-): KoriRouterHandler<Env, WithPathParams<Req, Path>, Res> {
+): (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse> {
   type ValidatedContext = KoriHandlerContext<
     Env,
-    InferValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>,
+    ValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>,
     Res
   >;
 
@@ -328,7 +328,9 @@ export function createRouteHandler<
   if (!hasHooks && !hasValidation) {
     // The route is a straight passthrough. Return the original handler
     // to avoid unnecessary wrapper overhead.
-    return routeParams.handler as unknown as KoriRouterHandler<Env, WithPathParams<Req, Path>, Res>;
+    return routeParams.handler as unknown as (
+      ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+    ) => Promise<KoriResponse>;
   }
 
   return (ctx) => executeWithHooks(ctx, mainHandler);

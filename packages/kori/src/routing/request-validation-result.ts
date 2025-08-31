@@ -3,7 +3,7 @@
  *
  * @template ErrorType - Error type from the validation library
  */
-export type FieldValidationError<ErrorType> = {
+export type RequestFieldValidationError<ErrorType> = {
   stage: 'validation';
   error: ErrorType;
 };
@@ -13,8 +13,8 @@ export type FieldValidationError<ErrorType> = {
  *
  * @template ErrorType - Error type from the validation library
  */
-export type BodyValidationError<ErrorType> =
-  | FieldValidationError<ErrorType>
+export type RequestBodyValidationError<ErrorType> =
+  | RequestFieldValidationError<ErrorType>
   | {
       stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';
@@ -38,21 +38,21 @@ export type BodyValidationError<ErrorType> =
  * @template ErrorType - Error type from the validation library
  */
 export type RequestValidationError<ErrorType = unknown> = {
-  params?: FieldValidationError<ErrorType>;
-  queries?: FieldValidationError<ErrorType>;
-  headers?: FieldValidationError<ErrorType>;
-  body?: BodyValidationError<ErrorType>;
+  params?: RequestFieldValidationError<ErrorType>;
+  queries?: RequestFieldValidationError<ErrorType>;
+  headers?: RequestFieldValidationError<ErrorType>;
+  body?: RequestBodyValidationError<ErrorType>;
 };
 
 /**
  * Default type alias for FieldValidationError with unknown error type.
  */
-export type FieldValidationErrorDefault = FieldValidationError<unknown>;
+export type RequestFieldValidationErrorDefault = RequestFieldValidationError<unknown>;
 
 /**
  * Default type alias for BodyValidationError with unknown error type.
  */
-export type BodyValidationErrorDefault = BodyValidationError<unknown>;
+export type RequestBodyValidationErrorDefault = RequestBodyValidationError<unknown>;
 
 /**
  * Default type alias for RequestValidationError with unknown error type.

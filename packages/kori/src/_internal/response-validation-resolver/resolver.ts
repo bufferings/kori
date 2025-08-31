@@ -12,10 +12,10 @@ import {
   isKoriResponseValidator,
   type KoriResponseValidatorDefault,
 } from '../../response-validator/index.js';
+import { type ResponseValidationErrorDefault, type ResponseValidationSuccess } from '../../routing/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
 import { validateResponseBody } from './validate-body.js';
-import { type ResponseValidationErrorDefault, type ResponseValidationSuccess } from './validation-result.js';
 
 /**
  * Resolves schema entry for a given status code.

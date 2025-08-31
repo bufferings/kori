@@ -2,10 +2,9 @@ import { type KoriRequest } from '../../context/index.js';
 import { ContentType } from '../../http/index.js';
 import { type KoriRequestSchemaContentBodyDefault, type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { type RequestBodyValidationErrorDefault } from '../../routing/index.js';
 import { type KoriSchemaDefault, isKoriSchema } from '../../schema/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
-
-import { type BodyValidationErrorDefault } from './validation-result.js';
 
 function findMatchingMediaType({
   contentSchema,
@@ -42,7 +41,7 @@ function resolveRequestBodySchema({
 }: {
   bodySchema: NonNullable<KoriRequestSchemaDefault['body']>;
   req: KoriRequest;
-}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, BodyValidationErrorDefault> {
+}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, RequestBodyValidationErrorDefault> {
   const requestContentType = req.contentType();
 
   if (!('content' in bodySchema)) {
@@ -88,7 +87,7 @@ function resolveRequestBodySchema({
   }
 }
 
-async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
+async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
   try {
     const body = await req.parseBody();
     return ok(body);
@@ -110,7 +109,7 @@ async function validateParsedBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriSchemaDefault;
   body: unknown;
-}): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
   const result = await validator.validateBody({ schema, body });
   if (result.ok) {
     return result;
@@ -131,7 +130,7 @@ export async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, BodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
   if (!schema) {
     return ok(undefined);
   }

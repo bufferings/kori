@@ -6,24 +6,24 @@ import {
   type KoriResponseValidatorDefault,
 } from '../response-validator/index.js';
 
-export type RequestProviderCompatibility<
+export type RequestProviderConstraint<
   RequestValidator extends KoriRequestValidatorDefault | undefined,
   RequestSchema extends KoriRequestSchemaDefault | undefined,
 > = RequestValidator extends KoriRequestValidatorDefault
   ? RequestSchema extends KoriRequestSchemaDefault
     ? InferRequestValidationProvider<RequestValidator> extends InferRequestSchemaProvider<RequestSchema>
       ? unknown
-      : { _RequestValidatorAndSchemaProviderMismatch: 'Request validator and schema providers do not match' }
+      : { _ProviderMismatch: 'Request validator and request schema providers do not match' }
     : unknown
   : unknown;
 
-export type ResponseProviderCompatibility<
+export type ResponseProviderConstraint<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
   ResponseSchema extends KoriResponseSchemaDefault | undefined,
 > = ResponseValidator extends KoriResponseValidatorDefault
   ? ResponseSchema extends KoriResponseSchemaDefault
     ? InferResponseValidationProvider<ResponseValidator> extends InferResponseSchemaProvider<ResponseSchema>
       ? unknown
-      : { _ResponseValidatorAndSchemaProviderMismatch: 'Response validator and schema providers do not match' }
+      : { _ProviderMismatch: 'Response validator and response schema providers do not match' }
     : unknown
   : unknown;

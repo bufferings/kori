@@ -1,9 +1,8 @@
 import { type KoriRequest } from '../../context/index.js';
 import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
+import { type RequestFieldValidationErrorDefault } from '../../routing/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
-
-import { type FieldValidationErrorDefault } from './validation-result.js';
 
 /** @internal */
 export async function validateRequestParams({
@@ -14,7 +13,7 @@ export async function validateRequestParams({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['params'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, FieldValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestFieldValidationErrorDefault>> {
   if (!schema) {
     return ok(undefined);
   }
