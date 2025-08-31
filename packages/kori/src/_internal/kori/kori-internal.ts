@@ -22,9 +22,9 @@ import {
   type RouteHttpMethod,
 } from '../../routing/index.js';
 import { normalizeRouteHttpMethod } from '../../routing/index.js';
-import { type createRouteRegistry } from '../route-executor/index.js';
 
 import { createFetchHandler } from './fetch-handler-factory.js';
+import { type createRouteRegistry } from './route-registry.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriInternalAny = KoriInternal<any, any, any, any, any>;

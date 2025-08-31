@@ -8,7 +8,8 @@ import { type KoriOnStartHook } from '../../hook/index.js';
 import { HttpStatus } from '../../http/index.js';
 import { type KoriLogger } from '../../logging/index.js';
 import { type KoriCompiledRouteMatcher, type KoriRouteId } from '../../route-matcher/index.js';
-import { createRouteExecutor } from '../route-executor/index.js';
+
+import { createRouteExecutor } from './route-executor.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnStartHookAny = KoriOnStartHook<any, any>;
