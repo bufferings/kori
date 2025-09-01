@@ -16,6 +16,7 @@ import { type KoriRequestValidatorDefault } from '../../request-validator/index.
 import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
 import { type KoriRouteId } from '../../route-matcher/index.js';
 import { type WithPathParams } from '../../routing/index.js';
+import { type MaybePromise } from '../../util/index.js';
 import { resolveInternalRequestValidator } from '../request-validation-resolver/index.js';
 import { resolveInternalResponseValidator } from '../response-validation-resolver/index.js';
 
@@ -41,7 +42,7 @@ export function createRouteExecutor<Env extends KoriEnvironment, Req extends Kor
   getRouteRecord,
   deps,
 }: {
-  getRouteRecord: <Path extends string>(id: KoriRouteId) => RouteRecord<Env, Req, Res, Path> | undefined;
+  getRouteRecord: (id: KoriRouteId) => RouteRecord | undefined;
   deps: InstanceDeps<Env, Req, Res>;
 }): {
   execute: (
@@ -110,22 +111,15 @@ export function createRouteExecutor<Env extends KoriEnvironment, Req extends Kor
     pathParams: Record<string, string>,
     pathTemplate: Path,
   ): Promise<Response> {
-    const record = getRouteRecord<Path>(routeId);
+    const record = getRouteRecord(routeId);
     if (!record) {
       return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
     }
 
-    const req = createKoriRequest({ rawRequest: request, pathParams, pathTemplate }) as unknown as WithPathParams<
-      Req,
-      string
-    >;
+    const req = createKoriRequest({ rawRequest: request, pathParams, pathTemplate });
+    const res = createKoriResponse(req);
 
-    let ctx = createKoriHandlerContext<Env, WithPathParams<Req, string>, Res>({
-      env: deps.env,
-      req,
-      res: createKoriResponse(req) as unknown as Res,
-      loggerFactory: deps.loggerFactory,
-    });
+    let ctx = createKoriHandlerContext({ env: deps.env, req, res, loggerFactory: deps.loggerFactory });
 
     const requestValidateFn = resolveInternalRequestValidator({
       requestValidator: deps.requestValidator,
@@ -140,11 +134,13 @@ export function createRouteExecutor<Env extends KoriEnvironment, Req extends Kor
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.ok) {
-        const handler = record.onRequestValidationError ?? deps.onRequestValidationError;
-        if (handler) {
-          const handled = await handler(ctx as unknown as KoriHandlerContext<Env, Req, Res>, validationResult.error);
+        const onRequestValidationError = (record.onRequestValidationError ?? deps.onRequestValidationError) as
+          | ((ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>, err: unknown) => unknown)
+          | undefined;
+        if (onRequestValidationError) {
+          const handled = await onRequestValidationError(ctx, validationResult.error);
           if (handled && isKoriResponse(handled)) {
-            return (handled as unknown as KoriResponse).build();
+            return handled.build();
           }
         }
         const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
@@ -154,6 +150,7 @@ export function createRouteExecutor<Env extends KoriEnvironment, Req extends Kor
         });
         return ctx.res.badRequest({ message: 'Request validation failed' }).build();
       }
+
       ctx = ctx.withReq({
         validatedBody: () => validationResult.value.body,
         validatedParams: () => validationResult.value.params,
@@ -162,19 +159,21 @@ export function createRouteExecutor<Env extends KoriEnvironment, Req extends Kor
       });
     }
 
-    const response = await (record.handler as unknown as (c: typeof ctx) => Promise<KoriResponse>)(ctx);
+    const handler = record.handler as (
+      ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>,
+    ) => MaybePromise<KoriResponse>;
+    const response = await handler(ctx);
 
     if (responseValidateFn) {
       const responseValidationResult = await responseValidateFn(response);
       if (!responseValidationResult.ok) {
-        const handler = record.onResponseValidationError ?? deps.onResponseValidationError;
-        if (handler) {
-          const handled = await handler(
-            ctx as unknown as KoriHandlerContext<Env, Req, Res>,
-            responseValidationResult.error,
-          );
+        const onResponseValidationError = (record.onResponseValidationError ?? deps.onResponseValidationError) as
+          | ((ctx: KoriHandlerContext<KoriEnvironment, KoriRequest, KoriResponse>, err: unknown) => unknown)
+          | undefined;
+        if (onResponseValidationError) {
+          const handled = await onResponseValidationError(ctx, responseValidationResult.error);
           if (handled && isKoriResponse(handled)) {
-            return (handled as unknown as KoriResponse).build();
+            return handled.build();
           }
         }
       }

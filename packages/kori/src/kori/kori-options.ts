@@ -12,7 +12,8 @@ import {
  * Logger configuration options with mutually exclusive choices.
  *
  * Provides three ways to configure logging: use an existing factory,
- * create a factory from options, or use default configuration.
+ * create a factory from options, or use default configuration
+ * (ConsoleReporter with INFO level).
  */
 type LoggerConfig =
   /** Use existing logger factory */
@@ -62,6 +63,6 @@ export type CreateKoriOptions<
     KoriResponse,
     ResponseValidator
   >;
-  /** Custom route matcher implementation */
+  /** Custom route matcher implementation (defaults to HonoRouteMatcher) */
   routeMatcher?: KoriRouteMatcher;
 } & LoggerConfig;

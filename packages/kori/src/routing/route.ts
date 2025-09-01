@@ -29,6 +29,63 @@ import { type RouteHttpMethod } from './route-http-method.js';
 export type KoriRoutePluginMetadata = Record<symbol, unknown>;
 
 /**
+ * Options for generic route registration function for any HTTP method.
+ *
+ * Includes provider constraints to ensure validator and schema compatibility at compile time.
+ *
+ * @template Env - Environment type containing instance-specific data
+ * @template Req - Request type with request-specific data and methods
+ * @template Res - Response type with response building capabilities
+ * @template Path - URL path pattern with parameter placeholders
+ * @template RequestValidator - Request validator type for type-safe validation
+ * @template RequestSchema - Request schema type for validation
+ * @template ResponseValidator - Response validator type for type-safe validation
+ * @template ResponseSchema - Response schema type for validation
+ */
+export type KoriRouteOptions<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+  RequestValidator extends KoriRequestValidatorDefault | undefined,
+  RequestSchema extends KoriRequestSchemaDefault | undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+  ResponseSchema extends KoriResponseSchemaDefault | undefined,
+> = {
+  /** HTTP method for this route */
+  method: RouteHttpMethod;
+  /** URL path pattern with parameter placeholders */
+  path: Path;
+  /** Optional request schema for validation */
+  requestSchema?: RequestSchema;
+  /** Optional response schema for validation */
+  responseSchema?: ResponseSchema;
+  /** Route handler function */
+  handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
+  /** Custom error handler for request validation failures */
+  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
+    Env,
+    Req,
+    Res,
+    Path,
+    RequestValidator,
+    RequestSchema
+  >;
+  /** Custom error handler for response validation failures */
+  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
+    Env,
+    Req,
+    Res,
+    Path,
+    ResponseValidator,
+    ResponseSchema
+  >;
+  /** Optional metadata for plugins */
+  pluginMetadata?: KoriRoutePluginMetadata;
+} & RequestProviderConstraint<RequestValidator, RequestSchema> &
+  ResponseProviderConstraint<ResponseValidator, ResponseSchema>;
+
+/**
  * Generic route registration function for any HTTP method.
  *
  * Provides full control over route configuration including HTTP method,
@@ -74,40 +131,61 @@ export type KoriRoute<
   RequestSchema extends KoriRequestSchemaDefault | undefined = undefined,
   ResponseSchema extends KoriResponseSchemaDefault | undefined = undefined,
 >(
-  options: {
-    /** HTTP method for this route */
-    method: RouteHttpMethod;
-    /** URL path pattern with parameter placeholders */
-    path: Path;
-    /** Optional request schema for validation */
-    requestSchema?: RequestSchema;
-    /** Optional response schema for validation */
-    responseSchema?: ResponseSchema;
-    /** Route handler function */
-    handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-    /** Custom error handler for request validation failures */
-    onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
-      Env,
-      Req,
-      Res,
-      Path,
-      RequestValidator,
-      RequestSchema
-    >;
-    /** Custom error handler for response validation failures */
-    onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
-      Env,
-      Req,
-      Res,
-      Path,
-      ResponseValidator,
-      ResponseSchema
-    >;
-    /** Optional metadata for plugins */
-    pluginMetadata?: KoriRoutePluginMetadata;
-  } & RequestProviderConstraint<RequestValidator, RequestSchema> &
-    ResponseProviderConstraint<ResponseValidator, ResponseSchema>,
+  options: KoriRouteOptions<Env, Req, Res, Path, RequestValidator, RequestSchema, ResponseValidator, ResponseSchema>,
 ) => Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
+
+/**
+ * Options for HTTP method-specific route registration function.
+ *
+ * Includes provider constraints to ensure validator and schema compatibility at compile time.
+ *
+ * @template Env - Environment type containing instance-specific data
+ * @template Req - Request type with request-specific data and methods
+ * @template Res - Response type with response building capabilities
+ * @template Path - URL path pattern with parameter placeholders
+ * @template RequestValidator - Request validator type for type-safe validation
+ * @template RequestSchema - Request schema type for validation
+ * @template ResponseValidator - Response validator type for type-safe validation
+ * @template ResponseSchema - Response schema type for validation
+ */
+export type KoriRouteMethodOptions<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+  RequestValidator extends KoriRequestValidatorDefault | undefined,
+  RequestSchema extends KoriRequestSchemaDefault | undefined,
+  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+  ResponseSchema extends KoriResponseSchemaDefault | undefined,
+> = {
+  /** Optional request schema for validation */
+  requestSchema?: RequestSchema;
+  /** Optional response schema for validation */
+  responseSchema?: ResponseSchema;
+  /** Route handler function */
+  handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
+  /** Custom error handler for request validation failures */
+  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
+    Env,
+    Req,
+    Res,
+    Path,
+    RequestValidator,
+    RequestSchema
+  >;
+  /** Custom error handler for response validation failures */
+  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
+    Env,
+    Req,
+    Res,
+    Path,
+    ResponseValidator,
+    ResponseSchema
+  >;
+  /** Optional metadata for plugins */
+  pluginMetadata?: KoriRoutePluginMetadata;
+} & RequestProviderConstraint<RequestValidator, RequestSchema> &
+  ResponseProviderConstraint<ResponseValidator, ResponseSchema>;
 
 /**
  * HTTP method-specific route registration function.
@@ -155,34 +233,15 @@ export type KoriRouteMethod<
     ResponseSchema extends KoriResponseSchemaDefault | undefined = undefined,
   >(
     path: Path,
-    options: {
-      /** Optional request schema for validation */
-      requestSchema?: RequestSchema;
-      /** Optional response schema for validation */
-      responseSchema?: ResponseSchema;
-      /** Route handler function */
-      handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-      /** Custom error handler for request validation failures */
-      onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
-        Env,
-        Req,
-        Res,
-        Path,
-        RequestValidator,
-        RequestSchema
-      >;
-      /** Custom error handler for response validation failures */
-      onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
-        Env,
-        Req,
-        Res,
-        Path,
-        ResponseValidator,
-        ResponseSchema
-      >;
-      /** Optional metadata for plugins */
-      pluginMetadata?: KoriRoutePluginMetadata;
-    } & RequestProviderConstraint<RequestValidator, RequestSchema> &
-      ResponseProviderConstraint<ResponseValidator, ResponseSchema>,
+    options: KoriRouteMethodOptions<
+      Env,
+      Req,
+      Res,
+      Path,
+      RequestValidator,
+      RequestSchema,
+      ResponseValidator,
+      ResponseSchema
+    >,
   ): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
 };

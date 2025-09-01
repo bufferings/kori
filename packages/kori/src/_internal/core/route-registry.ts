@@ -1,52 +1,41 @@
-import {
-  type KoriEnvironment,
-  type KoriRequest,
-  type KoriResponse,
-  type KoriHandlerContext,
-} from '../../context/index.js';
 import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
 import { type KoriRouteId } from '../../route-matcher/index.js';
-import { type KoriHandler, type KoriRoutePluginMetadata } from '../../routing/index.js';
+import { type KoriRoutePluginMetadata, type RouteHttpMethod } from '../../routing/index.js';
 
-export type RouteRecord<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  Path extends string = string,
-> = {
-  method: string;
-  path: Path;
-  handler: KoriHandler<Env, Req, Res, Path, undefined, undefined>;
+export type RouteRecord = {
+  method: RouteHttpMethod;
+  path: string;
   requestSchema?: KoriRequestSchemaDefault;
   responseSchema?: KoriResponseSchemaDefault;
-  onRequestValidationError?: (ctx: KoriHandlerContext<Env, Req, Res>, err: unknown) => unknown;
-  onResponseValidationError?: (ctx: KoriHandlerContext<Env, Req, Res>, err: unknown) => unknown;
+  handler: unknown;
+  onRequestValidationError?: unknown;
+  onResponseValidationError?: unknown;
   pluginMetadata?: KoriRoutePluginMetadata;
 };
 
-export type RouteRegistry<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse> = {
-  register<Path extends string>(record: RouteRecord<Env, Req, Res, Path>): KoriRouteId;
-  get<Path extends string>(routeId: KoriRouteId): RouteRecord<Env, Req, Res, Path> | undefined;
+export type KoriRouteRegistry = {
+  register(record: RouteRecord): KoriRouteId;
+  get(routeId: KoriRouteId): RouteRecord | undefined;
+  getAll(): RouteRecord[];
 };
 
-export function createRouteRegistry<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
->(): RouteRegistry<Env, Req, Res> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const idToRecord = new Map<KoriRouteId, RouteRecord<Env, Req, Res, any>>();
+export function createRouteRegistry(): KoriRouteRegistry {
+  const idToRecord = new Map<KoriRouteId, RouteRecord>();
 
   return {
-    register<Path extends string>(record: RouteRecord<Env, Req, Res, Path>): KoriRouteId {
+    register(record: RouteRecord): KoriRouteId {
       const id = Symbol('kori-route');
       idToRecord.set(id, record);
       return id;
     },
 
-    get<Path extends string>(routeId: KoriRouteId): RouteRecord<Env, Req, Res, Path> | undefined {
-      return idToRecord.get(routeId) as RouteRecord<Env, Req, Res, Path> | undefined;
+    get(routeId: KoriRouteId): RouteRecord | undefined {
+      return idToRecord.get(routeId);
+    },
+
+    getAll(): RouteRecord[] {
+      return Array.from(idToRecord.values());
     },
   };
 }

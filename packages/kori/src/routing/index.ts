@@ -28,7 +28,13 @@ export {
   type ResponseValidationErrorDefault,
   type ResponseValidationSuccess,
 } from './response-validation-result.js';
-export { type KoriRoute, type KoriRouteMethod, type KoriRoutePluginMetadata } from './route.js';
+export {
+  type KoriRoute,
+  type KoriRouteMethod,
+  type KoriRouteMethodOptions,
+  type KoriRouteOptions,
+  type KoriRoutePluginMetadata,
+} from './route.js';
 export { type KoriRouteDefinition } from './route-definition.js';
 export { normalizeRouteHttpMethod, type RouteHttpMethod } from './route-http-method.js';
 export { type ValidatedRequest } from './validated-request.js';
