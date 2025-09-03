@@ -126,8 +126,8 @@ function createKoriInternal<
   const _shared = options.shared;
   const _requestValidator = options.requestValidator;
   const _responseValidator = options.responseValidator;
-  const _onRequestValidationError = options.onRequestValidationError;
-  const _onResponseValidationError = options.onResponseValidationError;
+  const _instanceOnRequestValidationError = options.onRequestValidationError;
+  const _instanceOnResponseValidationError = options.onResponseValidationError;
   const _prefix = options.prefix ?? '';
 
   const _children: KoriInternalAny[] = [];
@@ -194,8 +194,8 @@ function createKoriInternal<
         shared: _shared,
         requestValidator: _requestValidator,
         responseValidator: _responseValidator,
-        onRequestValidationError: _onRequestValidationError,
-        onResponseValidationError: _onResponseValidationError,
+        onRequestValidationError: _instanceOnRequestValidationError,
+        onResponseValidationError: _instanceOnResponseValidationError,
         prefix: `${_prefix}${childOptions.prefix ?? ''}`,
         parentHandlerHooks: {
           requestHooks: _requestHooks,
@@ -216,8 +216,8 @@ function createKoriInternal<
         deps: {
           requestValidator: _requestValidator,
           responseValidator: _responseValidator,
-          onRequestValidationError: _onRequestValidationError,
-          onResponseValidationError: _onResponseValidationError,
+          onRequestValidationError: _instanceOnRequestValidationError,
+          onResponseValidationError: _instanceOnResponseValidationError,
           requestHooks: _requestHooks,
           errorHooks: _errorHooks,
         },
