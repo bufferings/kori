@@ -2,6 +2,10 @@ import {
   createKoriEnvironment,
   createKoriInstanceContext,
   executeInstanceDeferredCallbacks,
+  createKoriHandlerContext,
+  createKoriRequest,
+  createKoriResponse,
+  type KoriResponse,
 } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnStartHook } from '../../hook/index.js';
@@ -9,7 +13,7 @@ import { HttpStatus } from '../../http/index.js';
 import { type KoriLogger } from '../../logging/index.js';
 import { type KoriCompiledRouteMatcher, type KoriRouteId } from '../../route-matcher/index.js';
 
-import { createRouteExecutor } from './route-executor.js';
+import { type RouteRecord } from './route-registry.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnStartHookAny = KoriOnStartHook<any, any>;
@@ -20,11 +24,13 @@ export function createFetchHandler({
   allStartHooks,
   loggerFactory,
   instanceLogger,
+  routeRegistry,
 }: {
   compiledRouteMatcher: KoriCompiledRouteMatcher;
   allStartHooks: KoriOnStartHookAny[];
   loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
   instanceLogger: KoriLogger;
+  routeRegistry: { get: (id: KoriRouteId) => RouteRecord | undefined };
 }): KoriFetchHandler {
   let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), instanceLogger });
 
@@ -38,38 +44,31 @@ export function createFetchHandler({
       if (!routeResult) {
         return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
       }
-      const executor = createRouteExecutor({
-        getRouteRecord: (
-          instanceCtx as unknown as { routeRegistry: { get: <_P extends string>(id: KoriRouteId) => unknown } }
-        ).routeRegistry.get as unknown as <_P extends string>(id: KoriRouteId) => unknown,
-        deps: {
-          env: instanceCtx.env as never,
-          loggerFactory,
-          requestValidator: (instanceCtx as unknown as { requestValidator?: unknown }).requestValidator as never,
-          responseValidator: (instanceCtx as unknown as { responseValidator?: unknown }).responseValidator as never,
-          onRequestValidationError: (instanceCtx as unknown as { onRequestValidationError?: unknown })
-            .onRequestValidationError as never,
-          onResponseValidationError: (instanceCtx as unknown as { onResponseValidationError?: unknown })
-            .onResponseValidationError as never,
-          requestHooks: (instanceCtx as unknown as { requestHooks: unknown[] }).requestHooks as never,
-          errorHooks: (instanceCtx as unknown as { errorHooks: unknown[] }).errorHooks as never,
-        },
-      } as unknown as Parameters<typeof createRouteExecutor>[0]);
-      return (
-        executor as unknown as {
-          executeRoute: <_P extends string>(
-            id: KoriRouteId,
-            req: Request,
-            p: Record<string, string>,
-            t: _P,
-          ) => Promise<Response>;
-        }
-      ).executeRoute(
-        routeResult.routeId as unknown as KoriRouteId,
-        request,
-        routeResult.pathParams,
-        routeResult.pathTemplate,
-      );
+
+      // Get composed handler from registry
+      const routeRecord = routeRegistry.get(routeResult.routeId);
+
+      if (!routeRecord?.handler) {
+        return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
+      }
+
+      const req = createKoriRequest({
+        rawRequest: request,
+        pathParams: routeResult.pathParams,
+        pathTemplate: routeResult.pathTemplate,
+      });
+
+      const handlerCtx = createKoriHandlerContext({
+        env: instanceCtx.env,
+        req,
+        res: createKoriResponse(req),
+        loggerFactory,
+      });
+
+      // Execute composed handler directly
+      const composedHandler = routeRecord.handler as (ctx: typeof handlerCtx) => Promise<KoriResponse>;
+      const res = await composedHandler(handlerCtx);
+      return res.build();
     };
 
     const onCloseImpl = async (): Promise<void> => {

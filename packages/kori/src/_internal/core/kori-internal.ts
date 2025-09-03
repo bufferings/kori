@@ -22,7 +22,8 @@ import {
 } from '../../routing/index.js';
 import { normalizeRouteHttpMethod } from '../../routing/index.js';
 
-import { createFetchHandler } from './fetch-handler-factory.js';
+import { createFetchHandler } from './fetch-handler-creator.js';
+import { composeRouteHandler } from './route-handler-composer.js';
 import { createRouteRegistry, type KoriRouteRegistry } from './route-registry.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -211,12 +212,29 @@ function createKoriInternal<
       ReqS extends KoriRequestSchemaDefault | undefined = undefined,
       ResS extends KoriResponseSchemaDefault | undefined = undefined,
     >(routeOptions: KoriRouteOptions<Env, Req, Res, Path, ReqV, ReqS, ResV, ResS>): Kori<Env, Req, Res, ReqV, ResV> {
-      const combinedPath = `${_prefix}${routeOptions.path}`;
+      const composedHandler = composeRouteHandler(
+        {
+          requestValidator: _requestValidator,
+          responseValidator: _responseValidator,
+          onRequestValidationError: _onRequestValidationError,
+          onResponseValidationError: _onResponseValidationError,
+          requestHooks: _requestHooks,
+          errorHooks: _errorHooks,
+        },
+        {
+          requestSchema: routeOptions.requestSchema,
+          responseSchema: routeOptions.responseSchema,
+          handler: routeOptions.handler,
+          onRequestValidationError: routeOptions.onRequestValidationError,
+          onResponseValidationError: routeOptions.onResponseValidationError,
+        },
+      );
 
+      const combinedPath = `${_prefix}${routeOptions.path}`;
       const routeId = _shared.routeRegistry.register({
         method: routeOptions.method,
         path: combinedPath,
-        handler: routeOptions.handler,
+        handler: composedHandler,
         requestSchema: routeOptions.requestSchema,
         responseSchema: routeOptions.responseSchema,
         onRequestValidationError: routeOptions.onRequestValidationError,
@@ -308,13 +326,11 @@ function createKoriInternal<
     },
 
     generate(): KoriFetchHandler {
-      const compiledRouteMatcher = _shared.routeMatcher.compile();
-      const allStartHooks = _shared.root._collectStartHooks();
-      const loggerFactory = _shared.loggerFactory;
       return createFetchHandler({
-        compiledRouteMatcher,
-        allStartHooks,
-        loggerFactory,
+        compiledRouteMatcher: _shared.routeMatcher.compile(),
+        routeRegistry: _shared.routeRegistry,
+        allStartHooks: _shared.root._collectStartHooks(),
+        loggerFactory: _shared.loggerFactory,
         instanceLogger: _shared.instanceLogger,
       });
     },
