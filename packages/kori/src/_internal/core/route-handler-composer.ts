@@ -40,8 +40,8 @@ type Dependencies<
 > = {
   requestValidator?: RequestValidator;
   responseValidator?: ResponseValidator;
-  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
-  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
+  instanceOnRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, RequestValidator>;
+  instanceOnResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResponseValidator>;
   requestHooks: KoriOnRequestHookAny[];
   errorHooks: KoriOnErrorHookAny[];
 };
@@ -274,12 +274,12 @@ export function composeRouteHandler<
   });
 
   const requestValidationErrorHandler = createRequestValidationErrorHandler({
-    instanceHandler: deps.onRequestValidationError,
+    instanceHandler: deps.instanceOnRequestValidationError,
     routeHandler: routeParams.onRequestValidationError,
   });
 
   const responseValidationErrorHandler = createResponseValidationErrorHandler({
-    instanceHandler: deps.onResponseValidationError,
+    instanceHandler: deps.instanceOnResponseValidationError,
     routeHandler: routeParams.onResponseValidationError,
   });
 

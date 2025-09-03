@@ -216,8 +216,8 @@ function createKoriInternal<
         deps: {
           requestValidator: _requestValidator,
           responseValidator: _responseValidator,
-          onRequestValidationError: _instanceOnRequestValidationError,
-          onResponseValidationError: _instanceOnResponseValidationError,
+          instanceOnRequestValidationError: _instanceOnRequestValidationError,
+          instanceOnResponseValidationError: _instanceOnResponseValidationError,
           requestHooks: _requestHooks,
           errorHooks: _errorHooks,
         },
