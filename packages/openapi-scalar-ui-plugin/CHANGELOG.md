@@ -1,5 +1,41 @@
 # @korix/openapi-scalar-ui-plugin
 
+## 0.2.0
+
+### Minor Changes
+
+- 061b2f2: Framework architecture redesign and API improvements
+
+  **New Features:**
+
+  - Enhanced content-type support for multi-media request/response handling
+  - Provider-based schema constraint system for better type safety
+  - Customizable onRouteNotFound handler option
+  - Comprehensive validation error handling with cascading fallback logic
+
+  **Architecture Changes:**
+
+  - Complete schema system redesign with separate request-schema/response-schema modules
+  - Validation system restructured: request-validation → request-validator with internal resolvers
+  - Routing system redesigned with new path-params and validation error handling
+  - Router module replaced with route-matcher for better separation of concerns
+
+  **API Improvements:**
+
+  - Logger functions renamed for consistency: createPluginLogger → createKoriPluginLogger
+  - Schema creation APIs updated for new content-type system
+  - Validation APIs restructured for better developer experience
+  - Internal route handling optimizations
+
+### Patch Changes
+
+- Updated dependencies [7166746]
+- Updated dependencies [061b2f2]
+- Updated dependencies [90dee5e]
+- Updated dependencies [965c6be]
+  - @korix/kori@0.2.0
+  - @korix/openapi-plugin@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes

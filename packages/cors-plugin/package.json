@@ -1,6 +1,6 @@
 {
   "name": "@korix/cors-plugin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "CORS plugin for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

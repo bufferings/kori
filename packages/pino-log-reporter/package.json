@@ -1,6 +1,6 @@
 {
   "name": "@korix/pino-log-reporter",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Pino log reporter for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

@@ -1,5 +1,41 @@
 # @korix/eslint-config
 
+## 0.2.0
+
+### Minor Changes
+
+- 061b2f2: Framework architecture redesign and API improvements
+
+  **New Features:**
+
+  - Enhanced content-type support for multi-media request/response handling
+  - Provider-based schema constraint system for better type safety
+  - Customizable onRouteNotFound handler option
+  - Comprehensive validation error handling with cascading fallback logic
+
+  **Architecture Changes:**
+
+  - Complete schema system redesign with separate request-schema/response-schema modules
+  - Validation system restructured: request-validation → request-validator with internal resolvers
+  - Routing system redesigned with new path-params and validation error handling
+  - Router module replaced with route-matcher for better separation of concerns
+
+  **API Improvements:**
+
+  - Logger functions renamed for consistency: createPluginLogger → createKoriPluginLogger
+  - Schema creation APIs updated for new content-type system
+  - Validation APIs restructured for better developer experience
+  - Internal route handling optimizations
+
+### Patch Changes
+
+- ff06644: Add no-barrel-internal ESLint rule
+
+  - Add new `no-barrel-internal` rule that prevents @internal and @packageInternal symbols from being exported based on visibility level
+  - @internal symbols cannot be exported from any index.ts file (any barrel)
+  - @packageInternal symbols cannot be exported from package root src/index.ts (public barrel only)
+  - Uses TypeScript compiler API for accurate symbol analysis without Node.js dependencies
+
 ## 0.1.0
 
 ### Patch Changes
