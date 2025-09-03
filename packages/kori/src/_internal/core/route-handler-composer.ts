@@ -245,10 +245,13 @@ export function composeRouteHandler<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
   RequestSchema extends KoriRequestSchemaDefault | undefined,
   ResponseSchema extends KoriResponseSchemaDefault | undefined,
->(
-  deps: Dependencies<Env, Req, Res, RequestValidator, ResponseValidator>,
-  routeParams: RouteParameters<Env, Req, Res, Path, RequestValidator, ResponseValidator, RequestSchema, ResponseSchema>,
-): (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse> {
+>({
+  deps,
+  routeParams,
+}: {
+  deps: Dependencies<Env, Req, Res, RequestValidator, ResponseValidator>;
+  routeParams: RouteParameters<Env, Req, Res, Path, RequestValidator, ResponseValidator, RequestSchema, ResponseSchema>;
+}): (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse> {
   type ValidatedContext = KoriHandlerContext<
     Env,
     ValidatedRequest<WithPathParams<Req, Path>, RequestValidator, RequestSchema>,

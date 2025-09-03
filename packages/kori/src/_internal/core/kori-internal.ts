@@ -212,8 +212,8 @@ function createKoriInternal<
       ReqS extends KoriRequestSchemaDefault | undefined = undefined,
       ResS extends KoriResponseSchemaDefault | undefined = undefined,
     >(routeOptions: KoriRouteOptions<Env, Req, Res, Path, ReqV, ReqS, ResV, ResS>): Kori<Env, Req, Res, ReqV, ResV> {
-      const composedHandler = composeRouteHandler(
-        {
+      const composedHandler = composeRouteHandler({
+        deps: {
           requestValidator: _requestValidator,
           responseValidator: _responseValidator,
           onRequestValidationError: _onRequestValidationError,
@@ -221,14 +221,14 @@ function createKoriInternal<
           requestHooks: _requestHooks,
           errorHooks: _errorHooks,
         },
-        {
+        routeParams: {
           requestSchema: routeOptions.requestSchema,
           responseSchema: routeOptions.responseSchema,
           handler: routeOptions.handler,
           onRequestValidationError: routeOptions.onRequestValidationError,
           onResponseValidationError: routeOptions.onResponseValidationError,
         },
-      );
+      });
 
       const combinedPath = `${_prefix}${routeOptions.path}`;
       const routeId = _shared.routeRegistry.register({
