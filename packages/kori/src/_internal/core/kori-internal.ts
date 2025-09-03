@@ -1,6 +1,7 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../../hook/index.js';
+import { HttpStatus } from '../../http/index.js';
 import { type Kori, type CreateKoriOptions } from '../../kori/index.js';
 import { type KoriLogger, type KoriLoggerFactory } from '../../logging/index.js';
 import { createKoriLoggerFactory, createInstanceLogger } from '../../logging/index.js';
@@ -21,6 +22,7 @@ import {
   type RouteHttpMethod,
 } from '../../routing/index.js';
 import { normalizeRouteHttpMethod } from '../../routing/index.js';
+import { type MaybePromise } from '../../util/index.js';
 
 import { createFetchHandler } from './fetch-handler-creator.js';
 import { composeRouteHandler } from './route-handler-composer.js';
@@ -52,6 +54,8 @@ type KoriInternalShared = {
   loggerFactory: KoriLoggerFactory;
   /** Instance-level logger */
   instanceLogger: KoriLogger;
+  /** Handler for when no route matches the request (always defined with default) */
+  onRouteNotFound: (req: Request) => MaybePromise<Response>;
 };
 
 /**
@@ -332,6 +336,7 @@ function createKoriInternal<
         allStartHooks: _shared.root._collectStartHooks(),
         loggerFactory: _shared.loggerFactory,
         instanceLogger: _shared.instanceLogger,
+        onRouteNotFound: _shared.onRouteNotFound,
       });
     },
 
@@ -347,6 +352,15 @@ function createKoriInternal<
   };
 
   return _internal;
+}
+
+/**
+ * Creates default not found handler that returns plain text response.
+ *
+ * @internal
+ */
+function createDefaultNotFoundHandler(): (req: Request) => Response {
+  return (_req: Request) => new Response('Not Found', { status: HttpStatus.NOT_FOUND });
 }
 
 /**
@@ -369,6 +383,7 @@ export function createKoriRoot<
   const routeMatcher = options?.routeMatcher ?? createHonoRouteMatcher();
   const loggerFactory = options?.loggerFactory ?? createKoriLoggerFactory(options?.loggerOptions);
   const instanceLogger = createInstanceLogger(loggerFactory);
+  const onRouteNotFound = options?.onRouteNotFound ?? createDefaultNotFoundHandler();
 
   // Create shared state with placeholder root (circular reference resolved below)
   const shared = {
@@ -376,6 +391,7 @@ export function createKoriRoot<
     routeRegistry: createRouteRegistry(),
     loggerFactory,
     instanceLogger,
+    onRouteNotFound,
   } as unknown as KoriInternalShared;
 
   // Create root instance with shared state

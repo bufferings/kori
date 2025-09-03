@@ -9,28 +9,42 @@ import {
 } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnStartHook } from '../../hook/index.js';
-import { HttpStatus } from '../../http/index.js';
-import { type KoriLogger } from '../../logging/index.js';
-import { type KoriCompiledRouteMatcher, type KoriRouteId } from '../../route-matcher/index.js';
+import { type KoriLogger, type KoriLoggerFactory } from '../../logging/index.js';
+import { type KoriCompiledRouteMatcher } from '../../route-matcher/index.js';
+import { type MaybePromise } from '../../util/index.js';
 
-import { type RouteRecord } from './route-registry.js';
+import { type KoriRouteRegistry } from './route-registry.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnStartHookAny = KoriOnStartHook<any, any>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+/**
+ * Creates a fetch handler for processing HTTP requests.
+ *
+ * Builds the main HTTP request handler that matches routes, executes pre-built
+ * handlers, and handles not found cases using shared configuration. Integrates
+ * start hooks and manages instance lifecycle.
+ *
+ * @param options - Configuration for fetch handler creation
+ * @returns Fetch handler with onStart lifecycle method
+ *
+ * @internal
+ */
 export function createFetchHandler({
   compiledRouteMatcher,
   allStartHooks,
   loggerFactory,
   instanceLogger,
   routeRegistry,
+  onRouteNotFound,
 }: {
   compiledRouteMatcher: KoriCompiledRouteMatcher;
   allStartHooks: KoriOnStartHookAny[];
-  loggerFactory: (meta: { channel: string; name: string }) => KoriLogger;
+  loggerFactory: KoriLoggerFactory;
   instanceLogger: KoriLogger;
-  routeRegistry: { get: (id: KoriRouteId) => RouteRecord | undefined };
+  routeRegistry: KoriRouteRegistry;
+  onRouteNotFound: (req: Request) => MaybePromise<Response>;
 }): KoriFetchHandler {
   let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), instanceLogger });
 
@@ -40,22 +54,20 @@ export function createFetchHandler({
     }
 
     const fetchHandlerImpl = async (request: Request): Promise<Response> => {
-      const routeResult = compiledRouteMatcher(request);
-      if (!routeResult) {
-        return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
+      const routeMatch = compiledRouteMatcher(request);
+      if (!routeMatch) {
+        return await onRouteNotFound(request);
       }
 
-      // Get composed handler from registry
-      const routeRecord = routeRegistry.get(routeResult.routeId);
-
+      const routeRecord = routeRegistry.get(routeMatch.routeId);
       if (!routeRecord?.handler) {
-        return new Response('Not Found', { status: HttpStatus.NOT_FOUND });
+        return await onRouteNotFound(request);
       }
 
       const req = createKoriRequest({
         rawRequest: request,
-        pathParams: routeResult.pathParams,
-        pathTemplate: routeResult.pathTemplate,
+        pathParams: routeMatch.pathParams,
+        pathTemplate: routeMatch.pathTemplate,
       });
 
       const handlerCtx = createKoriHandlerContext({
@@ -65,7 +77,6 @@ export function createFetchHandler({
         loggerFactory,
       });
 
-      // Execute composed handler directly
       const composedHandler = routeRecord.handler as (ctx: typeof handlerCtx) => Promise<KoriResponse>;
       const res = await composedHandler(handlerCtx);
       return res.build();

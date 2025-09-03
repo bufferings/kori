@@ -7,6 +7,7 @@ import {
   type KoriInstanceRequestValidationErrorHandler,
   type KoriInstanceResponseValidationErrorHandler,
 } from '../routing/index.js';
+import { type MaybePromise } from '../util/index.js';
 
 /**
  * Logger configuration options with mutually exclusive choices.
@@ -37,6 +38,7 @@ type LoggerConfig =
  * const app = createKori({
  *   requestValidator: myRequestValidator,
  *   onRequestValidationError: (ctx, err) => ctx.res.badRequest(),
+ *   onRouteNotFound: (req) => new Response('Page not found', { status: 404 }),
  *   loggerOptions: { level: 'info' }
  * });
  * ```
@@ -63,6 +65,8 @@ export type CreateKoriOptions<
     KoriResponse,
     ResponseValidator
   >;
+  /** Custom handler for when no route matches the request */
+  onRouteNotFound?: (req: Request) => MaybePromise<Response>;
   /** Custom route matcher implementation (defaults to HonoRouteMatcher) */
   routeMatcher?: KoriRouteMatcher;
 } & LoggerConfig;
