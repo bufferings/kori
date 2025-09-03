@@ -10,7 +10,8 @@ import { type MaybePromise } from '../util/index.js';
  * cleanup operations via defer callbacks.
  *
  * @template Env - Current environment type
- * @template EnvExt - Additional environment properties to be added
+ * @template EnvExt - Additional environment properties to be added.
+ *   Defaults to an empty object, which means no extensions.
  *
  * @param ctx - Instance context for accessing environment and utilities
  * @returns Extended context with additional environment properties, or void
@@ -29,6 +30,6 @@ import { type MaybePromise } from '../util/index.js';
  * };
  * ```
  */
-export type KoriOnStartHook<Env extends KoriEnvironment, EnvExt = unknown> = (
+export type KoriOnStartHook<Env extends KoriEnvironment, EnvExt extends object = object> = (
   ctx: KoriInstanceContext<Env>,
 ) => MaybePromise<KoriInstanceContext<Env & EnvExt> | void>;

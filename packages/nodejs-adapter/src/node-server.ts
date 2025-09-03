@@ -4,11 +4,11 @@ import { createAdaptorServer, type ServerType } from '@hono/node-server';
 import {
   type Kori,
   type KoriEnvironment,
-  createSystemLogger,
   type KoriRequest,
   type KoriRequestValidatorDefault,
   type KoriResponse,
   type KoriResponseValidatorDefault,
+  createKoriSystemLogger,
 } from '@korix/kori';
 
 function setupGracefulShutdown<
@@ -19,7 +19,7 @@ function setupGracefulShutdown<
   ResponseValidator extends KoriResponseValidatorDefault | undefined,
 >(server: ServerType, kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>, onClose: () => Promise<void>) {
   const handler = async () => {
-    const log = createSystemLogger({ baseLogger: kori.log() });
+    const log = createKoriSystemLogger({ baseLogger: kori.log() });
     log.info('Shutting down server...');
     await onClose();
     server.close((err) => {
@@ -65,7 +65,7 @@ export async function startNodeServer<
   });
 
   server.listen(port, hostname, () => {
-    const log = createSystemLogger({ baseLogger: kori.log() });
+    const log = createKoriSystemLogger({ baseLogger: kori.log() });
 
     const address = server.address();
     if (address && typeof address !== 'string') {

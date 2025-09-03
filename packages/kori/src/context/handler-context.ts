@@ -1,4 +1,9 @@
-import { type KoriLoggerFactory, type KoriLogger, createSystemLogger, createRequestLogger } from '../logging/index.js';
+import {
+  type KoriLoggerFactory,
+  type KoriLogger,
+  createKoriSystemLogger,
+  createRequestLogger,
+} from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -147,6 +152,7 @@ const handlerContextPrototype = {
     Object.assign(this.req, reqExt);
     return this;
   },
+
   withRes<ResExt extends object>(this: HandlerCtxState, resExt: ResExt) {
     Object.assign(this.res, resExt);
     return this;
@@ -222,7 +228,7 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
     try {
       await callback(ctx);
     } catch (err) {
-      const sys = createSystemLogger({ baseLogger: getLoggerInternal(ctxState) });
+      const sys = createKoriSystemLogger({ baseLogger: getLoggerInternal(ctxState) });
       sys.error('Defer callback error:', {
         type: 'defer-callback',
         callbackIndex: i,

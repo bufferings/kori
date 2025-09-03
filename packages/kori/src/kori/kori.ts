@@ -3,72 +3,45 @@ import { type KoriFetchHandler } from '../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validation/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validation/index.js';
-import { type KoriRequestSchemaDefault, type KoriResponseSchemaDefault } from '../schema/index.js';
+import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
+import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { type KoriRouteDefinition, type KoriRoute, type KoriRouteMethod } from '../routing/index.js';
 
-import { type RequestProviderCompatibility, type ResponseProviderCompatibility } from './route-options.js';
-import {
-  type HttpMethod,
-  type KoriAddRoute,
-  type KoriHandler,
-  type KoriRoutePluginMetadata,
-  type KoriRouteRequestValidationErrorHandler,
-  type KoriRouteResponseValidationErrorHandler,
-} from './route.js';
-
-type KoriMethodAlias<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  RequestValidator extends KoriRequestValidatorDefault | undefined,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined,
-> = {
-  <Path extends string>(
-    path: Path,
-    handler: KoriHandler<Env, Req, Res, Path, RequestValidator, undefined>,
-  ): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
-
-  <
-    Path extends string,
-    RequestSchema extends KoriRequestSchemaDefault | undefined = undefined,
-    ResponseSchema extends KoriResponseSchemaDefault | undefined = undefined,
-  >(
-    path: Path,
-    options: {
-      requestSchema?: RequestSchema;
-      responseSchema?: ResponseSchema;
-      handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-      onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
-        Env,
-        Req,
-        Res,
-        Path,
-        RequestValidator,
-        RequestSchema
-      >;
-      onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
-        Env,
-        Req,
-        Res,
-        Path,
-        ResponseValidator,
-        ResponseSchema
-      >;
-      pluginMetadata?: KoriRoutePluginMetadata;
-    } & RequestProviderCompatibility<RequestValidator, RequestSchema> &
-      ResponseProviderCompatibility<ResponseValidator, ResponseSchema>,
-  ): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
-};
-
-export type KoriRouteDefinition = {
-  method: HttpMethod;
-  path: string;
-  requestSchema?: KoriRequestSchemaDefault;
-  responseSchema?: KoriResponseSchemaDefault;
-  pluginMetadata?: KoriRoutePluginMetadata;
-};
-
+/**
+ * Kori instance providing type-safe HTTP server functionality.
+ *
+ * The Kori instance supports method chaining for configuration and provides
+ * type-safe route registration, lifecycle hooks, plugin system, and request/response
+ * validation. All type extensions are preserved through the fluent API.
+ *
+ * @template Env - Environment type containing instance-specific data
+ * @template Req - Request type with request-specific data and methods
+ * @template Res - Response type with response building capabilities
+ * @template RequestValidator - Request validator for type-safe validation
+ * @template ResponseValidator - Response validator for type-safe validation
+ *
+ * @example
+ * ```typescript
+ * const app = createKori()
+ *   .onStart(async (ctx) => {
+ *     const db = await connectDatabase();
+ *     ctx.defer(() => db.close());
+ *     return ctx.withEnv({ db });
+ *   })
+ *   .onRequest((ctx) => {
+ *     ctx.log().info('Request received', { path: ctx.req.url() });
+ *     return ctx;
+ *   })
+ *   .get('/health', (ctx) => ctx.res.text('OK'))
+ *   .post('/users', {
+ *     requestSchema: userCreateSchema,
+ *     handler: (ctx) => {
+ *       const userData = ctx.req.validatedBody();
+ *       return ctx.res.json(createUser(userData));
+ *     }
+ *   });
+ * ```
+ */
 export type Kori<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
@@ -76,47 +49,56 @@ export type Kori<
   RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
   ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
 > = {
-  // Logger
+  /** Gets the instance logger for this Kori instance */
   log(): KoriLogger;
 
-  // Lifecycle Hooks
-  onStart<EnvExt>(
+  /** Registers a startup hook that executes during instance initialization */
+  onStart<EnvExt extends object>(
     hook: KoriOnStartHook<Env, EnvExt>,
   ): Kori<Env & EnvExt, Req, Res, RequestValidator, ResponseValidator>;
 
-  // Handler Hooks
-  onRequest<ReqExt, ResExt>(
+  /** Registers a request hook that executes before each route handler */
+  onRequest<ReqExt extends object, ResExt extends object>(
     hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>,
   ): Kori<Env, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
+
+  /** Registers an error hook that executes when errors occur during request processing */
   onError(hook: KoriOnErrorHook<Env, Req, Res>): Kori<Env, Req, Res, RequestValidator, ResponseValidator>;
 
-  // Plugin
-  applyPlugin<EnvExt, ReqExt, ResExt>(
+  /** Applies a plugin to extend the Kori instance with additional functionality */
+  applyPlugin<EnvExt extends object, ReqExt extends object, ResExt extends object>(
     plugin: KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt, RequestValidator, ResponseValidator>,
   ): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
 
-  // Child Creation
-  createChild<EnvExt, ReqExt, ResExt>(childOptions?: {
+  /** Creates a child instance with optional path prefix and configuration */
+  createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions?: {
     configure: (
       kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
     ) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
     prefix?: string;
   }): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
 
-  // Routing
-  addRoute: KoriAddRoute<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Generic route registration for any HTTP method */
+  route: KoriRoute<Env, Req, Res, RequestValidator, ResponseValidator>;
 
-  get: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  post: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  put: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  delete: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  patch: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  head: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
-  options: KoriMethodAlias<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a GET route */
+  get: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a POST route */
+  post: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a PUT route */
+  put: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a DELETE route */
+  delete: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a PATCH route */
+  patch: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers a HEAD route */
+  head: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
+  /** Registers an OPTIONS route */
+  options: KoriRouteMethod<Env, Req, Res, RequestValidator, ResponseValidator>;
 
-  // Fetch Handler Generation
+  /** Generates a fetch handler for deployment to runtime environments */
   generate(): KoriFetchHandler;
 
-  // Route Definitions
+  /** Returns all registered route definitions for introspection */
   routeDefinitions(): KoriRouteDefinition[];
 };

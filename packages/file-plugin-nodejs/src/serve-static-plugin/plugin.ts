@@ -5,11 +5,10 @@ import {
   type KoriLogger,
   type KoriEnvironment,
   type KoriPlugin,
-  createPluginLogger,
+  createKoriPluginLogger,
 } from '@korix/kori';
 
 import { PLUGIN_VERSION } from '../version/index.js';
-
 import { handleStaticFileRequest } from './serve/index.js';
 
 import { type ServeStaticOptions } from './options.js';
@@ -86,7 +85,7 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
+      const log = createKoriPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
 
       validateOptions(options, log);
 
@@ -101,7 +100,7 @@ export function serveStaticPlugin<Env extends KoriEnvironment, Req extends KoriR
       });
 
       return kori.get(`${options.mountAt}/*`, async (ctx) => {
-        const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
+        const requestLog = createKoriPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
         const pathname = ctx.req.url().pathname;
         const requestPath = removeMountPrefix(pathname, options.mountAt);
         return await handleStaticFileRequest(ctx.req, ctx.res, requestPath, options, requestLog);

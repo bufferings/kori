@@ -68,6 +68,7 @@ alwaysApply: true
 ### Naming and structure
 
 - One test, one contract. Name tests as short contract sentences.
+- Order tests by user journey: start with typical success cases, then edge cases, finally error conditions. Readers should understand basic behavior before seeing failure modes.
 - Arrange as: setup, act, assert. Keep assertions close to the behavior under test.
 - Fail with actionable messages that describe the broken contract.
 

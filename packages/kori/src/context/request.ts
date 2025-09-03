@@ -285,10 +285,9 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const rawHeaders = new Headers(req.rawRequest.headers);
   const obj: Record<string, string> = {};
-  rawHeaders.forEach((v, k) => {
-    obj[k] = v;
+  req.rawRequest.headers.forEach((v, k) => {
+    obj[k.toLowerCase()] = v;
   });
   req.headersCache = obj;
   return obj;
@@ -334,7 +333,7 @@ function getCookiesInternal(req: ReqState): Record<string, string> {
     return req.cookiesCache;
   }
   const cookieHeader = getHeaderInternal(req, HttpRequestHeader.COOKIE);
-  const parsed = parseCookies(cookieHeader);
+  const parsed = parseCookies({ cookieHeader });
   req.cookiesCache = parsed;
   return parsed;
 }

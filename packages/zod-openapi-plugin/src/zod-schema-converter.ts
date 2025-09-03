@@ -19,7 +19,7 @@ export function createZodSchemaConverter(): SchemaConverter {
       }
 
       try {
-        return z.toJSONSchema(schema.def) as SchemaObject;
+        return z.toJSONSchema(schema.definition) as SchemaObject;
       } catch {
         // Fallback to generic object schema
         return { type: 'object' };

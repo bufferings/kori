@@ -14,5 +14,4 @@ export {
   HttpResponseHeader,
   type HttpResponseHeaderName,
 } from './headers.js';
-export { getMethodString } from './methods.js';
 export { HttpStatus, type HttpStatusCode } from './status-codes.js';

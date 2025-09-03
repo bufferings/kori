@@ -74,6 +74,18 @@ export const noBarrelInternal = createRule({
     return {
       ExportNamedDeclaration(node) {
         if (node.source) {
+          // Check if re-export is from _internal folder
+          const sourcePath = (node.source as TSESTree.Literal).value as string;
+          const isRootIndex = /[\\/]src[\\/]index\.ts$/.test(context.filename);
+          if (isRootIndex && sourcePath.includes('_internal')) {
+            context.report({
+              node: node.source,
+              messageId: 'internalExport',
+              data: { name: 'from _internal', visibility: '_internal folder', fileType: 'root' },
+            });
+            return;
+          }
+
           for (const spec of node.specifiers) {
             if (spec.type !== TSESTree.AST_NODE_TYPES.ExportSpecifier) {
               continue;

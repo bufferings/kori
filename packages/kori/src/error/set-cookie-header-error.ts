@@ -7,7 +7,7 @@ import { KoriError } from './kori-error.js';
  * emission. Use res.setCookie/clearCookie instead.
  *
  * @example
- * ```ts
+ * ```typescript
  * // Do not do this:
  * res.setHeader('set-cookie', 'sid=1; Path=/');
  * // It will throw KoriSetCookieHeaderError. Use setCookie instead:
@@ -16,11 +16,11 @@ import { KoriError } from './kori-error.js';
  */
 export class KoriSetCookieHeaderError extends KoriError {
   /**
-   * Creates a KoriSetCookieHeaderError with code "SET_COOKIE_HEADER_GUARD".
+   * Creates a KoriSetCookieHeaderError with code "SET_COOKIE_HEADER_ERROR".
    */
   constructor() {
     super('set-cookie must use setCookie/clearCookie', {
-      code: 'SET_COOKIE_HEADER_GUARD',
+      code: 'SET_COOKIE_HEADER_ERROR',
     });
   }
 }

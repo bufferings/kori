@@ -9,7 +9,7 @@ import { KoriError } from './kori-error.js';
  * property. Typically thrown by response.setCookie/clearCookie.
  *
  * @example
- * ```ts
+ * ```typescript
  * try {
  *   // Example: __Host- cookies must not specify a Domain attribute
  *   res.setCookie('__Host-session', 'v', { domain: 'example.com' });
@@ -22,7 +22,7 @@ import { KoriError } from './kori-error.js';
  * ```
  */
 export class KoriCookieError extends KoriError {
-  public readonly cookieError: CookieError;
+  public cookieError: CookieError;
 
   /**
    * Creates a KoriCookieError wrapping a CookieError.
@@ -32,7 +32,6 @@ export class KoriCookieError extends KoriError {
   constructor(cookieError: CookieError) {
     super(`Cookie operation failed: ${cookieError.message}`, {
       code: 'COOKIE_ERROR',
-      data: cookieError,
     });
     this.cookieError = cookieError;
   }

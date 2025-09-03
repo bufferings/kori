@@ -1,4 +1,4 @@
-import { type KoriLogger, createSystemLogger } from '../logging/index.js';
+import { type KoriLogger, createKoriSystemLogger } from '../logging/index.js';
 import { type MaybePromise } from '../util/index.js';
 
 import { type KoriEnvironment } from './environment.js';
@@ -155,7 +155,7 @@ export async function executeInstanceDeferredCallbacks(ctx: KoriInstanceContextB
     try {
       await deferStack[i]?.(ctx);
     } catch (err) {
-      const sys = createSystemLogger({ baseLogger: ctxState.instanceLogger });
+      const sys = createKoriSystemLogger({ baseLogger: ctxState.instanceLogger });
       sys.error('Instance defer callback error', {
         type: 'defer-callback',
         err: sys.serializeError(err),

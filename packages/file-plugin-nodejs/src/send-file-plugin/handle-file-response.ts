@@ -20,7 +20,6 @@ import {
   RangeConstants,
   setCacheHeaders,
 } from '../share/index.js';
-
 import { resolveFilename, resolveFilePath } from './file/index.js';
 import { createContentDispositionHeader } from './header/index.js';
 

@@ -5,7 +5,7 @@ import {
   type KoriResponse,
   type KoriRequest,
   type KoriEnvironment,
-  getMethodString,
+  normalizeRouteHttpMethod,
 } from '@korix/kori';
 import {
   type OpenAPIObject,
@@ -51,7 +51,7 @@ export function openApiMeta(meta: OpenApiMeta): KoriRoutePluginMetadata {
 
 export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
   options: OpenApiOptions,
-): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown> {
+): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, object, object> {
   const documentPath = options.documentPath ?? '/openapi.json';
 
   const collector = createRouteCollector();
@@ -120,7 +120,7 @@ export function openApiPlugin<Env extends KoriEnvironment, Req extends KoriReque
           }
 
           collector.addRoute({
-            method: getMethodString(routeDef.method),
+            method: normalizeRouteHttpMethod(routeDef.method),
             path: routeDef.path,
             requestSchema: routeDef.requestSchema,
             responseSchema: routeDef.responseSchema,

@@ -189,28 +189,31 @@ export function createRouteCollector(): RouteCollector {
 
     // Handle content object format
     if (typeof schema.body === 'object' && 'content' in schema.body) {
-      // This is a KoriRequestSchemaBody
-      const bodyObject = schema.body as { content: unknown; description?: string; required?: boolean };
+      const bodyObject = schema.body as { content: Record<string, unknown>; description?: string; required?: boolean };
+      const content: Record<string, { schema: SchemaObject }> = {};
+      for (const [mediaType, entry] of Object.entries(bodyObject.content)) {
+        const koriSchema = isKoriSchema(entry) ? entry : (entry as { schema: unknown }).schema;
+        if (isKoriSchema(koriSchema)) {
+          content[mediaType] = { schema: convertSchema(koriSchema, context) };
+        }
+      }
       return {
         description: bodyObject.description,
-        content: {
-          'application/json': {
-            schema: { type: 'object' },
-          },
-        },
+        content,
         required: bodyObject.required ?? true,
       };
     }
 
-    // Handle other formats - treat as content object
-    return {
-      content: {
-        'application/json': {
-          schema: { type: 'object' },
-        },
-      },
-      required: true,
-    };
+    // Handle other formats - treat as content map
+    const contentMap = schema.body as Record<string, unknown>;
+    const content: Record<string, { schema: SchemaObject }> = {};
+    for (const [mediaType, entry] of Object.entries(contentMap)) {
+      const koriSchema = isKoriSchema(entry) ? entry : (entry as { schema: unknown }).schema;
+      if (isKoriSchema(koriSchema)) {
+        content[mediaType] = { schema: convertSchema(koriSchema, context) };
+      }
+    }
+    return { content, required: true };
   }
 
   function generateResponses(
@@ -219,55 +222,47 @@ export function createRouteCollector(): RouteCollector {
   ): ResponsesObject {
     if (!schema) {
       return {
-        '200': {
-          description: 'Successful response',
-        },
+        '200': { description: 'Successful response' },
       };
     }
 
-    // Check if this is a response object with status codes
-    if ('def' in schema && typeof schema.def === 'object' && schema.def !== null) {
-      const def = schema.def as Record<string, unknown>;
-      const responses: ResponsesObject = {};
-
-      // Check if it looks like { 200: schema, 400: schema, etc }
-      const isStatusCodeMap = Object.keys(def).every((key) => /^\d{3}$/.test(key));
-
-      if (isStatusCodeMap) {
-        for (const [statusCode, _responseSchema] of Object.entries(def)) {
-          responses[statusCode] = {
-            description: getStatusDescription(statusCode),
-            content: {
-              'application/json': {
-                schema: { type: 'object' }, // Simplified for now
-              },
-            },
-          };
-        }
-        return responses;
-      }
-    }
-
-    // Default single response - check if schema can be converted directly
-    if (isKoriSchema(schema)) {
-      return {
-        '200': {
-          description: 'Successful response',
+    // Treat schema as a statusCode -> response value map
+    const responses: ResponsesObject = {};
+    for (const [statusCode, value] of Object.entries(schema as Record<string, unknown>)) {
+      // Single schema
+      if (isKoriSchema(value)) {
+        responses[statusCode] = {
+          description: getStatusDescription(statusCode),
           content: {
-            'application/json': {
-              schema: convertSchema(schema, context),
-            },
+            'application/json': { schema: convertSchema(value, context) },
           },
-        },
-      };
+        };
+        continue;
+      }
+
+      // Spec object with content
+      const asSpec = value as { content?: Record<string, unknown>; description?: string };
+      const contentSource = asSpec.content ?? (value as Record<string, unknown>);
+      if (contentSource && typeof contentSource === 'object') {
+        const content: Record<string, { schema: SchemaObject }> = {};
+        for (const [mediaType, entry] of Object.entries(contentSource)) {
+          const koriSchema = isKoriSchema(entry) ? entry : (entry as { schema: unknown }).schema;
+          if (isKoriSchema(koriSchema)) {
+            content[mediaType] = { schema: convertSchema(koriSchema, context) };
+          }
+        }
+        responses[statusCode] = {
+          description: asSpec.description ?? getStatusDescription(statusCode),
+          content,
+        };
+        continue;
+      }
+
+      // Fallback
+      responses[statusCode] = { description: getStatusDescription(statusCode) };
     }
 
-    // Fallback
-    return {
-      '200': {
-        description: 'Successful response',
-      },
-    };
+    return responses;
   }
 
   function convertSchema(schema: KoriSchemaDefault, context: ConversionContext): SchemaObject {

@@ -4,9 +4,9 @@ import {
   ok,
   err,
   type KoriRequestValidator,
-  createRequestValidator,
+  createKoriRequestValidator,
 } from '@korix/kori';
-import { type KoriZodSchemaDefault, type KoriZodSchemaProvider } from '@korix/zod-schema';
+import { type KoriZodSchemaDefault, type KoriZodSchemaProvider, ZodSchemaProvider } from '@korix/zod-schema';
 import { type $ZodIssue } from 'zod/v4/core';
 
 export type KoriZodRequestValidationError =
@@ -30,7 +30,7 @@ function validateZodSchema<S extends KoriZodSchemaDefault>(
   data: unknown,
 ): KoriResult<InferSchemaOutput<S>, KoriZodRequestValidationError> {
   try {
-    const result = schema.def.safeParse(data);
+    const result = schema.definition.safeParse(data);
 
     if (!result.success) {
       return err({
@@ -49,7 +49,8 @@ function validateZodSchema<S extends KoriZodSchemaDefault>(
 }
 
 export function createKoriZodRequestValidator(): KoriZodRequestValidator {
-  return createRequestValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodRequestValidationError>({
+  return createKoriRequestValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodRequestValidationError>({
+    provider: ZodSchemaProvider,
     validateParams: <S extends KoriZodSchemaDefault>({
       schema,
       params,

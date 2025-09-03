@@ -5,12 +5,9 @@ import { createZodSchemaConverter } from './zod-schema-converter.js';
 
 export type ZodOpenApiOptions = Omit<OpenApiOptions, 'converters'>;
 
-export function zodOpenApiPlugin<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
->(options: ZodOpenApiOptions): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, unknown, unknown, any, any> {
+export function zodOpenApiPlugin<Env extends KoriEnvironment, Req extends KoriRequest, Res extends KoriResponse>(
+  options: ZodOpenApiOptions,
+): KoriPlugin<Env, Req, Res, OpenApiEnvironmentExtension, object, object> {
   return openApiPlugin<Env, Req, Res>({
     ...options,
     converters: [createZodSchemaConverter()],
