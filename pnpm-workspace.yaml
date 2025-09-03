@@ -1,10 +1,13 @@
 packages:
-  - 'packages/*'
+  - packages/*
 
 catalog:
-  rimraf: '6.0.1'
-  typescript: '5.8.3'
-  '@types/node': '20.11.17'
-  eslint: '9.16.0'
-  tsdown: '0.12.9'
-  vitest: '3.2.4'
+  '@types/node': 20.11.17
+  eslint: 9.16.0
+  rimraf: 6.0.1
+  tsdown: 0.12.9
+  typescript: 5.8.3
+  vitest: 3.2.4
+
+patchedDependencies:
+  '@changesets/assemble-release-plan@6.0.9': patches/@changesets__assemble-release-plan@6.0.9.patch
