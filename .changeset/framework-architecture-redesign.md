@@ -8,6 +8,11 @@
 '@korix/security-headers-plugin': minor
 '@korix/zod-schema': minor
 '@korix/zod-validator': minor
+'@korix/logtape-log-reporter': minor
+'@korix/openapi-scalar-ui-plugin': minor
+'@korix/pino-log-reporter': minor
+'@korix/zod-openapi-plugin': minor
+'@korix/eslint-config': minor
 ---
 
 Framework architecture redesign and API improvements
