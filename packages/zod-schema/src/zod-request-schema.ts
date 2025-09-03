@@ -1,125 +1,182 @@
 import {
+  createKoriRequestSchema,
   type KoriRequestSchema,
-  type KoriRequestSchemaBody,
-  type KoriRequestSchemaBodyItem,
-  type KoriRequestSchemaSimpleBody,
+  type KoriRequestSchemaContentBody,
+  type KoriRequestSchemaContentBodyItem,
 } from '@korix/kori';
 import { type z } from 'zod';
 
-import { type KoriZodSchema, type KoriZodSchemaProvider, createKoriZodSchema } from './zod-schema.js';
+import {
+  type KoriZodSchema,
+  type KoriZodSchemaDefault,
+  type KoriZodSchemaProvider,
+  ZodSchemaProvider,
+  createKoriZodSchema,
+} from './zod-schema.js';
 
 export type KoriZodRequestSchema<
-  Params extends KoriZodSchema<z.ZodType> = never,
-  Headers extends KoriZodSchema<z.ZodType> = never,
-  Queries extends KoriZodSchema<z.ZodType> = never,
-  Body extends KoriZodSchema<z.ZodType> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaBodyItem<KoriZodSchema<z.ZodType>>> = never,
+  Params extends KoriZodSchemaDefault = never,
+  Headers extends KoriZodSchemaDefault = never,
+  Queries extends KoriZodSchemaDefault = never,
+  Body extends KoriZodSchemaDefault = never,
+  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriZodSchemaDefault>> = never,
 > = KoriRequestSchema<KoriZodSchemaProvider, Params, Headers, Queries, Body, BodyMapping>;
 
-export type KoriZodRequestBodySchema =
-  | KoriZodSchema<z.ZodType>
-  | KoriRequestSchemaSimpleBody<KoriZodSchema<z.ZodType>>
-  | KoriRequestSchemaBody<Record<string, KoriRequestSchemaBodyItem<KoriZodSchema<z.ZodType>>>>;
+type ZodRequestSchemaSimpleBody<Z extends z.ZodType> =
+  | Z
+  | {
+      description?: string;
+      schema: Z;
+      examples?: Record<string, unknown>;
+    };
 
-type ToKoriZodSchema<T extends z.ZodType> = KoriZodSchema<T>;
+type ZodRequestSchemaContentBodyItem<Z extends z.ZodType> =
+  | Z
+  | {
+      schema: Z;
+      examples?: Record<string, unknown>;
+    };
 
-// Additional helpers for content map/spec support
-type ZodContentEntry = z.ZodType | { schema: z.ZodType; examples?: Record<string, unknown> };
-type ZodContentMap = Record<string | number | symbol, ZodContentEntry>;
-type ZodBodySpec<C extends ZodContentMap = ZodContentMap> = { description?: string; required?: boolean; content: C };
+type ZodRequestSchemaContentBodyItemDefault = ZodRequestSchemaContentBodyItem<z.ZodType>;
 
-type ToKoriBodyItem<E> = E extends z.ZodType
-  ? KoriRequestSchemaBodyItem<KoriZodSchema<E>>
-  : E extends { schema: infer S }
+type ZodRequestSchemaContentBodyMappingDefault = Record<string, ZodRequestSchemaContentBodyItemDefault>;
+
+type ZodRequestSchemaContentBody<ZBodyMapping extends ZodRequestSchemaContentBodyMappingDefault> = {
+  description?: string;
+  content: ZBodyMapping;
+};
+
+type ZBodyItemToBodyItem<Item extends ZodRequestSchemaContentBodyItemDefault> = Item extends z.ZodType
+  ? KoriZodSchema<Item>
+  : Item extends { schema: infer S; examples?: infer X }
     ? S extends z.ZodType
-      ? KoriRequestSchemaBodyItem<KoriZodSchema<S>>
+      ? { schema: KoriZodSchema<S>; examples?: X }
       : never
     : never;
 
-type ToKoriContent<C extends ZodContentMap> = { [K in keyof C]: ToKoriBodyItem<C[K]> };
+type ZBodyMappingToBodyMapping<M extends ZodRequestSchemaContentBodyMappingDefault> = {
+  [K in keyof M]: ZBodyItemToBodyItem<M[K]>;
+};
 
 function isZodType(value: unknown): value is z.ZodType {
   return !!value && typeof value === 'object' && 'safeParse' in (value as Record<string, unknown>);
 }
 
-function toKoriZodContent<C extends ZodContentMap>(content: C): ToKoriContent<C> {
-  const out: Record<string, KoriRequestSchemaBodyItem<KoriZodSchema<z.ZodType>>> = {};
-  for (const [mediaType, entry] of Object.entries(content)) {
-    if (isZodType(entry)) {
-      out[mediaType] = createKoriZodSchema(entry);
-    } else {
-      out[mediaType] = { schema: createKoriZodSchema(entry.schema), examples: entry.examples };
-    }
-  }
-  return out as unknown as ToKoriContent<C>;
-}
-
 // Overload 1: single zod types
 export function zodRequestSchema<
-  TParams extends z.ZodType | undefined = undefined,
-  THeaders extends z.ZodType | undefined = undefined,
-  TQueries extends z.ZodType | undefined = undefined,
-  TBody extends z.ZodType | undefined = undefined,
->(input: {
-  params?: TParams;
-  headers?: THeaders;
-  queries?: TQueries;
-  body?: TBody;
+  ZParams extends z.ZodType = never,
+  ZHeaders extends z.ZodType = never,
+  ZQueries extends z.ZodType = never,
+  ZBody extends z.ZodType = never,
+>(options: {
+  params?: ZParams;
+  headers?: ZHeaders;
+  queries?: ZQueries;
+  body?: ZodRequestSchemaSimpleBody<ZBody>;
 }): KoriZodRequestSchema<
-  TParams extends z.ZodType ? ToKoriZodSchema<TParams> : never,
-  THeaders extends z.ZodType ? ToKoriZodSchema<THeaders> : never,
-  TQueries extends z.ZodType ? ToKoriZodSchema<TQueries> : never,
-  TBody extends z.ZodType ? ToKoriZodSchema<TBody> : never
+  KoriZodSchema<ZParams>,
+  KoriZodSchema<ZHeaders>,
+  KoriZodSchema<ZQueries>,
+  KoriZodSchema<ZBody>
 >;
 
 // Overload 2: content map or body spec using zod types
-export function zodRequestSchema<C extends ZodContentMap | ZodBodySpec>(input: {
-  params?: z.ZodType;
-  headers?: z.ZodType;
-  queries?: z.ZodType;
-  body?: C;
+export function zodRequestSchema<
+  ZParams extends z.ZodType = never,
+  ZHeaders extends z.ZodType = never,
+  ZQueries extends z.ZodType = never,
+  ZBodyMapping extends ZodRequestSchemaContentBodyMappingDefault = never,
+>(options: {
+  params?: ZParams;
+  headers?: ZHeaders;
+  queries?: ZQueries;
+  body?: ZodRequestSchemaContentBody<ZBodyMapping>;
 }): KoriZodRequestSchema<
+  KoriZodSchema<ZParams>,
+  KoriZodSchema<ZHeaders>,
+  KoriZodSchema<ZQueries>,
   never,
-  never,
-  never,
-  never,
-  C extends ZodBodySpec<infer CC> ? ToKoriContent<CC> : C extends ZodContentMap ? ToKoriContent<C> : never
+  ZBodyMappingToBodyMapping<ZBodyMapping>
 >;
 
 // Impl
-export function zodRequestSchema<C extends ZodContentMap | ZodBodySpec>(input: {
-  params?: z.ZodType;
-  headers?: z.ZodType;
-  queries?: z.ZodType;
-  body?: z.ZodType | C;
-}): KoriZodRequestSchema {
-  const result: Record<string, unknown> = {};
+export function zodRequestSchema<
+  ZParams extends z.ZodType = never,
+  ZHeaders extends z.ZodType = never,
+  ZQueries extends z.ZodType = never,
+  ZBody extends z.ZodType = never,
+  ZBodyMapping extends ZodRequestSchemaContentBodyMappingDefault = never,
+>(options: {
+  params?: ZParams;
+  headers?: ZHeaders;
+  queries?: ZQueries;
+  body?: ZodRequestSchemaSimpleBody<ZBody> | ZodRequestSchemaContentBody<ZBodyMapping>;
+}): KoriZodRequestSchema<
+  KoriZodSchema<ZParams>,
+  KoriZodSchema<ZHeaders>,
+  KoriZodSchema<ZQueries>,
+  KoriZodSchema<ZBody>,
+  ZBodyMappingToBodyMapping<ZBodyMapping>
+> {
+  const params = options.params ? createKoriZodSchema(options.params) : undefined;
+  const headers = options.headers ? createKoriZodSchema(options.headers) : undefined;
+  const queries = options.queries ? createKoriZodSchema(options.queries) : undefined;
 
-  if (input.params) {
-    result.params = createKoriZodSchema(input.params);
-  }
+  let simpleBody:
+    | KoriZodSchema<ZBody>
+    | { description?: string; schema: KoriZodSchema<ZBody>; examples?: Record<string, unknown> }
+    | undefined;
 
-  if (input.headers) {
-    result.headers = createKoriZodSchema(input.headers);
-  }
+  let contentBody: KoriRequestSchemaContentBody<ZBodyMappingToBodyMapping<ZBodyMapping>> | undefined;
 
-  if (input.queries) {
-    result.queries = createKoriZodSchema(input.queries);
-  }
-
-  if (input.body) {
-    if (isZodType(input.body)) {
-      result.body = createKoriZodSchema(input.body);
-    } else if ('content' in input.body) {
-      const body = input.body as ZodBodySpec;
-      result.body = {
-        description: body.description,
-        content: toKoriZodContent(body.content),
-      } as unknown as KoriRequestSchemaBody<ToKoriContent<typeof body.content>>;
+  if (options.body) {
+    if (isZodType(options.body)) {
+      // simple body
+      simpleBody = createKoriZodSchema(options.body);
+    } else if (!('content' in options.body)) {
+      simpleBody = {
+        description: options.body.description,
+        schema: createKoriZodSchema(options.body.schema),
+        examples: options.body.examples,
+      };
     } else {
-      result.body = toKoriZodContent(input.body);
+      // content body
+      contentBody = {
+        description: options.body.description,
+        content: mapZodBodyMapping(options.body.content),
+      };
     }
   }
 
-  return result as KoriZodRequestSchema;
+  if (contentBody) {
+    return createKoriRequestSchema({
+      provider: ZodSchemaProvider,
+      params,
+      headers,
+      queries,
+      body: contentBody,
+    });
+  } else {
+    return createKoriRequestSchema({
+      provider: ZodSchemaProvider,
+      params,
+      headers,
+      queries,
+      body: simpleBody,
+    });
+  }
+}
+
+function mapZodBodyMapping<M extends Record<string, ZodRequestSchemaContentBodyItem<z.ZodType>>>(
+  m: M,
+): ZBodyMappingToBodyMapping<M> {
+  const out: Record<string, KoriRequestSchemaContentBodyItem<KoriZodSchema<z.ZodType>>> = {};
+  for (const [mt, item] of Object.entries(m)) {
+    if (isZodType(item)) {
+      out[mt] = createKoriZodSchema(item);
+    } else {
+      out[mt] = { schema: createKoriZodSchema(item.schema), examples: item.examples };
+    }
+  }
+  return out as ZBodyMappingToBodyMapping<M>;
 }

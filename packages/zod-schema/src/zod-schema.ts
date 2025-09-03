@@ -10,7 +10,7 @@ export type KoriZodSchema<T extends z.ZodType> = KoriSchema<KoriZodSchemaProvide
 export type KoriZodSchemaDefault = KoriZodSchema<z.ZodType>;
 
 export const createKoriZodSchema = <T extends z.ZodType>(schema: T): KoriZodSchema<T> => {
-  return createKoriSchema(ZodSchemaProvider, schema);
+  return createKoriSchema({ provider: ZodSchemaProvider, definition: schema });
 };
 
 export function isKoriZodSchema(value: unknown): value is KoriZodSchemaDefault {

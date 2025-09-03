@@ -30,8 +30,10 @@ const UserForm = z.object({ name: z.string().min(1), avatar: z.any() });
 app.post('/users:content', {
   requestSchema: zodRequestSchema({
     body: {
-      'application/json': UserJson,
-      'multipart/form-data': { schema: UserForm, examples: { sample: { name: 'Alice', avatar: '<binary>' } } },
+      content: {
+        'application/json': UserJson,
+        'multipart/form-data': { schema: UserForm, examples: { sample: { name: 'Alice', avatar: '<binary>' } } },
+      },
     },
   }),
   handler: (ctx) => {

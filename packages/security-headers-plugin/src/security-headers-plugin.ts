@@ -5,7 +5,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
   HttpResponseHeader,
-  createPluginLogger,
+  createKoriPluginLogger,
 } from '@korix/kori';
 
 import { PLUGIN_VERSION } from './version.js';
@@ -216,7 +216,7 @@ export function securityHeadersPlugin<Env extends KoriEnvironment, Req extends K
     name: PLUGIN_NAME,
     version: PLUGIN_VERSION,
     apply: (kori) => {
-      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
+      const log = createKoriPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
 
       log.info('Security headers plugin initialized', {
         frameOptions: options.frameOptions ?? DEFAULT_OPTIONS.frameOptions,

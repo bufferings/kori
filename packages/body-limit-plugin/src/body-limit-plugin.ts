@@ -7,7 +7,7 @@ import {
   type KoriHandlerContext,
   HttpStatus,
   type KoriLogger,
-  createPluginLogger,
+  createKoriPluginLogger,
 } from '@korix/kori';
 
 import { BodySizeLimitError } from './body-size-limit-error.js';
@@ -175,14 +175,14 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
     version: PLUGIN_VERSION,
     apply: (kori) => {
       // Instance-level logger for plugin initialization
-      const log = createPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
+      const log = createKoriPluginLogger({ baseLogger: kori.log(), pluginName: PLUGIN_NAME });
       log.info(`Plugin initialized with max size: ${maxSize} bytes`);
 
       // Setup request monitoring for chunked transfer encoding and error handling
       return kori
         .onRequest((ctx) => {
           const { req, res } = ctx;
-          const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
+          const requestLog = createKoriPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
 
           // Skip methods that don't typically have bodies
           if (!METHODS_WITH_BODY.has(req.method())) {
@@ -280,7 +280,7 @@ export function bodyLimitPlugin<Env extends KoriEnvironment, Req extends KoriReq
         .onError((ctx, error) => {
           if (error instanceof BodySizeLimitError) {
             const { req } = ctx;
-            const requestLog = createPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
+            const requestLog = createKoriPluginLogger({ baseLogger: ctx.log(), pluginName: PLUGIN_NAME });
             const xForwardedFor = req.headers()['x-forwarded-for']?.trim();
 
             requestLog.warn('Request body size exceeds limit', {
