@@ -1,7 +1,6 @@
 import { bodyLimitPlugin } from '@korix/body-limit-plugin';
 import {
   createKori,
-  createKoriLoggerFactory,
   defineKoriPlugin,
   HttpRequestHeader,
   HttpStatus,
@@ -11,29 +10,12 @@ import {
 } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
-import { createPinoLogReporter } from '@korix/pino-log-reporter';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
 import { z } from 'zod';
 
-const isDev = process.env.NODE_ENV !== 'production';
-const pinoReporter = createPinoLogReporter({
-  level: 'info',
-  ...(isDev && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        ignore: 'pid,hostname',
-      },
-    },
-  }),
-});
-
-const loggerFactory = createKoriLoggerFactory({
-  level: 'info',
-  reporters: [pinoReporter],
-});
+// Using Kori's built-in logging
 
 type RequestIdExtension = { requestId: string };
 
@@ -99,7 +81,6 @@ const ProductSchema = z.object({
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
-  loggerFactory,
 })
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())

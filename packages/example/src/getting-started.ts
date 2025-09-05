@@ -1,11 +1,9 @@
 import { createKori, HttpStatus } from '@korix/kori';
-import { createLogTapeLogReporter } from '@korix/logtape-log-reporter';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
-import { ansiColorFormatter, configure, getConsoleSink } from '@logtape/logtape';
 import { z } from 'zod';
 
 const UserSchema = z.object({
@@ -13,22 +11,11 @@ const UserSchema = z.object({
   age: z.number().int().min(0).meta({ description: 'User age' }),
 });
 
-// Configure LogTape
-await configure({
-  sinks: {
-    console: getConsoleSink({
-      formatter: ansiColorFormatter,
-    }),
-  },
-  loggers: [{ category: ['kori'], lowestLevel: 'debug', sinks: ['console'] }],
-});
+// Using Kori's built-in logging
 
 const app = createKori({
   requestValidator: createKoriZodRequestValidator(),
   responseValidator: createKoriZodResponseValidator(),
-  loggerOptions: {
-    reporters: [createLogTapeLogReporter()],
-  },
 })
   .applyPlugin(
     zodOpenApiPlugin({
