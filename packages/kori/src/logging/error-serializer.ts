@@ -1,5 +1,5 @@
 /**
- * Type definition for an error serializer function.
+ * Function that serializes error values for safe logging.
  *
  * @param error - Any value that might be an error
  * @returns Serialized representation safe for logging
@@ -72,15 +72,6 @@ function serializeErrorInstance(options: { error: Error; visited: Set<Error> }):
  *   // err metadata: { name: 'Error', message: 'Database failed',
  *   //                cause: { name: 'Error', message: 'Connection timeout', stack: '...' } }
  * }
- *
- * // KoriValidationConfigError with custom properties
- * const validationError = new KoriValidationConfigError('Invalid schema mapping', {
- *   data: { provider: 'zod', reason: 'missing content type' }
- * });
- * serializeError(validationError);
- * // Returns: { name: 'KoriValidationConfigError', message: 'Invalid schema mapping',
- * //           code: 'VALIDATION_CONFIG_ERROR',
- * //           data: { provider: 'zod', reason: 'missing content type' }, stack: '...' }
  *
  * // Non-Error values pass through unchanged
  * serializeError('simple string');    // Returns: 'simple string'

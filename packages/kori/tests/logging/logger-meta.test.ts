@@ -1,20 +1,29 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 
 import { serializeError } from '../../src/logging/error-serializer.js';
+import { type KoriLogEntry } from '../../src/logging/log-entry.js';
 import { createKoriLogger, type KoriLogger } from '../../src/logging/logger.js';
 
 describe('KoriLogger meta handling', () => {
-  let mockReporter: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn>;
   let logger: KoriLogger;
 
   beforeEach(() => {
-    mockReporter = vi.fn();
+    mockWriteFn = vi.fn();
+    const mockReporter = {
+      sinks: [
+        {
+          formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+          write: mockWriteFn,
+        },
+      ],
+    };
     logger = createKoriLogger({
       channel: 'test',
       name: 'logger',
       level: 'info',
       bindings: {},
-      reporters: [mockReporter],
+      reporter: mockReporter,
       errorSerializer: serializeError,
     });
   });
@@ -25,18 +34,27 @@ describe('KoriLogger meta handling', () => {
 
   describe('bindings behavior', () => {
     test('should include initial bindings in log entries', () => {
+      const mockReporter = {
+        sinks: [
+          {
+            formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+            write: mockWriteFn,
+          },
+        ],
+      };
       const loggerWithBindings = createKoriLogger({
         channel: 'test',
         name: 'logger',
         level: 'info',
         bindings: { service: 'auth', version: '1.0.0' },
-        reporters: [mockReporter],
+        reporter: mockReporter,
         errorSerializer: serializeError,
       });
 
       loggerWithBindings.info('Service started');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { service: 'auth', version: '1.0.0' },
         }),
@@ -47,7 +65,8 @@ describe('KoriLogger meta handling', () => {
       logger.addBindings({ userId: 'user-123' });
       logger.info('User action');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { userId: 'user-123' },
         }),
@@ -59,7 +78,8 @@ describe('KoriLogger meta handling', () => {
       logger.addBindings({ sessionId: 'sess-456' });
       logger.info('User action');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { userId: 'user-123', sessionId: 'sess-456' },
         }),
@@ -76,7 +96,8 @@ describe('KoriLogger meta handling', () => {
       logger.addBindings({ env: 'prod' });
       logger.info('Environment test');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { env: 'prod' },
         }),
@@ -89,7 +110,8 @@ describe('KoriLogger meta handling', () => {
       logger.addBindings({ userId: 'from-bindings', shared: 'binding-value' });
       logger.info('Test message', { userId: 'from-meta', action: 'login' });
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: {
             userId: 'from-meta', // meta overrides bindings
@@ -105,7 +127,8 @@ describe('KoriLogger meta handling', () => {
       logger.info('Factory test', metaFactory);
 
       expect(metaFactory).toHaveBeenCalledTimes(1);
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { computed: 'value' },
         }),
@@ -117,7 +140,7 @@ describe('KoriLogger meta handling', () => {
       logger.info('Undefined factory test', metaFactory);
 
       expect(metaFactory).toHaveBeenCalledTimes(1);
-      const logEntry = mockReporter.mock.calls[0]?.[0];
+      const logEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
       expect(logEntry).toEqual(
         expect.objectContaining({
           message: 'Undefined factory test',
@@ -131,7 +154,8 @@ describe('KoriLogger meta handling', () => {
       const metaFactory = () => ({ operation: 'login' });
       logger.info('Combined test', metaFactory);
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: { service: 'auth', operation: 'login' },
         }),
@@ -148,12 +172,12 @@ describe('KoriLogger meta handling', () => {
       expect(expensiveFactory).toHaveBeenCalledTimes(1);
 
       expensiveFactory.mockClear();
-      mockReporter.mockClear();
+      mockWriteFn.mockClear();
 
       // Should NOT execute factory when level is disabled
       logger.debug('Debug message', expensiveFactory);
       expect(expensiveFactory).not.toHaveBeenCalled();
-      expect(mockReporter).not.toHaveBeenCalled();
+      expect(mockWriteFn).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,11 +1,11 @@
-import { createConsoleReporter } from './console-reporter.js';
+import { KoriConsoleReporterPresets } from './console-reporter-presets.js';
 import { serializeError, type KoriErrorSerializer } from './error-serializer.js';
 import { type KoriLogLevel } from './log-entry.js';
 import { type KoriLogReporter } from './log-reporter.js';
 import { createKoriLogger, type KoriLogger } from './logger.js';
 
 /**
- * Options for creating an individual logger.
+ * Options for creating a logger.
  */
 export type KoriLoggerOptions = {
   /** Channel for grouping related logs (e.g., 'app', 'plugin.cors') */
@@ -15,7 +15,10 @@ export type KoriLoggerOptions = {
 };
 
 /**
- * Factory function to create loggers with specific channel and name.
+ * Function that creates a logger from channel and name options.
+ *
+ * @param loggerOptions - Channel and name configuration for the logger
+ * @returns Logger instance configured with the specified channel and name
  */
 export type KoriLoggerFactory = (loggerOptions: KoriLoggerOptions) => KoriLogger;
 
@@ -23,31 +26,30 @@ export type KoriLoggerFactory = (loggerOptions: KoriLoggerOptions) => KoriLogger
  * Options for creating a logger factory.
  */
 export type KoriLoggerFactoryOptions = {
-  /** Minimum log level to output (defaults to 'info') */
+  /** Minimum log level to output */
   level?: KoriLogLevel;
   /** Global bindings added to all log entries */
   bindings?: Record<string, unknown>;
-  /** Output destinations for log entries */
-  reporters?: KoriLogReporter[];
-  /** Optional serializer for error objects used in logging metadata */
+  /** Output configuration for log entries */
+  reporter?: KoriLogReporter;
+  /** Optional serializer for error objects */
   errorSerializer?: KoriErrorSerializer;
 };
 
 /**
- * Creates a logger factory with shared configuration.
+ * Creates a KoriLoggerFactory.
  *
- * The factory approach allows consistent logger configuration across
- * an application while still enabling per-logger customization.
+ * **Defaults**: level='info', reporter=pretty console output, no bindings.
  *
- * @param options - Global logger configuration
- * @returns Factory function to create individual loggers
+ * @param options - Configuration options for the logger factory
+ * @returns Logger factory function
  *
  * @example
  * ```typescript
  * const loggerFactory = createKoriLoggerFactory({
  *   level: 'debug',
  *   bindings: { service: 'api', version: '1.0.0' },
- *   reporters: [createConsoleReporter()]
+ *   reporter: KoriConsoleReporterPresets.json()
  * });
  *
  * const appLogger = loggerFactory({ channel: 'app', name: 'server' });
@@ -55,7 +57,7 @@ export type KoriLoggerFactoryOptions = {
  * ```
  */
 export function createKoriLoggerFactory(options: KoriLoggerFactoryOptions = {}): KoriLoggerFactory {
-  const { level, bindings, reporters, errorSerializer } = options;
+  const { level, bindings, reporter, errorSerializer } = options;
   return (loggerOptions: KoriLoggerOptions) => {
     const { channel, name } = loggerOptions;
     return createKoriLogger({
@@ -63,7 +65,7 @@ export function createKoriLoggerFactory(options: KoriLoggerFactoryOptions = {}):
       name,
       level: level ?? 'info',
       bindings: bindings ?? {},
-      reporters: reporters ?? [createConsoleReporter()],
+      reporter: reporter ?? KoriConsoleReporterPresets.pretty(),
       errorSerializer: errorSerializer ?? serializeError,
     });
   };
