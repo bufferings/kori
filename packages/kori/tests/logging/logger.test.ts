@@ -28,22 +28,25 @@ describe('KoriLogger', () => {
     test('should create complete log entry', () => {
       const fixedTime = 1640995200000; // 2022-01-01 00:00:00 UTC
       vi.useFakeTimers();
-      vi.setSystemTime(fixedTime);
 
-      logger.info('Test message');
+      try {
+        vi.setSystemTime(fixedTime);
 
-      expect(mockReporter).toHaveBeenCalledTimes(1);
-      const logEntry: KoriLogEntry = mockReporter.mock.calls[0]?.[0];
+        logger.info('Test message');
 
-      expect(logEntry).toEqual({
-        time: fixedTime,
-        level: 'info',
-        channel: 'test',
-        name: 'logger',
-        message: 'Test message',
-      });
+        expect(mockReporter).toHaveBeenCalledTimes(1);
+        const logEntry: KoriLogEntry = mockReporter.mock.calls[0]?.[0];
 
-      vi.useRealTimers();
+        expect(logEntry).toEqual({
+          time: fixedTime,
+          level: 'info',
+          channel: 'test',
+          name: 'logger',
+          message: 'Test message',
+        });
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     test('should include meta when provided', () => {
