@@ -4,8 +4,7 @@ import {
   type HttpStatusCode,
   type HttpResponseHeaderName,
   HttpResponseHeader,
-  MediaType,
-  ContentTypeUtf8,
+  ContentType,
   type CookieOptions,
   serializeCookie,
   deleteCookie,
@@ -659,16 +658,16 @@ function getFinalStatusCode(res: ResState): HttpStatusCode {
  */
 const DefaultHeaders = {
   json: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.APPLICATION_JSON,
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON_UTF8,
   }),
   text: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_PLAIN,
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN_UTF8,
   }),
   html: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_HTML_UTF8,
   }),
   stream: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: MediaType.APPLICATION_OCTET_STREAM,
+    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
   }),
   // No content-type for empty responses
   empty: new Headers(),
@@ -685,13 +684,13 @@ function getFinalHeaders(res: ResState): Headers {
     const getDefaultContentType = (): string | null => {
       switch (res.bodyKind) {
         case 'json':
-          return ContentTypeUtf8.APPLICATION_JSON;
+          return ContentType.APPLICATION_JSON_UTF8;
         case 'text':
-          return ContentTypeUtf8.TEXT_PLAIN;
+          return ContentType.TEXT_PLAIN_UTF8;
         case 'html':
-          return ContentTypeUtf8.TEXT_HTML;
+          return ContentType.TEXT_HTML_UTF8;
         case 'stream':
-          return MediaType.APPLICATION_OCTET_STREAM;
+          return ContentType.APPLICATION_OCTET_STREAM;
         default:
           return null;
       }

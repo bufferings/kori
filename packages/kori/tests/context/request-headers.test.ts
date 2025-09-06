@@ -55,7 +55,7 @@ describe('KoriRequest headers contract', () => {
     });
   });
 
-  describe('fullContentType()', () => {
+  describe('contentType()', () => {
     test('lowercases and trims with parameters', () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -64,7 +64,7 @@ describe('KoriRequest headers contract', () => {
         pathParams: {},
         pathTemplate: '/',
       });
-      expect(req.fullContentType()).toBe('text/html; charset=utf-8');
+      expect(req.contentType()).toBe('text/html; charset=utf-8');
     });
 
     test('normalizes spaces around = in parameters', () => {
@@ -75,12 +75,12 @@ describe('KoriRequest headers contract', () => {
         pathParams: {},
         pathTemplate: '/',
       });
-      expect(req.fullContentType()).toBe('text/html; charset=utf-8');
+      expect(req.contentType()).toBe('text/html; charset=utf-8');
     });
 
     test('is undefined when header is missing', () => {
       const req = createKoriRequest({ rawRequest: new Request('http://x'), pathParams: {}, pathTemplate: '/' });
-      expect(req.fullContentType()).toBeUndefined();
+      expect(req.contentType()).toBeUndefined();
     });
   });
 });

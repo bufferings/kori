@@ -19,13 +19,7 @@ export const MediaType = {
   TEXT_XML: 'text/xml',
 } as const;
 
-/**
- * Union type representing all known media type values with string fallback.
- *
- * Includes all predefined MediaType constants plus any custom string values
- * for media types not explicitly listed in the MediaType object.
- */
-export type MediaTypeValue = (typeof MediaType)[keyof typeof MediaType] | (string & {});
+const CHARSET_UTF8 = 'charset=utf-8';
 
 /**
  * Content-Type constants with UTF-8 charset for response headers.
@@ -33,15 +27,9 @@ export type MediaTypeValue = (typeof MediaType)[keyof typeof MediaType] | (strin
  * These constants include the charset parameter which is commonly needed
  * for text-based content types in HTTP responses to ensure proper character encoding.
  */
-export const ContentTypeUtf8 = {
-  APPLICATION_JSON: 'application/json; charset=utf-8',
-  TEXT_PLAIN: 'text/plain; charset=utf-8',
-  TEXT_HTML: 'text/html; charset=utf-8',
+export const ContentType = {
+  ...MediaType,
+  APPLICATION_JSON_UTF8: `${MediaType.APPLICATION_JSON}; ${CHARSET_UTF8}`,
+  TEXT_PLAIN_UTF8: `${MediaType.TEXT_PLAIN}; ${CHARSET_UTF8}`,
+  TEXT_HTML_UTF8: `${MediaType.TEXT_HTML}; ${CHARSET_UTF8}`,
 } as const;
-
-/**
- * Union type for UTF-8 encoded content-type values.
- *
- * Represents all content types from ContentTypeUtf8 with proper charset encoding.
- */
-export type ContentTypeUtf8Value = (typeof ContentTypeUtf8)[keyof typeof ContentTypeUtf8];

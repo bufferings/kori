@@ -15,8 +15,7 @@ export {
   type KoriOnStartHook,
 } from './hook/index.js';
 export {
-  ContentTypeUtf8,
-  type ContentTypeUtf8Value,
+  ContentType,
   type Cookie,
   type CookieConstraint,
   type CookieError,
@@ -29,7 +28,6 @@ export {
   HttpStatus,
   type HttpStatusCode,
   MediaType,
-  type MediaTypeValue,
   parseCookies,
   serializeCookie,
 } from './http/index.js';
