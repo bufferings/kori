@@ -234,6 +234,59 @@ describe('KoriResponse headers contract', () => {
     });
   });
 
+  describe('getMediaType()', () => {
+    test('returns media type without parameters after res.json()', () => {
+      const res = createKoriResponse(mockRequest);
+      expect(res.getMediaType()).toBeUndefined();
+
+      res.json({ message: 'test' });
+      expect(res.getMediaType()).toBe('application/json');
+    });
+
+    test('returns media type without parameters after res.text()', () => {
+      const res = createKoriResponse(mockRequest);
+
+      res.text('test message');
+      expect(res.getMediaType()).toBe('text/plain');
+    });
+
+    test('returns media type without parameters after res.html()', () => {
+      const res = createKoriResponse(mockRequest);
+
+      res.html('<p>test</p>');
+      expect(res.getMediaType()).toBe('text/html');
+    });
+
+    test('returns undefined after res.empty()', () => {
+      const res = createKoriResponse(mockRequest);
+
+      res.empty();
+      expect(res.getMediaType()).toBeUndefined();
+    });
+
+    test('returns octet-stream after res.stream()', () => {
+      const res = createKoriResponse(mockRequest);
+
+      const stream = new ReadableStream();
+      res.stream(stream);
+      expect(res.getMediaType()).toBe('application/octet-stream');
+    });
+
+    test('extracts media type from manual content-type header', () => {
+      const res = createKoriResponse(mockRequest);
+
+      res.setHeader('content-type', 'application/custom; charset=utf-8; boundary=something');
+      expect(res.getMediaType()).toBe('application/custom');
+    });
+
+    test('handles content-type header with only media type', () => {
+      const res = createKoriResponse(mockRequest);
+
+      res.setHeader('content-type', 'text/csv');
+      expect(res.getMediaType()).toBe('text/csv');
+    });
+  });
+
   describe('manual content-type precedence', () => {
     describe('json()', () => {
       test('manual before body is preserved (get/build)', () => {

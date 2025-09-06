@@ -1,12 +1,12 @@
 /**
- * HTTP Content-Type constants for common MIME types.
+ * HTTP Media Type constants for common MIME types.
  *
- * Provides standardized content-type strings to ensure consistency
+ * Provides standardized media type strings to ensure consistency
  * and prevent typos in HTTP content-type handling.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
  */
-export const ContentType = {
+export const MediaType = {
   APPLICATION_JSON: 'application/json',
   APPLICATION_FORM_URLENCODED: 'application/x-www-form-urlencoded',
   MULTIPART_FORM_DATA: 'multipart/form-data',
@@ -19,13 +19,7 @@ export const ContentType = {
   TEXT_XML: 'text/xml',
 } as const;
 
-/**
- * Union type representing all known content-type values with string fallback.
- *
- * Includes all predefined Content-Type constants plus any custom string values
- * for content types not explicitly listed in the ContentType object.
- */
-export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | (string & {});
+const CHARSET_UTF8 = 'charset=utf-8';
 
 /**
  * Content-Type constants with UTF-8 charset for response headers.
@@ -33,15 +27,9 @@ export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | 
  * These constants include the charset parameter which is commonly needed
  * for text-based content types in HTTP responses to ensure proper character encoding.
  */
-export const ContentTypeUtf8 = {
-  APPLICATION_JSON: 'application/json; charset=utf-8',
-  TEXT_PLAIN: 'text/plain; charset=utf-8',
-  TEXT_HTML: 'text/html; charset=utf-8',
+export const ContentType = {
+  ...MediaType,
+  APPLICATION_JSON_UTF8: `${MediaType.APPLICATION_JSON}; ${CHARSET_UTF8}`,
+  TEXT_PLAIN_UTF8: `${MediaType.TEXT_PLAIN}; ${CHARSET_UTF8}`,
+  TEXT_HTML_UTF8: `${MediaType.TEXT_HTML}; ${CHARSET_UTF8}`,
 } as const;
-
-/**
- * Union type for UTF-8 encoded content-type values.
- *
- * Represents all content types from ContentTypeUtf8 with proper charset encoding.
- */
-export type ContentTypeUtf8Value = (typeof ContentTypeUtf8)[keyof typeof ContentTypeUtf8];

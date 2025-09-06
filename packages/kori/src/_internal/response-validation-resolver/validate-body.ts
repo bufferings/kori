@@ -1,5 +1,5 @@
 import { type KoriResponse } from '../../context/index.js';
-import { ContentType } from '../../http/index.js';
+import { MediaType } from '../../http/index.js';
 import {
   type KoriResponseSchemaContentEntryDefault,
   type KoriResponseSchemaSimpleEntryDefault,
@@ -9,7 +9,7 @@ import { type ResponseBodyValidationErrorDefault } from '../../routing/index.js'
 import { isKoriSchema } from '../../schema/index.js';
 import { ok, err, type KoriResult } from '../../util/index.js';
 
-const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
+const DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
 /** @internal */
 export async function validateResponseBody({
@@ -26,17 +26,17 @@ export async function validateResponseBody({
     return ok(undefined);
   }
 
-  const responseContentType = res.getContentType()?.split(';')[0]?.trim();
+  const responseMediaType = res.getMediaType();
 
   if (!('content' in schemaEntry)) {
     // KoriResponseSchemaSimpleEntry
-    if (responseContentType !== DEFAULT_CONTENT_TYPE) {
+    if (responseMediaType !== DEFAULT_MEDIA_TYPE) {
       return err({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: [ContentType.APPLICATION_JSON],
-        responseType: responseContentType ?? '',
+        supportedTypes: [MediaType.APPLICATION_JSON],
+        responseType: responseMediaType ?? '',
       });
     }
 
@@ -54,18 +54,18 @@ export async function validateResponseBody({
   } else {
     // KoriResponseSchemaContentEntry
     const content = schemaEntry.content;
-    if (!responseContentType || !(responseContentType in content)) {
+    if (!responseMediaType || !(responseMediaType in content)) {
       return err({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: Object.keys(content),
-        responseType: responseContentType ?? '',
+        responseType: responseMediaType ?? '',
       });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const mediaTypeSchema = content[responseContentType]!;
+    const mediaTypeSchema = content[responseMediaType]!;
     const schema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
 
     const result = await validator.validateBody({ schema, body: res.getBody() });

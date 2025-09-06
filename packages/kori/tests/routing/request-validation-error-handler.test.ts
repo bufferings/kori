@@ -28,7 +28,7 @@ describe('InferRequestValidationError', () => {
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
             supportedTypes: string[];
-            requestedType: string;
+            requestType: string;
           }
         | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown };
     }>();
@@ -62,7 +62,7 @@ describe('InferRequestValidationError', () => {
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
             supportedTypes: string[];
-            requestedType: string;
+            requestType: string;
           }
         | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown };
     }>();

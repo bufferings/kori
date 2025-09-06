@@ -1,4 +1,4 @@
-export { ContentType, ContentTypeUtf8, type ContentTypeUtf8Value, type ContentTypeValue } from './content-types.js';
+export { ContentType, MediaType } from './content-types.js';
 export {
   type Cookie,
   type CookieConstraint,

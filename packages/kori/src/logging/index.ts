@@ -1,4 +1,9 @@
-export { KoriConsoleReporterPresets } from './console-reporter-presets.js';
+export {
+  jsonConsoleReporter,
+  KoriConsoleReporterPresets,
+  prettyConsoleReporter,
+  silentConsoleReporter,
+} from './console-reporter-presets.js';
 export { type KoriErrorSerializer, serializeError } from './error-serializer.js';
 export {
   type KoriLogEntry,

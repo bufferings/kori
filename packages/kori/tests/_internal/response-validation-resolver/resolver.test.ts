@@ -43,7 +43,7 @@ const testResponseSchema = createKoriResponseSchema({
 
 const mockResponse = {
   getStatus: () => 200,
-  getContentType: () => 'application/json; charset=utf-8',
+  getMediaType: () => 'application/json',
   getBody: () => ({ data: 'test' }),
   isStream: () => false,
 } as any;

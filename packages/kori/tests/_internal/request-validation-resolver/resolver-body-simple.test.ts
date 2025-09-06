@@ -24,7 +24,7 @@ const mockRequest = {
   queryParams: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
   parseBody: () => Promise.resolve({ name: 'test' }),
-  contentType: () => 'application/json',
+  mediaType: () => 'application/json',
 } as any;
 
 describe('resolveInternalRequestValidator - Simple body validation', () => {
@@ -68,7 +68,7 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -82,7 +82,7 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: ['application/json'],
-        requestedType: 'text/plain',
+        requestType: 'text/plain',
       });
     });
   });
@@ -127,7 +127,7 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -141,7 +141,7 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: ['application/json'],
-        requestedType: 'text/plain',
+        requestType: 'text/plain',
       });
     });
   });

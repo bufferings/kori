@@ -18,7 +18,7 @@ const testResponseValidator = createKoriResponseValidator({
 
 const mockResponse = {
   getStatus: () => 200,
-  getContentType: () => 'application/json',
+  getMediaType: () => 'application/json',
   getBody: () => ({ data: 'test' }),
   isStream: () => false,
 } as any;
@@ -68,7 +68,7 @@ describe('resolveInternalResponseValidator - Simple body validation', () => {
 
       const mockRes = {
         ...mockResponse,
-        getContentType: () => 'text/plain',
+        getMediaType: () => 'text/plain',
       };
 
       const result = await v(mockRes);
@@ -131,7 +131,7 @@ describe('resolveInternalResponseValidator - Simple body validation', () => {
 
       const mockRes = {
         ...mockResponse,
-        getContentType: () => 'text/plain',
+        getMediaType: () => 'text/plain',
       };
 
       const result = await v(mockRes);

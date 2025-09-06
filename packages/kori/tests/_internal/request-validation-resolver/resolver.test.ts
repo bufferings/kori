@@ -33,7 +33,7 @@ const mockRequest = {
   queryParams: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
   parseBody: () => Promise.resolve({ name: 'test' }),
-  contentType: () => 'application/json',
+  mediaType: () => 'application/json',
 } as any;
 
 describe('resolveInternalRequestValidator', () => {

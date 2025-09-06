@@ -43,7 +43,7 @@ export type RequestFieldValidationError<ErrorType> = {
  *   type: 'UNSUPPORTED_MEDIA_TYPE',
  *   message: 'Content-Type not supported',
  *   supportedTypes: ['application/json'],
- *   requestedType: 'text/plain'
+ *   requestType: 'text/plain'
  * };
  * ```
  */
@@ -54,7 +54,7 @@ export type RequestBodyValidationError<ErrorType> =
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;
       supportedTypes: string[];
-      requestedType: string;
+      requestType: string;
     }
   | {
       stage: 'pre-validation';
