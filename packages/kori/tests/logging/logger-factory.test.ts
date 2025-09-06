@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
+import { type KoriLogEntry } from '../../src/logging/log-entry.js';
 import { createKoriLoggerFactory } from '../../src/logging/logger-factory.js';
 
 describe('createKoriLoggerFactory', () => {
@@ -19,28 +20,45 @@ describe('createKoriLoggerFactory', () => {
       expect(logger.isLevelEnabled('error')).toBe(true);
     });
 
-    test('should use console reporter by default', () => {
+    test('should use pretty console reporter by default', () => {
+      const fixedTime = 1640995200000; // 2022-01-01 00:00:00 UTC
       const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      const loggerFactory = createKoriLoggerFactory();
-      const logger = loggerFactory({ channel: 'test', name: 'console' });
+      try {
+        vi.useFakeTimers({ now: fixedTime });
 
-      logger.info('Default reporter test');
+        const loggerFactory = createKoriLoggerFactory();
+        const logger = loggerFactory({ channel: 'test', name: 'console' });
 
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const logOutput = mockConsoleLog.mock.calls[0]?.[0];
-      expect(logOutput).toContain('"message":"Default reporter test"');
+        logger.info('Default reporter test');
+
+        expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+        const logOutput = mockConsoleLog.mock.calls[0]?.[0];
+
+        // Should use pretty format with colorization (default)
+        expect(logOutput).toBe('2022-01-01T00:00:00.000Z \x1b[32mINFO \x1b[0m [test:console] Default reporter test');
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     test('should have empty bindings by default', () => {
-      const mockReporter = vi.fn();
-      const loggerFactory = createKoriLoggerFactory({ reporters: [mockReporter] });
+      const mockWriteFn = vi.fn();
+      const mockReporter = {
+        sinks: [
+          {
+            formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+            write: mockWriteFn,
+          },
+        ],
+      };
+      const loggerFactory = createKoriLoggerFactory({ reporter: mockReporter });
       const logger = loggerFactory({ channel: 'test', name: 'bindings' });
 
       logger.info('Empty bindings test');
 
-      expect(mockReporter).toHaveBeenCalledTimes(1);
-      const logEntry = mockReporter.mock.calls[0]?.[0];
+      expect(mockWriteFn).toHaveBeenCalledTimes(1);
+      const logEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
       expect(logEntry).toEqual(
         expect.objectContaining({
           channel: 'test',
@@ -66,11 +84,19 @@ describe('createKoriLoggerFactory', () => {
     });
 
     test('should apply global bindings to all loggers', () => {
-      const mockReporter = vi.fn();
+      const mockWriteFn = vi.fn();
+      const mockReporter = {
+        sinks: [
+          {
+            formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+            write: mockWriteFn,
+          },
+        ],
+      };
       const loggerFactory = createKoriLoggerFactory({
         level: 'info',
         bindings: { service: 'api', version: '2.0.0', environment: 'test' },
-        reporters: [mockReporter],
+        reporter: mockReporter,
       });
 
       const logger1 = loggerFactory({ channel: 'app', name: 'server' });
@@ -79,10 +105,11 @@ describe('createKoriLoggerFactory', () => {
       logger1.info('First logger message');
       logger2.error('Second logger message');
 
-      expect(mockReporter).toHaveBeenCalledTimes(2);
+      expect(mockWriteFn).toHaveBeenCalledTimes(2);
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server',
@@ -94,8 +121,9 @@ describe('createKoriLoggerFactory', () => {
         }),
       );
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'database',
           name: 'connection',
@@ -108,34 +136,39 @@ describe('createKoriLoggerFactory', () => {
       );
     });
 
-    test('should use custom reporters', () => {
-      const mockReporter1 = vi.fn();
-      const mockReporter2 = vi.fn();
+    test('should use custom reporter', () => {
+      const mockWriteFn = vi.fn();
+      const mockReporter = {
+        sinks: [
+          {
+            formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+            write: mockWriteFn,
+          },
+        ],
+      };
 
       const loggerFactory = createKoriLoggerFactory({
         level: 'info',
-        reporters: [mockReporter1, mockReporter2],
+        reporter: mockReporter,
       });
 
-      const logger = loggerFactory({ channel: 'test', name: 'multi-reporter' });
-      logger.info('Multi-reporter test');
+      const logger = loggerFactory({ channel: 'test', name: 'custom-reporter' });
+      logger.info('Custom reporter test');
 
-      expect(mockReporter1).toHaveBeenCalledTimes(1);
-      expect(mockReporter2).toHaveBeenCalledTimes(1);
+      expect(mockWriteFn).toHaveBeenCalledTimes(1);
 
       const expectedLogEntry = expect.objectContaining({
         level: 'info',
         channel: 'test',
-        name: 'multi-reporter',
-        message: 'Multi-reporter test',
+        name: 'custom-reporter',
+        message: 'Custom reporter test',
       });
 
-      expect(mockReporter1).toHaveBeenCalledWith(expectedLogEntry);
-      expect(mockReporter2).toHaveBeenCalledWith(expectedLogEntry);
+      expect(mockWriteFn).toHaveBeenCalledWith(expect.any(String), expectedLogEntry);
     });
 
-    test('should handle empty reporters array', () => {
-      const loggerFactory = createKoriLoggerFactory({ reporters: [] });
+    test('should handle undefined reporter', () => {
+      const loggerFactory = createKoriLoggerFactory({ reporter: undefined });
       const logger = loggerFactory({ channel: 'test', name: 'no-reporters' });
 
       // Should not throw when no reporters are configured

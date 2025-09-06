@@ -191,9 +191,6 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      '@korix/logtape-log-reporter':
-        specifier: workspace:*
-        version: link:../logtape-log-reporter
       '@korix/nodejs-adapter':
         specifier: workspace:*
         version: link:../nodejs-adapter
@@ -203,9 +200,6 @@ importers:
       '@korix/openapi-scalar-ui-plugin':
         specifier: workspace:*
         version: link:../openapi-scalar-ui-plugin
-      '@korix/pino-log-reporter':
-        specifier: workspace:*
-        version: link:../pino-log-reporter
       '@korix/security-headers-plugin':
         specifier: workspace:*
         version: link:../security-headers-plugin
@@ -218,18 +212,12 @@ importers:
       '@korix/zod-validator':
         specifier: workspace:*
         version: link:../zod-validator
-      '@logtape/logtape':
-        specifier: 1.0.4
-        version: 1.0.4
       '@scalar/api-reference':
         specifier: 1.32.10
         version: 1.32.10(tailwindcss@4.1.11)(typescript@5.8.3)
       openapi3-ts:
         specifier: 4.4.0
         version: 4.4.0
-      pino:
-        specifier: 9.7.0
-        version: 9.7.0
       zod:
         specifier: 4.0.0
         version: 4.0.0
@@ -339,36 +327,6 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
 
-  packages/logtape-log-reporter:
-    devDependencies:
-      '@korix/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@korix/kori':
-        specifier: workspace:*
-        version: link:../kori
-      '@logtape/logtape':
-        specifier: 1.0.4
-        version: 1.0.4
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.11.17
-      eslint:
-        specifier: 'catalog:'
-        version: 9.16.0(jiti@2.4.2)
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.0.1
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.12.9(typescript@5.8.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
-
   packages/nodejs-adapter:
     dependencies:
       '@hono/node-server':
@@ -456,36 +414,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.16.0(jiti@2.4.2)
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.0.1
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.12.9(typescript@5.8.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
-
-  packages/pino-log-reporter:
-    devDependencies:
-      '@korix/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@korix/kori':
-        specifier: workspace:*
-        version: link:../kori
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.11.17
-      eslint:
-        specifier: 'catalog:'
-        version: 9.16.0(jiti@2.4.2)
-      pino:
-        specifier: 9.7.0
-        version: 9.7.0
       rimraf:
         specifier: 'catalog:'
         version: 6.0.1
@@ -1335,9 +1263,6 @@ packages:
 
   '@lezer/yaml@1.0.3':
     resolution: {integrity: sha512-GuBLekbw9jDBDhGur82nuwkxKQ+a3W5H0GfaAthDXcAu+XdpS43VlnxA9E9hllkpSP5ellRDKjLLj7Lu9Wr6xA==}
-
-  '@logtape/logtape@1.0.4':
-    resolution: {integrity: sha512-YvNVrXIxVpnY528zoiEjX8PqTfr0UCtKXyssvaWL8AE+OByFTCooKuKMdPlm6g65YUI9fPXrHn4UnogSskABnA==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -2575,10 +2500,6 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  fast-redact@3.5.0:
-    resolution: {integrity: sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A==}
-    engines: {node: '>=6'}
-
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
@@ -3351,13 +3272,6 @@ packages:
     resolution: {integrity: sha512-cQBBIVG3YajgoUjo1FdKVRX6t9XPxwB9lcNJVD5GCnNM4Y6T12YYx8c6zEejxQsU0wrg9TwmDulcE9LR7qcJqA==}
     hasBin: true
 
-  pino-std-serializers@7.0.0:
-    resolution: {integrity: sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==}
-
-  pino@9.7.0:
-    resolution: {integrity: sha512-vnMCM6xZTb1WDmLvtG2lE/2p+t9hDEIvTWJsu6FejkE62vB7gDhvzrpFR4Cw2to+9JNQxVnkAKVPA1KPB98vWg==}
-    hasBin: true
-
   postcss@8.5.6:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -3391,9 +3305,6 @@ packages:
     resolution: {integrity: sha512-4yf0QO/sllf/1zbZWYnvWw3NxCQwLXKzIj0G849LSufP15BXKM0rbD2Z3wVnkMfjdn/CB0Dpp444gYAACdsplg==}
     engines: {node: '>=18'}
 
-  process-warning@5.0.0:
-    resolution: {integrity: sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA==}
-
   property-information@6.5.0:
     resolution: {integrity: sha512-PgTgs/BlvHxOu8QuEN7wi5A0OmXaBcHpmCSTehcs6Uuu9IkDIEo13Hy7n898RHfrQ49vKCoGeWZSaAK01nwVig==}
 
@@ -3413,9 +3324,6 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
-  quick-format-unescaped@4.0.4:
-    resolution: {integrity: sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==}
-
   radix-vue@1.9.17:
     resolution: {integrity: sha512-mVCu7I2vXt1L2IUYHTt0sZMz7s1K2ZtqKeTIxG3yC5mMFfLBG4FtE1FDeRMpDd+Hhg/ybi9+iXmAP1ISREndoQ==}
     peerDependencies:
@@ -3428,10 +3336,6 @@ packages:
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
-
-  real-require@0.2.0:
-    resolution: {integrity: sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==}
-    engines: {node: '>= 12.13.0'}
 
   regex-recursion@6.0.2:
     resolution: {integrity: sha512-0YCaSCq2VRIebiaUviZNs0cBz1kg5kVS2UKUfNIx8YVs1cN3AV7NTctO5FOKBA+UT2BPJIWZauYHPqJODG50cg==}
@@ -3534,10 +3438,6 @@ packages:
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
-
-  safe-stable-stringify@2.5.0:
-    resolution: {integrity: sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA==}
-    engines: {node: '>=10'}
 
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
@@ -3677,9 +3577,6 @@ packages:
   term-size@2.2.1:
     resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}
     engines: {node: '>=8'}
-
-  thread-stream@3.1.0:
-    resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -4798,8 +4695,6 @@ snapshots:
       '@lezer/common': 1.2.3
       '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.2
-
-  '@logtape/logtape@1.0.4': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -6248,8 +6143,6 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-redact@3.5.0: {}
-
   fast-safe-stringify@2.1.1: {}
 
   fast-uri@3.0.6: {}
@@ -7189,22 +7082,6 @@ snapshots:
       sonic-boom: 4.2.0
       strip-json-comments: 3.1.1
 
-  pino-std-serializers@7.0.0: {}
-
-  pino@9.7.0:
-    dependencies:
-      atomic-sleep: 1.0.0
-      fast-redact: 3.5.0
-      on-exit-leak-free: 2.1.2
-      pino-abstract-transport: 2.0.0
-      pino-std-serializers: 7.0.0
-      process-warning: 5.0.0
-      quick-format-unescaped: 4.0.4
-      real-require: 0.2.0
-      safe-stable-stringify: 2.5.0
-      sonic-boom: 4.2.0
-      thread-stream: 3.1.0
-
   postcss@8.5.6:
     dependencies:
       nanoid: 3.3.11
@@ -7229,8 +7106,6 @@ snapshots:
     dependencies:
       parse-ms: 4.0.0
 
-  process-warning@5.0.0: {}
-
   property-information@6.5.0: {}
 
   property-information@7.1.0: {}
@@ -7245,8 +7120,6 @@ snapshots:
   quansync@0.2.10: {}
 
   queue-microtask@1.2.3: {}
-
-  quick-format-unescaped@4.0.4: {}
 
   radix-vue@1.9.17(vue@3.5.17(typescript@5.8.3)):
     dependencies:
@@ -7273,8 +7146,6 @@ snapshots:
       strip-bom: 3.0.0
 
   readdirp@4.1.2: {}
-
-  real-require@0.2.0: {}
 
   regex-recursion@6.0.2:
     dependencies:
@@ -7450,8 +7321,6 @@ snapshots:
 
   safe-buffer@5.2.1: {}
 
-  safe-stable-stringify@2.5.0: {}
-
   safer-buffer@2.1.2: {}
 
   search-insights@2.17.3: {}
@@ -7571,10 +7440,6 @@ snapshots:
   tailwindcss@4.1.11: {}
 
   term-size@2.2.1: {}
-
-  thread-stream@3.1.0:
-    dependencies:
-      real-require: 0.2.0
 
   tinybench@2.9.0: {}
 

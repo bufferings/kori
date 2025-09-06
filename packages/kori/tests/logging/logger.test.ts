@@ -5,17 +5,25 @@ import { type KoriLogEntry, type KoriLogLevel } from '../../src/logging/log-entr
 import { createKoriLogger, type KoriLogger } from '../../src/logging/logger.js';
 
 describe('KoriLogger', () => {
-  let mockReporter: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn>;
   let logger: KoriLogger;
 
   beforeEach(() => {
-    mockReporter = vi.fn();
+    mockWriteFn = vi.fn();
+    const mockReporter = {
+      sinks: [
+        {
+          formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+          write: mockWriteFn,
+        },
+      ],
+    };
     logger = createKoriLogger({
       channel: 'test',
       name: 'logger',
       level: 'info',
       bindings: {},
-      reporters: [mockReporter],
+      reporter: mockReporter,
       errorSerializer: serializeError,
     });
   });
@@ -27,30 +35,32 @@ describe('KoriLogger', () => {
   describe('log entry structure', () => {
     test('should create complete log entry', () => {
       const fixedTime = 1640995200000; // 2022-01-01 00:00:00 UTC
-      vi.useFakeTimers();
-      vi.setSystemTime(fixedTime);
+      vi.useFakeTimers({ now: fixedTime });
 
-      logger.info('Test message');
+      try {
+        logger.info('Test message');
 
-      expect(mockReporter).toHaveBeenCalledTimes(1);
-      const logEntry: KoriLogEntry = mockReporter.mock.calls[0]?.[0];
+        expect(mockWriteFn).toHaveBeenCalledTimes(1);
+        const logEntry: KoriLogEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
 
-      expect(logEntry).toEqual({
-        time: fixedTime,
-        level: 'info',
-        channel: 'test',
-        name: 'logger',
-        message: 'Test message',
-      });
-
-      vi.useRealTimers();
+        expect(logEntry).toEqual({
+          time: fixedTime,
+          level: 'info',
+          channel: 'test',
+          name: 'logger',
+          message: 'Test message',
+        });
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     test('should include meta when provided', () => {
       const meta = { userId: 'user-123', action: 'login' };
       logger.info('User action', meta);
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           level: 'info',
           channel: 'test',
@@ -64,7 +74,7 @@ describe('KoriLogger', () => {
     test('should handle empty meta object', () => {
       logger.info('Test message', {});
 
-      const logEntry = mockReporter.mock.calls[0]?.[0];
+      const logEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
       expect(logEntry).toEqual(
         expect.objectContaining({
           message: 'Test message',
@@ -84,13 +94,21 @@ describe('KoriLogger', () => {
         name: 'logger',
         level: 'debug',
         bindings: {},
-        reporters: [mockReporter],
+        reporter: {
+          sinks: [
+            {
+              formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+              write: mockWriteFn,
+            },
+          ],
+        },
         errorSerializer: serializeError,
       });
 
       debugLogger[level](`${level} message`);
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           level,
           message: `${level} message`,
@@ -105,7 +123,14 @@ describe('KoriLogger', () => {
         name: 'logger',
         level: 'warn',
         bindings: {},
-        reporters: [mockReporter],
+        reporter: {
+          sinks: [
+            {
+              formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+              write: mockWriteFn,
+            },
+          ],
+        },
         errorSerializer: serializeError,
       });
 
@@ -115,10 +140,10 @@ describe('KoriLogger', () => {
       warnLogger.error('Error message');
       warnLogger.fatal('Fatal message');
 
-      expect(mockReporter).toHaveBeenCalledTimes(3);
-      expect(mockReporter).toHaveBeenNthCalledWith(1, expect.objectContaining({ level: 'warn' }));
-      expect(mockReporter).toHaveBeenNthCalledWith(2, expect.objectContaining({ level: 'error' }));
-      expect(mockReporter).toHaveBeenNthCalledWith(3, expect.objectContaining({ level: 'fatal' }));
+      expect(mockWriteFn).toHaveBeenCalledTimes(3);
+      expect(mockWriteFn).toHaveBeenNthCalledWith(1, expect.any(String), expect.objectContaining({ level: 'warn' }));
+      expect(mockWriteFn).toHaveBeenNthCalledWith(2, expect.any(String), expect.objectContaining({ level: 'error' }));
+      expect(mockWriteFn).toHaveBeenNthCalledWith(3, expect.any(String), expect.objectContaining({ level: 'fatal' }));
     });
   });
 
@@ -138,7 +163,14 @@ describe('KoriLogger', () => {
         name: 'logger',
         level: 'error',
         bindings: {},
-        reporters: [mockReporter],
+        reporter: {
+          sinks: [
+            {
+              formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+              write: mockWriteFn,
+            },
+          ],
+        },
         errorSerializer: serializeError,
       });
 
@@ -150,58 +182,35 @@ describe('KoriLogger', () => {
     });
   });
 
-  describe('multiple reporters', () => {
-    test('should send log entry to all reporters', () => {
-      const reporter1 = vi.fn();
-      const reporter2 = vi.fn();
-      const reporter3 = vi.fn();
-
-      const multiReporterLogger = createKoriLogger({
-        channel: 'test',
-        name: 'logger',
-        level: 'info',
-        bindings: {},
-        reporters: [reporter1, reporter2, reporter3],
-        errorSerializer: serializeError,
-      });
-
-      multiReporterLogger.info('Multi-reporter test');
-
-      const expectedEntry = expect.objectContaining({
-        level: 'info',
-        message: 'Multi-reporter test',
-      });
-
-      expect(reporter1).toHaveBeenCalledTimes(1);
-      expect(reporter2).toHaveBeenCalledTimes(1);
-      expect(reporter3).toHaveBeenCalledTimes(1);
-
-      expect(reporter1).toHaveBeenCalledWith(expectedEntry);
-      expect(reporter2).toHaveBeenCalledWith(expectedEntry);
-      expect(reporter3).toHaveBeenCalledWith(expectedEntry);
-    });
-
-    test('should continue logging to other reporters if one throws', () => {
-      const workingReporter1 = vi.fn();
-      const failingReporter = vi.fn(() => {
+  describe('reporter error handling', () => {
+    test('should handle reporter errors gracefully', () => {
+      const failingWriteFn = vi.fn(() => {
         throw new Error('Reporter error');
       });
-      const workingReporter2 = vi.fn();
+      const failingReporter = {
+        sinks: [
+          {
+            formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+            write: failingWriteFn,
+          },
+        ],
+      };
 
       const resilientLogger = createKoriLogger({
         channel: 'test',
         name: 'logger',
         level: 'info',
         bindings: {},
-        reporters: [workingReporter1, failingReporter, workingReporter2],
+        reporter: failingReporter,
         errorSerializer: serializeError,
       });
 
-      resilientLogger.info('Resilience test');
+      // Should not throw when reporter fails
+      expect(() => {
+        resilientLogger.info('Resilience test');
+      }).not.toThrow();
 
-      expect(workingReporter1).toHaveBeenCalledTimes(1);
-      expect(failingReporter).toHaveBeenCalledTimes(1);
-      expect(workingReporter2).toHaveBeenCalledTimes(1);
+      expect(failingWriteFn).toHaveBeenCalledTimes(1);
     });
   });
 

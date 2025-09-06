@@ -1,16 +1,25 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 
+import { type KoriLogEntry } from '../../src/logging/log-entry.js';
 import { createKoriLoggerFactory, type KoriLoggerFactory } from '../../src/logging/logger-factory.js';
 
 describe('Logger Hierarchy', () => {
-  let mockReporter: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn>;
   let loggerFactory: KoriLoggerFactory;
 
   beforeEach(() => {
-    mockReporter = vi.fn();
+    mockWriteFn = vi.fn();
+    const mockReporter = {
+      sinks: [
+        {
+          formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+          write: mockWriteFn,
+        },
+      ],
+    };
     loggerFactory = createKoriLoggerFactory({
       level: 'info',
-      reporters: [mockReporter],
+      reporter: mockReporter,
     });
   });
 
@@ -22,16 +31,18 @@ describe('Logger Hierarchy', () => {
       parentLogger.info('Server started');
       childLogger.info('Authentication started');
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server',
           message: 'Server started',
         }),
       );
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server.auth',
@@ -49,7 +60,8 @@ describe('Logger Hierarchy', () => {
 
       childLogger.info('Database connection opened');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'database',
           name: 'server.db',
@@ -65,7 +77,8 @@ describe('Logger Hierarchy', () => {
       const childLogger = parentLogger.child({ name: 'auth' });
       childLogger.info('Child log message');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: expect.objectContaining({
             service: 'api',
@@ -85,7 +98,8 @@ describe('Logger Hierarchy', () => {
       });
       childLogger.info('Authentication with bindings');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           meta: expect.objectContaining({
             service: 'api',
@@ -104,7 +118,8 @@ describe('Logger Hierarchy', () => {
 
       grandChildLogger.info('JWT token validated');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'app',
           name: 'server.auth.jwt',
@@ -125,7 +140,8 @@ describe('Logger Hierarchy', () => {
 
       childLogger.info('Authentication with all features');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'security',
           name: 'server.auth',
@@ -153,8 +169,9 @@ describe('Logger Hierarchy', () => {
       parentLogger.info('Parent message');
       childLogger.info('Child message');
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server',
@@ -162,8 +179,9 @@ describe('Logger Hierarchy', () => {
           meta: { service: 'api' }, // parent bindings only
         }),
       );
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'security',
           name: 'server.auth',
@@ -193,8 +211,9 @@ describe('Logger Hierarchy', () => {
       authLogger.info('Auth operation');
       dbLogger.info('Database operation');
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server.auth',
@@ -202,8 +221,9 @@ describe('Logger Hierarchy', () => {
           meta: { module: 'oauth' },
         }),
       );
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'database',
           name: 'server.db',
@@ -222,16 +242,18 @@ describe('Logger Hierarchy', () => {
       appLogger.info('App message');
       sysLogger.info('System message');
 
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'server',
           message: 'App message',
         }),
       );
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'sys',
           name: 'server',
@@ -247,7 +269,8 @@ describe('Logger Hierarchy', () => {
       const sysLogger = appLogger.channel('sys');
       sysLogger.info('System event');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'sys',
           meta: expect.objectContaining({

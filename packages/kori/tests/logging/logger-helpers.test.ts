@@ -1,5 +1,6 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 
+import { type KoriLogEntry } from '../../src/logging/log-entry.js';
 import { createKoriLoggerFactory, type KoriLoggerFactory } from '../../src/logging/logger-factory.js';
 import {
   createInstanceLogger,
@@ -9,14 +10,22 @@ import {
 } from '../../src/logging/logger-helpers.js';
 
 describe('logger helpers', () => {
-  let mockReporter: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn>;
   let loggerFactory: KoriLoggerFactory;
 
   beforeEach(() => {
-    mockReporter = vi.fn();
+    mockWriteFn = vi.fn();
+    const mockReporter = {
+      sinks: [
+        {
+          formatter: (entry: KoriLogEntry) => JSON.stringify(entry),
+          write: mockWriteFn,
+        },
+      ],
+    };
     loggerFactory = createKoriLoggerFactory({
       level: 'warn', // Only warn, error, fatal levels enabled
-      reporters: [mockReporter],
+      reporter: mockReporter,
     });
   });
 
@@ -25,7 +34,8 @@ describe('logger helpers', () => {
       const instanceLogger = createInstanceLogger(loggerFactory);
       instanceLogger.warn('Server warning');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string
         expect.objectContaining({
           channel: 'app',
           name: 'instance',
@@ -38,7 +48,8 @@ describe('logger helpers', () => {
       const requestLogger = createRequestLogger(loggerFactory);
       requestLogger.warn('Request warning');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'app',
           name: 'request',
@@ -59,9 +70,10 @@ describe('logger helpers', () => {
       instanceLogger.warn('Warning message');
       requestLogger.error('Error message');
 
-      expect(mockReporter).toHaveBeenCalledTimes(2);
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledTimes(2);
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         1,
+        expect.any(String), // formatted string
         expect.objectContaining({
           level: 'warn',
           channel: 'app',
@@ -69,8 +81,9 @@ describe('logger helpers', () => {
           message: 'Warning message',
         }),
       );
-      expect(mockReporter).toHaveBeenNthCalledWith(
+      expect(mockWriteFn).toHaveBeenNthCalledWith(
         2,
+        expect.any(String), // formatted string
         expect.objectContaining({
           level: 'error',
           channel: 'app',
@@ -87,7 +100,8 @@ describe('logger helpers', () => {
       const sysLogger = createKoriSystemLogger({ baseLogger });
       sysLogger.warn('Internal framework warning');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'sys',
           name: 'server',
@@ -105,7 +119,8 @@ describe('logger helpers', () => {
 
       pluginLogger.warn('CORS headers warning');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'plugin.cors',
           name: 'request',
@@ -123,7 +138,8 @@ describe('logger helpers', () => {
       const sysLogger = createKoriSystemLogger({ baseLogger });
       sysLogger.warn('System diagnostic');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'sys',
           meta: expect.objectContaining({
@@ -144,7 +160,8 @@ describe('logger helpers', () => {
       });
       pluginLogger.warn('Authentication check');
 
-      expect(mockReporter).toHaveBeenCalledWith(
+      expect(mockWriteFn).toHaveBeenCalledWith(
+        expect.any(String), // formatted string,
         expect.objectContaining({
           channel: 'plugin.auth',
           meta: expect.objectContaining({

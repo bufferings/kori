@@ -11,6 +11,8 @@ export type KoriLogMeta = Record<string, unknown>;
 /**
  * Factory function for lazy metadata evaluation.
  * Called only when the log level is enabled to avoid expensive computations.
+ *
+ * @returns Metadata object or undefined if no metadata
  */
 export type KoriLogMetaFactory = () => KoriLogMeta | undefined;
 
@@ -44,16 +46,15 @@ export type KoriLogEntry = {
  * over bindings for duplicate keys. Handles lazy metadata evaluation
  * by calling factory functions when provided.
  *
- * @internal Used within logging module for framework infrastructure
- *
- * @param options - Options for log entry creation
- * @param options.level - Log level (trace, debug, info, warn, error, fatal)
+ * @param options.level - Log level
  * @param options.channel - Channel name for categorizing logs
- * @param options.name - Logger name (hierarchical, e.g., "app.auth.login")
+ * @param options.name - Logger name
  * @param options.message - Log message text
  * @param options.bindings - Persistent key-value pairs attached to logger
  * @param options.meta - Additional metadata or factory function for lazy evaluation
  * @returns Complete log entry ready for reporters
+ *
+ * @internal
  */
 export function createLogEntry(options: {
   level: KoriLogLevel;

@@ -13,6 +13,24 @@ Guidelines for writing comments and JSDoc in the Kori project.
 - **Explain WHY** (not WHAT)
 - **Don't repeat what's obvious from function names**
 - **Minimal comments for internal implementation**
+- **Write from user perspective** (not implementation perspective)
+
+### User Perspective vs Implementation Perspective
+
+Write documentation from the user's viewpoint, focusing on what they need to know to use the API effectively.
+
+✅ **User-focused (Good)**:
+
+- What can this do for me?
+- When should I use this?
+- What are the inputs and outputs?
+
+❌ **Implementation-focused (Avoid)**:
+
+- How is this implemented internally?
+- What design patterns are used?
+- Internal state management details
+- Performance optimization specifics (unless critical for usage)
 
 ## Public API
 
