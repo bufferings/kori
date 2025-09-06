@@ -1,5 +1,19 @@
 # @korix/nodejs-adapter
 
+## 0.2.1
+
+### Patch Changes
+
+- c2e4ec6: Fix URL display in Node.js adapter to show user-friendly URLs instead of IPv6 addresses.
+
+  - Use user-specified hostname instead of actual bind address for display
+  - Convert special addresses (0.0.0.0, ::, ::1) to 'localhost' for better readability
+  - Inspired by Fastify's approach for improved developer experience
+  - Now shows `http://localhost:3001` instead of `http://[::1]:3001` when using localhost
+
+- Updated dependencies [14ac491]
+  - @korix/kori@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
