@@ -69,9 +69,13 @@ export async function startNodeServer<
 
     const address = server.address();
     if (address && typeof address !== 'string') {
-      const actualHost = address.address;
       const actualPort = address.port;
-      const displayHost = address.family === 'IPv6' ? `[${actualHost}]` : actualHost;
+
+      // Fastify-style user-friendly URL display
+      let displayHost = hostname;
+      if (hostname === '0.0.0.0' || hostname === '::' || hostname === '::1') {
+        displayHost = 'localhost';
+      }
 
       log.info(`Kori server started at http://${displayHost}:${actualPort}`);
     } else if (address && typeof address === 'string') {
