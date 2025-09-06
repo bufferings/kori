@@ -1,24 +1,17 @@
-import { type KoriLogEntry } from './log-entry.js';
+import { type KoriLogFilter } from './log-filter.js';
 import { createJsonFormatter, createPrettyFormatter } from './log-formatter.js';
 import { type KoriLogReporter } from './log-reporter.js';
 
 /**
- * Pre-configured console reporter presets for common use cases.
+ * Structured JSON output to console.
+ * Suitable for production, CI, and log aggregation systems.
+ *
+ * @param options - Configuration options
+ * @param options.filter - Optional filter to control which entries are logged
+ * @returns Reporter configured for JSON console output
  */
-export const KoriConsoleReporterPresets = {
-  /**
-   * Structured JSON output to console.
-   * Suitable for production, CI, and log aggregation systems.
-   *
-   * @param options - Configuration options
-   * @param options.filter - Optional filter to control which entries are logged
-   * @returns Reporter configured for JSON console output
-   */
-  json: (
-    options: {
-      filter?: (entry: KoriLogEntry) => boolean;
-    } = {},
-  ): KoriLogReporter => ({
+export function jsonConsoleReporter(options: { filter?: KoriLogFilter } = {}): KoriLogReporter {
+  return {
     filter: options.filter,
     sinks: [
       {
@@ -34,23 +27,20 @@ export const KoriConsoleReporterPresets = {
         },
       },
     ],
-  }),
+  };
+}
 
-  /**
-   * Human-readable colored output to console.
-   * Ideal for development and debugging.
-   *
-   * @param options - Configuration options
-   * @param options.colorize - Enable ANSI colors for log levels (default: true)
-   * @param options.filter - Optional filter to control which entries are logged
-   * @returns Reporter configured for pretty console output
-   */
-  pretty: (
-    options: {
-      colorize?: boolean;
-      filter?: (entry: KoriLogEntry) => boolean;
-    } = {},
-  ): KoriLogReporter => ({
+/**
+ * Human-readable colored output to console.
+ * Ideal for development and debugging.
+ *
+ * @param options - Configuration options
+ * @param options.colorize - Enable ANSI colors for log levels (default: true)
+ * @param options.filter - Optional filter to control which entries are logged
+ * @returns Reporter configured for pretty console output
+ */
+export function prettyConsoleReporter(options: { colorize?: boolean; filter?: KoriLogFilter } = {}): KoriLogReporter {
+  return {
     filter: options.filter,
     sinks: [
       {
@@ -68,14 +58,23 @@ export const KoriConsoleReporterPresets = {
         },
       },
     ],
-  }),
+  };
+}
 
-  /**
-   * No output. Useful for testing or when logging is disabled.
-   *
-   * @returns Reporter configured to suppress all output
-   */
-  silent: (): KoriLogReporter => ({
-    sinks: [],
-  }),
+/**
+ * No output. Useful for testing or when logging is disabled.
+ *
+ * @returns Reporter configured to suppress all output
+ */
+export function silentConsoleReporter(): KoriLogReporter {
+  return { sinks: [] };
+}
+
+/**
+ * Pre-configured console reporter presets for common use cases.
+ */
+export const KoriConsoleReporterPresets = {
+  json: jsonConsoleReporter,
+  pretty: prettyConsoleReporter,
+  silent: silentConsoleReporter,
 } as const;
