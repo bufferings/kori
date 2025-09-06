@@ -1,5 +1,5 @@
 ---
-'@kori/kori': patch
+'@korix/kori': patch
 ---
 
 Refactor logging system with enhanced modularity and new formatter utilities
