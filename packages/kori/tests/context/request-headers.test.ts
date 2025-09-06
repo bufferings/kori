@@ -37,7 +37,7 @@ describe('KoriRequest headers contract', () => {
     });
   });
 
-  describe('contentType()', () => {
+  describe('mediaType()', () => {
     test('strips parameters and lowercases media type', () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -46,12 +46,12 @@ describe('KoriRequest headers contract', () => {
         pathParams: {},
         pathTemplate: '/',
       });
-      expect(req.contentType()).toBe('application/json');
+      expect(req.mediaType()).toBe('application/json');
     });
 
     test('is undefined when header is missing', () => {
       const req = createKoriRequest({ rawRequest: new Request('http://x'), pathParams: {}, pathTemplate: '/' });
-      expect(req.contentType()).toBeUndefined();
+      expect(req.mediaType()).toBeUndefined();
     });
   });
 

@@ -32,7 +32,7 @@ const mockRequest = {
   queryParams: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
   parseBody: () => Promise.resolve({ name: 'test' }),
-  contentType: () => 'application/json',
+  mediaType: () => 'application/json',
 } as any;
 
 describe('resolveInternalRequestValidator - Content body validation', () => {
@@ -89,7 +89,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -124,7 +124,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'application/xml',
+        mediaType: () => 'application/xml',
       };
 
       const result = await v(mockReq);
@@ -159,7 +159,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/csv',
+        mediaType: () => 'text/csv',
       };
 
       const result = await v(mockReq);
@@ -194,7 +194,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -208,7 +208,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: ['application/json'],
-        requestedType: 'text/plain',
+        requestType: 'text/plain',
       });
     });
   });
@@ -266,7 +266,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -301,7 +301,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'application/xml',
+        mediaType: () => 'application/xml',
       };
 
       const result = await v(mockReq);
@@ -336,7 +336,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/csv',
+        mediaType: () => 'text/csv',
       };
 
       const result = await v(mockReq);
@@ -371,7 +371,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        contentType: () => 'text/plain',
+        mediaType: () => 'text/plain',
       };
 
       const result = await v(mockReq);
@@ -385,7 +385,7 @@ describe('resolveInternalRequestValidator - Content body validation', () => {
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: ['application/json'],
-        requestedType: 'text/plain',
+        requestType: 'text/plain',
       });
     });
   });

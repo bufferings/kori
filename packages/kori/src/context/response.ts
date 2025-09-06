@@ -4,7 +4,7 @@ import {
   type HttpStatusCode,
   type HttpResponseHeaderName,
   HttpResponseHeader,
-  ContentType,
+  MediaType,
   ContentTypeUtf8,
   type CookieOptions,
   serializeCookie,
@@ -438,6 +438,13 @@ export type KoriResponse = {
   getContentType(): string | undefined;
 
   /**
+   * Gets the media type from content-type header (without parameters).
+   *
+   * @returns media type or undefined if content-type not set
+   */
+  getMediaType(): string | undefined;
+
+  /**
    * Gets the response body content.
    *
    * @returns The body content
@@ -661,7 +668,7 @@ const DefaultHeaders = {
     [HttpResponseHeader.CONTENT_TYPE]: ContentTypeUtf8.TEXT_HTML,
   }),
   stream: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
+    [HttpResponseHeader.CONTENT_TYPE]: MediaType.APPLICATION_OCTET_STREAM,
   }),
   // No content-type for empty responses
   empty: new Headers(),
@@ -684,7 +691,7 @@ function getFinalHeaders(res: ResState): Headers {
         case 'html':
           return ContentTypeUtf8.TEXT_HTML;
         case 'stream':
-          return ContentType.APPLICATION_OCTET_STREAM;
+          return MediaType.APPLICATION_OCTET_STREAM;
         default:
           return null;
       }
@@ -872,6 +879,9 @@ const sharedMethods = {
   },
   getContentType(): string | undefined {
     return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+  },
+  getMediaType(): string | undefined {
+    return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE)?.split(';')[0]?.trim();
   },
   getBody(): unknown {
     return this.bodyValue;

@@ -1,12 +1,12 @@
 /**
- * HTTP Content-Type constants for common MIME types.
+ * HTTP Media Type constants for common MIME types.
  *
- * Provides standardized content-type strings to ensure consistency
+ * Provides standardized media type strings to ensure consistency
  * and prevent typos in HTTP content-type handling.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
  */
-export const ContentType = {
+export const MediaType = {
   APPLICATION_JSON: 'application/json',
   APPLICATION_FORM_URLENCODED: 'application/x-www-form-urlencoded',
   MULTIPART_FORM_DATA: 'multipart/form-data',
@@ -20,12 +20,12 @@ export const ContentType = {
 } as const;
 
 /**
- * Union type representing all known content-type values with string fallback.
+ * Union type representing all known media type values with string fallback.
  *
- * Includes all predefined Content-Type constants plus any custom string values
- * for content types not explicitly listed in the ContentType object.
+ * Includes all predefined MediaType constants plus any custom string values
+ * for media types not explicitly listed in the MediaType object.
  */
-export type ContentTypeValue = (typeof ContentType)[keyof typeof ContentType] | (string & {});
+export type MediaTypeValue = (typeof MediaType)[keyof typeof MediaType] | (string & {});
 
 /**
  * Content-Type constants with UTF-8 charset for response headers.

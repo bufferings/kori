@@ -1,5 +1,5 @@
 import { type KoriRequest } from '../../context/index.js';
-import { ContentType } from '../../http/index.js';
+import { MediaType } from '../../http/index.js';
 import { type KoriRequestSchemaContentBodyDefault, type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
 import { type RequestBodyValidationErrorDefault } from '../../routing/index.js';
@@ -8,18 +8,18 @@ import { ok, err, type KoriResult } from '../../util/index.js';
 
 function findMatchingMediaType({
   contentSchema,
-  requestContentType,
+  requestMediaType,
 }: {
   contentSchema: KoriRequestSchemaContentBodyDefault['content'];
-  requestContentType: string;
+  requestMediaType: string;
 }): string | undefined {
   // 1. Exact match
-  if (requestContentType in contentSchema) {
-    return requestContentType;
+  if (requestMediaType in contentSchema) {
+    return requestMediaType;
   }
 
   // 2. Subtype wildcard (e.g., application/*)
-  const [mainType] = requestContentType.split('/');
+  const [mainType] = requestMediaType.split('/');
   const subtypeWildcard = `${mainType}/*`;
   if (subtypeWildcard in contentSchema) {
     return subtypeWildcard;
@@ -33,7 +33,7 @@ function findMatchingMediaType({
   return undefined;
 }
 
-const DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON;
+const DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
 function resolveRequestBodySchema({
   bodySchema,
@@ -42,13 +42,13 @@ function resolveRequestBodySchema({
   bodySchema: NonNullable<KoriRequestSchemaDefault['body']>;
   req: KoriRequest;
 }): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, RequestBodyValidationErrorDefault> {
-  const requestContentType = req.contentType();
+  const requestMediaType = req.mediaType();
 
   if (!('content' in bodySchema)) {
     // KoriRequestSchemaSimpleBody
     const schema = isKoriSchema(bodySchema) ? bodySchema : bodySchema.schema;
 
-    if (requestContentType === undefined || requestContentType === DEFAULT_CONTENT_TYPE) {
+    if (requestMediaType === undefined || requestMediaType === DEFAULT_MEDIA_TYPE) {
       return ok({ schema });
     }
 
@@ -56,8 +56,8 @@ function resolveRequestBodySchema({
       stage: 'pre-validation',
       type: 'UNSUPPORTED_MEDIA_TYPE',
       message: 'Unsupported Media Type',
-      supportedTypes: [DEFAULT_CONTENT_TYPE],
-      requestedType: requestContentType,
+      supportedTypes: [DEFAULT_MEDIA_TYPE],
+      requestType: requestMediaType,
     });
   } else {
     // KoriRequestSchemaContentBody
@@ -65,7 +65,7 @@ function resolveRequestBodySchema({
 
     const matchedMediaType = findMatchingMediaType({
       contentSchema,
-      requestContentType: requestContentType ?? DEFAULT_CONTENT_TYPE,
+      requestMediaType: requestMediaType ?? DEFAULT_MEDIA_TYPE,
     });
     if (!matchedMediaType) {
       return err({
@@ -73,7 +73,7 @@ function resolveRequestBodySchema({
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
         supportedTypes: Object.keys(contentSchema),
-        requestedType: requestContentType ?? '',
+        requestType: requestMediaType ?? '',
       });
     }
 

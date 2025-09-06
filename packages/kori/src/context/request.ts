@@ -1,7 +1,7 @@
 import {
   parseCookies,
-  type ContentTypeValue,
-  ContentType,
+  type MediaTypeValue,
+  MediaType,
   type HttpRequestHeaderName,
   HttpRequestHeader,
 } from '../http/index.js';
@@ -125,19 +125,19 @@ export type KoriRequest = {
   fullContentType(): string | undefined;
 
   /**
-   * Gets the main content-type value without parameters.
+   * Gets the media type from the content-type header.
    *
-   * Returns the media type normalized to lowercase (parameters removed).
-   * For example, "Application/JSON; Charset=UTF-8" becomes "application/json".
+   * Returns the media type without parameters, normalized to lowercase.
+   * For example, "Application/JSON; charset=utf-8" becomes "application/json".
    *
-   * @returns Content type without parameters (lowercased) or undefined if not present
+   * @returns Media type or undefined if content-type header not present
    *
    * @example
    * ```typescript
-   * ctx.req.contentType() // 'application/json'
+   * ctx.req.mediaType() // 'application/json'
    * ```
    */
-  contentType(): ContentTypeValue | undefined;
+  mediaType(): MediaTypeValue | undefined;
 
   /**
    * Gets all cookies as a key-value object.
@@ -240,9 +240,9 @@ type ReqState = {
   headersCache?: Record<string, string>;
   cookiesCache?: Record<string, string>;
   fullContentTypeCache?: string;
-  contentTypeCache?: ContentTypeValue | undefined;
+  mediaTypeCache?: MediaTypeValue | undefined;
   hasFullContentTypeCache?: boolean;
-  hasContentTypeCache?: boolean;
+  hasMediaTypeCache?: boolean;
 };
 
 function getUrlInternal(req: ReqState): URL {
@@ -317,14 +317,14 @@ function getFullContentTypeInternal(req: ReqState): string | undefined {
   return normalized;
 }
 
-function getContentTypeInternal(req: ReqState): ContentTypeValue | undefined {
-  if (req.hasContentTypeCache) {
-    return req.contentTypeCache;
+function getMediaTypeInternal(req: ReqState): MediaTypeValue | undefined {
+  if (req.hasMediaTypeCache) {
+    return req.mediaTypeCache;
   }
   const full = getFullContentTypeInternal(req);
-  const media = full?.split(';')[0]?.trim() as ContentTypeValue | undefined;
-  req.hasContentTypeCache = true;
-  req.contentTypeCache = media;
+  const media = full?.split(';')[0]?.trim() as MediaTypeValue | undefined;
+  req.hasMediaTypeCache = true;
+  req.mediaTypeCache = media;
   return media;
 }
 
@@ -369,14 +369,14 @@ function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null
 }
 
 function parseBodyInternal(req: ReqState): Promise<unknown> {
-  const ct = getContentTypeInternal(req) ?? ContentType.APPLICATION_JSON;
+  const ct = getMediaTypeInternal(req) ?? MediaType.APPLICATION_JSON;
   switch (ct) {
-    case ContentType.APPLICATION_JSON:
+    case MediaType.APPLICATION_JSON:
       return getBodyJsonInternal(req);
-    case ContentType.APPLICATION_FORM_URLENCODED:
-    case ContentType.MULTIPART_FORM_DATA:
+    case MediaType.APPLICATION_FORM_URLENCODED:
+    case MediaType.MULTIPART_FORM_DATA:
       return getBodyFormDataInternal(req);
-    case ContentType.APPLICATION_OCTET_STREAM:
+    case MediaType.APPLICATION_OCTET_STREAM:
       return getBodyArrayBufferInternal(req);
     default:
       return getBodyTextInternal(req);
@@ -414,8 +414,8 @@ const sharedMethods = {
   fullContentType(): string | undefined {
     return getFullContentTypeInternal(this);
   },
-  contentType(): ContentTypeValue | undefined {
-    return getContentTypeInternal(this);
+  mediaType(): MediaTypeValue | undefined {
+    return getMediaTypeInternal(this);
   },
 
   cookies(): Record<string, string> {
@@ -474,6 +474,6 @@ export function createKoriRequest({
   obj.pathTemplateValue = pathTemplate;
   obj.bodyCache = {};
   obj.hasFullContentTypeCache = false;
-  obj.hasContentTypeCache = false;
+  obj.hasMediaTypeCache = false;
   return obj as unknown as KoriRequest;
 }
