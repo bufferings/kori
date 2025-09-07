@@ -49,7 +49,10 @@ function startListening(options: {
         } catch (cleanupErr) {
           log.error('Error during startup cleanup', { err: cleanupErr });
         } finally {
-          server.close(() => {
+          server.close((closeErr) => {
+            if (closeErr) {
+              log.error('Error closing server during startup cleanup', { err: closeErr });
+            }
             reject(toError(err));
           });
         }
@@ -80,10 +83,10 @@ async function verifyAddress(options: {
     const closeErr: Error | undefined = await new Promise((resolve) => {
       server.close((err: unknown) => resolve(err instanceof Error ? err : undefined));
     });
-    if (closeErr) {
-      throw new Error('Failed to determine server address', { cause: closeErr });
-    } else {
+    if (closeErr === undefined) {
       throw new Error('Failed to determine server address');
+    } else {
+      throw new Error('Failed to determine server address', { cause: closeErr });
     }
   }
   return { port: address.port };
