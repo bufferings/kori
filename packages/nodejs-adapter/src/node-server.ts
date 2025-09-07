@@ -86,17 +86,23 @@ export async function startNodeServer<
 
   const gracefulShutdownHandler = async () => {
     log.info('Shutting down server...');
+    let onCloseError: Error | undefined;
+
     try {
       await onClose();
     } catch (err) {
-      log.error('Error closing server', { err });
+      onCloseError = err instanceof Error ? err : new Error(String(err));
+      log.error('Error during graceful shutdown', { err: onCloseError });
     }
-    server.close((err) => {
-      if (err) {
-        log.error('Error closing server', { err });
-        process.exit(1);
+
+    server.close((serverCloseError) => {
+      if (serverCloseError) {
+        log.error('Error closing HTTP server', { err: serverCloseError });
       }
-      process.exit(0);
+
+      // Exit with error code if either onClose() or server.close() failed
+      const exitCode = onCloseError || serverCloseError ? 1 : 0;
+      process.exit(exitCode);
     });
   };
 
