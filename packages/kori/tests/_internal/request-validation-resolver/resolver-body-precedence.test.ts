@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../../src/request-validator/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
-import { ok } from '../../../src/util/index.js';
+import { succeed } from '../../../src/util/index.js';
 
 import { resolveInternalRequestValidator } from '../../../src/_internal/request-validation-resolver/resolver.js';
 
@@ -14,16 +14,16 @@ const testSchema2 = createKoriSchema({ provider: TestProvider, definition: { typ
 
 const testRequestValidator = createKoriRequestValidator({
   provider: TestProvider,
-  validateParams: () => ok({ id: '123', validated: true }),
-  validateQueries: () => ok({ page: 1, validated: true }),
-  validateHeaders: () => ok({ auth: 'token', validated: true }),
+  validateParams: () => succeed({ id: '123', validated: true }),
+  validateQueries: () => succeed({ page: 1, validated: true }),
+  validateHeaders: () => succeed({ auth: 'token', validated: true }),
   validateBody: (input) => {
     if (input.schema === testSchema) {
-      return ok({ name: 'test', validated: true });
+      return succeed({ name: 'test', validated: true });
     } else if (input.schema === testSchema2) {
-      return ok({ name: 'test2', validated: true });
+      return succeed({ name: 'test2', validated: true });
     }
-    return ok({ name: 'unknown', validated: true });
+    return succeed({ name: 'unknown', validated: true });
   },
 });
 
@@ -57,8 +57,8 @@ describe('resolveInternalRequestValidator - Media type precedence', () => {
       }
 
       const result = await v(mockRequest); // application/json
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -88,8 +88,8 @@ describe('resolveInternalRequestValidator - Media type precedence', () => {
       }
 
       const result = await v(mockRequest); // application/json
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -119,8 +119,8 @@ describe('resolveInternalRequestValidator - Media type precedence', () => {
       }
 
       const result = await v(mockRequest); // application/json
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 

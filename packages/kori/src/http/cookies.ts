@@ -10,7 +10,7 @@
  * - Zero external dependencies
  */
 
-import { type KoriResult, ok, err } from '../util/index.js';
+import { succeed, fail, type KoriResult } from '../util/index.js';
 
 /** Cookie prefix for Secure-only cookies requiring HTTPS */
 const SECURE_PREFIX = '__Secure-' as const;
@@ -27,15 +27,15 @@ const HOST_PREFIX = '__Host-' as const;
 export type Cookie = Record<string, string>;
 
 /**
- * Structured error types for cookie operations.
+ * Structured failure types for cookie operations.
  *
- * Provides type-safe error handling with detailed contextual information for each
- * error scenario. Enables precise error handling without string parsing or guesswork.
+ * Provides type-safe failure handling with detailed contextual information for each
+ * failure scenario. Enables precise failure handling without string parsing or guesswork.
  *
- * Each error type includes a discriminant `type` field for exhaustive switch handling
- * and relevant context data for debugging and error reporting.
+ * Each failure type includes a discriminant `type` field for exhaustive switch handling
+ * and relevant context data for failure handling.
  */
-export type CookieError =
+export type CookieFailure =
   /** Cookie name validation failure */
   | { type: 'INVALID_NAME'; name: string; message: string }
   /** Cookie prefix security constraint violation */
@@ -50,7 +50,7 @@ export type CookieError =
   | { type: 'SAMESITE_NONE_REQUIRES_SECURE'; message: string }
   /** Partitioned cookie requires SameSite=None */
   | { type: 'PARTITIONED_REQUIRES_SAMESITE_NONE'; message: string }
-  /** Cookie serialization failure */
+  /** Cookie serialization error */
   | { type: 'SERIALIZE_ERROR'; original: string; message: string };
 
 type SameSiteValue = 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none';
@@ -143,10 +143,10 @@ const validCookieValueRegEx = /^[\x20-\x21\x23-\x3A\x3C-\x5B\x5D-\x7E]*$/;
 const MAX_COOKIE_AGE_SECONDS = 34560000;
 
 /**
- * Safely decodes URI component with graceful error handling.
+ * Safely decodes URI component with graceful failure handling.
  *
  * Provides safe URI decoding for cookie values that may contain invalid
- * percent-encoding sequences. Instead of throwing exceptions that would
+ * percent-encoding sequences. Instead of throwing errors that would
  * break cookie parsing, returns the original value when decoding fails.
  *
  * @param value - URI-encoded string to decode
@@ -270,13 +270,13 @@ export function parseCookies(options: { cookieHeader?: string; targetName?: stri
  * @param name - Cookie name, must be RFC 6265 compliant token
  * @param value - Cookie value, will be automatically URI encoded
  * @param options - Cookie attributes with type-safe prefix constraints
- * @returns Result containing Set-Cookie header string or structured error details
+ * @returns Result containing Set-Cookie header string or structured failure details
  *
  * @example
  * Basic cookie creation:
  * ```typescript
  * const result = serializeCookie('sessionId', 'abc123');
- * if (result.ok) {
+ * if (result.success) {
  *   response.setHeader('Set-Cookie', result.value);
  *   // -> 'sessionId=abc123'
  * }
@@ -310,17 +310,17 @@ export function parseCookies(options: { cookieHeader?: string; targetName?: stri
  * ```
  *
  * @example
- * Error handling with detailed information:
+ * Failure handling with detailed information:
  * ```typescript
  * const result = serializeCookie('__Secure-test', 'value', {});
- * if (!result.ok) {
- *   switch (result.error.type) {
+ * if (!result.success) {
+ *   switch (result.reason.type) {
  *     case 'PREFIX_VIOLATION':
- *       console.log(`Prefix: ${result.error.prefix}`);
- *       console.log(`Required: ${result.error.required}`);
+ *       console.log(`Prefix: ${result.reason.prefix}`);
+ *       console.log(`Required: ${result.reason.required}`);
  *       break;
  *     case 'AGE_LIMIT_EXCEEDED':
- *       console.log(`Limit: ${result.error.limit} seconds`);
+ *       console.log(`Limit: ${result.reason.limit} seconds`);
  *       break;
  *   }
  * }
@@ -330,12 +330,12 @@ export function serializeCookie<Name extends string>(
   name: Name,
   value: string,
   options?: CookieConstraint<Name>,
-): KoriResult<string, CookieError> {
+): KoriResult<string, CookieFailure> {
   const opt: Partial<CookieOptions> = options ?? {};
   const sameSiteLower = typeof opt.sameSite === 'string' ? opt.sameSite.toLowerCase() : undefined;
   // Validate cookie name
   if (!name) {
-    return err({
+    return fail({
       type: 'INVALID_NAME',
       name,
       message: 'Cookie name cannot be empty',
@@ -343,7 +343,7 @@ export function serializeCookie<Name extends string>(
   }
 
   if (!validCookieNameRegEx.test(name)) {
-    return err({
+    return fail({
       type: 'INVALID_NAME',
       name,
       message: `Invalid cookie name: "${name}". Must contain only RFC 6265 compliant characters.`,
@@ -352,7 +352,7 @@ export function serializeCookie<Name extends string>(
 
   // Validate prefix constraints
   if (name.startsWith(SECURE_PREFIX) && !opt.secure) {
-    return err({
+    return fail({
       type: 'PREFIX_VIOLATION',
       prefix: SECURE_PREFIX,
       required: 'secure: true',
@@ -362,7 +362,7 @@ export function serializeCookie<Name extends string>(
 
   if (name.startsWith(HOST_PREFIX)) {
     if (!opt.secure) {
-      return err({
+      return fail({
         type: 'PREFIX_VIOLATION',
         prefix: HOST_PREFIX,
         required: 'secure: true',
@@ -370,7 +370,7 @@ export function serializeCookie<Name extends string>(
       });
     }
     if (opt.path !== '/') {
-      return err({
+      return fail({
         type: 'PREFIX_VIOLATION',
         prefix: HOST_PREFIX,
         required: 'path: "/"',
@@ -378,7 +378,7 @@ export function serializeCookie<Name extends string>(
       });
     }
     if (opt.domain) {
-      return err({
+      return fail({
         type: 'PREFIX_VIOLATION',
         prefix: HOST_PREFIX,
         required: 'no domain attribute',
@@ -390,7 +390,7 @@ export function serializeCookie<Name extends string>(
   // Validate age limits (RFC 6265bis draft)
   const maxAge = opt.maxAge;
   if (typeof maxAge === 'number' && maxAge >= 0 && maxAge > MAX_COOKIE_AGE_SECONDS) {
-    return err({
+    return fail({
       type: 'AGE_LIMIT_EXCEEDED',
       maxAge,
       limit: MAX_COOKIE_AGE_SECONDS,
@@ -402,7 +402,7 @@ export function serializeCookie<Name extends string>(
   if (expires) {
     const futureTime = expires.getTime() - Date.now();
     if (futureTime > MAX_COOKIE_AGE_SECONDS * 1000) {
-      return err({
+      return fail({
         type: 'EXPIRES_LIMIT_EXCEEDED',
         futureTime: Math.floor(futureTime / 1000),
         limit: MAX_COOKIE_AGE_SECONDS,
@@ -413,7 +413,7 @@ export function serializeCookie<Name extends string>(
 
   // Validate partitioned constraint
   if (opt.partitioned && !opt.secure) {
-    return err({
+    return fail({
       type: 'PARTITIONED_REQUIRES_SECURE',
       message: 'Partitioned cookies must have secure: true',
     });
@@ -421,7 +421,7 @@ export function serializeCookie<Name extends string>(
 
   // Validate SameSite=None requires Secure
   if (sameSiteLower === 'none' && !opt.secure) {
-    return err({
+    return fail({
       type: 'SAMESITE_NONE_REQUIRES_SECURE',
       message: 'SameSite=None cookies must have secure: true',
     });
@@ -429,7 +429,7 @@ export function serializeCookie<Name extends string>(
 
   // Validate Partitioned requires SameSite=None
   if (opt.partitioned && sameSiteLower !== 'none') {
-    return err({
+    return fail({
       type: 'PARTITIONED_REQUIRES_SAMESITE_NONE',
       message: 'Partitioned cookies must set SameSite=None',
     });
@@ -474,9 +474,9 @@ export function serializeCookie<Name extends string>(
       cookie += '; Partitioned';
     }
 
-    return ok(cookie);
+    return succeed(cookie);
   } catch (error) {
-    return err({
+    return fail({
       type: 'SERIALIZE_ERROR',
       original: `${name}=${value}`,
       message: `Failed to serialize cookie: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -497,17 +497,17 @@ export function serializeCookie<Name extends string>(
  * deleting the existing one.
  *
  * **Implementation Detail**: Internally delegates to serializeCookie with
- * deletion-specific attributes, inheriting all validation and error handling.
+ * deletion-specific attributes, inheriting all validation and failure handling.
  *
  * @param name - Cookie name to delete, must be RFC 6265 compliant token
  * @param options - Scope attributes that must match original cookie exactly
- * @returns Result containing Set-Cookie deletion header or structured error details
+ * @returns Result containing Set-Cookie deletion header or structured failure details
  *
  * @example
  * Delete a basic session cookie:
  * ```typescript
  * const result = deleteCookie('sessionId');
- * if (result.ok) {
+ * if (result.success) {
  *   response.setHeader('Set-Cookie', result.value);
  *   // -> 'sessionId=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT'
  * }
@@ -522,20 +522,20 @@ export function serializeCookie<Name extends string>(
  *   domain: '.example.com'
  * });
  *
- * if (deleteResult.ok) {
+ * if (deleteResult.success) {
  *   response.setHeader('Set-Cookie', deleteResult.value);
  *   // -> 'userPrefs=; Max-Age=0; Domain=.example.com; Path=/admin; Expires=...'
  * }
  * ```
  *
  * @example
- * Handle deletion errors:
+ * Handle deletion failures:
  * ```typescript
  * const result = deleteCookie('invalid name!');
- * if (!result.ok) {
- *   switch (result.error.type) {
+ * if (!result.success) {
+ *   switch (result.reason.type) {
  *     case 'INVALID_NAME':
- *       console.log('Invalid cookie name:', result.error.name);
+ *       console.log('Invalid cookie name:', result.reason.name);
  *       break;
  *   }
  * }
@@ -544,7 +544,7 @@ export function serializeCookie<Name extends string>(
 export function deleteCookie(
   name: string,
   options: Pick<CookieOptions, 'path' | 'domain'> = {},
-): KoriResult<string, CookieError> {
+): KoriResult<string, CookieFailure> {
   const base: CookieOptions = {
     expires: new Date(0),
     maxAge: 0,

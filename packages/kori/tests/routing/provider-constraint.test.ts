@@ -5,7 +5,7 @@ import { createKoriRequestValidator } from '../../src/request-validator/index.js
 import { createKoriResponseSchema } from '../../src/response-schema/index.js';
 import { createKoriResponseValidator } from '../../src/response-validator/index.js';
 import { createKoriSchema } from '../../src/schema/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
 import {
   type RequestProviderConstraint,
@@ -19,10 +19,10 @@ describe('RequestProviderConstraint', () => {
   test('allows matching providers', () => {
     const _validatorA = createKoriRequestValidator({
       provider: ProviderA,
-      validateParams: () => ok({}),
-      validateQueries: () => ok({}),
-      validateHeaders: () => ok({}),
-      validateBody: () => ok({}),
+      validateParams: () => succeed({}),
+      validateQueries: () => succeed({}),
+      validateHeaders: () => succeed({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaA = createKoriRequestSchema({
@@ -36,10 +36,10 @@ describe('RequestProviderConstraint', () => {
   test('rejects mismatched providers', () => {
     const _validatorA = createKoriRequestValidator({
       provider: ProviderA,
-      validateParams: () => ok({}),
-      validateQueries: () => ok({}),
-      validateHeaders: () => ok({}),
-      validateBody: () => ok({}),
+      validateParams: () => succeed({}),
+      validateQueries: () => succeed({}),
+      validateHeaders: () => succeed({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaB = createKoriRequestSchema({
@@ -55,10 +55,10 @@ describe('RequestProviderConstraint', () => {
   test('allows undefined validator or schema', () => {
     const _validatorA = createKoriRequestValidator({
       provider: ProviderA,
-      validateParams: () => ok({}),
-      validateQueries: () => ok({}),
-      validateHeaders: () => ok({}),
-      validateBody: () => ok({}),
+      validateParams: () => succeed({}),
+      validateQueries: () => succeed({}),
+      validateHeaders: () => succeed({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaA = createKoriRequestSchema({
@@ -76,7 +76,7 @@ describe('ResponseProviderConstraint', () => {
   test('allows matching providers', () => {
     const _validatorA = createKoriResponseValidator({
       provider: ProviderA,
-      validateBody: () => ok({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaA = createKoriResponseSchema({
@@ -92,7 +92,7 @@ describe('ResponseProviderConstraint', () => {
   test('rejects mismatched providers', () => {
     const _validatorA = createKoriResponseValidator({
       provider: ProviderA,
-      validateBody: () => ok({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaB = createKoriResponseSchema({
@@ -110,7 +110,7 @@ describe('ResponseProviderConstraint', () => {
   test('allows undefined validator or schema', () => {
     const _validatorA = createKoriResponseValidator({
       provider: ProviderA,
-      validateBody: () => ok({}),
+      validateBody: () => succeed({}),
     });
 
     const _schemaA = createKoriResponseSchema({

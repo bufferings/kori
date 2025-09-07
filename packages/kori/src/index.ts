@@ -6,7 +6,13 @@ export {
   type KoriRequest,
   type KoriResponse,
 } from './context/index.js';
-export { KoriCookieError, KoriError, KoriSetCookieHeaderError, KoriValidationConfigError } from './error/index.js';
+export {
+  KoriCookieError,
+  KoriError,
+  KoriResponseBuildError,
+  KoriSetCookieHeaderError,
+  KoriValidationConfigError,
+} from './error/index.js';
 export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch-handler/index.js';
 export {
   type KoriOnErrorHook,
@@ -18,7 +24,7 @@ export {
   ContentType,
   type Cookie,
   type CookieConstraint,
-  type CookieError,
+  type CookieFailure,
   type CookieOptions,
   deleteCookie,
   HttpRequestHeader,
@@ -110,31 +116,31 @@ export {
   type KoriRouteMatcher,
 } from './route-matcher/index.js';
 export {
-  type InferRequestValidationError,
-  type InferResponseValidationError,
+  type InferRequestValidationFailureReason,
+  type InferResponseValidationFailureReason,
   type KoriHandler,
-  type KoriInstanceRequestValidationErrorHandler,
-  type KoriInstanceResponseValidationErrorHandler,
+  type KoriInstanceRequestValidationFailureHandler,
+  type KoriInstanceResponseValidationFailureHandler,
   type KoriRoute,
   type KoriRouteDefinition,
   type KoriRouteMethod,
   type KoriRoutePluginMetadata,
-  type KoriRouteRequestValidationErrorHandler,
-  type KoriRouteResponseValidationErrorHandler,
+  type KoriRouteRequestValidationFailureHandler,
+  type KoriRouteResponseValidationFailureHandler,
   normalizeRouteHttpMethod,
   type PathParams,
-  type RequestBodyValidationError,
-  type RequestBodyValidationErrorDefault,
-  type RequestFieldValidationError,
-  type RequestFieldValidationErrorDefault,
-  type RequestValidationError,
-  type RequestValidationErrorDefault,
+  type RequestBodyValidationFailure,
+  type RequestBodyValidationFailureDefault,
+  type RequestFieldValidationFailure,
+  type RequestFieldValidationFailureDefault,
+  type RequestValidationFailure,
+  type RequestValidationFailureDefault,
   type RequestValidationSuccess,
-  type ResponseBodyValidationError,
-  type ResponseBodyValidationErrorDefault,
-  type ResponseStatusCodeValidationError,
-  type ResponseValidationError,
-  type ResponseValidationErrorDefault,
+  type ResponseBodyValidationFailure,
+  type ResponseBodyValidationFailureDefault,
+  type ResponseStatusCodeValidationFailure,
+  type ResponseValidationFailure,
+  type ResponseValidationFailureDefault,
   type ResponseValidationSuccess,
   type RouteHttpMethod,
   type ValidatedRequest,
@@ -150,4 +156,4 @@ export {
   type KoriSchemaDefault,
   type KoriSchemaFor,
 } from './schema/index.js';
-export { err, type KoriErr, type KoriOk, type KoriResult, type MaybePromise, ok } from './util/index.js';
+export { fail, type KoriFailure, type KoriResult, type KoriSuccess, type MaybePromise, succeed } from './util/index.js';

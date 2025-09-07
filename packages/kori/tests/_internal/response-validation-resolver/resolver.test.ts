@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { createKoriResponseSchema } from '../../../src/response-schema/index.js';
 import { createKoriResponseValidator } from '../../../src/response-validator/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
-import { ok, err } from '../../../src/util/index.js';
+import { succeed, fail } from '../../../src/util/index.js';
 
 import { resolveInternalResponseValidator } from '../../../src/_internal/response-validation-resolver/resolver.js';
 
@@ -19,15 +19,15 @@ const testResponseValidator = createKoriResponseValidator({
   provider: TestProvider,
   validateBody: (input) => {
     if (input.schema === testSchema200) {
-      return ok({ status: '200', validated: true });
+      return succeed({ status: '200', validated: true });
     } else if (input.schema === testSchema201) {
-      return ok({ status: '201', validated: true });
+      return succeed({ status: '201', validated: true });
     } else if (input.schema === testSchema2XX) {
-      return ok({ status: '2XX', validated: true });
+      return succeed({ status: '2XX', validated: true });
     } else if (input.schema === testSchemaDefault) {
-      return ok({ status: 'default', validated: true });
+      return succeed({ status: 'default', validated: true });
     }
-    return ok({ status: 'unknown', validated: true });
+    return succeed({ status: 'unknown', validated: true });
   },
 });
 
@@ -129,8 +129,8 @@ describe('resolveInternalResponseValidator', () => {
       }
 
       const result = await v(mockResponse); // Status 200
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -156,8 +156,8 @@ describe('resolveInternalResponseValidator', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -183,8 +183,8 @@ describe('resolveInternalResponseValidator', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -193,7 +193,7 @@ describe('resolveInternalResponseValidator', () => {
       });
     });
 
-    test('returns error when no schema matches status code', async () => {
+    test('returns failure when no schema matches status code', async () => {
       const v = resolveInternalResponseValidator({
         responseValidator: testResponseValidator,
         responseSchema: createKoriResponseSchema({
@@ -215,31 +215,31 @@ describe('resolveInternalResponseValidator', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error).toEqual({
+      expect(result.reason).toEqual({
         statusCode: {
           type: 'NO_SCHEMA_FOR_STATUS_CODE',
           message: 'No response schema found for status code',
           statusCode: 404,
         },
       });
-      expect(result.error.body).toBeUndefined();
+      expect(result.reason.body).toBeUndefined();
     });
   });
 
   describe('Body validation', () => {
-    test('aggregates body validation errors', async () => {
-      const errorValidator = createKoriResponseValidator({
+    test('aggregates body validation failures', async () => {
+      const failureValidator = createKoriResponseValidator({
         provider: TestProvider,
-        validateBody: () => err('validation error'),
+        validateBody: () => fail('validation failure'),
       });
 
       const v = resolveInternalResponseValidator({
-        responseValidator: errorValidator,
+        responseValidator: failureValidator,
         responseSchema: testResponseSchema,
       });
 
@@ -249,18 +249,18 @@ describe('resolveInternalResponseValidator', () => {
       }
 
       const result = await v(mockResponse);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error).toEqual({
+      expect(result.reason).toEqual({
         body: {
           stage: 'validation',
-          error: 'validation error',
+          reason: 'validation failure',
         },
       });
-      expect(result.error.statusCode).toBeUndefined();
+      expect(result.reason.statusCode).toBeUndefined();
     });
 
     test('handles streaming responses', async () => {
@@ -280,8 +280,8 @@ describe('resolveInternalResponseValidator', () => {
       };
 
       const result = await v(streamingResponse);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 

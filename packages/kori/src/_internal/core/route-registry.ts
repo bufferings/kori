@@ -22,10 +22,6 @@ export type RouteRecord = {
   responseSchema?: KoriResponseSchemaDefault;
   /** Route handler function (type-erased for storage) */
   handler: unknown;
-  /** Request validation error handler (type-erased for storage) */
-  onRequestValidationError?: unknown;
-  /** Response validation error handler (type-erased for storage) */
-  onResponseValidationError?: unknown;
   /** Plugin metadata attached to this route */
   pluginMetadata?: KoriRoutePluginMetadata;
 };

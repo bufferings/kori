@@ -1,64 +1,66 @@
 /**
  * Success result containing a value.
  *
- * @template T - The success value type
+ * @template V - The success value type
  */
-export type KoriOk<T> = { ok: true; value: T };
+export type KoriSuccess<V> = { success: true; value: V };
 
 /**
- * Error result containing an error.
+ * Failure result containing a reason.
  *
- * @template E - The error type
+ * @template R - The failure reason type
  */
-export type KoriErr<E> = { ok: false; error: E };
+export type KoriFailure<R> = { success: false; reason: R };
 
 /**
  * Result type for operations that can succeed or fail.
  *
- * Provides type-safe error handling without throwing exceptions.
- * Use the `ok` property to check if the operation succeeded.
+ * Provides type-safe failure handling without throwing errors.
+ * Use the `success` property to check if the operation succeeded.
  *
- * @template T - The success value type
- * @template E - The error type
+ * @template V - The success value type
+ * @template R - The reason type
  *
  * @example
  * ```typescript
  * function parseNumber(str: string): KoriResult<number, string> {
  *   const num = parseInt(str);
  *   if (isNaN(num)) {
- *     return err('Invalid number');
+ *     return fail('Invalid number');
  *   }
- *   return ok(num);
+ *   return succeed(num);
  * }
  *
  * const result = parseNumber('42');
- * if (result.ok) {
- *   console.log(result.value); // 42
+ * if (result.success) {
+ *   const n = result.value;
+ *   // use n
  * } else {
- *   console.log(result.error); // error message
+ *   const reason = result.reason;
+ *   // handle failure
  * }
  * ```
  */
-export type KoriResult<T, E> = KoriOk<T> | KoriErr<E>;
+export type KoriResult<V, R> = KoriSuccess<V> | KoriFailure<R>;
 
 /**
  * Creates a success result.
  *
- * @template T - The value type
+ * @template V - The value type
  * @param value - The success value
  * @returns Success result containing the value
  */
-export function ok<T>(value: T): KoriOk<T> {
-  return { ok: true, value };
+export function succeed<V>(value: V): KoriSuccess<V> {
+  return { success: true, value };
 }
 
 /**
- * Creates an error result.
+ * Creates a failure result.
  *
- * @template E - The error type
- * @param error - The error value
- * @returns Error result containing the error
+ * @template R - The failure reason type
+ * @param reason - The failure reason
+ * @returns Failure result containing the failure reason
  */
-export function err<E>(error: E): KoriErr<E> {
-  return { ok: false, error };
+export function fail<R>(reason: R): KoriFailure<R> {
+  return { success: false, reason };
 }

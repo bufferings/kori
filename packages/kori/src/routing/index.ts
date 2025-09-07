@@ -2,30 +2,30 @@ export { type KoriHandler } from './handler.js';
 export { type PathParams, type WithPathParams } from './path-params.js';
 export { type RequestProviderConstraint, type ResponseProviderConstraint } from './provider-constraint.js';
 export {
-  type InferRequestValidationError,
-  type KoriInstanceRequestValidationErrorHandler,
-  type KoriRouteRequestValidationErrorHandler,
-} from './request-validation-error-handler.js';
+  type InferRequestValidationFailureReason,
+  type KoriInstanceRequestValidationFailureHandler,
+  type KoriRouteRequestValidationFailureHandler,
+} from './request-validation-failure-handler.js';
 export {
-  type RequestBodyValidationError,
-  type RequestBodyValidationErrorDefault,
-  type RequestFieldValidationError,
-  type RequestFieldValidationErrorDefault,
-  type RequestValidationError,
-  type RequestValidationErrorDefault,
+  type RequestBodyValidationFailure,
+  type RequestBodyValidationFailureDefault,
+  type RequestFieldValidationFailure,
+  type RequestFieldValidationFailureDefault,
+  type RequestValidationFailure,
+  type RequestValidationFailureDefault,
   type RequestValidationSuccess,
 } from './request-validation-result.js';
 export {
-  type InferResponseValidationError,
-  type KoriInstanceResponseValidationErrorHandler,
-  type KoriRouteResponseValidationErrorHandler,
-} from './response-validation-error-handler.js';
+  type InferResponseValidationFailureReason,
+  type KoriInstanceResponseValidationFailureHandler,
+  type KoriRouteResponseValidationFailureHandler,
+} from './response-validation-failure-handler.js';
 export {
-  type ResponseBodyValidationError,
-  type ResponseBodyValidationErrorDefault,
-  type ResponseStatusCodeValidationError,
-  type ResponseValidationError,
-  type ResponseValidationErrorDefault,
+  type ResponseBodyValidationFailure,
+  type ResponseBodyValidationFailureDefault,
+  type ResponseStatusCodeValidationFailure,
+  type ResponseValidationFailure,
+  type ResponseValidationFailureDefault,
   type ResponseValidationSuccess,
 } from './response-validation-result.js';
 export {

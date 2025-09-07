@@ -10,18 +10,18 @@ const ProviderKey = Symbol('response-validator-provider');
  *
  * @template Provider - Unique symbol identifying the validator provider
  * @template Schema - Kori schema type for validation
- * @template ErrorType - Error type returned by validation methods
+ * @template FailureReason - Failure reason type returned by validation methods
  */
-export type KoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaFor<Provider>, ErrorType> = {
+export type KoriResponseValidator<Provider extends symbol, Schema extends KoriSchemaFor<Provider>, FailureReason> = {
   [ProviderKey]: Provider;
   validateBody<S extends Schema>(options: {
     schema: S;
     body: unknown;
-  }): MaybePromise<KoriResult<InferSchemaOutput<S>, ErrorType>>;
+  }): MaybePromise<KoriResult<InferSchemaOutput<S>, FailureReason>>;
 };
 
 /**
- * Default response validator type with generic provider and error types.
+ * Default response validator type with generic provider and failure reason types.
  */
 export type KoriResponseValidatorDefault = KoriResponseValidator<symbol, KoriSchemaDefault, unknown>;
 
@@ -52,7 +52,7 @@ export function getKoriResponseValidatorProvider<V extends KoriResponseValidator
  *
  * @template Provider - Unique symbol identifying the validator provider
  * @template Schema - Kori schema type for validation
- * @template ErrorType - Error type for validation results
+ * @template FailureReason - Failure reason type for validation results
  *
  * @param options - Options for creating the validator
  * @param options.provider - Symbol that identifies the validator provider
@@ -62,14 +62,14 @@ export function getKoriResponseValidatorProvider<V extends KoriResponseValidator
 export function createKoriResponseValidator<
   Provider extends symbol,
   Schema extends KoriSchemaFor<Provider>,
-  ErrorType,
+  FailureReason,
 >(options: {
   provider: Provider;
   validateBody: (options: {
     schema: Schema;
     body: unknown;
-  }) => MaybePromise<KoriResult<InferSchemaOutput<Schema>, ErrorType>>;
-}): KoriResponseValidator<Provider, Schema, ErrorType> {
+  }) => MaybePromise<KoriResult<InferSchemaOutput<Schema>, FailureReason>>;
+}): KoriResponseValidator<Provider, Schema, FailureReason> {
   const { provider, validateBody } = options;
   return {
     [ProviderKey]: provider,

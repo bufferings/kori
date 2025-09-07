@@ -1,11 +1,11 @@
-import { type CookieError } from '../http/index.js';
+import { type CookieFailure } from '../http/index.js';
 
 import { KoriError } from './kori-error.js';
 
 /**
  * Error thrown when cookie validation fails.
  *
- * Wraps the lower-level CookieError and exposes it via the cookieError
+ * Wraps the lower-level CookieFailure and exposes it via the cookieFailure
  * property. Typically thrown by response.setCookie/clearCookie.
  *
  * @example
@@ -16,23 +16,23 @@ import { KoriError } from './kori-error.js';
  * } catch (e) {
  *   if (e instanceof KoriCookieError) {
  *     // Inspect root cause
- *     const cause = e.cookieError;
+ *     const cause = e.cookieFailure;
  *   }
  * }
  * ```
  */
 export class KoriCookieError extends KoriError {
-  public cookieError: CookieError;
+  public cookieFailure: CookieFailure;
 
   /**
-   * Creates a KoriCookieError wrapping a CookieError.
+   * Creates a KoriCookieError wrapping a CookieFailure.
    *
-   * @param cookieError - Underlying cookie validation error
+   * @param cookieFailure - Underlying cookie validation failure
    */
-  constructor(cookieError: CookieError) {
-    super(`Cookie operation failed: ${cookieError.message}`, {
+  constructor(cookieFailure: CookieFailure) {
+    super(`Cookie operation failed: ${cookieFailure.message}`, {
       code: 'COOKIE_ERROR',
     });
-    this.cookieError = cookieError;
+    this.cookieFailure = cookieFailure;
   }
 }

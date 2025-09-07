@@ -2,7 +2,7 @@ export { ContentType, MediaType } from './content-types.js';
 export {
   type Cookie,
   type CookieConstraint,
-  type CookieError,
+  type CookieFailure,
   type CookieOptions,
   deleteCookie,
   parseCookies,

@@ -93,8 +93,6 @@ describe('RouteRegistry contract', () => {
       handler: () => {},
       requestSchema: { provider: 'zod' } as any,
       responseSchema: { provider: 'zod' } as any,
-      onRequestValidationError: () => {},
-      onResponseValidationError: () => {},
       pluginMetadata: {
         [Symbol('plugin1')]: { config: true },
         [Symbol('plugin2')]: { priority: 'high' },

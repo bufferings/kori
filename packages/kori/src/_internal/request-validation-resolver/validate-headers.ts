@@ -1,8 +1,8 @@
 import { type KoriRequest } from '../../context/index.js';
 import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
-import { type RequestFieldValidationErrorDefault } from '../../routing/index.js';
-import { ok, err, type KoriResult } from '../../util/index.js';
+import { type RequestFieldValidationFailureDefault } from '../../routing/index.js';
+import { succeed, fail, type KoriResult } from '../../util/index.js';
 
 /** @internal */
 export async function validateRequestHeaders({
@@ -13,18 +13,18 @@ export async function validateRequestHeaders({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['headers'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestFieldValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestFieldValidationFailureDefault>> {
   if (!schema) {
-    return ok(undefined);
+    return succeed(undefined);
   }
 
   const result = await validator.validateHeaders({ schema, headers: req.headers() });
-  if (result.ok) {
+  if (result.success) {
     return result;
   }
 
-  return err({
+  return fail({
     stage: 'validation',
-    error: result.error,
+    reason: result.reason,
   });
 }

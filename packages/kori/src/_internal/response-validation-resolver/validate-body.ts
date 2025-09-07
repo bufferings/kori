@@ -5,9 +5,9 @@ import {
   type KoriResponseSchemaSimpleEntryDefault,
 } from '../../response-schema/index.js';
 import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
-import { type ResponseBodyValidationErrorDefault } from '../../routing/index.js';
+import { type ResponseBodyValidationFailureDefault } from '../../routing/index.js';
 import { isKoriSchema } from '../../schema/index.js';
-import { ok, err, type KoriResult } from '../../util/index.js';
+import { succeed, fail, type KoriResult } from '../../util/index.js';
 
 const DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
@@ -20,10 +20,10 @@ export async function validateResponseBody({
   validator: KoriResponseValidatorDefault;
   schemaEntry: KoriResponseSchemaSimpleEntryDefault | KoriResponseSchemaContentEntryDefault;
   res: KoriResponse;
-}): Promise<KoriResult<unknown, ResponseBodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, ResponseBodyValidationFailureDefault>> {
   // Skip validation for streaming responses
   if (res.isStream()) {
-    return ok(undefined);
+    return succeed(undefined);
   }
 
   const responseMediaType = res.getMediaType();
@@ -31,36 +31,36 @@ export async function validateResponseBody({
   if (!('content' in schemaEntry)) {
     // KoriResponseSchemaSimpleEntry
     if (responseMediaType !== DEFAULT_MEDIA_TYPE) {
-      return err({
+      return fail({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: [MediaType.APPLICATION_JSON],
-        responseType: responseMediaType ?? '',
+        supportedMediaTypes: [MediaType.APPLICATION_JSON],
+        responseMediaType: responseMediaType ?? '',
       });
     }
 
     const schema = isKoriSchema(schemaEntry) ? schemaEntry : schemaEntry.schema;
 
     const result = await validator.validateBody({ schema, body: res.getBody() });
-    if (result.ok) {
-      return ok(result.value);
+    if (result.success) {
+      return succeed(result.value);
     }
 
-    return err({
+    return fail({
       stage: 'validation',
-      error: result.error,
+      reason: result.reason,
     });
   } else {
     // KoriResponseSchemaContentEntry
     const content = schemaEntry.content;
     if (!responseMediaType || !(responseMediaType in content)) {
-      return err({
+      return fail({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: Object.keys(content),
-        responseType: responseMediaType ?? '',
+        supportedMediaTypes: Object.keys(content),
+        responseMediaType: responseMediaType ?? '',
       });
     }
 
@@ -69,13 +69,13 @@ export async function validateResponseBody({
     const schema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
 
     const result = await validator.validateBody({ schema, body: res.getBody() });
-    if (result.ok) {
-      return ok(result.value);
+    if (result.success) {
+      return succeed(result.value);
     }
 
-    return err({
+    return fail({
       stage: 'validation',
-      error: result.error,
+      reason: result.reason,
     });
   }
 }

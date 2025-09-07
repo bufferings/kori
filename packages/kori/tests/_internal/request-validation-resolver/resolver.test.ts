@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../../src/request-validator/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
-import { ok, err } from '../../../src/util/index.js';
+import { succeed, fail } from '../../../src/util/index.js';
 
 import { resolveInternalRequestValidator } from '../../../src/_internal/request-validation-resolver/resolver.js';
 
@@ -14,10 +14,10 @@ const testSchema = createKoriSchema({ provider: TestProvider, definition: { type
 
 const testRequestValidator = createKoriRequestValidator({
   provider: TestProvider,
-  validateParams: () => ok({ id: '123', validated: true }),
-  validateQueries: () => ok({ page: 1, validated: true }),
-  validateHeaders: () => ok({ auth: 'token', validated: true }),
-  validateBody: () => ok({ name: 'test', validated: true }),
+  validateParams: () => succeed({ id: '123', validated: true }),
+  validateQueries: () => succeed({ page: 1, validated: true }),
+  validateHeaders: () => succeed({ auth: 'token', validated: true }),
+  validateBody: () => succeed({ name: 'test', validated: true }),
 });
 
 const testRequestSchema = createKoriRequestSchema({
@@ -117,8 +117,8 @@ describe('resolveInternalRequestValidator', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -142,8 +142,8 @@ describe('resolveInternalRequestValidator', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -156,14 +156,14 @@ describe('resolveInternalRequestValidator', () => {
     });
   });
 
-  describe('Error aggregation', () => {
-    test('aggregates validation errors from multiple components', async () => {
+  describe('Failure aggregation', () => {
+    test('aggregates validation failures from multiple components', async () => {
       const requestValidator = createKoriRequestValidator({
         provider: TestProvider,
-        validateParams: () => err('params error'),
-        validateQueries: () => ok({ page: 1 }),
-        validateHeaders: () => err('headers error'),
-        validateBody: () => ok({ name: 'test' }),
+        validateParams: () => fail('params failure'),
+        validateQueries: () => succeed({ page: 1 }),
+        validateHeaders: () => fail('headers failure'),
+        validateBody: () => succeed({ name: 'test' }),
       });
 
       const requestSchema = createKoriRequestSchema({
@@ -183,26 +183,26 @@ describe('resolveInternalRequestValidator', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error).toEqual({
-        params: { stage: 'validation', error: 'params error' },
-        headers: { stage: 'validation', error: 'headers error' },
+      expect(result.reason).toEqual({
+        params: { stage: 'validation', reason: 'params failure' },
+        headers: { stage: 'validation', reason: 'headers failure' },
       });
-      expect(result.error.queries).toBeUndefined();
-      expect(result.error.body).toBeUndefined();
+      expect(result.reason.queries).toBeUndefined();
+      expect(result.reason.body).toBeUndefined();
     });
 
-    test('returns error when single component fails', async () => {
+    test('returns failure when single component fails', async () => {
       const requestValidator = createKoriRequestValidator({
         provider: TestProvider,
-        validateParams: () => ok({ id: '123' }),
-        validateQueries: () => err('queries error'),
-        validateHeaders: () => ok({ auth: 'token' }),
-        validateBody: () => ok({ name: 'test' }),
+        validateParams: () => succeed({ id: '123' }),
+        validateQueries: () => fail('queries failure'),
+        validateHeaders: () => succeed({ auth: 'token' }),
+        validateBody: () => succeed({ name: 'test' }),
       });
 
       const requestSchema = createKoriRequestSchema({
@@ -222,26 +222,26 @@ describe('resolveInternalRequestValidator', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error).toEqual({
-        queries: { stage: 'validation', error: 'queries error' },
+      expect(result.reason).toEqual({
+        queries: { stage: 'validation', reason: 'queries failure' },
       });
-      expect(result.error.params).toBeUndefined();
-      expect(result.error.headers).toBeUndefined();
-      expect(result.error.body).toBeUndefined();
+      expect(result.reason.params).toBeUndefined();
+      expect(result.reason.headers).toBeUndefined();
+      expect(result.reason.body).toBeUndefined();
     });
 
     test('handles empty request schema with no validation', async () => {
       const requestValidator = createKoriRequestValidator({
         provider: TestProvider,
-        validateParams: () => ok({ id: '123' }),
-        validateQueries: () => ok({ page: 1 }),
-        validateHeaders: () => ok({ auth: 'token' }),
-        validateBody: () => ok({ name: 'test' }),
+        validateParams: () => succeed({ id: '123' }),
+        validateQueries: () => succeed({ page: 1 }),
+        validateHeaders: () => succeed({ auth: 'token' }),
+        validateBody: () => succeed({ name: 'test' }),
       });
 
       const requestSchema = createKoriRequestSchema({
@@ -259,8 +259,8 @@ describe('resolveInternalRequestValidator', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -277,10 +277,10 @@ describe('resolveInternalRequestValidator', () => {
     test('handles body parsing errors', async () => {
       const requestValidator = createKoriRequestValidator({
         provider: TestProvider,
-        validateParams: () => ok({ id: '123', validated: true }),
-        validateQueries: () => ok({ page: 1, validated: true }),
-        validateHeaders: () => ok({ auth: 'token', validated: true }),
-        validateBody: () => ok({ name: 'test', validated: true }),
+        validateParams: () => succeed({ id: '123', validated: true }),
+        validateQueries: () => succeed({ page: 1, validated: true }),
+        validateHeaders: () => succeed({ auth: 'token', validated: true }),
+        validateBody: () => succeed({ name: 'test', validated: true }),
       });
 
       const requestSchema = createKoriRequestSchema({
@@ -304,12 +304,12 @@ describe('resolveInternalRequestValidator', () => {
       };
 
       const result = await v(mockReq);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error.body).toEqual({
+      expect(result.reason.body).toEqual({
         stage: 'pre-validation',
         type: 'INVALID_BODY',
         message: 'Failed to parse request body',

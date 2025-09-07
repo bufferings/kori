@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../../src/request-validator/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
-import { ok } from '../../../src/util/index.js';
+import { succeed } from '../../../src/util/index.js';
 
 import { resolveInternalRequestValidator } from '../../../src/_internal/request-validation-resolver/resolver.js';
 
@@ -13,10 +13,10 @@ const testSchema = createKoriSchema({ provider: TestProvider, definition: { type
 
 const testRequestValidator = createKoriRequestValidator({
   provider: TestProvider,
-  validateParams: () => ok({ id: '123', validated: true }),
-  validateQueries: () => ok({ page: 1, validated: true }),
-  validateHeaders: () => ok({ auth: 'token', validated: true }),
-  validateBody: () => ok({ name: 'test', validated: true }),
+  validateParams: () => succeed({ id: '123', validated: true }),
+  validateQueries: () => succeed({ page: 1, validated: true }),
+  validateHeaders: () => succeed({ auth: 'token', validated: true }),
+  validateBody: () => succeed({ name: 'test', validated: true }),
 });
 
 const mockRequest = {
@@ -44,8 +44,8 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -72,17 +72,17 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
       };
 
       const result = await v(mockReq);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error.body).toEqual({
+      expect(result.reason.body).toEqual({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: ['application/json'],
-        requestType: 'text/plain',
+        supportedMediaTypes: ['application/json'],
+        requestMediaType: 'text/plain',
       });
     });
   });
@@ -103,8 +103,8 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
       }
 
       const result = await v(mockRequest);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -131,17 +131,17 @@ describe('resolveInternalRequestValidator - Simple body validation', () => {
       };
 
       const result = await v(mockReq);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error.body).toEqual({
+      expect(result.reason.body).toEqual({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: ['application/json'],
-        requestType: 'text/plain',
+        supportedMediaTypes: ['application/json'],
+        requestMediaType: 'text/plain',
       });
     });
   });

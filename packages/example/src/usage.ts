@@ -341,10 +341,10 @@ app.post('/validation-demo', {
     }),
   }),
   // Route-level validation error handling
-  onRequestValidationError: (ctx, errors) => {
+  onRequestValidationFailure: (ctx, reason) => {
     // Log error details for debugging
     ctx.log().warn('Validation demo failed', {
-      errors,
+      reason,
       path: ctx.req.url().pathname,
       method: ctx.req.method(),
     });
