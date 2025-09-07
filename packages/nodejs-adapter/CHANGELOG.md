@@ -1,5 +1,21 @@
 # @korix/nodejs-adapter
 
+## 0.2.2
+
+### Patch Changes
+
+- 82271cb: Improve Node.js adapter with better documentation, error handling, and graceful shutdown
+
+  - Add comprehensive README with installation and usage instructions
+  - Improve graceful shutdown implementation with better error handling
+  - Add detailed TSDoc comments for startNodeServer function
+  - Remove enableGracefulShutdown option (always enabled for reliability)
+  - Remove placeholder test file and update test scripts
+
+- Updated dependencies [edf66ad]
+- Updated dependencies [f4f6812]
+  - @korix/kori@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
