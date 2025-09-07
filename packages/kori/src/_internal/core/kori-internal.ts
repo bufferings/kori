@@ -25,6 +25,7 @@ import { normalizeRouteHttpMethod } from '../../routing/index.js';
 import { type MaybePromise } from '../../util/index.js';
 
 import { createFetchHandler } from './fetch-handler-creator.js';
+import { joinPaths } from './path.js';
 import { composeRouteHandler } from './route-handler-composer.js';
 import { createRouteRegistry, type KoriRouteRegistry } from './route-registry.js';
 
@@ -200,7 +201,7 @@ function createKoriInternal<
         responseValidator: _responseValidator,
         onRequestValidationFailure: _instanceOnRequestValidationFailure,
         onResponseValidationFailure: _instanceOnResponseValidationFailure,
-        prefix: `${_prefix}${childOptions.prefix ?? ''}`,
+        prefix: joinPaths(_prefix, childOptions.prefix ?? ''),
         parentHandlerHooks: {
           requestHooks: _requestHooks,
           errorHooks: _errorHooks,
@@ -234,7 +235,7 @@ function createKoriInternal<
         },
       });
 
-      const combinedPath = `${_prefix}${routeOptions.path}`;
+      const combinedPath = joinPaths(_prefix, routeOptions.path);
       const routeId = _shared.routeRegistry.register({
         method: routeOptions.method,
         path: combinedPath,
