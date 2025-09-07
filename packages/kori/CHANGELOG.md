@@ -1,5 +1,48 @@
 # @korix/kori
 
+## 0.2.2
+
+### Patch Changes
+
+- edf66ad: Redesign content-type API with proper naming and refactor internal modules
+
+  - Redesigned content-type API with improved naming conventions
+  - Renamed content-type handling to use standardized media-type terminology
+  - Refactored internal validation resolver modules
+  - Exposed individual logging reporter functions for public use
+  - Improved request/response context handling
+
+- f4f6812: Refactor Result API with clearer naming and consistency
+
+  This change improves the Result type API with more intuitive naming:
+
+  **Result type properties:**
+
+  - `ok` → `success`
+  - `error` → `reason`
+
+  **Result factory functions:**
+
+  - `ok()` → `succeed()`
+  - `err()` → `fail()`
+
+  **Validation failure types:**
+
+  - `ValidationError` → `ValidationFailureReason`
+  - `RequestValidationError` → `RequestValidationFailureReason`
+  - `ResponseValidationError` → `ResponseValidationFailureReason`
+
+  **Media type properties:**
+
+  - `supportedTypes` → `supportedMediaTypes`
+  - `requestType` → `requestMediaType`
+  - `responseType` → `responseMediaType`
+
+  This provides a more consistent and intuitive API across the framework.
+
+  **Migration Guide:**
+  Update all Result handling code to use the new property names and factory functions.
+
 ## 0.2.1
 
 ### Patch Changes

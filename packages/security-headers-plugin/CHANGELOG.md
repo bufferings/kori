@@ -1,5 +1,13 @@
 # @korix/security-headers-plugin
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [edf66ad]
+- Updated dependencies [f4f6812]
+  - @korix/kori@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,5 +1,45 @@
 # @korix/zod-validator
 
+## 0.2.2
+
+### Patch Changes
+
+- f4f6812: Refactor Result API with clearer naming and consistency
+
+  This change improves the Result type API with more intuitive naming:
+
+  **Result type properties:**
+
+  - `ok` → `success`
+  - `error` → `reason`
+
+  **Result factory functions:**
+
+  - `ok()` → `succeed()`
+  - `err()` → `fail()`
+
+  **Validation failure types:**
+
+  - `ValidationError` → `ValidationFailureReason`
+  - `RequestValidationError` → `RequestValidationFailureReason`
+  - `ResponseValidationError` → `ResponseValidationFailureReason`
+
+  **Media type properties:**
+
+  - `supportedTypes` → `supportedMediaTypes`
+  - `requestType` → `requestMediaType`
+  - `responseType` → `responseMediaType`
+
+  This provides a more consistent and intuitive API across the framework.
+
+  **Migration Guide:**
+  Update all Result handling code to use the new property names and factory functions.
+
+- Updated dependencies [edf66ad]
+- Updated dependencies [f4f6812]
+  - @korix/kori@0.2.2
+  - @korix/zod-schema@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
