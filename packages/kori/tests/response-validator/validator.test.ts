@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 
 import { createKoriSchema } from '../../src/schema/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
 import {
   createKoriResponseValidator,
@@ -15,7 +15,7 @@ describe('createKoriResponseValidator', () => {
   test('creates validator with provider', () => {
     const validator = createKoriResponseValidator({
       provider: TestProvider,
-      validateBody: () => ok('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(getKoriResponseValidatorProvider(validator)).toBe(TestProvider);
@@ -24,7 +24,7 @@ describe('createKoriResponseValidator', () => {
   test('rejects schema with different provider at compile time', () => {
     const validator = createKoriResponseValidator({
       provider: TestProvider,
-      validateBody: () => ok('x'),
+      validateBody: () => succeed('x'),
     });
 
     const sameProviderSchema = createKoriSchema({
@@ -47,7 +47,7 @@ describe('isKoriResponseValidator', () => {
   test('identifies valid validators', () => {
     const validator = createKoriResponseValidator({
       provider: TestProvider,
-      validateBody: () => ok('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(isKoriResponseValidator(validator)).toBe(true);
@@ -63,7 +63,7 @@ describe('getKoriResponseValidatorProvider', () => {
   test('returns provider', () => {
     const validator = createKoriResponseValidator({
       provider: TestProvider,
-      validateBody: () => ok('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(getKoriResponseValidatorProvider(validator)).toBe(TestProvider);

@@ -4,8 +4,8 @@ import { type KoriRequestValidatorDefault } from '../request-validator/index.js'
 import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
 import { type KoriRouteMatcher } from '../route-matcher/index.js';
 import {
-  type KoriInstanceRequestValidationErrorHandler,
-  type KoriInstanceResponseValidationErrorHandler,
+  type KoriInstanceRequestValidationFailureHandler,
+  type KoriInstanceResponseValidationFailureHandler,
 } from '../routing/index.js';
 import { type MaybePromise } from '../util/index.js';
 
@@ -27,7 +27,7 @@ type LoggerConfig =
 /**
  * Configuration options for creating a new Kori instance.
  *
- * Allows customization of validation, error handling, routing, and logging
+ * Allows customization of validation, validation failure handling, routing, and logging
  * behavior. All options are optional and have sensible defaults.
  *
  * @template RequestValidator - Request validator for type-safe validation
@@ -37,7 +37,7 @@ type LoggerConfig =
  * ```typescript
  * const app = createKori({
  *   requestValidator: myRequestValidator,
- *   onRequestValidationError: (ctx, err) => ctx.res.badRequest(),
+ *   onRequestValidationFailure: (ctx, err) => ctx.res.badRequest(),
  *   onRouteNotFound: (req) => new Response('Page not found', { status: 404 }),
  *   loggerOptions: { level: 'info' }
  * });
@@ -51,15 +51,15 @@ export type CreateKoriOptions<
   requestValidator?: RequestValidator;
   /** Response validator for automatic response validation */
   responseValidator?: ResponseValidator;
-  /** Instance-level error handler for request validation failures */
-  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<
+  /** Instance-level failure handler for request validation failures */
+  onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<
     KoriEnvironment,
     KoriRequest,
     KoriResponse,
     RequestValidator
   >;
-  /** Instance-level error handler for response validation failures */
-  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<
+  /** Instance-level failure handler for response validation failures */
+  onResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<
     KoriEnvironment,
     KoriRequest,
     KoriResponse,

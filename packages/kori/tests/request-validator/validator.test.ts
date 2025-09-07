@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 
 import { createKoriSchema } from '../../src/schema/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
 import {
   createKoriRequestValidator,
@@ -15,10 +15,10 @@ describe('createKoriRequestValidator', () => {
   test('creates validator with provider', () => {
     const validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(getKoriRequestValidatorProvider(validator)).toBe(TestProvider);
@@ -27,10 +27,10 @@ describe('createKoriRequestValidator', () => {
   test('rejects schema with different provider at compile time', () => {
     const validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('x'),
-      validateQueries: () => ok('x'),
-      validateHeaders: () => ok('x'),
-      validateBody: () => ok('x'),
+      validateParams: () => succeed('x'),
+      validateQueries: () => succeed('x'),
+      validateHeaders: () => succeed('x'),
+      validateBody: () => succeed('x'),
     });
 
     const sameProviderSchema = createKoriSchema({
@@ -53,10 +53,10 @@ describe('isKoriRequestValidator', () => {
   test('identifies valid validators', () => {
     const validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(isKoriRequestValidator(validator)).toBe(true);
@@ -72,10 +72,10 @@ describe('getKoriRequestValidatorProvider', () => {
   test('returns provider', () => {
     const validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     expect(getKoriRequestValidatorProvider(validator)).toBe(TestProvider);

@@ -14,8 +14,8 @@ import { type KoriRouteMatcher } from '../../route-matcher/index.js';
 import { createHonoRouteMatcher } from '../../route-matcher/index.js';
 import {
   type KoriHandler,
-  type KoriInstanceRequestValidationErrorHandler,
-  type KoriInstanceResponseValidationErrorHandler,
+  type KoriInstanceRequestValidationFailureHandler,
+  type KoriInstanceResponseValidationFailureHandler,
   type KoriRoute,
   type KoriRouteMethodOptions,
   type KoriRouteOptions,
@@ -90,10 +90,10 @@ type CreateKoriInternalOptions<
   requestValidator?: ReqV;
   /** Response validator for this instance */
   responseValidator?: ResV;
-  /** Instance-level request validation error handler */
-  onRequestValidationError?: KoriInstanceRequestValidationErrorHandler<Env, Req, Res, ReqV>;
-  /** Instance-level response validation error handler */
-  onResponseValidationError?: KoriInstanceResponseValidationErrorHandler<Env, Req, Res, ResV>;
+  /** Instance-level request validation falure handler */
+  onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<Env, Req, Res, ReqV>;
+  /** Instance-level response validation failure handler */
+  onResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<Env, Req, Res, ResV>;
   /** Handler hooks inherited from parent instances */
   parentHandlerHooks?: {
     requestHooks: KoriOnRequestHookAny[];
@@ -130,8 +130,8 @@ function createKoriInternal<
   const _shared = options.shared;
   const _requestValidator = options.requestValidator;
   const _responseValidator = options.responseValidator;
-  const _instanceOnRequestValidationError = options.onRequestValidationError;
-  const _instanceOnResponseValidationError = options.onResponseValidationError;
+  const _instanceOnRequestValidationFailure = options.onRequestValidationFailure;
+  const _instanceOnResponseValidationFailure = options.onResponseValidationFailure;
   const _prefix = options.prefix ?? '';
 
   const _children: KoriInternalAny[] = [];
@@ -198,8 +198,8 @@ function createKoriInternal<
         shared: _shared,
         requestValidator: _requestValidator,
         responseValidator: _responseValidator,
-        onRequestValidationError: _instanceOnRequestValidationError,
-        onResponseValidationError: _instanceOnResponseValidationError,
+        onRequestValidationFailure: _instanceOnRequestValidationFailure,
+        onResponseValidationFailure: _instanceOnResponseValidationFailure,
         prefix: `${_prefix}${childOptions.prefix ?? ''}`,
         parentHandlerHooks: {
           requestHooks: _requestHooks,
@@ -220,8 +220,8 @@ function createKoriInternal<
         deps: {
           requestValidator: _requestValidator,
           responseValidator: _responseValidator,
-          instanceOnRequestValidationError: _instanceOnRequestValidationError,
-          instanceOnResponseValidationError: _instanceOnResponseValidationError,
+          instanceOnRequestValidationFailure: _instanceOnRequestValidationFailure,
+          instanceOnResponseValidationFailure: _instanceOnResponseValidationFailure,
           requestHooks: _requestHooks,
           errorHooks: _errorHooks,
         },
@@ -229,8 +229,8 @@ function createKoriInternal<
           requestSchema: routeOptions.requestSchema,
           responseSchema: routeOptions.responseSchema,
           handler: routeOptions.handler,
-          onRequestValidationError: routeOptions.onRequestValidationError,
-          onResponseValidationError: routeOptions.onResponseValidationError,
+          routeOnRequestValidationFailure: routeOptions.onRequestValidationFailure,
+          routeOnResponseValidationFailure: routeOptions.onResponseValidationFailure,
         },
       });
 
@@ -241,8 +241,6 @@ function createKoriInternal<
         handler: composedHandler,
         requestSchema: routeOptions.requestSchema,
         responseSchema: routeOptions.responseSchema,
-        onRequestValidationError: routeOptions.onRequestValidationError,
-        onResponseValidationError: routeOptions.onResponseValidationError,
         pluginMetadata: routeOptions.pluginMetadata,
       });
 
@@ -399,8 +397,8 @@ export function createKoriRoot<
     shared,
     requestValidator: options?.requestValidator,
     responseValidator: options?.responseValidator,
-    onRequestValidationError: options?.onRequestValidationError,
-    onResponseValidationError: options?.onResponseValidationError,
+    onRequestValidationFailure: options?.onRequestValidationFailure,
+    onResponseValidationFailure: options?.onResponseValidationFailure,
   });
 
   // Complete circular reference: shared.root points to the created root

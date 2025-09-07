@@ -1,114 +1,72 @@
 /**
- * Validation error for individual request fields (params, queries, headers).
+ * Failure shape for the validation stage across request components.
  *
- * Represents validation failures during schema validation stage for simple
- * request components. Contains the underlying error from the validation library.
+ * For body, this shape is used only at the schema validation stage
+ * via RequestBodyValidationFailure.
  *
- * @template ErrorType - Error type from the validation library
- *
- * @example
- * ```typescript
- * // Example error structure
- * const fieldError: RequestFieldValidationError<ValidationError> = {
- *   stage: 'validation',
- *   error: validationLibraryError
- * };
- * ```
+ * @template FailureReason - Failure reason type from the validation library
  */
-export type RequestFieldValidationError<ErrorType> = {
+export type RequestFieldValidationFailure<FailureReason> = {
   stage: 'validation';
-  error: ErrorType;
+  reason: FailureReason;
 };
 
 /**
- * Validation error for request body with comprehensive error scenarios.
+ * Validation failure for request body.
  *
- * Covers both pre-validation failures (content-type issues, body parsing)
- * and validation failures (schema validation). Pre-validation errors occur
- * before schema validation and provide detailed context for debugging.
+ * Covers both pre-validation failures (media type mismatch, body parsing)
+ * and validation failures (schema validation). Pre-validation occurs before
+ * schema validation. Intended for failure handlers to decide responses and logging.
  *
- * @template ErrorType - Error type from the validation library
- *
- * @example
- * ```typescript
- * // Schema validation error
- * const validationError: RequestBodyValidationError<ValidationError> = {
- *   stage: 'validation',
- *   error: schemaValidationError
- * };
- *
- * // Unsupported content type
- * const mediaTypeError: RequestBodyValidationError<never> = {
- *   stage: 'pre-validation',
- *   type: 'UNSUPPORTED_MEDIA_TYPE',
- *   message: 'Content-Type not supported',
- *   supportedTypes: ['application/json'],
- *   requestType: 'text/plain'
- * };
- * ```
+ * @template FailureReason - Failure reason type from the validation library
  */
-export type RequestBodyValidationError<ErrorType> =
-  | RequestFieldValidationError<ErrorType>
+export type RequestBodyValidationFailure<FailureReason> =
   | {
       stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;
-      supportedTypes: string[];
-      requestType: string;
+      supportedMediaTypes: string[];
+      requestMediaType: string;
     }
   | {
       stage: 'pre-validation';
       type: 'INVALID_BODY';
       message: string;
       cause?: unknown;
-    };
+    }
+  | RequestFieldValidationFailure<FailureReason>;
 
 /**
- * Aggregated validation error for HTTP request components.
+ * Aggregated validation failure for HTTP request components.
  *
- * Contains validation errors for different parts of the HTTP request.
+ * Contains validation failures for different parts of the HTTP request.
  * Each field is optional and only present when validation fails for that
- * component. Error handlers can inspect specific fields to provide
- * targeted error responses.
+ * component. Failure handlers can inspect specific fields to provide
+ * targeted failure responses.
  *
- * @template ErrorType - Error type from the validation library
- *
- * @example
- * ```typescript
- * const errorHandler = (ctx, err: RequestValidationError<ValidationError>) => {
- *   if (err.body?.stage === 'pre-validation' && err.body.type === 'UNSUPPORTED_MEDIA_TYPE') {
- *     return ctx.res.unsupportedMediaType();
- *   }
- *
- *   if (err.params) {
- *     return ctx.res.badRequest({ message: 'Invalid path parameters' });
- *   }
- *
- *   return ctx.res.badRequest({ message: 'Validation failed' });
- * };
- * ```
+ * @template FailureReason - Failure reason type from the validation library
  */
-export type RequestValidationError<ErrorType = unknown> = {
-  params?: RequestFieldValidationError<ErrorType>;
-  queries?: RequestFieldValidationError<ErrorType>;
-  headers?: RequestFieldValidationError<ErrorType>;
-  body?: RequestBodyValidationError<ErrorType>;
+export type RequestValidationFailure<FailureReason> = {
+  params?: RequestFieldValidationFailure<FailureReason>;
+  queries?: RequestFieldValidationFailure<FailureReason>;
+  headers?: RequestFieldValidationFailure<FailureReason>;
+  body?: RequestBodyValidationFailure<FailureReason>;
 };
 
 /**
- * Default type alias for FieldValidationError with unknown error type.
+ * Default type alias for FieldValidationFailure with unknown failure reason type.
  */
-export type RequestFieldValidationErrorDefault = RequestFieldValidationError<unknown>;
+export type RequestFieldValidationFailureDefault = RequestFieldValidationFailure<unknown>;
 
 /**
- * Default type alias for BodyValidationError with unknown error type.
+ * Default type alias for BodyValidationFailure with unknown failure reason type.
  */
-export type RequestBodyValidationErrorDefault = RequestBodyValidationError<unknown>;
+export type RequestBodyValidationFailureDefault = RequestBodyValidationFailure<unknown>;
 
 /**
- * Default type alias for RequestValidationError with unknown error type.
+ * Default type alias for RequestValidationFailure with unknown failure reason type.
  */
-export type RequestValidationErrorDefault = RequestValidationError<unknown>;
+export type RequestValidationFailureDefault = RequestValidationFailure<unknown>;
 
 /**
  * Successful validation result containing validated data from all request components.

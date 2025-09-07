@@ -1,15 +1,15 @@
 import {
   type KoriResult,
   type InferSchemaOutput,
-  ok,
-  err,
+  succeed,
+  fail,
   type KoriResponseValidator,
   createKoriResponseValidator,
 } from '@korix/kori';
 import { type KoriZodSchemaProvider, type KoriZodSchemaDefault, ZodSchemaProvider } from '@korix/zod-schema';
 import { type $ZodIssue } from 'zod/v4/core';
 
-export type KoriZodResponseValidationError =
+export type KoriZodResponseValidationFailureReason =
   | {
       message: string;
       issues: $ZodIssue[];
@@ -22,11 +22,15 @@ export type KoriZodResponseValidationError =
 export type KoriZodResponseValidator = KoriResponseValidator<
   KoriZodSchemaProvider,
   KoriZodSchemaDefault,
-  KoriZodResponseValidationError
+  KoriZodResponseValidationFailureReason
 >;
 
 export function createKoriZodResponseValidator(): KoriZodResponseValidator {
-  return createKoriResponseValidator<KoriZodSchemaProvider, KoriZodSchemaDefault, KoriZodResponseValidationError>({
+  return createKoriResponseValidator<
+    KoriZodSchemaProvider,
+    KoriZodSchemaDefault,
+    KoriZodResponseValidationFailureReason
+  >({
     provider: ZodSchemaProvider,
     validateBody: <S extends KoriZodSchemaDefault>({
       schema,
@@ -34,20 +38,20 @@ export function createKoriZodResponseValidator(): KoriZodResponseValidator {
     }: {
       schema: S;
       body: unknown;
-    }): KoriResult<InferSchemaOutput<S>, KoriZodResponseValidationError> => {
+    }): KoriResult<InferSchemaOutput<S>, KoriZodResponseValidationFailureReason> => {
       try {
         const result = schema.definition.safeParse(body);
 
         if (!result.success) {
-          return err({
+          return fail({
             message: 'Response validation failed',
             issues: result.error.issues,
           });
         }
 
-        return ok(result.data as InferSchemaOutput<S>);
+        return succeed(result.data as InferSchemaOutput<S>);
       } catch (error) {
-        return err({
+        return fail({
           message: 'An error occurred during response validation',
           detail: error instanceof Error ? error.message : String(error),
         });

@@ -1,70 +1,72 @@
 import { describe, test, expectTypeOf } from 'vitest';
 
 import { createKoriRequestValidator } from '../../src/request-validator/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
-import { type InferRequestValidationError } from '../../src/routing/request-validation-error-handler.js';
+import { type InferRequestValidationFailureReason } from '../../src/routing/request-validation-failure-handler.js';
 
 const TestProvider = Symbol('test-provider');
 
-describe('InferRequestValidationError', () => {
-  test('extracts error type from request validator', () => {
+describe('InferRequestValidationFailureReason', () => {
+  test('extracts failure reason type from request validator', () => {
     const _validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok({}),
-      validateQueries: () => ok({}),
-      validateHeaders: () => ok({}),
-      validateBody: () => ok({}),
+      validateParams: () => succeed({}),
+      validateQueries: () => succeed({}),
+      validateHeaders: () => succeed({}),
+      validateBody: () => succeed({}),
     });
 
-    expectTypeOf<InferRequestValidationError<typeof _validator>>().toEqualTypeOf<{
-      params?: { stage: 'validation'; error: unknown };
-      queries?: { stage: 'validation'; error: unknown };
-      headers?: { stage: 'validation'; error: unknown };
+    expectTypeOf<InferRequestValidationFailureReason<typeof _validator>>().toEqualTypeOf<{
+      params?: { stage: 'validation'; reason: unknown };
+      queries?: { stage: 'validation'; reason: unknown };
+      headers?: { stage: 'validation'; reason: unknown };
       body?:
-        | { stage: 'validation'; error: unknown }
         | {
             stage: 'pre-validation';
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
-            supportedTypes: string[];
-            requestType: string;
+            supportedMediaTypes: string[];
+            requestMediaType: string;
           }
-        | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown };
+        | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown }
+        | { stage: 'validation'; reason: unknown };
     }>();
   });
 
   test('returns never for non-validator types', () => {
-    expectTypeOf<InferRequestValidationError<string>>().toEqualTypeOf<never>();
-    expectTypeOf<InferRequestValidationError<undefined>>().toEqualTypeOf<never>();
-    expectTypeOf<InferRequestValidationError<null>>().toEqualTypeOf<never>();
+    expectTypeOf<InferRequestValidationFailureReason<string>>().toEqualTypeOf<never>();
+    expectTypeOf<InferRequestValidationFailureReason<undefined>>().toEqualTypeOf<never>();
+    expectTypeOf<InferRequestValidationFailureReason<null>>().toEqualTypeOf<never>();
   });
 
-  test('preserves validator error type parameter', () => {
-    type CustomError = { code: string; details: unknown };
+  test('preserves validator failure reason type parameter', () => {
+    type CustomFailureReason = { code: string; details: unknown };
 
-    const _validatorWithCustomError = createKoriRequestValidator<typeof TestProvider, any, CustomError>({
-      provider: TestProvider,
-      validateParams: () => ok({}),
-      validateQueries: () => ok({}),
-      validateHeaders: () => ok({}),
-      validateBody: () => ok({}),
-    });
+    const _validatorWithCustomFailureReason = createKoriRequestValidator<typeof TestProvider, any, CustomFailureReason>(
+      {
+        provider: TestProvider,
+        validateParams: () => succeed({}),
+        validateQueries: () => succeed({}),
+        validateHeaders: () => succeed({}),
+        validateBody: () => succeed({}),
+      },
+    );
 
-    expectTypeOf<InferRequestValidationError<typeof _validatorWithCustomError>>().toEqualTypeOf<{
-      params?: { stage: 'validation'; error: CustomError };
-      queries?: { stage: 'validation'; error: CustomError };
-      headers?: { stage: 'validation'; error: CustomError };
+    expectTypeOf<InferRequestValidationFailureReason<typeof _validatorWithCustomFailureReason>>().toEqualTypeOf<{
+      params?: { stage: 'validation'; reason: CustomFailureReason };
+      queries?: { stage: 'validation'; reason: CustomFailureReason };
+      headers?: { stage: 'validation'; reason: CustomFailureReason };
       body?:
-        | { stage: 'validation'; error: CustomError }
         | {
             stage: 'pre-validation';
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
-            supportedTypes: string[];
-            requestType: string;
+            supportedMediaTypes: string[];
+            requestMediaType: string;
           }
-        | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown };
+        | { stage: 'pre-validation'; type: 'INVALID_BODY'; message: string; cause?: unknown }
+        | { stage: 'validation'; reason: CustomFailureReason };
     }>();
   });
 });

@@ -71,8 +71,8 @@ describe('KoriResponse cookies contract', () => {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
         expect(ke.code).toBe('COOKIE_ERROR');
-        expect(ke.cookieError.type).toBe('INVALID_NAME');
-        expect(ke.cookieError.message).toContain('Invalid');
+        expect(ke.cookieFailure.type).toBe('INVALID_NAME');
+        expect(ke.cookieFailure.message).toContain('Invalid');
       }
     });
 
@@ -84,10 +84,10 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PREFIX_VIOLATION');
-        if (ke.cookieError.type === 'PREFIX_VIOLATION') {
-          expect(ke.cookieError.prefix).toBe('__Secure-');
-          expect(ke.cookieError.required).toBe('secure: true');
+        expect(ke.cookieFailure.type).toBe('PREFIX_VIOLATION');
+        if (ke.cookieFailure.type === 'PREFIX_VIOLATION') {
+          expect(ke.cookieFailure.prefix).toBe('__Secure-');
+          expect(ke.cookieFailure.required).toBe('secure: true');
         }
       }
     });
@@ -101,10 +101,10 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PREFIX_VIOLATION');
-        if (ke.cookieError.type === 'PREFIX_VIOLATION') {
-          expect(ke.cookieError.prefix).toBe('__Host-');
-          expect(ke.cookieError.required).toBe('secure: true');
+        expect(ke.cookieFailure.type).toBe('PREFIX_VIOLATION');
+        if (ke.cookieFailure.type === 'PREFIX_VIOLATION') {
+          expect(ke.cookieFailure.prefix).toBe('__Host-');
+          expect(ke.cookieFailure.required).toBe('secure: true');
         }
       }
       // wrong path
@@ -114,10 +114,10 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PREFIX_VIOLATION');
-        if (ke.cookieError.type === 'PREFIX_VIOLATION') {
-          expect(ke.cookieError.prefix).toBe('__Host-');
-          expect(ke.cookieError.required).toBe('path: "/"');
+        expect(ke.cookieFailure.type).toBe('PREFIX_VIOLATION');
+        if (ke.cookieFailure.type === 'PREFIX_VIOLATION') {
+          expect(ke.cookieFailure.prefix).toBe('__Host-');
+          expect(ke.cookieFailure.required).toBe('path: "/"');
         }
       }
       // domain not allowed
@@ -127,10 +127,10 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PREFIX_VIOLATION');
-        if (ke.cookieError.type === 'PREFIX_VIOLATION') {
-          expect(ke.cookieError.prefix).toBe('__Host-');
-          expect(ke.cookieError.required).toBe('no domain attribute');
+        expect(ke.cookieFailure.type).toBe('PREFIX_VIOLATION');
+        if (ke.cookieFailure.type === 'PREFIX_VIOLATION') {
+          expect(ke.cookieFailure.prefix).toBe('__Host-');
+          expect(ke.cookieFailure.required).toBe('no domain attribute');
         }
       }
     });
@@ -143,7 +143,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('AGE_LIMIT_EXCEEDED');
+        expect(ke.cookieFailure.type).toBe('AGE_LIMIT_EXCEEDED');
       }
     });
 
@@ -156,7 +156,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('EXPIRES_LIMIT_EXCEEDED');
+        expect(ke.cookieFailure.type).toBe('EXPIRES_LIMIT_EXCEEDED');
       }
     });
 
@@ -168,7 +168,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PARTITIONED_REQUIRES_SECURE');
+        expect(ke.cookieFailure.type).toBe('PARTITIONED_REQUIRES_SECURE');
       }
     });
 
@@ -180,7 +180,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('SAMESITE_NONE_REQUIRES_SECURE');
+        expect(ke.cookieFailure.type).toBe('SAMESITE_NONE_REQUIRES_SECURE');
       }
     });
 
@@ -192,7 +192,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('PARTITIONED_REQUIRES_SAMESITE_NONE');
+        expect(ke.cookieFailure.type).toBe('PARTITIONED_REQUIRES_SAMESITE_NONE');
       }
     });
 
@@ -205,7 +205,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('SERIALIZE_ERROR');
+        expect(ke.cookieFailure.type).toBe('SERIALIZE_ERROR');
       }
     });
   });
@@ -234,7 +234,7 @@ describe('KoriResponse cookies contract', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(KoriCookieError);
         const ke = e as KoriCookieError;
-        expect(ke.cookieError.type).toBe('INVALID_NAME');
+        expect(ke.cookieFailure.type).toBe('INVALID_NAME');
         expect(ke.code).toBe('COOKIE_ERROR');
       }
     });

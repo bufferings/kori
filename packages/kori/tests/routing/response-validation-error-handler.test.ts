@@ -1,58 +1,62 @@
 import { describe, test, expectTypeOf } from 'vitest';
 
 import { createKoriResponseValidator } from '../../src/response-validator/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
-import { type InferResponseValidationError } from '../../src/routing/response-validation-error-handler.js';
+import { type InferResponseValidationFailureReason } from '../../src/routing/response-validation-failure-handler.js';
 
 const TestProvider = Symbol('test-provider');
 
-describe('InferResponseValidationError', () => {
-  test('extracts error type from response validator', () => {
+describe('InferResponseValidationFailureReason', () => {
+  test('extracts failure reason type from response validator', () => {
     const _validator = createKoriResponseValidator({
       provider: TestProvider,
-      validateBody: () => ok({}),
+      validateBody: () => succeed({}),
     });
 
-    expectTypeOf<InferResponseValidationError<typeof _validator>>().toEqualTypeOf<{
+    expectTypeOf<InferResponseValidationFailureReason<typeof _validator>>().toEqualTypeOf<{
       statusCode?: { type: 'NO_SCHEMA_FOR_STATUS_CODE'; message: string; statusCode: number };
       body?:
-        | { stage: 'validation'; error: unknown }
+        | { stage: 'validation'; reason: unknown }
         | {
             stage: 'pre-validation';
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
-            supportedTypes: string[];
-            responseType: string;
+            supportedMediaTypes: string[];
+            responseMediaType: string;
           };
     }>();
   });
 
   test('returns never for non-validator types', () => {
-    expectTypeOf<InferResponseValidationError<string>>().toEqualTypeOf<never>();
-    expectTypeOf<InferResponseValidationError<undefined>>().toEqualTypeOf<never>();
-    expectTypeOf<InferResponseValidationError<null>>().toEqualTypeOf<never>();
+    expectTypeOf<InferResponseValidationFailureReason<string>>().toEqualTypeOf<never>();
+    expectTypeOf<InferResponseValidationFailureReason<undefined>>().toEqualTypeOf<never>();
+    expectTypeOf<InferResponseValidationFailureReason<null>>().toEqualTypeOf<never>();
   });
 
-  test('preserves validator error type parameter', () => {
-    type CustomError = { code: string; details: unknown };
+  test('preserves validator failure reason type parameter', () => {
+    type CustomFailureReason = { code: string; details: unknown };
 
-    const _validatorWithCustomError = createKoriResponseValidator<typeof TestProvider, any, CustomError>({
+    const _validatorWithCustomFailureReason = createKoriResponseValidator<
+      typeof TestProvider,
+      any,
+      CustomFailureReason
+    >({
       provider: TestProvider,
-      validateBody: () => ok({}),
+      validateBody: () => succeed({}),
     });
 
-    expectTypeOf<InferResponseValidationError<typeof _validatorWithCustomError>>().toEqualTypeOf<{
+    expectTypeOf<InferResponseValidationFailureReason<typeof _validatorWithCustomFailureReason>>().toEqualTypeOf<{
       statusCode?: { type: 'NO_SCHEMA_FOR_STATUS_CODE'; message: string; statusCode: number };
       body?:
-        | { stage: 'validation'; error: CustomError }
         | {
             stage: 'pre-validation';
             type: 'UNSUPPORTED_MEDIA_TYPE';
             message: string;
-            supportedTypes: string[];
-            responseType: string;
-          };
+            supportedMediaTypes: string[];
+            responseMediaType: string;
+          }
+        | { stage: 'validation'; reason: CustomFailureReason };
     }>();
   });
 });

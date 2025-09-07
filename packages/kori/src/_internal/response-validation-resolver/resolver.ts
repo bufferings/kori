@@ -12,8 +12,8 @@ import {
   isKoriResponseValidator,
   type KoriResponseValidatorDefault,
 } from '../../response-validator/index.js';
-import { type ResponseValidationErrorDefault, type ResponseValidationSuccess } from '../../routing/index.js';
-import { ok, err, type KoriResult } from '../../util/index.js';
+import { type ResponseValidationFailureDefault, type ResponseValidationSuccess } from '../../routing/index.js';
+import { succeed, fail, type KoriResult } from '../../util/index.js';
 
 import { validateResponseBody } from './validate-body.js';
 
@@ -58,7 +58,7 @@ function resolveSchemaEntryByStatusCode({
  * Resolves a response validation function from validator and schema.
  *
  * Resolves appropriate schema by status code, then validates response body
- * and returns aggregated results or errors.
+ * and returns aggregated results or failures.
  *
  * @param options - Configuration for validation function
  * @param options.responseValidator - The response validator to use
@@ -73,7 +73,7 @@ export function resolveInternalResponseValidator({
   responseValidator?: KoriResponseValidatorDefault;
   responseSchema?: KoriResponseSchemaDefault;
 }):
-  | ((res: KoriResponse) => Promise<KoriResult<ResponseValidationSuccess, ResponseValidationErrorDefault>>)
+  | ((res: KoriResponse) => Promise<KoriResult<ResponseValidationSuccess, ResponseValidationFailureDefault>>)
   | undefined {
   if (!responseValidator || !responseSchema) {
     return undefined;
@@ -99,7 +99,7 @@ export function resolveInternalResponseValidator({
   return async (res) => {
     const schemaEntry = resolveSchemaEntryByStatusCode({ responseSchema, statusCode: res.getStatus() });
     if (!schemaEntry) {
-      return err({
+      return fail({
         statusCode: {
           type: 'NO_SCHEMA_FOR_STATUS_CODE',
           message: 'No response schema found for status code',
@@ -110,12 +110,12 @@ export function resolveInternalResponseValidator({
 
     const bodyResult = await validateResponseBody({ validator: responseValidator, schemaEntry, res });
 
-    if (bodyResult.ok) {
-      return ok({ body: bodyResult.value });
+    if (bodyResult.success) {
+      return succeed({ body: bodyResult.value });
     }
 
-    return err({
-      body: bodyResult.error,
+    return fail({
+      body: bodyResult.reason,
     });
   };
 }

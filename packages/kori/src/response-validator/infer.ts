@@ -6,4 +6,4 @@ import { type KoriResponseValidator } from './validator.js';
  * @template V - The response validator to extract provider from
  */
 export type InferResponseValidationProvider<V> =
-  V extends KoriResponseValidator<infer Provider, infer _Schema, infer _ErrorType> ? Provider : never;
+  V extends KoriResponseValidator<infer Provider, infer _Schema, infer _FailureReason> ? Provider : never;

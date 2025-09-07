@@ -7,8 +7,8 @@ import { type KoriResponseValidatorDefault } from '../response-validator/index.j
 
 import { type KoriHandler } from './handler.js';
 import { type RequestProviderConstraint, type ResponseProviderConstraint } from './provider-constraint.js';
-import { type KoriRouteRequestValidationErrorHandler } from './request-validation-error-handler.js';
-import { type KoriRouteResponseValidationErrorHandler } from './response-validation-error-handler.js';
+import { type KoriRouteRequestValidationFailureHandler } from './request-validation-failure-handler.js';
+import { type KoriRouteResponseValidationFailureHandler } from './response-validation-failure-handler.js';
 import { type RouteHttpMethod } from './route-http-method.js';
 
 /**
@@ -62,8 +62,8 @@ export type KoriRouteOptions<
   responseSchema?: ResponseSchema;
   /** Route handler function */
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-  /** Custom error handler for request validation failures */
-  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
+  /** Custom handler for request validation failures */
+  onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<
     Env,
     Req,
     Res,
@@ -71,8 +71,8 @@ export type KoriRouteOptions<
     RequestValidator,
     RequestSchema
   >;
-  /** Custom error handler for response validation failures */
-  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
+  /** Custom handler for response validation failures */
+  onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<
     Env,
     Req,
     Res,
@@ -89,8 +89,8 @@ export type KoriRouteOptions<
  * Generic route registration function for any HTTP method.
  *
  * Provides full control over route configuration including HTTP method,
- * path pattern, validation schemas, error handlers, and plugin metadata.
- * Used internally by method-specific shortcuts (get, post, etc.).
+ * path pattern, validation schemas, validation failure handlers, and plugin metadata.
+ * Used by method-specific shortcuts (get, post, etc.).
  *
  * @template Env - Environment type containing instance-specific data
  * @template Req - Request type with request-specific data and methods
@@ -164,8 +164,8 @@ export type KoriRouteMethodOptions<
   responseSchema?: ResponseSchema;
   /** Route handler function */
   handler: KoriHandler<Env, Req, Res, Path, RequestValidator, RequestSchema>;
-  /** Custom error handler for request validation failures */
-  onRequestValidationError?: KoriRouteRequestValidationErrorHandler<
+  /** Custom handler for request validation failures */
+  onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<
     Env,
     Req,
     Res,
@@ -173,8 +173,8 @@ export type KoriRouteMethodOptions<
     RequestValidator,
     RequestSchema
   >;
-  /** Custom error handler for response validation failures */
-  onResponseValidationError?: KoriRouteResponseValidationErrorHandler<
+  /** Custom handler for response validation failures */
+  onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<
     Env,
     Req,
     Res,
@@ -192,7 +192,7 @@ export type KoriRouteMethodOptions<
  *
  * Provides convenient shortcuts for common HTTP methods (GET, POST, etc.)
  * with simplified syntax. Supports both simple handler-only registration
- * and full configuration with validation and error handling.
+ * and full configuration with validation and validation failure handling.
  *
  * @template Env - Environment type containing instance-specific data
  * @template Req - Request type with request-specific data and methods

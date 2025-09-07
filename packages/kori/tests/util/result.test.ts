@@ -1,19 +1,19 @@
 import { describe, test, expect } from 'vitest';
 
-import { ok, err } from '../../src/util/result.js';
+import { succeed, fail } from '../../src/util/result.js';
 
 describe('Result utilities', () => {
-  test('ok() creates success result', () => {
-    const result = ok(42);
+  test('succeed() creates success result', () => {
+    const result = succeed(42);
 
-    expect(result.ok).toBe(true);
+    expect(result.success).toBe(true);
     expect(result.value).toBe(42);
   });
 
-  test('err() creates error result', () => {
-    const result = err('failed');
+  test('fail() creates failure result', () => {
+    const result = fail('failed');
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe('failed');
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('failed');
   });
 });

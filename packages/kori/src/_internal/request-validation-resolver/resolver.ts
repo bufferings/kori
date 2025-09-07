@@ -10,8 +10,8 @@ import {
   isKoriRequestValidator,
   type KoriRequestValidatorDefault,
 } from '../../request-validator/index.js';
-import { type RequestValidationErrorDefault, type RequestValidationSuccess } from '../../routing/index.js';
-import { ok, err, type KoriResult } from '../../util/index.js';
+import { type RequestValidationFailureDefault, type RequestValidationSuccess } from '../../routing/index.js';
+import { succeed, fail, type KoriResult } from '../../util/index.js';
 
 import { validateRequestBody } from './validate-body.js';
 import { validateRequestHeaders } from './validate-headers.js';
@@ -22,7 +22,7 @@ import { validateRequestQueries } from './validate-queries.js';
  * Resolves a request validation function from validator and schema.
  *
  * Validates all request components (params, queries, headers, body) in parallel
- * and returns aggregated results or errors.
+ * and returns aggregated results or failures.
  *
  * @param options - Configuration for validation function
  * @param options.requestValidator - The request validator to use
@@ -36,7 +36,7 @@ export function resolveInternalRequestValidator({
 }: {
   requestValidator?: KoriRequestValidatorDefault;
   requestSchema?: KoriRequestSchemaDefault;
-}): ((req: KoriRequest) => Promise<KoriResult<RequestValidationSuccess, RequestValidationErrorDefault>>) | undefined {
+}): ((req: KoriRequest) => Promise<KoriResult<RequestValidationSuccess, RequestValidationFailureDefault>>) | undefined {
   if (!requestValidator || !requestSchema) {
     return undefined;
   }
@@ -68,8 +68,8 @@ export function resolveInternalRequestValidator({
       validateRequestBody({ validator: requestValidator, schema: bodySchema, req }),
     ]);
 
-    if (paramsResult.ok && queriesResult.ok && headersResult.ok && bodyResult.ok) {
-      return ok({
+    if (paramsResult.success && queriesResult.success && headersResult.success && bodyResult.success) {
+      return succeed({
         params: paramsResult.value,
         queries: queriesResult.value,
         headers: headersResult.value,
@@ -77,19 +77,19 @@ export function resolveInternalRequestValidator({
       });
     }
 
-    const errors: RequestValidationErrorDefault = {};
-    if (!paramsResult.ok) {
-      errors.params = paramsResult.error;
+    const reasons: RequestValidationFailureDefault = {};
+    if (!paramsResult.success) {
+      reasons.params = paramsResult.reason;
     }
-    if (!queriesResult.ok) {
-      errors.queries = queriesResult.error;
+    if (!queriesResult.success) {
+      reasons.queries = queriesResult.reason;
     }
-    if (!headersResult.ok) {
-      errors.headers = headersResult.error;
+    if (!headersResult.success) {
+      reasons.headers = headersResult.reason;
     }
-    if (!bodyResult.ok) {
-      errors.body = bodyResult.error;
+    if (!bodyResult.success) {
+      reasons.body = bodyResult.reason;
     }
-    return err(errors);
+    return fail(reasons);
   };
 }

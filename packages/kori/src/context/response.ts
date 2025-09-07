@@ -1,4 +1,4 @@
-import { KoriCookieError, KoriSetCookieHeaderError } from '../error/index.js';
+import { KoriCookieError, KoriResponseBuildError, KoriSetCookieHeaderError } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -471,7 +471,7 @@ export type KoriResponse = {
    * **Note**: This method can only be called once per response instance.
    *
    * @returns Web API Response object
-   * @throws Error if called more than once
+   * @throws {KoriResponseBuildError} if called more than once
    */
   build(): Response;
 };
@@ -529,16 +529,16 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
 
 function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
   const result = serializeCookie(name, value, options);
-  if (!result.ok) {
-    throw new KoriCookieError(result.error);
+  if (!result.success) {
+    throw new KoriCookieError(result.reason);
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
 
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
   const result = deleteCookie(name, options);
-  if (!result.ok) {
-    throw new KoriCookieError(result.error);
+  if (!result.success) {
+    throw new KoriCookieError(result.reason);
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
@@ -843,7 +843,7 @@ const sharedMethods = {
 
   build(): Response {
     if (this.built) {
-      throw new Error('Response can only be built once.');
+      throw new KoriResponseBuildError('Response can only be built once.');
     }
     this.built = true;
 

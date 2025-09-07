@@ -2,9 +2,9 @@ import { type KoriRequest } from '../../context/index.js';
 import { MediaType } from '../../http/index.js';
 import { type KoriRequestSchemaContentBodyDefault, type KoriRequestSchemaDefault } from '../../request-schema/index.js';
 import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
-import { type RequestBodyValidationErrorDefault } from '../../routing/index.js';
+import { type RequestBodyValidationFailureDefault } from '../../routing/index.js';
 import { type KoriSchemaDefault, isKoriSchema } from '../../schema/index.js';
-import { ok, err, type KoriResult } from '../../util/index.js';
+import { succeed, fail, type KoriResult } from '../../util/index.js';
 
 function findMatchingMediaType({
   contentSchema,
@@ -41,7 +41,7 @@ function resolveRequestBodySchema({
 }: {
   bodySchema: NonNullable<KoriRequestSchemaDefault['body']>;
   req: KoriRequest;
-}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, RequestBodyValidationErrorDefault> {
+}): KoriResult<{ schema: KoriSchemaDefault; mediaType?: string }, RequestBodyValidationFailureDefault> {
   const requestMediaType = req.mediaType();
 
   if (!('content' in bodySchema)) {
@@ -49,15 +49,15 @@ function resolveRequestBodySchema({
     const schema = isKoriSchema(bodySchema) ? bodySchema : bodySchema.schema;
 
     if (requestMediaType === undefined || requestMediaType === DEFAULT_MEDIA_TYPE) {
-      return ok({ schema });
+      return succeed({ schema });
     }
 
-    return err({
+    return fail({
       stage: 'pre-validation',
       type: 'UNSUPPORTED_MEDIA_TYPE',
       message: 'Unsupported Media Type',
-      supportedTypes: [DEFAULT_MEDIA_TYPE],
-      requestType: requestMediaType,
+      supportedMediaTypes: [DEFAULT_MEDIA_TYPE],
+      requestMediaType: requestMediaType,
     });
   } else {
     // KoriRequestSchemaContentBody
@@ -68,31 +68,31 @@ function resolveRequestBodySchema({
       requestMediaType: requestMediaType ?? DEFAULT_MEDIA_TYPE,
     });
     if (!matchedMediaType) {
-      return err({
+      return fail({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: Object.keys(contentSchema),
-        requestType: requestMediaType ?? '',
+        supportedMediaTypes: Object.keys(contentSchema),
+        requestMediaType: requestMediaType ?? '',
       });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const mediaTypeSchema = contentSchema[matchedMediaType]!;
     const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
-    return ok({
+    return succeed({
       schema: targetSchema,
       mediaType: matchedMediaType,
     });
   }
 }
 
-async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
+async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, RequestBodyValidationFailureDefault>> {
   try {
     const body = await req.parseBody();
-    return ok(body);
+    return succeed(body);
   } catch (error) {
-    return err({
+    return fail({
       stage: 'pre-validation',
       type: 'INVALID_BODY',
       message: 'Failed to parse request body',
@@ -109,15 +109,15 @@ async function validateParsedBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriSchemaDefault;
   body: unknown;
-}): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestBodyValidationFailureDefault>> {
   const result = await validator.validateBody({ schema, body });
-  if (result.ok) {
+  if (result.success) {
     return result;
   }
 
-  return err({
+  return fail({
     stage: 'validation',
-    error: result.error,
+    reason: result.reason,
   });
 }
 
@@ -130,20 +130,20 @@ export async function validateRequestBody({
   validator: KoriRequestValidatorDefault;
   schema: KoriRequestSchemaDefault['body'];
   req: KoriRequest;
-}): Promise<KoriResult<unknown, RequestBodyValidationErrorDefault>> {
+}): Promise<KoriResult<unknown, RequestBodyValidationFailureDefault>> {
   if (!schema) {
-    return ok(undefined);
+    return succeed(undefined);
   }
 
   const resolveResult = resolveRequestBodySchema({ bodySchema: schema, req });
-  if (!resolveResult.ok) {
+  if (!resolveResult.success) {
     return resolveResult;
   }
 
   const { schema: resolvedSchema, mediaType: resolvedMediaType } = resolveResult.value;
 
   const parseResult = await parseRequestBody(req);
-  if (!parseResult.ok) {
+  if (!parseResult.success) {
     return parseResult;
   }
 
@@ -152,11 +152,11 @@ export async function validateRequestBody({
     schema: resolvedSchema,
     body: parseResult.value,
   });
-  if (!validationResult.ok) {
+  if (!validationResult.success) {
     return validationResult;
   }
 
   return resolvedMediaType
-    ? ok({ mediaType: resolvedMediaType, value: validationResult.value })
-    : ok(validationResult.value);
+    ? succeed({ mediaType: resolvedMediaType, value: validationResult.value })
+    : succeed(validationResult.value);
 }

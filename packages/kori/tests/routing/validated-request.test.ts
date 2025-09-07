@@ -4,7 +4,7 @@ import { type KoriRequest } from '../../src/context/index.js';
 import { createKoriRequestSchema } from '../../src/request-schema/index.js';
 import { createKoriRequestValidator } from '../../src/request-validator/index.js';
 import { createKoriSchema } from '../../src/schema/index.js';
-import { ok } from '../../src/util/index.js';
+import { succeed } from '../../src/util/index.js';
 
 import { type ValidatedRequest } from '../../src/routing/validated-request.js';
 
@@ -14,10 +14,10 @@ describe('ValidatedRequest', () => {
   test('extends request with validation methods when both validator and schema present', () => {
     const _validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     const paramsSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { id: string }>({
@@ -59,10 +59,10 @@ describe('ValidatedRequest', () => {
   test('handles never types for undefined schemas', () => {
     const _validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     const _requestSchema = createKoriRequestSchema({
@@ -98,10 +98,10 @@ describe('ValidatedRequest', () => {
   test('returns base request when schema is undefined', () => {
     const _validator = createKoriRequestValidator({
       provider: TestProvider,
-      validateParams: () => ok('test'),
-      validateQueries: () => ok('test'),
-      validateHeaders: () => ok('test'),
-      validateBody: () => ok('test'),
+      validateParams: () => succeed('test'),
+      validateQueries: () => succeed('test'),
+      validateHeaders: () => succeed('test'),
+      validateBody: () => succeed('test'),
     });
 
     type BaseRequest = KoriRequest & { customProp: string };

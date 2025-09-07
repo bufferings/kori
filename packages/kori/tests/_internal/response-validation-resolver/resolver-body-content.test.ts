@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { createKoriResponseSchema } from '../../../src/response-schema/index.js';
 import { createKoriResponseValidator } from '../../../src/response-validator/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
-import { ok } from '../../../src/util/index.js';
+import { succeed } from '../../../src/util/index.js';
 
 import { resolveInternalResponseValidator } from '../../../src/_internal/response-validation-resolver/resolver.js';
 
@@ -16,11 +16,11 @@ const testResponseValidator = createKoriResponseValidator({
   provider: TestProvider,
   validateBody: (input) => {
     if (input.schema === testSchema) {
-      return ok({ content: 'json', validated: true });
+      return succeed({ content: 'json', validated: true });
     } else if (input.schema === testSchema2) {
-      return ok({ content: 'plain', validated: true });
+      return succeed({ content: 'plain', validated: true });
     }
-    return ok({ content: 'unknown', validated: true });
+    return succeed({ content: 'unknown', validated: true });
   },
 });
 
@@ -55,8 +55,8 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       }
 
       const result = await v(mockResponse);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -90,8 +90,8 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -124,17 +124,17 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error.body).toEqual({
+      expect(result.reason.body).toEqual({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: ['application/json'],
-        responseType: 'text/plain',
+        supportedMediaTypes: ['application/json'],
+        responseMediaType: 'text/plain',
       });
     });
   });
@@ -162,8 +162,8 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       }
 
       const result = await v(mockResponse);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -197,8 +197,8 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(true);
-      if (!result.ok) {
+      expect(result.success).toBe(true);
+      if (!result.success) {
         expect.unreachable('for type narrowing');
       }
 
@@ -231,17 +231,17 @@ describe('resolveInternalResponseValidator - Content body validation', () => {
       };
 
       const result = await v(mockRes);
-      expect(result.ok).toBe(false);
-      if (result.ok) {
+      expect(result.success).toBe(false);
+      if (result.success) {
         expect.unreachable('for type narrowing');
       }
 
-      expect(result.error.body).toEqual({
+      expect(result.reason.body).toEqual({
         stage: 'pre-validation',
         type: 'UNSUPPORTED_MEDIA_TYPE',
         message: 'Unsupported Media Type',
-        supportedTypes: ['application/json'],
-        responseType: 'text/plain',
+        supportedMediaTypes: ['application/json'],
+        responseMediaType: 'text/plain',
       });
     });
   });
