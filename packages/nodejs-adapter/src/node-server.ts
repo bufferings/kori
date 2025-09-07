@@ -80,7 +80,11 @@ async function verifyAddress(options: {
     const closeErr: Error | undefined = await new Promise((resolve) => {
       server.close((err: unknown) => resolve(err instanceof Error ? err : undefined));
     });
-    throw new Error('Failed to determine server address', { cause: closeErr });
+    if (closeErr) {
+      throw new Error('Failed to determine server address', { cause: closeErr });
+    } else {
+      throw new Error('Failed to determine server address');
+    }
   }
   return { port: address.port };
 }
