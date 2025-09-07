@@ -1,4 +1,5 @@
 import { createAdaptorServer } from '@hono/node-server';
+import { type ServerType } from '@hono/node-server';
 import {
   type Kori,
   type KoriEnvironment,
@@ -7,7 +8,121 @@ import {
   type KoriResponse,
   type KoriResponseValidatorDefault,
   createKoriSystemLogger,
+  type KoriLogger,
 } from '@korix/kori';
+
+function toError(e: unknown): Error {
+  return e instanceof Error ? e : new Error(String(e));
+}
+
+function startListening(options: {
+  hostname: string;
+  port: number;
+  server: ServerType;
+  onClose: () => Promise<void>;
+  log: KoriLogger;
+}): Promise<void> {
+  const { hostname, port, server, onClose, log } = options;
+
+  return new Promise<void>((resolve, reject) => {
+    let settled = false;
+
+    const onListening = (): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      server.removeListener('error', onError);
+      resolve();
+    };
+
+    const onError = (err: unknown): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      server.removeListener('listening', onListening);
+
+      void (async () => {
+        try {
+          await onClose();
+        } catch (cleanupErr) {
+          log.error('Error during startup cleanup', { err: cleanupErr });
+        } finally {
+          server.close(() => {
+            reject(toError(err));
+          });
+        }
+      })();
+    };
+
+    server.once('listening', onListening);
+    server.once('error', onError);
+    server.listen(port, hostname);
+  });
+}
+
+async function verifyAddress(options: {
+  server: ServerType;
+  onClose: () => Promise<void>;
+  log: KoriLogger;
+}): Promise<{ port: number }> {
+  const { server, onClose, log } = options;
+
+  const address = server.address();
+  if (!address || typeof address === 'string') {
+    log.error('Failed to determine server address after listen');
+    try {
+      await onClose();
+    } catch (cleanupErr) {
+      log.error('Error during startup cleanup', { err: cleanupErr });
+    }
+    const closeErr: Error | undefined = await new Promise((resolve) => {
+      server.close((err: unknown) => resolve(err instanceof Error ? err : undefined));
+    });
+    throw new Error('Failed to determine server address', { cause: closeErr });
+  }
+  return { port: address.port };
+}
+
+function setupServerLifecycle(args: { server: ServerType; onClose: () => Promise<void>; log: KoriLogger }): void {
+  const { server, onClose, log } = args;
+
+  // Runtime error handler
+  server.on('error', (err: unknown) => {
+    log.error('Server runtime error', { err });
+  });
+
+  const gracefulShutdownHandler = (): void => {
+    log.info('Shutting down server...');
+    let onCloseError: Error | undefined;
+
+    void (async () => {
+      try {
+        await onClose();
+      } catch (err) {
+        onCloseError = toError(err);
+        log.error('Error during graceful shutdown', { err: onCloseError });
+      } finally {
+        server.close((serverCloseError: unknown) => {
+          if (serverCloseError) {
+            log.error('Error closing HTTP server', { err: serverCloseError });
+          }
+
+          const exitCode = onCloseError || serverCloseError ? 1 : 0;
+          process.exit(exitCode);
+        });
+      }
+    })();
+  };
+
+  process.once('SIGINT', gracefulShutdownHandler);
+  process.once('SIGTERM', gracefulShutdownHandler);
+}
+
+function getDisplayHost(hostname: string): string {
+  return hostname === '0.0.0.0' || hostname === '::' || hostname === '::1' ? 'localhost' : hostname;
+}
 
 /**
  * Starts a Node.js HTTP server for a Kori application.
@@ -45,85 +160,19 @@ export async function startNodeServer<
     port?: number;
   } = {},
 ): Promise<void> {
-  const port = options.port ?? 3000;
-  const hostname = options.hostname ?? 'localhost';
   const log = createKoriSystemLogger({ baseLogger: kori.log() });
+  const hostname = options.hostname ?? 'localhost';
+  const port = options.port ?? 3000;
 
   const generated = kori.generate();
   const { fetchHandler, onClose } = await generated.onStart();
+  const server = createAdaptorServer({ fetch: fetchHandler });
 
-  const server = createAdaptorServer({
-    fetch: fetchHandler,
-  });
+  await startListening({ hostname, port, server, onClose, log });
+  const address = await verifyAddress({ server, onClose, log });
+  setupServerLifecycle({ server, onClose, log });
 
-  return new Promise((resolve, reject) => {
-    const startupErrorHandler = (err: unknown) => {
-      log.error('Server startup error', { err });
-      reject(err instanceof Error ? err : new Error(String(err)));
-    };
-
-    server.on('error', startupErrorHandler);
-
-    server.listen(port, hostname, () => {
-      const address = server.address();
-      if (!address || typeof address === 'string') {
-        log.error('Failed to determine server address after listen');
-        try {
-          server.close(() => {
-            reject(new Error('Failed to determine server address'));
-          });
-        } catch (closeErr) {
-          reject(closeErr instanceof Error ? closeErr : new Error(String(closeErr)));
-        }
-        return;
-      }
-
-      let displayHost = hostname;
-      if (hostname === '0.0.0.0' || hostname === '::' || hostname === '::1') {
-        displayHost = 'localhost';
-      }
-
-      const actualPort = address.port;
-      log.info(`Kori server started at http://${displayHost}:${actualPort}`);
-
-      // Switch to runtime error handler after successful startup
-      server.removeListener('error', startupErrorHandler);
-      server.on('error', (err) => {
-        log.error('Server runtime error', { err });
-        // Runtime errors are logged but don't terminate the server
-      });
-
-      // Set up graceful shutdown handlers after server successfully starts
-      const gracefulShutdownHandler = async () => {
-        log.info('Shutting down server...');
-        let onCloseError: Error | undefined;
-
-        try {
-          await onClose();
-        } catch (err) {
-          onCloseError = err instanceof Error ? err : new Error(String(err));
-          log.error('Error during graceful shutdown', { err: onCloseError });
-        }
-
-        server.close((serverCloseError) => {
-          if (serverCloseError) {
-            log.error('Error closing HTTP server', { err: serverCloseError });
-          }
-
-          // Exit with error code if either onClose() or server.close() failed
-          const exitCode = onCloseError || serverCloseError ? 1 : 0;
-          process.exit(exitCode);
-        });
-      };
-
-      process.once('SIGINT', () => {
-        void gracefulShutdownHandler();
-      });
-      process.once('SIGTERM', () => {
-        void gracefulShutdownHandler();
-      });
-
-      resolve();
-    });
-  });
+  const displayHost = getDisplayHost(hostname);
+  const actualPort = address.port;
+  log.info(`Kori server started at http://${displayHost}:${actualPort}`);
 }
