@@ -113,7 +113,8 @@ function setupServerLifecycle(args: { server: ServerType; onClose: () => Promise
             log.error('Error closing HTTP server', { err: serverCloseError });
           }
 
-          const exitCode = onCloseError || serverCloseError ? 1 : 0;
+          const hasError = onCloseError !== undefined || serverCloseError !== undefined;
+          const exitCode = hasError ? 1 : 0;
           process.exit(exitCode);
         });
       }
