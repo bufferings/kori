@@ -13,24 +13,13 @@
  * @internal
  */
 export function joinPaths(prefix: string, path: string): string {
-  // Handle both empty case as root path
-  if (!prefix && !path) {
+  if (prefix === '' && path === '') {
     return '/';
   }
 
-  // If prefix is empty, normalize path
-  if (!prefix) {
-    return path.startsWith('/') ? path : '/' + path;
+  if (path === '') {
+    return prefix.replace(/\/+$/, '/');
   }
 
-  // If path is empty, return prefix as is
-  if (!path) {
-    return prefix;
-  }
-
-  // Normalize prefix (remove trailing slash) and path (ensure leading slash)
-  const normalizedPrefix = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
-  const normalizedPath = path.startsWith('/') ? path : '/' + path;
-
-  return normalizedPrefix + normalizedPath;
+  return prefix.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
 }
