@@ -91,7 +91,7 @@ type CreateKoriInternalOptions<
   requestValidator?: ReqV;
   /** Response validator for this instance */
   responseValidator?: ResV;
-  /** Instance-level request validation falure handler */
+  /** Instance-level request validation failure handler */
   onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<Env, Req, Res, ReqV>;
   /** Instance-level response validation failure handler */
   onResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<Env, Req, Res, ResV>;
