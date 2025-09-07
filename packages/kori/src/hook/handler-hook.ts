@@ -97,15 +97,7 @@ export type KoriOnRequestHook<
  *     method: ctx.req.method
  *   });
  *
- *   // Custom handling for validation errors
- *   if (err instanceof ValidationError) {
- *     return ctx.res.badRequest({
- *       message: 'Validation failed',
- *       details: err.details
- *     });
- *   }
- *
- *   // Continue to next error hook for other errors
+ *   // Let the default error handler handle the error
  *   return;
  * };
  * ```
