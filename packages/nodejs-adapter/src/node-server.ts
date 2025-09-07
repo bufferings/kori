@@ -57,10 +57,12 @@ export async function startNodeServer<
   });
 
   return new Promise((resolve, reject) => {
-    server.on('error', (err) => {
-      log.error('Server error', { err });
+    const startupErrorHandler = (err: unknown) => {
+      log.error('Server startup error', { err });
       reject(err instanceof Error ? err : new Error(String(err)));
-    });
+    };
+
+    server.on('error', startupErrorHandler);
 
     server.listen(port, hostname, () => {
       const address = server.address();
@@ -83,6 +85,13 @@ export async function startNodeServer<
 
       const actualPort = address.port;
       log.info(`Kori server started at http://${displayHost}:${actualPort}`);
+
+      // Switch to runtime error handler after successful startup
+      server.removeListener('error', startupErrorHandler);
+      server.on('error', (err) => {
+        log.error('Server runtime error', { err });
+        // Runtime errors are logged but don't terminate the server
+      });
 
       // Set up graceful shutdown handlers after server successfully starts
       const gracefulShutdownHandler = async () => {
