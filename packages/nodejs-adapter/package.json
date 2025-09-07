@@ -51,8 +51,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "tsdown --tsconfig tsconfig.build.json",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "echo 'No unit tests' && exit 0",
+    "test:watch": "echo 'No unit tests' && exit 0"
   },
   "dependencies": {
     "@hono/node-server": "1.15.0"
