@@ -54,7 +54,6 @@ export async function startNodeServer<
 
   const server = createAdaptorServer({
     fetch: fetchHandler,
-    hostname,
   });
 
   return new Promise((resolve, reject) => {
