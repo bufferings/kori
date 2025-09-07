@@ -13,8 +13,8 @@ import {
  * Starts a Node.js HTTP server for a Kori application.
  *
  * Registers signal handlers for graceful shutdown (SIGINT, SIGTERM), logs
- * startup information, and exits the process on shutdown completion or on
- * fatal startup errors.
+ * startup information, and exits the process on shutdown completion.
+ * On startup failure, rejects the Promise - caller must handle exit.
  *
  * @template Env - Environment type merged across plugins and children
  * @template Req - Request type merged across plugins and routes
@@ -25,12 +25,12 @@ import {
  * @param options - Server options
  * @param options.hostname - Hostname for listen and URL reconstruction fallback (default 'localhost')
  * @param options.port - Port number for listen (default 3000)
- * @returns Promise that resolves once the server has begun listening
+ * @returns Promise that resolves once the server has begun listening, rejects on startup failure
  *
  * @remarks
  * - Adds process-level signal handlers (once) for graceful shutdown.
  * - Logs to the system channel via createKoriSystemLogger.
- * - On unrecoverable startup issues, closes the server and exits with code 1.
+ * - On startup failure, rejects Promise with error details for caller handling.
  */
 export async function startNodeServer<
   Env extends KoriEnvironment,
