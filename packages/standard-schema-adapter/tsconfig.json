@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.dev.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": ["src/**/*", "tests/**/*"],
+  "references": [{ "path": "../kori" }]
+}

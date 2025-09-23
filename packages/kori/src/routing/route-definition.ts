@@ -1,5 +1,5 @@
-import { type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
+import { type KoriRequestSchemaBase } from '../request-schema/index.js';
+import { type KoriResponseSchemaBase } from '../response-schema/index.js';
 
 import { type RouteHttpMethod } from './route-http-method.js';
 import { type KoriRoutePluginMetadata } from './route.js';
@@ -10,19 +10,6 @@ import { type KoriRoutePluginMetadata } from './route.js';
  * Represents a route that has been registered with the Kori instance,
  * including its HTTP method, path pattern, schemas, and plugin metadata.
  * Used for route discovery, introspection, and debugging.
- *
- * @example
- * ```typescript
- * // Example route definition
- * const MyPluginKey = Symbol('my-plugin');
- * const routeDefinition: KoriRouteDefinition = {
- *   method: 'POST',
- *   path: '/users/:id',
- *   requestSchema: userUpdateSchema,
- *   responseSchema: userResponseSchema,
- *   pluginMetadata: { [MyPluginKey]: { tags: ['users'] } }
- * };
- * ```
  */
 export type KoriRouteDefinition = {
   /** HTTP method for this route */
@@ -30,9 +17,9 @@ export type KoriRouteDefinition = {
   /** URL path pattern with parameter placeholders */
   path: string;
   /** Optional request schema for validation */
-  requestSchema?: KoriRequestSchemaDefault;
+  requestSchema?: KoriRequestSchemaBase;
   /** Optional response schema for validation */
-  responseSchema?: KoriResponseSchemaDefault;
+  responseSchema?: KoriResponseSchemaBase;
   /** Optional metadata added by plugins */
   pluginMetadata?: KoriRoutePluginMetadata;
 };

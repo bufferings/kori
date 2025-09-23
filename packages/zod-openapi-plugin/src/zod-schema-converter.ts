@@ -1,6 +1,6 @@
-import { type KoriSchemaDefault } from '@korix/kori';
+import { type KoriSchemaBase } from '@korix/kori';
 import { type SchemaConverter, type ConversionContext } from '@korix/openapi-plugin';
-import { isKoriZodSchema } from '@korix/zod-schema';
+import { isKoriZodSchema } from '@korix/zod-schema-adapter';
 import { type SchemaObject } from 'openapi3-ts/oas31';
 import { z } from 'zod';
 
@@ -10,10 +10,10 @@ import { z } from 'zod';
 export function createZodSchemaConverter(): SchemaConverter {
   return {
     name: 'zod-converter',
-    canConvert: (schema: KoriSchemaDefault): boolean => {
+    canConvert: (schema: KoriSchemaBase): boolean => {
       return isKoriZodSchema(schema);
     },
-    convert: (schema: KoriSchemaDefault, _context: ConversionContext): SchemaObject => {
+    convert: (schema: KoriSchemaBase, _context: ConversionContext): SchemaObject => {
       if (!isKoriZodSchema(schema)) {
         throw new Error('Schema is not a valid Kori Zod schema');
       }

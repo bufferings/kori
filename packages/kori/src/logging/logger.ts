@@ -125,7 +125,6 @@ function createChildName({ parentName, childName }: { parentName: string; childN
  *
  * @internal Used within logging module for framework infrastructure
  *
- * @param options - Options for logger creation
  * @param options.channel - Channel name for organizing logs
  * @param options.name - Hierarchical logger name
  * @param options.level - Minimum log level to output

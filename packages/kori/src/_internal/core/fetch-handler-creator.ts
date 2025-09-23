@@ -9,9 +9,9 @@ import {
 } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnStartHook } from '../../hook/index.js';
-import { type KoriLogger, type KoriLoggerFactory } from '../../logging/index.js';
+import { type KoriRouteNotFoundHandler } from '../../kori/index.js';
+import { createKoriSystemLogger, type KoriLogger, type KoriLoggerFactory } from '../../logging/index.js';
 import { type KoriCompiledRouteMatcher } from '../../route-matcher/index.js';
-import { type MaybePromise } from '../../util/index.js';
 
 import { type KoriRouteRegistry } from './route-registry.js';
 
@@ -26,7 +26,12 @@ type KoriOnStartHookAny = KoriOnStartHook<any, any>;
  * handlers, and handles not found cases using shared configuration. Integrates
  * start hooks and manages instance lifecycle.
  *
- * @param options - Configuration for fetch handler creation
+ * @param options.compiledRouteMatcher - Pre-compiled route matching function
+ * @param options.allStartHooks - Instance startup hooks to execute
+ * @param options.loggerFactory - Factory for creating request-scoped loggers
+ * @param options.instanceLogger - Logger for instance-level operations
+ * @param options.routeRegistry - Registry containing route handlers
+ * @param options.onRouteNotFound - Handler for unmatched routes
  * @returns Fetch handler with onStart lifecycle method
  *
  * @internal
@@ -44,7 +49,7 @@ export function createFetchHandler({
   loggerFactory: KoriLoggerFactory;
   instanceLogger: KoriLogger;
   routeRegistry: KoriRouteRegistry;
-  onRouteNotFound: (req: Request) => MaybePromise<Response>;
+  onRouteNotFound: KoriRouteNotFoundHandler;
 }): KoriFetchHandler {
   let instanceCtx = createKoriInstanceContext({ env: createKoriEnvironment(), instanceLogger });
 
@@ -61,13 +66,19 @@ export function createFetchHandler({
 
       const routeRecord = routeRegistry.get(routeMatch.routeId);
       if (!routeRecord?.handler) {
+        // This should normally never happen - route matcher and registry should be in sync
+        const sys = createKoriSystemLogger({ baseLogger: instanceLogger });
+        sys.warn('Route not found in registry', {
+          type: 'route-not-found',
+          routeId: routeMatch.routeId,
+        });
         return await onRouteNotFound(request);
       }
 
       const req = createKoriRequest({
         rawRequest: request,
         pathParams: routeMatch.pathParams,
-        pathTemplate: routeMatch.pathTemplate,
+        pathTemplate: routeRecord.path,
       });
 
       const handlerCtx = createKoriHandlerContext({

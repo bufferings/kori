@@ -11,8 +11,8 @@
     { "path": "../nodejs-adapter" },
     { "path": "../openapi-plugin" },
     { "path": "../openapi-scalar-ui-plugin" },
+    { "path": "../standard-schema-adapter" },
     { "path": "../zod-openapi-plugin" },
-    { "path": "../zod-schema" },
-    { "path": "../zod-validator" }
+    { "path": "../zod-schema-adapter" }
   ]
 }

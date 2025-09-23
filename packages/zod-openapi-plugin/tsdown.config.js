@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: false,
   sourcemap: true,
-  external: ['@korix/kori', '@korix/openapi-plugin', '@korix/zod-schema', 'openapi3-ts', 'zod'],
+  external: ['@korix/kori', '@korix/openapi-plugin', '@korix/zod-schema-adapter', 'openapi3-ts', 'zod'],
 });

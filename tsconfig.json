@@ -13,8 +13,8 @@
     { "path": "./packages/openapi-scalar-ui-plugin" },
     { "path": "./packages/script" },
     { "path": "./packages/security-headers-plugin" },
+    { "path": "./packages/standard-schema-adapter" },
     { "path": "./packages/zod-openapi-plugin" },
-    { "path": "./packages/zod-schema" },
-    { "path": "./packages/zod-validator" }
+    { "path": "./packages/zod-schema-adapter" }
   ]
 }

@@ -1,22 +1,21 @@
 export {
   type KoriRequestSchemaContentBody,
-  type KoriRequestSchemaContentBodyDefault,
+  type KoriRequestSchemaContentBodyBase,
   type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyItemDefault,
-  type KoriRequestSchemaContentBodyMappingDefault,
+  type KoriRequestSchemaContentBodyItemBase,
+  type KoriRequestSchemaContentBodyMappingBase,
 } from './body-content.js';
-export { type KoriRequestSchemaSimpleBody, type KoriRequestSchemaSimpleBodyDefault } from './body-simple.js';
+export { type KoriRequestSchemaSimpleBody, type KoriRequestSchemaSimpleBodyBase } from './body-simple.js';
 export {
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaHeadersOutput,
   type InferRequestSchemaParamsOutput,
   type InferRequestSchemaProvider,
   type InferRequestSchemaQueriesOutput,
-} from './infer.js';
+} from './inference.js';
 export {
   createKoriRequestSchema,
-  getKoriRequestSchemaProvider,
   isKoriRequestSchema,
   type KoriRequestSchema,
-  type KoriRequestSchemaDefault,
+  type KoriRequestSchemaBase,
 } from './schema.js';

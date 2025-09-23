@@ -1,10 +1,6 @@
-import { type InferRequestSchemaProvider, type KoriRequestSchemaDefault } from '../request-schema/index.js';
-import { type InferRequestValidationProvider, type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type InferResponseSchemaProvider, type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import {
-  type InferResponseValidationProvider,
-  type KoriResponseValidatorDefault,
-} from '../response-validator/index.js';
+import { type InferRequestSchemaProvider, type KoriRequestSchemaBase } from '../request-schema/index.js';
+import { type InferResponseSchemaProvider, type KoriResponseSchemaBase } from '../response-schema/index.js';
+import { type InferValidatorProvider, type KoriValidatorBase } from '../validator/index.js';
 
 /**
  * Type constraint ensuring request validator and request schema use compatible providers.
@@ -27,11 +23,11 @@ import {
  * ```
  */
 export type RequestProviderConstraint<
-  RequestValidator extends KoriRequestValidatorDefault | undefined,
-  RequestSchema extends KoriRequestSchemaDefault | undefined,
-> = RequestValidator extends KoriRequestValidatorDefault
-  ? RequestSchema extends KoriRequestSchemaDefault
-    ? InferRequestValidationProvider<RequestValidator> extends InferRequestSchemaProvider<RequestSchema>
+  ReqV extends KoriValidatorBase | undefined,
+  ReqS extends KoriRequestSchemaBase | undefined,
+> = ReqV extends KoriValidatorBase
+  ? ReqS extends KoriRequestSchemaBase
+    ? InferValidatorProvider<ReqV> extends InferRequestSchemaProvider<ReqS>
       ? unknown
       : { _ProviderMismatch: 'Request validator and request schema providers do not match' }
     : unknown
@@ -58,11 +54,11 @@ export type RequestProviderConstraint<
  * ```
  */
 export type ResponseProviderConstraint<
-  ResponseValidator extends KoriResponseValidatorDefault | undefined,
-  ResponseSchema extends KoriResponseSchemaDefault | undefined,
-> = ResponseValidator extends KoriResponseValidatorDefault
-  ? ResponseSchema extends KoriResponseSchemaDefault
-    ? InferResponseValidationProvider<ResponseValidator> extends InferResponseSchemaProvider<ResponseSchema>
+  ResV extends KoriValidatorBase | undefined,
+  ResS extends KoriResponseSchemaBase | undefined,
+> = ResV extends KoriValidatorBase
+  ? ResS extends KoriResponseSchemaBase
+    ? InferValidatorProvider<ResV> extends InferResponseSchemaProvider<ResS>
       ? unknown
       : { _ProviderMismatch: 'Response validator and response schema providers do not match' }
     : unknown

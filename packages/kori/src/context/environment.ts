@@ -1,5 +1,3 @@
-const KoriEnvironmentBrand = Symbol('kori-environment');
-
 /**
  * Base environment type for Kori instances.
  *
@@ -7,7 +5,7 @@ const KoriEnvironmentBrand = Symbol('kori-environment');
  * Plugins and hooks can extend this type to add their own properties.
  */
 export type KoriEnvironment = {
-  [KoriEnvironmentBrand]: typeof KoriEnvironmentBrand;
+  koriKind: 'kori-environment';
 };
 
 /**
@@ -19,6 +17,6 @@ export type KoriEnvironment = {
  */
 export function createKoriEnvironment(): KoriEnvironment {
   return {
-    [KoriEnvironmentBrand]: KoriEnvironmentBrand,
+    koriKind: 'kori-environment',
   };
 }

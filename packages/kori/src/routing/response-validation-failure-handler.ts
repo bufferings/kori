@@ -4,9 +4,9 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../context/index.js';
-import { type KoriResponseSchemaDefault } from '../response-schema/index.js';
-import { type KoriResponseValidator, type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { type KoriResponseSchemaBase } from '../response-schema/index.js';
 import { type MaybePromise } from '../util/index.js';
+import { type InferValidatorFailureReason, type KoriValidatorBase } from '../validator/index.js';
 
 import { type WithPathParams } from './path-params.js';
 import { type ResponseValidationFailure } from './response-validation-result.js';
@@ -30,11 +30,13 @@ export type KoriInstanceResponseValidationFailureHandler<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined,
-> = (
-  ctx: KoriHandlerContext<Env, Req, Res>,
-  reason: InferResponseValidationFailureReason<ResponseValidator>,
-) => MaybePromise<KoriResponse | void>;
+  ResV extends KoriValidatorBase | undefined,
+> = ResV extends KoriValidatorBase
+  ? (
+      ctx: KoriHandlerContext<Env, Req, Res>,
+      reason: ResponseValidationFailure<InferValidatorFailureReason<ResV>>,
+    ) => MaybePromise<KoriResponse | void>
+  : never;
 
 /**
  * Route-specific response validation failure handler.
@@ -46,8 +48,8 @@ export type KoriInstanceResponseValidationFailureHandler<
  * @template Req - Request type with request-specific data and methods
  * @template Res - Response type with response building capabilities
  * @template Path - URL path pattern with parameter placeholders
- * @template ResponseValidator - Response validator for type-safe validation
- * @template ResponseSchema - Response schema defining validation structure
+ * @template ResV - Response validator for type-safe validation
+ * @template ResS - Response schema defining validation structure
  *
  * @param ctx - Handler context with path parameters
  * @param reason - Response validation failure reason
@@ -58,27 +60,13 @@ export type KoriRouteResponseValidationFailureHandler<
   Req extends KoriRequest,
   Res extends KoriResponse,
   Path extends string,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined,
-  ResponseSchema extends KoriResponseSchemaDefault | undefined,
-> = ResponseValidator extends KoriResponseValidatorDefault
-  ? ResponseSchema extends KoriResponseSchemaDefault
+  ResV extends KoriValidatorBase | undefined,
+  ResS extends KoriResponseSchemaBase | undefined,
+> = ResV extends KoriValidatorBase
+  ? ResS extends KoriResponseSchemaBase
     ? (
         ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-        reason: InferResponseValidationFailureReason<ResponseValidator>,
+        reason: ResponseValidationFailure<InferValidatorFailureReason<ResV>>,
       ) => MaybePromise<KoriResponse | void>
     : never
   : never;
-
-/**
- * Extracts the validation failure reason type from a response validator.
- *
- * Provides type-safe access to validation failure reason when implementing
- * custom handlers. The inferred type includes response validation failure scenarios
- * (body validation, status code validation).
- *
- * @template V - Response validator to extract validation failure reason type from
- */
-export type InferResponseValidationFailureReason<V> =
-  V extends KoriResponseValidator<infer _Provider, infer _Schema, infer FailureReason>
-    ? ResponseValidationFailure<FailureReason>
-    : never;

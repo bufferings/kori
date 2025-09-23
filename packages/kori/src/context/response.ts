@@ -12,8 +12,6 @@ import {
 
 import { type KoriRequest } from './request.js';
 
-const KoriResponseBrand = Symbol('kori-response');
-
 /**
  * Options for customizing error responses.
  */
@@ -32,7 +30,7 @@ export type ErrorResponseOptions = {
  * Kori response object for building HTTP responses with method chaining.
  */
 export type KoriResponse = {
-  [KoriResponseBrand]: typeof KoriResponseBrand;
+  koriKind: 'kori-response';
 
   /**
    * Sets the HTTP status code.
@@ -483,12 +481,12 @@ export type KoriResponse = {
  * @returns True if the value is a KoriResponse
  */
 export function isKoriResponse(value: unknown): value is KoriResponse {
-  return typeof value === 'object' && value !== null && KoriResponseBrand in value;
+  return value !== null && typeof value === 'object' && 'koriKind' in value && value.koriKind === 'kori-response';
 }
 
 /** Internal state structure for response object */
 type ResState = {
-  [KoriResponseBrand]: typeof KoriResponseBrand;
+  koriKind: 'kori-response';
 
   statusCode: HttpStatusCode | null;
   headers: Headers | undefined;
@@ -891,7 +889,7 @@ const sharedMethods = {
   isStream(): boolean {
     return this.bodyKind === 'stream';
   },
-} satisfies Omit<KoriResponse, typeof KoriResponseBrand> & ThisType<ResState>;
+} satisfies Omit<KoriResponse, 'koriKind'> & ThisType<ResState>;
 
 /**
  * Creates a new Kori response object.
@@ -904,7 +902,7 @@ const sharedMethods = {
 export function createKoriResponse(req: KoriRequest): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 
-  obj[KoriResponseBrand] = KoriResponseBrand;
+  obj.koriKind = 'kori-response';
   obj.statusCode = null;
   obj.headers = undefined;
   obj.bodyKind = 'none';

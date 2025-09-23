@@ -1,4 +1,11 @@
 /**
+ * Successful validation result containing validated data from response components.
+ */
+export type ResponseValidationSuccess = {
+  body: unknown;
+};
+
+/**
  * Validation failure for response status code resolution.
  *
  * Occurs when no response schema is defined for the actual status code.
@@ -20,6 +27,11 @@ export type ResponseStatusCodeValidationFailure = {
 export type ResponseBodyValidationFailure<FailureReason> =
   | {
       stage: 'pre-validation';
+      type: 'MISSING_CONTENT_TYPE';
+      message: string;
+    }
+  | {
+      stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';
       message: string;
       supportedMediaTypes: string[];
@@ -29,6 +41,8 @@ export type ResponseBodyValidationFailure<FailureReason> =
       stage: 'validation';
       reason: FailureReason;
     };
+
+export type ResponseBodyValidationFailureBase = ResponseBodyValidationFailure<unknown>;
 
 /**
  * Aggregated validation failure for HTTP response components.
@@ -45,19 +59,4 @@ export type ResponseValidationFailure<FailureReason> = {
   body?: ResponseBodyValidationFailure<FailureReason>;
 };
 
-/**
- * Default type alias for BodyValidationFailure with unknown failure reason type.
- */
-export type ResponseBodyValidationFailureDefault = ResponseBodyValidationFailure<unknown>;
-
-/**
- * Default type alias for ResponseValidationFailure with unknown failure reason type.
- */
-export type ResponseValidationFailureDefault = ResponseValidationFailure<unknown>;
-
-/**
- * Successful validation result containing validated data from response components.
- */
-export type ResponseValidationSuccess = {
-  body: unknown;
-};
+export type ResponseValidationFailureBase = ResponseValidationFailure<unknown>;

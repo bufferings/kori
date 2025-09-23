@@ -1,15 +1,18 @@
 import { describe, test, expect } from 'vitest';
 
+import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
+import { createKoriResponseSchema } from '../../../src/response-schema/index.js';
+
 import { createRouteRegistry, type RouteRecord } from '../../../src/_internal/core/route-registry.js';
 
 describe('RouteRegistry contract', () => {
-  test('can register and retrieve routes', () => {
+  test('registers and retrieves routes', () => {
     const registry = createRouteRegistry();
     const record: RouteRecord = {
       method: 'POST',
       path: '/users',
       handler: () => {},
-      requestSchema: { provider: 'test' } as any,
+      requestSchema: createKoriRequestSchema({ provider: 'test-provider' }),
       pluginMetadata: { [Symbol('test')]: 'value' },
     };
 
@@ -19,22 +22,25 @@ describe('RouteRegistry contract', () => {
     expect(retrieved).toEqual(record);
   });
 
-  test('can get all registered routes', () => {
+  test('returns all registered routes in insertion order', () => {
     const registry = createRouteRegistry();
-    const route1: RouteRecord = { method: 'GET', path: '/first', handler: 'handler1' };
-    const route2: RouteRecord = { method: 'POST', path: '/second', handler: 'handler2' };
+    const route1: RouteRecord = { method: 'GET', path: '/first', handler: () => {} };
+    const route2: RouteRecord = { method: 'POST', path: '/second', handler: () => {} };
+    const route3: RouteRecord = { method: 'PUT', path: '/third', handler: () => {} };
 
     registry.register(route1);
     registry.register(route2);
+    registry.register(route3);
 
     const all = registry.getAll();
 
-    expect(all).toHaveLength(2);
+    expect(all).toHaveLength(3);
     expect(all[0]).toEqual(route1);
     expect(all[1]).toEqual(route2);
+    expect(all[2]).toEqual(route3);
   });
 
-  test('register returns unique symbol ID for each route', () => {
+  test('generates unique symbol ID for each route', () => {
     const registry = createRouteRegistry();
     const record: RouteRecord = {
       method: 'GET',
@@ -50,7 +56,23 @@ describe('RouteRegistry contract', () => {
     expect(id1).not.toBe(id2);
   });
 
-  test('get returns undefined for non-existent ID', () => {
+  test('includes method and path in symbol description', () => {
+    const registry = createRouteRegistry();
+
+    const getRecord: RouteRecord = { method: 'GET', path: '/users/:id', handler: () => {} };
+    const postRecord: RouteRecord = { method: 'POST', path: '/posts', handler: () => {} };
+    const customRecord: RouteRecord = { method: { custom: 'PURGE' }, path: '/cache', handler: () => {} };
+
+    const getId = registry.register(getRecord);
+    const postId = registry.register(postRecord);
+    const customId = registry.register(customRecord);
+
+    expect(getId.description).toBe('GET /users/:id');
+    expect(postId.description).toBe('POST /posts');
+    expect(customId.description).toBe('PURGE /cache');
+  });
+
+  test('returns undefined for non-existent ID', () => {
     const registry = createRouteRegistry();
     const nonExistentId = Symbol('non-existent');
 
@@ -59,25 +81,7 @@ describe('RouteRegistry contract', () => {
     expect(result).toBeUndefined();
   });
 
-  test('getAll returns routes in insertion order', () => {
-    const registry = createRouteRegistry();
-    const route1: RouteRecord = { method: 'GET', path: '/first', handler: 'handler1' };
-    const route2: RouteRecord = { method: 'POST', path: '/second', handler: 'handler2' };
-    const route3: RouteRecord = { method: 'PUT', path: '/third', handler: 'handler3' };
-
-    registry.register(route1);
-    registry.register(route2);
-    registry.register(route3);
-
-    const all = registry.getAll();
-
-    expect(all).toHaveLength(3);
-    expect(all[0]).toEqual(route1);
-    expect(all[1]).toEqual(route2);
-    expect(all[2]).toEqual(route3);
-  });
-
-  test('getAll returns empty array for empty registry', () => {
+  test('returns empty array when no routes registered', () => {
     const registry = createRouteRegistry();
 
     const result = registry.getAll();
@@ -85,14 +89,14 @@ describe('RouteRegistry contract', () => {
     expect(result).toEqual([]);
   });
 
-  test('handles all optional RouteRecord properties', () => {
+  test('preserves all optional properties', () => {
     const registry = createRouteRegistry();
     const fullRecord: RouteRecord = {
       method: { custom: 'CUSTOM' },
       path: '/complex/:id',
       handler: () => {},
-      requestSchema: { provider: 'zod' } as any,
-      responseSchema: { provider: 'zod' } as any,
+      requestSchema: createKoriRequestSchema({ provider: 'request-provider' }),
+      responseSchema: createKoriResponseSchema({ provider: 'response-provider' }),
       pluginMetadata: {
         [Symbol('plugin1')]: { config: true },
         [Symbol('plugin2')]: { priority: 'high' },

@@ -23,3 +23,12 @@ export function joinPaths(prefix: string, path: string): string {
 
   return prefix.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
 }
+
+/**
+ * Detects optional parameters that are not in the last segment (":name?/").
+ *
+ * @internal
+ */
+export function hasNonTrailingOptionalParam(path: string): boolean {
+  return /:[A-Za-z0-9_]+(\{[^}]*\})?\?\//.test(path);
+}

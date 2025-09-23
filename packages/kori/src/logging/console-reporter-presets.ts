@@ -6,7 +6,6 @@ import { type KoriLogReporter } from './log-reporter.js';
  * Structured JSON output to console.
  * Suitable for production, CI, and log aggregation systems.
  *
- * @param options - Configuration options
  * @param options.filter - Optional filter to control which entries are logged
  * @returns Reporter configured for JSON console output
  */
@@ -34,7 +33,6 @@ export function jsonConsoleReporter(options: { filter?: KoriLogFilter } = {}): K
  * Human-readable colored output to console.
  * Ideal for development and debugging.
  *
- * @param options - Configuration options
  * @param options.colorize - Enable ANSI colors for log levels (default: true)
  * @param options.filter - Optional filter to control which entries are logged
  * @returns Reporter configured for pretty console output

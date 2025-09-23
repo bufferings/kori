@@ -1,12 +1,10 @@
 import { parseCookies, MediaType, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
 
-const KoriRequestBrand = Symbol('kori-request');
-
 /**
  * Kori request object for accessing HTTP request data in handlers.
  */
 export type KoriRequest = {
-  [KoriRequestBrand]: typeof KoriRequestBrand;
+  koriKind: 'kori-request';
 
   /**
    * Gets the raw Web API Request object for direct access to native features.
@@ -222,7 +220,7 @@ type BodyCache = {
 
 /** Internal state structure for request object */
 type ReqState = {
-  [KoriRequestBrand]: typeof KoriRequestBrand;
+  koriKind: 'kori-request';
   rawRequest: Request;
   pathParamsValue: Record<string, string>;
   pathTemplateValue: string;
@@ -438,17 +436,16 @@ const sharedMethods = {
   parseBody() {
     return parseBodyInternal(this);
   },
-} satisfies Omit<KoriRequest, typeof KoriRequestBrand> & ThisType<ReqState>;
+} satisfies Omit<KoriRequest, 'koriKind'> & ThisType<ReqState>;
 
 /**
  * Creates a new Kori request object.
  *
  * @packageInternal Framework infrastructure for creating request objects
  *
- * @param params - Request creation parameters
- * @param params.rawRequest - The raw Web API Request object
- * @param params.pathParams - Path parameters extracted from routing
- * @param params.pathTemplate - The path template used for routing
+ * @param options.rawRequest - The raw Web API Request object
+ * @param options.pathParams - Path parameters extracted from routing
+ * @param options.pathTemplate - The path template used for routing
  * @returns New KoriRequest instance
  */
 export function createKoriRequest({
@@ -462,7 +459,7 @@ export function createKoriRequest({
 }): KoriRequest {
   const obj = Object.create(sharedMethods) as ReqState;
 
-  obj[KoriRequestBrand] = KoriRequestBrand;
+  obj.koriKind = 'kori-request';
   obj.rawRequest = rawRequest;
   obj.pathParamsValue = pathParams;
   obj.pathTemplateValue = pathTemplate;

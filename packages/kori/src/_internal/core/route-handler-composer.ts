@@ -8,67 +8,38 @@ import {
 } from '../../context/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../../hook/index.js';
 import { createKoriSystemLogger } from '../../logging/index.js';
-import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
-import { type KoriRequestValidatorDefault } from '../../request-validator/index.js';
-import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
-import { type KoriResponseValidatorDefault } from '../../response-validator/index.js';
+import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
+import { type KoriResponseSchemaBase } from '../../response-schema/index.js';
 import {
   type WithPathParams,
   type KoriHandler,
-  type KoriInstanceRequestValidationFailureHandler,
-  type KoriInstanceResponseValidationFailureHandler,
+  type ValidatedRequest,
   type KoriRouteRequestValidationFailureHandler,
   type KoriRouteResponseValidationFailureHandler,
-  type ValidatedRequest,
-  type InferRequestValidationFailureReason,
-  type InferResponseValidationFailureReason,
+  type KoriInstanceRequestValidationFailureHandler,
+  type KoriInstanceResponseValidationFailureHandler,
+  type RequestValidationFailureBase,
+  type ResponseValidationFailureBase,
 } from '../../routing/index.js';
-import { resolveInternalRequestValidator } from '../request-validation-resolver/index.js';
-import { resolveInternalResponseValidator } from '../response-validation-resolver/index.js';
+import { type KoriValidatorBase } from '../../validator/index.js';
+import { resolveRequestValidator } from '../request-validation-resolver/index.js';
+import { resolveResponseValidator } from '../response-validation-resolver/index.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type KoriOnRequestHookAny = KoriOnRequestHook<any, any, any, any, any>;
 type KoriOnErrorHookAny = KoriOnErrorHook<any, any, any>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-type Dependencies<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  ReqV extends KoriRequestValidatorDefault | undefined,
-  ResV extends KoriResponseValidatorDefault | undefined,
-> = {
-  requestValidator?: ReqV;
-  responseValidator?: ResV;
-  instanceOnRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<Env, Req, Res, ReqV>;
-  instanceOnResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<Env, Req, Res, ResV>;
-  requestHooks: KoriOnRequestHookAny[];
-  errorHooks: KoriOnErrorHookAny[];
-};
-
-type RouteParameters<
-  Env extends KoriEnvironment,
-  Req extends KoriRequest,
-  Res extends KoriResponse,
-  Path extends string,
-  ReqV extends KoriRequestValidatorDefault | undefined,
-  ResV extends KoriResponseValidatorDefault | undefined,
-  ReqS extends KoriRequestSchemaDefault | undefined,
-  ResS extends KoriResponseSchemaDefault | undefined,
-> = {
-  requestSchema?: ReqS;
-  responseSchema?: ResS;
-  handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
-  routeOnRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
-  routeOnResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
-};
-
 /**
- * Creates hook executor for request and error hooks with proper error handling.
+ * Creates a higher-order function that executes a main handler within a
+ * request/error hook execution context.
  *
- * Executes request hooks sequentially and handles early termination when a hook
- * returns a response. For errors, attempts all error hooks and provides fallback
- * handling when no hook processes the error.
+ * The executor manages the following lifecycle:
+ * 1. Executes all `onRequest` hooks in order.
+ * 2. If a hook returns a `KoriResponse`, the chain is aborted.
+ * 3. If hooks complete, executes the `mainHandler`.
+ * 4. If any step throws an error, executes `onError` hooks.
+ * 5. Ensures `defer` callbacks are executed in `finally` block.
  */
 function createHookExecutor<
   Env extends KoriEnvironment,
@@ -81,31 +52,31 @@ function createHookExecutor<
     mainHandler: (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse>,
   ): Promise<KoriResponse> => {
     let currentCtx = ctx;
-    let isAborted = false;
 
     try {
       for (const hook of hooks.requestHooks) {
         const result = await hook(currentCtx);
         if (isKoriResponse(result)) {
-          isAborted = true;
-          break;
+          // A request hook signaled to abort. The response is in `currentCtx.res`.
+          return currentCtx.res;
         }
         if (result) {
           currentCtx = result;
         }
       }
 
-      if (!isAborted) {
-        await mainHandler(currentCtx);
-      }
+      // Execute the main handler, but its return value is only a signal.
+      // The actual response to be returned is always `currentCtx.res`.
+      await mainHandler(currentCtx);
+      return currentCtx.res;
     } catch (err) {
-      let isErrHandled = false;
       for (const hook of hooks.errorHooks) {
         try {
           const result = await hook(currentCtx, err);
           if (isKoriResponse(result)) {
-            isErrHandled = true;
-            break;
+            // An error hook signaled that it handled the error.
+            // The response is in `currentCtx.res`.
+            return currentCtx.res;
           }
         } catch (hookError) {
           const sys = createKoriSystemLogger({ baseLogger: currentCtx.log() });
@@ -116,19 +87,41 @@ function createHookExecutor<
         }
       }
 
-      if (!isErrHandled) {
-        const sys = createKoriSystemLogger({ baseLogger: currentCtx.log() });
-        sys.error('Unhandled error in route handler', {
-          err: sys.serializeError(err),
-        });
-        currentCtx.res.internalError();
-      }
+      const sys = createKoriSystemLogger({ baseLogger: currentCtx.log() });
+      sys.error('Unhandled error in route handler', {
+        err: sys.serializeError(err),
+      });
+      return currentCtx.res.internalError();
     } finally {
       await executeHandlerDeferredCallbacks(currentCtx);
     }
-
-    return currentCtx.res;
   };
+}
+
+function fallbackRequestValidationFailureHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(ctx: KoriHandlerContext<Env, Req, Res>, reason: RequestValidationFailureBase): KoriResponse {
+  const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
+
+  // Handle pre-validation unsupported media type failure with 415 status
+  if (
+    reason.body?.stage === 'pre-validation' &&
+    (reason.body.type === 'MISSING_CONTENT_TYPE' || reason.body.type === 'UNSUPPORTED_MEDIA_TYPE')
+  ) {
+    sys.info('Request validation failed with unsupported media type', {
+      type: 'request-validation',
+      err: reason,
+    });
+    return ctx.res.unsupportedMediaType();
+  }
+
+  sys.info('Request validation failed', {
+    type: 'request-validation',
+    err: reason,
+  });
+  return ctx.res.badRequest({ message: 'Request validation failed' });
 }
 
 /**
@@ -143,8 +136,8 @@ function createRequestValidationFailureHandler<
   Req extends KoriRequest,
   Res extends KoriResponse,
   Path extends string,
-  ReqV extends KoriRequestValidatorDefault | undefined,
-  ReqS extends KoriRequestSchemaDefault | undefined,
+  ReqV extends KoriValidatorBase | undefined,
+  ReqS extends KoriRequestSchemaBase | undefined,
 >({
   instanceHandler,
   routeHandler,
@@ -153,7 +146,7 @@ function createRequestValidationFailureHandler<
   routeHandler?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  reason: InferRequestValidationFailureReason<ReqV>,
+  reason: RequestValidationFailureBase,
 ) => Promise<KoriResponse> {
   return async (ctx, reason) => {
     // 1. Try route handler first
@@ -172,24 +165,22 @@ function createRequestValidationFailureHandler<
       }
     }
 
-    // 3. Handle pre-validation unsupported media type failure with 415 status
-    if (reason.body?.stage === 'pre-validation' && reason.body.type === 'UNSUPPORTED_MEDIA_TYPE') {
-      return ctx.res.unsupportedMediaType();
-    }
-
-    // 4. Default validation error handling with 400 status
-    // Log error occurrence for monitoring
-    const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
-    sys.warn('Request validation failed', {
-      type: 'request-validation',
-      err: sys.serializeError(reason),
-    });
-
-    // Return minimal error information to client
-    return ctx.res.badRequest({
-      message: 'Request validation failed',
-    });
+    // 3. Fallback to default handler
+    return fallbackRequestValidationFailureHandler(ctx, reason);
   };
+}
+
+function fallbackResponseValidationFailureHandler<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(ctx: KoriHandlerContext<Env, Req, Res>, reason: ResponseValidationFailureBase): void {
+  const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
+  sys.info('Response validation failed', {
+    type: 'response-validation',
+    err: reason,
+  });
+  return undefined;
 }
 
 /**
@@ -204,8 +195,8 @@ function createResponseValidationFailureHandler<
   Req extends KoriRequest,
   Res extends KoriResponse,
   Path extends string,
-  ResV extends KoriResponseValidatorDefault | undefined,
-  ResS extends KoriResponseSchemaDefault | undefined,
+  ResV extends KoriValidatorBase | undefined,
+  ResS extends KoriResponseSchemaBase | undefined,
 >({
   instanceHandler,
   routeHandler,
@@ -214,7 +205,7 @@ function createResponseValidationFailureHandler<
   routeHandler?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
 }): (
   ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-  reason: InferResponseValidationFailureReason<ResV>,
+  reason: ResponseValidationFailureBase,
 ) => Promise<KoriResponse | void> {
   return async (ctx, reason) => {
     // 1. Try route handler first
@@ -233,85 +224,118 @@ function createResponseValidationFailureHandler<
       }
     }
 
-    // 3. Default handling (log warning but return void to use original response)
-    const sys = createKoriSystemLogger({ baseLogger: ctx.log() });
-    sys.warn('Response validation failed', {
-      type: 'response-validation',
-      err: sys.serializeError(reason),
-    });
-    return undefined;
+    // 3. Fallback to default handler
+    return fallbackResponseValidationFailureHandler(ctx, reason);
   };
 }
 
+type InstanceOptions<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  ReqV extends KoriValidatorBase | undefined,
+  ResV extends KoriValidatorBase | undefined,
+> = {
+  requestValidator?: ReqV;
+  responseValidator?: ResV;
+  instanceOnRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<Env, Req, Res, ReqV>;
+  instanceOnResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<Env, Req, Res, ResV>;
+  requestHooks: KoriOnRequestHookAny[];
+  errorHooks: KoriOnErrorHookAny[];
+};
+
+type RouteOptions<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+  Path extends string,
+  ReqV extends KoriValidatorBase | undefined,
+  ResV extends KoriValidatorBase | undefined,
+  ReqS extends KoriRequestSchemaBase | undefined,
+  ResS extends KoriResponseSchemaBase | undefined,
+> = {
+  requestSchema?: ReqS;
+  responseSchema?: ResS;
+  handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  routeOnRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  routeOnResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
+};
+
 /**
- * Composes a route handler with hooks, request/response validation, and validation failure handlers.
+ * Composes a final route handler by integrating hooks, validation, and
+ * error handling around a user-provided handler.
  *
- * @template Env - Environment type containing instance-specific data
- * @template Req - Request type with request-specific data and methods
- * @template Res - Response type with response building capabilities
- * @template Path - URL path pattern with parameter placeholders
- * @template RequestValidator - Request validator for type-safe validation
- * @template ResponseValidator - Response validator for type-safe validation
- * @template RequestSchema - Request schema defining validation structure
- * @template ResponseSchema - Response schema defining validation structure
+ * This function builds a pipeline that executes in the following order:
+ * 1. Request hooks
+ * 2. Request validation
+ * 3. User-provided handler
+ * 4. Response validation
+ * 5. Error hooks (if any step fails)
  *
- * @param deps - Dependencies for handler composition
- * @param routeParams - Route parameters for handler composition
- * @returns Composed handler function
+ * For performance, if no hooks or validation are configured for a route,
+ * the original handler is returned directly to avoid wrapper overhead.
  *
- * @internal
+ * @param options.instanceOptions - Instance-level configurations
+ * @param options.routeOptions - Route-specific configurations
+ * @returns The composed route handler function
+ *
+ * @internal The core handler composition logic for the framework.
  */
 export function composeRouteHandler<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
   Path extends string,
-  ReqV extends KoriRequestValidatorDefault | undefined,
-  ResV extends KoriResponseValidatorDefault | undefined,
-  ReqS extends KoriRequestSchemaDefault | undefined,
-  ResS extends KoriResponseSchemaDefault | undefined,
+  ReqV extends KoriValidatorBase | undefined,
+  ResV extends KoriValidatorBase | undefined,
+  ReqS extends KoriRequestSchemaBase | undefined,
+  ResS extends KoriResponseSchemaBase | undefined,
 >({
-  deps,
-  routeParams,
+  instanceOptions,
+  routeOptions,
 }: {
-  deps: Dependencies<Env, Req, Res, ReqV, ResV>;
-  routeParams: RouteParameters<Env, Req, Res, Path, ReqV, ResV, ReqS, ResS>;
+  instanceOptions: InstanceOptions<Env, Req, Res, ReqV, ResV>;
+  routeOptions: RouteOptions<Env, Req, Res, Path, ReqV, ResV, ReqS, ResS>;
 }): (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>) => Promise<KoriResponse> {
-  type ValidatedContext = KoriHandlerContext<Env, ValidatedRequest<WithPathParams<Req, Path>, ReqV, ReqS>, Res>;
+  const requestValidateFn = resolveRequestValidator({
+    validator: instanceOptions.requestValidator,
+    schema: routeOptions.requestSchema,
+  });
+  const responseValidateFn = resolveResponseValidator({
+    validator: instanceOptions.responseValidator,
+    schema: routeOptions.responseSchema,
+  });
+
+  const hasHooks = instanceOptions.requestHooks.length > 0 || instanceOptions.errorHooks.length > 0;
+  const hasValidation = !!requestValidateFn || !!responseValidateFn;
+  if (!hasHooks && !hasValidation) {
+    // Optimization: If no hooks or validation are needed, return the original
+    // handler directly to avoid unnecessary async wrapper overhead on the hot path.
+    return routeOptions.handler as unknown as (
+      ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
+    ) => Promise<KoriResponse>;
+  }
 
   const executeWithHooks = createHookExecutor<Env, Req, Res, Path>({
-    requestHooks: deps.requestHooks,
-    errorHooks: deps.errorHooks,
-  });
-
-  const requestValidateFn = resolveInternalRequestValidator({
-    requestValidator: deps.requestValidator,
-    requestSchema: routeParams.requestSchema,
-  });
-
-  const responseValidateFn = resolveInternalResponseValidator({
-    responseValidator: deps.responseValidator,
-    responseSchema: routeParams.responseSchema,
+    requestHooks: instanceOptions.requestHooks,
+    errorHooks: instanceOptions.errorHooks,
   });
 
   const requestValidationFailureHandler = createRequestValidationFailureHandler({
-    instanceHandler: deps.instanceOnRequestValidationFailure,
-    routeHandler: routeParams.routeOnRequestValidationFailure,
+    instanceHandler: instanceOptions.instanceOnRequestValidationFailure,
+    routeHandler: routeOptions.routeOnRequestValidationFailure,
   });
 
   const responseValidationFailureHandler = createResponseValidationFailureHandler({
-    instanceHandler: deps.instanceOnResponseValidationFailure,
-    routeHandler: routeParams.routeOnResponseValidationFailure,
+    instanceHandler: instanceOptions.instanceOnResponseValidationFailure,
+    routeHandler: routeOptions.routeOnResponseValidationFailure,
   });
 
   const mainHandler = async (ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>): Promise<KoriResponse> => {
     if (requestValidateFn) {
       const validationResult = await requestValidateFn(ctx.req);
       if (!validationResult.success) {
-        return await requestValidationFailureHandler(
-          ctx,
-          validationResult.reason as InferRequestValidationFailureReason<ReqV>,
-        );
+        return await requestValidationFailureHandler(ctx, validationResult.reason);
       }
 
       ctx = ctx.withReq({
@@ -322,15 +346,13 @@ export function composeRouteHandler<
       });
     }
 
-    const response = await routeParams.handler(ctx as ValidatedContext);
+    type ValidatedContext = KoriHandlerContext<Env, ValidatedRequest<WithPathParams<Req, Path>, ReqV, ReqS>, Res>;
+    const response = await routeOptions.handler(ctx as ValidatedContext);
 
     if (responseValidateFn) {
       const responseValidationResult = await responseValidateFn(response);
       if (!responseValidationResult.success) {
-        const handlerResult = await responseValidationFailureHandler(
-          ctx,
-          responseValidationResult.reason as InferResponseValidationFailureReason<ResV>,
-        );
+        const handlerResult = await responseValidationFailureHandler(ctx, responseValidationResult.reason);
         if (handlerResult) {
           return handlerResult;
         }
@@ -340,16 +362,6 @@ export function composeRouteHandler<
 
     return response;
   };
-
-  const hasHooks = deps.requestHooks.length > 0 || deps.errorHooks.length > 0;
-  const hasValidation = !!requestValidateFn || !!responseValidateFn;
-  if (!hasHooks && !hasValidation) {
-    // The route is a straight passthrough. Return the original handler
-    // to avoid unnecessary wrapper overhead.
-    return routeParams.handler as unknown as (
-      ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-    ) => Promise<KoriResponse>;
-  }
 
   return (ctx) => executeWithHooks(ctx, mainHandler);
 }

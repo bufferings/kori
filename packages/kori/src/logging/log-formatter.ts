@@ -42,7 +42,6 @@ export function createJsonFormatter(): KoriLogFormatter {
  * Formats entries in a readable format suitable for development
  * and debugging environments.
  *
- * @param options - Formatting configuration options
  * @param options.colorize - Enable ANSI colors for log levels
  * @param options.includeTimestamp - Include timestamp in output (default: true)
  * @returns Formatter that outputs human-readable strings

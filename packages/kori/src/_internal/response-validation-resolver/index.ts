@@ -1,1 +1,1 @@
-export { resolveInternalResponseValidator } from './resolver.js';
+export { resolveResponseValidator } from './response-validation-resolver.js';

@@ -1,4 +1,14 @@
 /**
+ * Successful validation result containing validated data from all request components.
+ */
+export type RequestValidationSuccess = {
+  params: unknown;
+  queries: unknown;
+  headers: unknown;
+  body: unknown;
+};
+
+/**
  * Failure shape for the validation stage across request components.
  *
  * For body, this shape is used only at the schema validation stage
@@ -11,6 +21,8 @@ export type RequestFieldValidationFailure<FailureReason> = {
   reason: FailureReason;
 };
 
+export type RequestFieldValidationFailureBase = RequestFieldValidationFailure<unknown>;
+
 /**
  * Validation failure for request body.
  *
@@ -21,6 +33,11 @@ export type RequestFieldValidationFailure<FailureReason> = {
  * @template FailureReason - Failure reason type from the validation library
  */
 export type RequestBodyValidationFailure<FailureReason> =
+  | {
+      stage: 'pre-validation';
+      type: 'MISSING_CONTENT_TYPE';
+      message: string;
+    }
   | {
       stage: 'pre-validation';
       type: 'UNSUPPORTED_MEDIA_TYPE';
@@ -35,6 +52,8 @@ export type RequestBodyValidationFailure<FailureReason> =
       cause?: unknown;
     }
   | RequestFieldValidationFailure<FailureReason>;
+
+export type RequestBodyValidationFailureBase = RequestBodyValidationFailure<unknown>;
 
 /**
  * Aggregated validation failure for HTTP request components.
@@ -53,27 +72,4 @@ export type RequestValidationFailure<FailureReason> = {
   body?: RequestBodyValidationFailure<FailureReason>;
 };
 
-/**
- * Default type alias for FieldValidationFailure with unknown failure reason type.
- */
-export type RequestFieldValidationFailureDefault = RequestFieldValidationFailure<unknown>;
-
-/**
- * Default type alias for BodyValidationFailure with unknown failure reason type.
- */
-export type RequestBodyValidationFailureDefault = RequestBodyValidationFailure<unknown>;
-
-/**
- * Default type alias for RequestValidationFailure with unknown failure reason type.
- */
-export type RequestValidationFailureDefault = RequestValidationFailure<unknown>;
-
-/**
- * Successful validation result containing validated data from all request components.
- */
-export type RequestValidationSuccess = {
-  params: unknown;
-  queries: unknown;
-  headers: unknown;
-  body: unknown;
-};
+export type RequestValidationFailureBase = RequestValidationFailure<unknown>;
