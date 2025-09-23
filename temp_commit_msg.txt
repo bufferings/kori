@@ -1,7 +1,0 @@
-Refactor schema architecture with new adapter system
-
-- Remove zod-schema and zod-validator packages
-- Add standard-schema-adapter and zod-schema-adapter packages
-- Update type system with improved provider constraints
-- Enhance schema validation with cleaner separation
-- Upgrade dependencies including Hono to latest version
