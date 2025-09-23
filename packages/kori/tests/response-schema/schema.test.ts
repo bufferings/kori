@@ -5,39 +5,47 @@ import { createKoriSchema } from '../../src/schema/index.js';
 
 import {
   createKoriResponseSchema,
-  getKoriResponseSchemaProvider,
   isKoriResponseSchema,
   type KoriResponseSchema,
 } from '../../src/response-schema/schema.js';
 
-const TestProvider = Symbol('test-provider');
+const testProvider = 'test-provider';
 
 describe('createKoriResponseSchema', () => {
-  test('creates schema with provider', () => {
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {},
+  test('creates schema with provider only', () => {
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<KoriResponseSchema<typeof TestProvider, {}>>();
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBeUndefined();
+
+    expectTypeOf<typeof responseSchema>().toExtend<KoriResponseSchema<typeof testProvider, {}>>();
   });
 
   test('creates schema with headers', () => {
     const headersSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': { headers: headersSchema, content: {} },
-      },
+    const responses = {
+      '200': { headers: headersSchema, content: {} },
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': {
             headers: typeof headersSchema;
@@ -48,22 +56,28 @@ describe('createKoriResponseSchema', () => {
     >();
   });
 
-  test('creates schema with simple body', () => {
-    const userSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { id: number }>({
-      provider: TestProvider,
+  test('creates schema with simple body (direct schema)', () => {
+    const userSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { id: number }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': userSchema,
-      },
+    const responses = {
+      '200': userSchema,
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': typeof userSchema;
         }
@@ -71,26 +85,32 @@ describe('createKoriResponseSchema', () => {
     >();
   });
 
-  test('creates schema with simple body wrapper', () => {
-    const userSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { id: number }>({
-      provider: TestProvider,
+  test('creates schema with simple body (with metadata)', () => {
+    const userSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { id: number }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': {
-          schema: userSchema,
-          description: 'OK',
-          examples: { sample: { id: 1 } },
-        },
+    const responses = {
+      '200': {
+        schema: userSchema,
+        description: 'User successfully retrieved',
+        examples: { sample: { id: 1 } },
       },
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': {
             schema: typeof userSchema;
@@ -102,26 +122,32 @@ describe('createKoriResponseSchema', () => {
     >();
   });
 
-  test('creates schema with content body', () => {
-    const userSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { id: number }>({
-      provider: TestProvider,
+  test('creates schema with content body (direct schema)', () => {
+    const userSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { id: number }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': {
-          content: {
-            'application/json': userSchema,
-          },
+    const responses = {
+      '200': {
+        content: {
+          'application/json': userSchema,
         },
       },
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': {
             content: {
@@ -133,31 +159,37 @@ describe('createKoriResponseSchema', () => {
     >();
   });
 
-  test('creates schema with content body wrapper', () => {
-    const userSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { id: number; name: string }>({
-      provider: TestProvider,
+  test('creates schema with content body (schema with examples)', () => {
+    const userSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { id: number; name: string }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': {
-          content: {
-            'application/json': {
-              schema: userSchema,
-              examples: {
-                sample: { id: 1, name: 'Alice' },
-              },
+    const responses = {
+      '200': {
+        content: {
+          'application/json': {
+            schema: userSchema,
+            examples: {
+              sample: { id: 1, name: 'Alice' },
             },
           },
         },
       },
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': {
             content: {
@@ -174,65 +206,71 @@ describe('createKoriResponseSchema', () => {
     >();
   });
 
-  test('creates comprehensive API response schema', () => {
+  test('creates comprehensive response schema with status codes', () => {
     const userSchema = createKoriSchema<
-      typeof TestProvider,
+      typeof testProvider,
       { type: 'object' },
       { id: number; name: string; email: string }
     >({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
-    const errorSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { error: string; code: number }>({
-      provider: TestProvider,
+    const errorSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { error: string; code: number }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
-    const headersSchema = createKoriSchema<typeof TestProvider, { type: 'object' }, { 'x-rate-limit': number }>({
-      provider: TestProvider,
+    const headersSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { 'x-rate-limit': number }>({
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: {
-        '200': {
-          description: 'User successfully retrieved',
-          headers: headersSchema,
-          schema: userSchema,
-          examples: {
-            standard: { id: 1, name: 'Alice', email: 'alice@example.com' },
-          },
-        },
-        '404': {
-          description: 'User not found',
-          content: {
-            'application/json': {
-              schema: errorSchema,
-              examples: {
-                notFound: { error: 'User not found', code: 404 },
-              },
-            },
-            'application/xml': errorSchema,
-          },
-        },
-        '4XX': {
-          description: 'Client error',
-          content: {
-            'application/json': errorSchema,
-          },
-        },
-        '5XX': {
-          description: 'Server error',
-          content: {
-            'application/json': errorSchema,
-          },
+    const responses = {
+      '200': {
+        description: 'User successfully retrieved',
+        headers: headersSchema,
+        schema: userSchema,
+        examples: {
+          standard: { id: 1, name: 'Alice', email: 'alice@example.com' },
         },
       },
+      '404': {
+        description: 'User not found',
+        content: {
+          'application/json': {
+            schema: errorSchema,
+            examples: {
+              notFound: { error: 'User not found', code: 404 },
+            },
+          },
+          'application/xml': errorSchema,
+        },
+      },
+      '4XX': {
+        description: 'Client error',
+        content: {
+          'application/json': errorSchema,
+        },
+      },
+      '5XX': {
+        description: 'Server error',
+        content: {
+          'application/json': errorSchema,
+        },
+      },
+    };
+
+    const responseSchema = createKoriResponseSchema({
+      provider: testProvider,
+      responses,
     });
 
-    expectTypeOf<typeof _responseSchema>().toExtend<
+    expect(responseSchema.koriKind).toBe('kori-response-schema');
+    expect(responseSchema.provider).toBe(testProvider);
+    expect(responseSchema.responses).toBe(responses);
+
+    expectTypeOf<typeof responseSchema>().toExtend<
       KoriResponseSchema<
-        typeof TestProvider,
+        typeof testProvider,
         {
           '200': {
             description: string;
@@ -273,41 +311,28 @@ describe('createKoriResponseSchema', () => {
 });
 
 describe('isKoriResponseSchema', () => {
-  test('returns true for valid response schema', () => {
+  test('identifies valid response schemas', () => {
     const userSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
     const responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
+      provider: testProvider,
       responses: { '200': userSchema },
     });
 
     expect(isKoriResponseSchema(responseSchema)).toBe(true);
   });
 
-  test('returns false for non-response schema values', () => {
+  test('rejects invalid values', () => {
     expect(isKoriResponseSchema(null)).toBe(false);
     expect(isKoriResponseSchema(undefined)).toBe(false);
     expect(isKoriResponseSchema({})).toBe(false);
-    expect(isKoriResponseSchema('string')).toBe(false);
-    expect(isKoriResponseSchema(123)).toBe(false);
-  });
-});
-
-describe('getKoriResponseSchemaProvider', () => {
-  test('returns the provider symbol', () => {
-    const userSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
-    });
-
-    const responseSchema = createKoriResponseSchema({
-      provider: TestProvider,
-      responses: { '200': userSchema },
-    });
-
-    expect(getKoriResponseSchemaProvider(responseSchema)).toBe(TestProvider);
+    expect(isKoriResponseSchema({ koriKind: 'wrong-kind' })).toBe(false);
+    expect(isKoriResponseSchema({ koriKind: 'kori-response-schema' })).toBe(true);
+    expect(isKoriResponseSchema({ provider: testProvider })).toBe(false);
+    expect(isKoriResponseSchema('not-an-object')).toBe(false);
+    expect(isKoriResponseSchema(42)).toBe(false);
   });
 });

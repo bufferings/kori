@@ -203,15 +203,15 @@ importers:
       '@korix/security-headers-plugin':
         specifier: workspace:*
         version: link:../security-headers-plugin
+      '@korix/standard-schema-adapter':
+        specifier: workspace:*
+        version: link:../standard-schema-adapter
       '@korix/zod-openapi-plugin':
         specifier: workspace:*
         version: link:../zod-openapi-plugin
-      '@korix/zod-schema':
+      '@korix/zod-schema-adapter':
         specifier: workspace:*
-        version: link:../zod-schema
-      '@korix/zod-validator':
-        specifier: workspace:*
-        version: link:../zod-validator
+        version: link:../zod-schema-adapter
       '@scalar/api-reference':
         specifier: 1.32.10
         version: 1.32.10(tailwindcss@4.1.11)(typescript@5.8.3)
@@ -302,8 +302,8 @@ importers:
   packages/kori:
     dependencies:
       hono:
-        specifier: 4.8.4
-        version: 4.8.4
+        specifier: 4.9.8
+        version: 4.9.8
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -331,7 +331,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 1.15.0
-        version: 1.15.0(hono@4.8.4)
+        version: 1.15.0(hono@4.9.8)
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -488,6 +488,36 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
 
+  packages/standard-schema-adapter:
+    devDependencies:
+      '@korix/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@korix/kori':
+        specifier: workspace:*
+        version: link:../kori
+      '@standard-schema/spec':
+        specifier: 1.0.0
+        version: 1.0.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.11.17
+      eslint:
+        specifier: 'catalog:'
+        version: 9.16.0(jiti@2.4.2)
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.0.1
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.12.9(typescript@5.8.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
+
   packages/zod-openapi-plugin:
     devDependencies:
       '@korix/eslint-config':
@@ -502,9 +532,9 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
-      '@korix/zod-schema':
+      '@korix/zod-schema-adapter':
         specifier: workspace:*
-        version: link:../zod-schema
+        version: link:../zod-schema-adapter
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17
@@ -530,7 +560,7 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
 
-  packages/zod-schema:
+  packages/zod-schema-adapter:
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -538,39 +568,6 @@ importers:
       '@korix/kori':
         specifier: workspace:*
         version: link:../kori
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.11.17
-      eslint:
-        specifier: 'catalog:'
-        version: 9.16.0(jiti@2.4.2)
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.0.1
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.12.9(typescript@5.8.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)
-      zod:
-        specifier: 4.0.0
-        version: 4.0.0
-
-  packages/zod-validator:
-    devDependencies:
-      '@korix/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@korix/kori':
-        specifier: workspace:*
-        version: link:../kori
-      '@korix/zod-schema':
-        specifier: workspace:*
-        version: link:../zod-schema
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17
@@ -1596,6 +1593,9 @@ packages:
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
+
+  '@standard-schema/spec@1.0.0':
+    resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
@@ -2684,8 +2684,8 @@ packages:
   highlightjs-vue@1.0.0:
     resolution: {integrity: sha512-PDEfEF102G23vHmPhLyPboFCD+BkMGu+GuJe2d9/eH4FsCwvgBpnc9n0pGE+ffKdph38s6foEZiEjdgHdzp+IA==}
 
-  hono@4.8.4:
-    resolution: {integrity: sha512-KOIBp1+iUs0HrKztM4EHiB2UtzZDTBihDtOF5K6+WaJjCPeaW4Q92R8j63jOhvJI5+tZSMuKD9REVEXXY9illg==}
+  hono@4.9.8:
+    resolution: {integrity: sha512-JW8Bb4RFWD9iOKxg5PbUarBYGM99IcxFl2FPBo2gSJO11jjUDqlP1Bmfyqt8Z/dGhIQ63PMA9LdcLefXyIasyg==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -2922,9 +2922,6 @@ packages:
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
-
-  loupe@3.1.3:
-    resolution: {integrity: sha512-kkIp7XSkP78ZxJEsSxW3712C6teJVoeHHwgo9zJ380de7IYyJ2ISlxojcH2pC5OFLewESmnRi/+XCDIEEVyoug==}
 
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
@@ -4566,9 +4563,9 @@ snapshots:
       '@tanstack/vue-virtual': 3.13.12(vue@3.5.17(typescript@5.8.3))
       vue: 3.5.17(typescript@5.8.3)
 
-  '@hono/node-server@1.15.0(hono@4.8.4)':
+  '@hono/node-server@1.15.0(hono@4.9.8)':
     dependencies:
-      hono: 4.8.4
+      hono: 4.9.8
 
   '@humanfs/core@0.19.1': {}
 
@@ -5196,6 +5193,8 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
+  '@standard-schema/spec@1.0.0': {}
+
   '@swc/helpers@0.5.17':
     dependencies:
       tslib: 2.8.1
@@ -5774,7 +5773,7 @@ snapshots:
       assertion-error: 2.0.1
       check-error: 2.1.1
       deep-eql: 5.0.2
-      loupe: 3.1.3
+      loupe: 3.2.1
       pathval: 2.0.0
 
   chalk@4.1.2:
@@ -6405,7 +6404,7 @@ snapshots:
 
   highlightjs-vue@1.0.0: {}
 
-  hono@4.8.4: {}
+  hono@4.9.8: {}
 
   hookable@5.5.3: {}
 
@@ -6577,8 +6576,6 @@ snapshots:
   lodash.startcase@4.4.0: {}
 
   longest-streak@3.1.0: {}
-
-  loupe@3.1.3: {}
 
   loupe@3.2.1: {}
 

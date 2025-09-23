@@ -172,11 +172,10 @@ const handlerContextPrototype = {
  *
  * @packageInternal Framework infrastructure for creating handler contexts
  *
- * @param params - Context creation parameters
- * @param params.env - Environment object
- * @param params.req - Request object
- * @param params.res - Response object
- * @param params.loggerFactory - Factory function for creating loggers
+ * @param options.env - Environment object
+ * @param options.req - Request object
+ * @param options.res - Response object
+ * @param options.loggerFactory - Factory function for creating loggers
  * @returns New handler context instance
  */
 export function createKoriHandlerContext<

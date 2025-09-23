@@ -4,5 +4,5 @@
     "rootDir": "."
   },
   "include": ["src/**/*", "tests/**/*"],
-  "references": [{ "path": "../kori" }, { "path": "../openapi-plugin" }, { "path": "../zod-schema" }]
+  "references": [{ "path": "../kori" }, { "path": "../openapi-plugin" }, { "path": "../zod-schema-adapter" }]
 }

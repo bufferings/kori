@@ -1,9 +1,8 @@
 import { createKoriRoot } from '../_internal/core/index.js';
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
+import { type KoriValidatorBase } from '../validator/index.js';
 
-import { type CreateKoriOptions } from './kori-options.js';
+import { type CreateKoriOptions } from './kori-creator-options.js';
 import { type Kori } from './kori.js';
 
 /**
@@ -13,8 +12,8 @@ import { type Kori } from './kori.js';
  * fully configured instance ready for route registration, hook setup,
  * and plugin application.
  *
- * @template RequestValidator - Request validator for type-safe validation
- * @template ResponseValidator - Response validator for type-safe validation
+ * @template ReqV - Request validation configuration for type-safe request validation
+ * @template ResV - Response validation configuration for type-safe response validation
  *
  * @param options - Configuration options for the Kori instance
  * @returns Configured Kori instance ready for use
@@ -26,17 +25,15 @@ import { type Kori } from './kori.js';
  *
  * // With validation
  * const app = createKori({
- *   requestValidator: myRequestValidator,
- *   responseValidator: myResponseValidator,
+ *   requestValidation: enableMyRequestValidation(),
+ *   responseValidation: enableMyResponseValidation(),
  *   loggerOptions: { level: 'warn' }
  * });
  * ```
  */
 export function createKori<
-  RequestValidator extends KoriRequestValidatorDefault | undefined = undefined,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined = undefined,
->(
-  options?: CreateKoriOptions<RequestValidator, ResponseValidator>,
-): Kori<KoriEnvironment, KoriRequest, KoriResponse, RequestValidator, ResponseValidator> {
+  ReqV extends KoriValidatorBase | undefined = undefined,
+  ResV extends KoriValidatorBase | undefined = undefined,
+>(options?: CreateKoriOptions<ReqV, ResV>): Kori<KoriEnvironment, KoriRequest, KoriResponse, ReqV, ResV> {
   return createKoriRoot(options);
 }

@@ -11,7 +11,7 @@ import {
   type KoriRouteMatcher,
 } from './route-matcher.js';
 
-type MatchedValue = { routeId: KoriRouteId; pathTemplate: string };
+type MatchedValue = { routeId: KoriRouteId };
 
 /**
  * Convert Hono router match result into a name->value params map.
@@ -67,10 +67,7 @@ export function createHonoRouteMatcher(): KoriRouteMatcher {
   return {
     addRoute: (options: { method: string; path: string; routeId: KoriRouteId }) => {
       const normalizedMethod = options.method.toUpperCase();
-      const value: MatchedValue = {
-        routeId: options.routeId,
-        pathTemplate: options.path,
-      };
+      const value: MatchedValue = { routeId: options.routeId };
       router.add(normalizedMethod, options.path, value);
     },
 
@@ -86,8 +83,7 @@ export function createHonoRouteMatcher(): KoriRouteMatcher {
         }
 
         const pathParams = convertParams(matched);
-        const { routeId, pathTemplate } = value;
-        return { routeId, pathParams, pathTemplate };
+        return { routeId: value.routeId, pathParams };
       };
     },
   };

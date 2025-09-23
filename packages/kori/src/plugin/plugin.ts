@@ -1,9 +1,6 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
 import { type Kori } from '../kori/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-import { type KoriResponseValidatorDefault } from '../response-validator/index.js';
-
-const KoriPluginBrand = Symbol('kori-plugin');
+import { type KoriValidatorBase } from '../validator/index.js';
 
 /**
  * Plugin definition for extending Kori instances with additional functionality.
@@ -21,10 +18,10 @@ const KoriPluginBrand = Symbol('kori-plugin');
  *   Defaults to an empty object, which means no extensions.
  * @template ResExt - Response extensions added by this plugin.
  *   Defaults to an empty object, which means no extensions.
- * @template RequestValidator - Request validation type constraint.
- *   Typically not used in plugins, defaults to any to preserve types.
- * @template ResponseValidator - Response validation type constraint.
- *   Typically not used in plugins, defaults to any to preserve types.
+ * @template ReqV - Request validator type from the target Kori instance.
+ *   Plugins typically do not modify validation types and preserve them as-is.
+ * @template ResV - Response validator type from the target Kori instance.
+ *   Plugins typically do not modify validation types and preserve them as-is.
  */
 export type KoriPlugin<
   Env extends KoriEnvironment,
@@ -34,11 +31,11 @@ export type KoriPlugin<
   ReqExt extends object = object,
   ResExt extends object = object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  ReqV extends KoriValidatorBase | undefined = any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
+  ResV extends KoriValidatorBase | undefined = any,
 > = {
-  [KoriPluginBrand]: typeof KoriPluginBrand;
+  koriKind: 'kori-plugin';
 
   /** Plugin name. Useful for distinguishing between different plugins. */
   name: string;
@@ -53,9 +50,7 @@ export type KoriPlugin<
    * @param kori - The Kori instance to enhance
    * @returns Enhanced Kori instance with extended types
    */
-  apply: (
-    kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
-  ) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
+  apply: (kori: Kori<Env, Req, Res, ReqV, ResV>) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
 };
 
 /**
@@ -72,15 +67,14 @@ export type KoriPlugin<
  *   Defaults to an empty object, which means no extensions.
  * @template ResExt - Response extensions added by this plugin.
  *   Defaults to an empty object, which means no extensions.
- * @template RequestValidator - Request validation type constraint.
- *   Typically not used in plugins, defaults to any to preserve types.
- * @template ResponseValidator - Response validation type constraint.
- *   Typically not used in plugins, defaults to any to preserve types.
+ * @template ReqV - Request validator type from the target Kori instance.
+ *   Plugins typically do not modify validation types and preserve them as-is.
+ * @template ResV - Response validator type from the target Kori instance.
+ *   Plugins typically do not modify validation types and preserve them as-is.
  *
- * @param params - Plugin configuration
- * @param params.name - Plugin name, useful for distinguishing between different plugins
- * @param params.version - Plugin version, helpful for identifying which version this is
- * @param params.apply - Function that receives a Kori instance and returns an enhanced version.
+ * @param options.name - Plugin name, useful for distinguishing between different plugins
+ * @param options.version - Plugin version, helpful for identifying which version this is
+ * @param options.apply - Function that receives a Kori instance and returns an enhanced version.
  *   Adds new functionality and types to the Kori instance.
  * @returns Kori plugin object ready for use
  *
@@ -108,20 +102,18 @@ export function defineKoriPlugin<
   ReqExt extends object = object,
   ResExt extends object = object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  RequestValidator extends KoriRequestValidatorDefault | undefined = any,
+  ReqV extends KoriValidatorBase | undefined = any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ResponseValidator extends KoriResponseValidatorDefault | undefined = any,
->(params: {
+  ResV extends KoriValidatorBase | undefined = any,
+>(options: {
   name: string;
   version?: string;
-  apply: (
-    kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
-  ) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, RequestValidator, ResponseValidator>;
-}): KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt, RequestValidator, ResponseValidator> {
+  apply: (kori: Kori<Env, Req, Res, ReqV, ResV>) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
+}): KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt, ReqV, ResV> {
   return {
-    [KoriPluginBrand]: KoriPluginBrand,
-    name: params.name,
-    version: params.version,
-    apply: params.apply,
+    koriKind: 'kori-plugin',
+    name: options.name,
+    version: options.version,
+    apply: options.apply,
   };
 }

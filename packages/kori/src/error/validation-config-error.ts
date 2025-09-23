@@ -18,7 +18,6 @@ export class KoriValidationConfigError extends KoriError {
    * Creates a KoriValidationConfigError with code "VALIDATION_CONFIG_ERROR".
    *
    * @param message - Description of the configuration problem
-   * @param options - Error details (defaults to empty object)
    * @param options.data - Arbitrary structured data for debugging
    * @param options.cause - Underlying error to preserve the cause chain
    */

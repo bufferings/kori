@@ -1,4 +1,4 @@
-import { type KoriSchemaDefault } from '../schema/index.js';
+import { type KoriSchemaBase } from '../schema/index.js';
 
 /**
  * Individual content type definition within a response content entry.
@@ -8,7 +8,7 @@ import { type KoriSchemaDefault } from '../schema/index.js';
  *
  * @template S - The Kori schema type for this content type
  */
-export type KoriResponseSchemaContentEntryItem<S extends KoriSchemaDefault> =
+export type KoriResponseSchemaContentEntryItem<S extends KoriSchemaBase> =
   | S
   | {
       schema: S;
@@ -16,14 +16,14 @@ export type KoriResponseSchemaContentEntryItem<S extends KoriSchemaDefault> =
     };
 
 /**
- * Default content entry item accepting any schema definition.
+ * Base content entry item accepting any schema definition.
  */
-export type KoriResponseSchemaContentEntryItemDefault = KoriResponseSchemaContentEntryItem<KoriSchemaDefault>;
+export type KoriResponseSchemaContentEntryItemBase = KoriResponseSchemaContentEntryItem<KoriSchemaBase>;
 
 /**
- * Default content entry mapping accepting any media type definitions.
+ * Base content entry mapping accepting any media type definitions.
  */
-export type KoriResponseSchemaContentEntryMappingDefault = Record<string, KoriResponseSchemaContentEntryItemDefault>;
+export type KoriResponseSchemaContentEntryMappingBase = Record<string, KoriResponseSchemaContentEntryItemBase>;
 
 /**
  * Response content entry schema with explicit content type specification.
@@ -60,8 +60,8 @@ export type KoriResponseSchemaContentEntryMappingDefault = Record<string, KoriRe
  * ```
  */
 export type KoriResponseSchemaContentEntry<
-  Headers extends KoriSchemaDefault,
-  ContentMapping extends KoriResponseSchemaContentEntryMappingDefault,
+  Headers extends KoriSchemaBase,
+  ContentMapping extends KoriResponseSchemaContentEntryMappingBase,
 > = {
   description?: string;
   headers?: Headers;
@@ -70,9 +70,9 @@ export type KoriResponseSchemaContentEntry<
 };
 
 /**
- * Default response content entry accepting any headers and content type mapping definitions.
+ * Base response content entry accepting any headers and content type mapping definitions.
  */
-export type KoriResponseSchemaContentEntryDefault = KoriResponseSchemaContentEntry<
-  KoriSchemaDefault,
-  KoriResponseSchemaContentEntryMappingDefault
+export type KoriResponseSchemaContentEntryBase = KoriResponseSchemaContentEntry<
+  KoriSchemaBase,
+  KoriResponseSchemaContentEntryMappingBase
 >;

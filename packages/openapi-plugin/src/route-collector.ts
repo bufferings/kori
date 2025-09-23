@@ -1,7 +1,7 @@
 import {
-  type KoriRequestSchemaDefault,
-  type KoriResponseSchemaDefault,
-  type KoriSchemaDefault,
+  type KoriRequestSchemaBase,
+  type KoriResponseSchemaBase,
+  type KoriSchemaBase,
   isKoriSchema,
 } from '@korix/kori';
 import {
@@ -15,8 +15,8 @@ import {
 export type RouteInfo = {
   method: string;
   path: string;
-  requestSchema?: KoriRequestSchemaDefault;
-  responseSchema?: KoriResponseSchemaDefault;
+  requestSchema?: KoriRequestSchemaBase;
+  responseSchema?: KoriResponseSchemaBase;
   metadata?: {
     summary?: string;
     description?: string;
@@ -27,8 +27,8 @@ export type RouteInfo = {
 
 export type SchemaConverter = {
   name: string;
-  canConvert: (schema: KoriSchemaDefault) => boolean;
-  convert: (schema: KoriSchemaDefault, context: ConversionContext) => SchemaObject;
+  canConvert: (schema: KoriSchemaBase) => boolean;
+  convert: (schema: KoriSchemaBase, context: ConversionContext) => SchemaObject;
 };
 
 export type ConversionContext = {
@@ -160,11 +160,11 @@ export function createRouteCollector(): RouteCollector {
     return parameters;
   }
 
-  function hasBodySchema(schema: KoriRequestSchemaDefault): boolean {
+  function hasBodySchema(schema: KoriRequestSchemaBase): boolean {
     return !!schema.body;
   }
 
-  function generateRequestBody(schema: KoriRequestSchemaDefault, context: ConversionContext): RequestBodyObject {
+  function generateRequestBody(schema: KoriRequestSchemaBase, context: ConversionContext): RequestBodyObject {
     if (!schema.body) {
       return {
         content: {
@@ -216,10 +216,7 @@ export function createRouteCollector(): RouteCollector {
     return { content, required: true };
   }
 
-  function generateResponses(
-    schema: KoriResponseSchemaDefault | undefined,
-    context: ConversionContext,
-  ): ResponsesObject {
+  function generateResponses(schema: KoriResponseSchemaBase | undefined, context: ConversionContext): ResponsesObject {
     if (!schema) {
       return {
         '200': { description: 'Successful response' },
@@ -265,7 +262,7 @@ export function createRouteCollector(): RouteCollector {
     return responses;
   }
 
-  function convertSchema(schema: KoriSchemaDefault, context: ConversionContext): SchemaObject {
+  function convertSchema(schema: KoriSchemaBase, context: ConversionContext): SchemaObject {
     for (const converter of converters) {
       if (converter.canConvert(schema)) {
         return converter.convert(schema, context);

@@ -3,18 +3,11 @@ import {
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaHeadersOutput,
   type InferRequestSchemaParamsOutput,
+  type InferRequestSchemaProvider,
   type InferRequestSchemaQueriesOutput,
-  type KoriRequestSchemaDefault,
+  type KoriRequestSchemaBase,
 } from '../request-schema/index.js';
-import { type KoriRequestValidatorDefault } from '../request-validator/index.js';
-
-/** Extracts validation output methods from a request schema */
-type InferRequestValidationOutput<S extends KoriRequestSchemaDefault> = {
-  validatedParams(): InferRequestSchemaParamsOutput<S>;
-  validatedQueries(): InferRequestSchemaQueriesOutput<S>;
-  validatedHeaders(): InferRequestSchemaHeadersOutput<S>;
-  validatedBody(): InferRequestSchemaBodyOutput<S>;
-};
+import { type InferValidatorProvider, type KoriValidatorBase } from '../validator/index.js';
 
 /**
  * Extends a request type with validation methods when validator and schema are present.
@@ -24,8 +17,8 @@ type InferRequestValidationOutput<S extends KoriRequestSchemaDefault> = {
  * ensuring compile-time safety and preventing runtime errors.
  *
  * @template Req - Base request type to extend
- * @template RequestValidator - Request validator (optional)
- * @template RequestSchema - Request schema (optional)
+ * @template ReqV - Request validation configuration for type-safe request validation
+ * @template ReqS - Request schema for type-safe request validation
  *
  * @example
  * ```typescript
@@ -44,11 +37,18 @@ type InferRequestValidationOutput<S extends KoriRequestSchemaDefault> = {
  */
 export type ValidatedRequest<
   Req extends KoriRequest,
-  RequestValidator extends KoriRequestValidatorDefault | undefined,
-  RequestSchema extends KoriRequestSchemaDefault | undefined,
+  ReqV extends KoriValidatorBase | undefined,
+  ReqS extends KoriRequestSchemaBase | undefined,
 > = Req &
-  (RequestValidator extends KoriRequestValidatorDefault
-    ? RequestSchema extends KoriRequestSchemaDefault
-      ? InferRequestValidationOutput<RequestSchema>
+  (ReqV extends KoriValidatorBase
+    ? ReqS extends KoriRequestSchemaBase
+      ? InferValidatorProvider<ReqV> extends InferRequestSchemaProvider<ReqS>
+        ? {
+            validatedParams(): InferRequestSchemaParamsOutput<ReqS>;
+            validatedQueries(): InferRequestSchemaQueriesOutput<ReqS>;
+            validatedHeaders(): InferRequestSchemaHeadersOutput<ReqS>;
+            validatedBody(): InferRequestSchemaBodyOutput<ReqS>;
+          }
+        : unknown
       : unknown
     : unknown);

@@ -31,9 +31,9 @@
     "@korix/openapi-plugin": "workspace:*",
     "@korix/openapi-scalar-ui-plugin": "workspace:*",
     "@korix/security-headers-plugin": "workspace:*",
+    "@korix/standard-schema-adapter": "workspace:*",
     "@korix/zod-openapi-plugin": "workspace:*",
-    "@korix/zod-schema": "workspace:*",
-    "@korix/zod-validator": "workspace:*",
+    "@korix/zod-schema-adapter": "workspace:*",
     "@scalar/api-reference": "1.32.10",
     "openapi3-ts": "4.4.0",
     "zod": "4.0.0"

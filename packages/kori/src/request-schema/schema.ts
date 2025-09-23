@@ -1,25 +1,23 @@
-import { type KoriSchemaDefault, type KoriSchemaFor } from '../schema/index.js';
+import { type KoriSchemaBase, type KoriSchemaOf } from '../schema/index.js';
 
 import {
   type KoriRequestSchemaContentBody,
   type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyMappingDefault,
+  type KoriRequestSchemaContentBodyMappingBase,
 } from './body-content.js';
 import { type KoriRequestSchemaSimpleBody } from './body-simple.js';
-
-const ProviderKey = Symbol('request-schema-provider');
 
 /**
  * Schema definition that describes the structure of an HTTP request.
  *
- * Contains a provider symbol for runtime type checking and optional schemas
+ * Contains a provider string for runtime type checking and optional schemas
  * for different parts of the HTTP request (params, headers, queries, body).
  *
  * The request body supports two formats:
  * - Simple body: convenient format for application/json content
  * - Content body: flexible format for any content type
  *
- * @template Provider - Unique symbol identifying the schema provider
+ * @template Provider - Unique string identifying the schema provider
  * @template Params - Schema for URL path parameters
  * @template Headers - Schema for HTTP headers
  * @template Queries - Schema for query string parameters
@@ -30,7 +28,7 @@ const ProviderKey = Symbol('request-schema-provider');
  * ```typescript
  * // Simple body: Direct schema
  * const requestSchema = createKoriRequestSchema({
- *   provider: MySchemaProvider,
+ *   provider: 'my-schema',
  *   params: paramsSchema,
  *   headers: headersSchema,
  *   queries: queriesSchema,
@@ -42,7 +40,7 @@ const ProviderKey = Symbol('request-schema-provider');
  * ```typescript
  * // Simple body: With description and examples
  * const requestSchema = createKoriRequestSchema({
- *   provider: MySchemaProvider,
+ *   provider: 'my-schema',
  *   params: paramsSchema,
  *   body: {
  *     description: 'User registration data',
@@ -58,7 +56,7 @@ const ProviderKey = Symbol('request-schema-provider');
  * ```typescript
  * // Content body: Flexible format for any content type
  * const requestSchema = createKoriRequestSchema({
- *   provider: MySchemaProvider,
+ *   provider: 'my-schema',
  *   params: paramsSchema,
  *   body: {
  *     description: 'Contact form submission',
@@ -75,14 +73,15 @@ const ProviderKey = Symbol('request-schema-provider');
  * ```
  */
 export type KoriRequestSchema<
-  Provider extends symbol,
-  Params extends KoriSchemaFor<Provider> = never,
-  Headers extends KoriSchemaFor<Provider> = never,
-  Queries extends KoriSchemaFor<Provider> = never,
-  Body extends KoriSchemaFor<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaFor<Provider>>> = never,
+  Provider extends string,
+  Params extends KoriSchemaOf<Provider> = never,
+  Headers extends KoriSchemaOf<Provider> = never,
+  Queries extends KoriSchemaOf<Provider> = never,
+  Body extends KoriSchemaOf<Provider> = never,
+  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
 > = {
-  [ProviderKey]: Provider;
+  koriKind: 'kori-request-schema';
+  provider: Provider;
   params?: Params;
   headers?: Headers;
   queries?: Queries;
@@ -90,15 +89,15 @@ export type KoriRequestSchema<
 };
 
 /**
- * Default request schema type accepting any provider and schema definitions.
+ * Base request schema type accepting any provider and schema definitions.
  */
-export type KoriRequestSchemaDefault = KoriRequestSchema<
-  symbol,
-  KoriSchemaDefault,
-  KoriSchemaDefault,
-  KoriSchemaDefault,
-  KoriSchemaDefault,
-  KoriRequestSchemaContentBodyMappingDefault
+export type KoriRequestSchemaBase = KoriRequestSchema<
+  string,
+  KoriSchemaBase,
+  KoriSchemaBase,
+  KoriSchemaBase,
+  KoriSchemaBase,
+  KoriRequestSchemaContentBodyMappingBase
 >;
 
 /**
@@ -107,18 +106,8 @@ export type KoriRequestSchemaDefault = KoriRequestSchema<
  * @param value - Value to check
  * @returns True when the value is a Kori request schema
  */
-export function isKoriRequestSchema(value: unknown): value is KoriRequestSchemaDefault {
-  return typeof value === 'object' && value !== null && ProviderKey in value;
-}
-
-/**
- * Gets the provider symbol from a Kori request schema.
- *
- * @param schema - Kori request schema to read the provider from
- * @returns Provider symbol associated with the schema
- */
-export function getKoriRequestSchemaProvider<S extends KoriRequestSchemaDefault>(schema: S): S[typeof ProviderKey] {
-  return schema[ProviderKey];
+export function isKoriRequestSchema(value: unknown): value is KoriRequestSchemaBase {
+  return typeof value === 'object' && value !== null && 'koriKind' in value && value.koriKind === 'kori-request-schema';
 }
 
 /**
@@ -128,15 +117,14 @@ export function getKoriRequestSchemaProvider<S extends KoriRequestSchemaDefault>
  * validation, allowing the framework to verify that validators and schemas
  * use compatible providers.
  *
- * @template Provider - Unique symbol identifying the schema provider
+ * @template Provider - Unique string identifying the schema provider
  * @template Params - Schema for URL path parameters
  * @template Headers - Schema for HTTP headers
  * @template Queries - Schema for query string parameters
  * @template Body - Schema for simple request body
  * @template BodyMapping - Record mapping media types to schema definitions
  *
- * @param options - Request schema configuration
- * @param options.provider - Symbol that identifies the schema provider
+ * @param options.provider - String that identifies the schema provider
  * @param options.params - Schema for URL path parameters
  * @param options.headers - Schema for HTTP headers
  * @param options.queries - Schema for query string parameters
@@ -146,7 +134,7 @@ export function getKoriRequestSchemaProvider<S extends KoriRequestSchemaDefault>
  * @example
  * ```typescript
  * const userRequestSchema = createKoriRequestSchema({
- *   provider: MySchemaProvider,
+ *   provider: 'my-schema',
  *   params: userParamsSchema,
  *   body: userBodySchema
  * });
@@ -155,11 +143,11 @@ export function getKoriRequestSchemaProvider<S extends KoriRequestSchemaDefault>
 
 // Simple Body overload
 export function createKoriRequestSchema<
-  Provider extends symbol,
-  Params extends KoriSchemaFor<Provider> = never,
-  Headers extends KoriSchemaFor<Provider> = never,
-  Queries extends KoriSchemaFor<Provider> = never,
-  Body extends KoriSchemaFor<Provider> = never,
+  Provider extends string,
+  Params extends KoriSchemaOf<Provider> = never,
+  Headers extends KoriSchemaOf<Provider> = never,
+  Queries extends KoriSchemaOf<Provider> = never,
+  Body extends KoriSchemaOf<Provider> = never,
 >(options: {
   provider: Provider;
   params?: Params;
@@ -170,11 +158,11 @@ export function createKoriRequestSchema<
 
 // Content Body overload
 export function createKoriRequestSchema<
-  Provider extends symbol,
-  Params extends KoriSchemaFor<Provider> = never,
-  Headers extends KoriSchemaFor<Provider> = never,
-  Queries extends KoriSchemaFor<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaFor<Provider>>> = never,
+  Provider extends string,
+  Params extends KoriSchemaOf<Provider> = never,
+  Headers extends KoriSchemaOf<Provider> = never,
+  Queries extends KoriSchemaOf<Provider> = never,
+  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
 >(options: {
   provider: Provider;
   params?: Params;
@@ -185,12 +173,12 @@ export function createKoriRequestSchema<
 
 // Implementation
 export function createKoriRequestSchema<
-  Provider extends symbol,
-  Params extends KoriSchemaFor<Provider> = never,
-  Headers extends KoriSchemaFor<Provider> = never,
-  Queries extends KoriSchemaFor<Provider> = never,
-  Body extends KoriSchemaFor<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaFor<Provider>>> = never,
+  Provider extends string,
+  Params extends KoriSchemaOf<Provider> = never,
+  Headers extends KoriSchemaOf<Provider> = never,
+  Queries extends KoriSchemaOf<Provider> = never,
+  Body extends KoriSchemaOf<Provider> = never,
+  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
 >(options: {
   provider: Provider;
   params?: Params;
@@ -200,7 +188,8 @@ export function createKoriRequestSchema<
 }): KoriRequestSchema<Provider, Params, Headers, Queries, Body, BodyMapping> {
   const { provider, params, headers, queries, body } = options;
   return {
-    [ProviderKey]: provider,
+    koriKind: 'kori-request-schema',
+    provider,
     params,
     headers,
     queries,

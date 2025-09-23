@@ -1,4 +1,4 @@
-import { type KoriSchemaDefault } from '../schema/index.js';
+import { type KoriSchemaBase } from '../schema/index.js';
 
 /**
  * Simple response entry with optional metadata.
@@ -27,7 +27,7 @@ import { type KoriSchemaDefault } from '../schema/index.js';
  * }
  * ```
  */
-export type KoriResponseSchemaSimpleEntry<Headers extends KoriSchemaDefault, S extends KoriSchemaDefault> =
+export type KoriResponseSchemaSimpleEntry<Headers extends KoriSchemaBase, S extends KoriSchemaBase> =
   | S
   | {
       description?: string;
@@ -38,6 +38,6 @@ export type KoriResponseSchemaSimpleEntry<Headers extends KoriSchemaDefault, S e
     };
 
 /**
- * Default simple response entry accepting any schema definition.
+ * Base simple response entry accepting any schema definition.
  */
-export type KoriResponseSchemaSimpleEntryDefault = KoriResponseSchemaSimpleEntry<KoriSchemaDefault, KoriSchemaDefault>;
+export type KoriResponseSchemaSimpleEntryBase = KoriResponseSchemaSimpleEntry<KoriSchemaBase, KoriSchemaBase>;

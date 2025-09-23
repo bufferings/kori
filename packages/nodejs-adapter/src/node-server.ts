@@ -4,11 +4,10 @@ import {
   type Kori,
   type KoriEnvironment,
   type KoriRequest,
-  type KoriRequestValidatorDefault,
   type KoriResponse,
-  type KoriResponseValidatorDefault,
   createKoriSystemLogger,
   type KoriLogger,
+  type KoriValidatorBase,
 } from '@korix/kori';
 
 function toError(e: unknown): Error {
@@ -142,10 +141,9 @@ function getDisplayHost(hostname: string): string {
  * @template Env - Environment type merged across plugins and children
  * @template Req - Request type merged across plugins and routes
  * @template Res - Response type merged across plugins and routes
- * @template RequestValidator - Request validator type or undefined
- * @template ResponseValidator - Response validator type or undefined
+ * @template ReqV - Request validator type or undefined
+ * @template ResV - Response validator type or undefined
  * @param kori - Kori application instance to serve
- * @param options - Server options
  * @param options.hostname - Hostname for listen and URL reconstruction fallback (default 'localhost')
  * @param options.port - Port number for listen (default 3000)
  * @returns Promise that resolves once the server has begun listening, rejects on startup failure
@@ -159,10 +157,10 @@ export async function startNodeServer<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
-  RequestValidator extends KoriRequestValidatorDefault | undefined,
-  ResponseValidator extends KoriResponseValidatorDefault | undefined,
+  ReqV extends KoriValidatorBase | undefined,
+  ResV extends KoriValidatorBase | undefined,
 >(
-  kori: Kori<Env, Req, Res, RequestValidator, ResponseValidator>,
+  kori: Kori<Env, Req, Res, ReqV, ResV>,
   options: {
     hostname?: string;
     port?: number;

@@ -1,9 +1,9 @@
-export { type InferSchemaOutput, type InferSchemaProvider } from './infer.js';
 export {
   createKoriSchema,
-  getKoriSchemaProvider,
+  type InferSchemaOutput,
+  type InferSchemaProvider,
   isKoriSchema,
   type KoriSchema,
-  type KoriSchemaDefault,
-  type KoriSchemaFor,
+  type KoriSchemaBase,
+  type KoriSchemaOf,
 } from './schema.js';

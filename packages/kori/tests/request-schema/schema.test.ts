@@ -4,183 +4,249 @@ import { createKoriSchema } from '../../src/schema/index.js';
 
 import {
   createKoriRequestSchema,
-  getKoriRequestSchemaProvider,
   isKoriRequestSchema,
   type KoriRequestSchema,
 } from '../../src/request-schema/schema.js';
 
-const TestProvider = Symbol('test-provider');
+const testProvider = 'test-provider';
 
 describe('createKoriRequestSchema', () => {
-  test('creates schema with provider', () => {
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+  test('creates schema with provider only', () => {
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<KoriRequestSchema<typeof TestProvider>>();
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.params).toBeUndefined();
+    expect(requestSchema.headers).toBeUndefined();
+    expect(requestSchema.queries).toBeUndefined();
+    expect(requestSchema.body).toBeUndefined();
+
+    expectTypeOf<typeof requestSchema>().toExtend<KoriRequestSchema<typeof testProvider>>();
   });
 
   test('creates schema with params', () => {
     const paramsSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
       params: paramsSchema,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<KoriRequestSchema<typeof TestProvider, typeof paramsSchema>>();
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.params).toBe(paramsSchema);
+    expect(requestSchema.headers).toBeUndefined();
+    expect(requestSchema.queries).toBeUndefined();
+    expect(requestSchema.body).toBeUndefined();
+
+    expectTypeOf<typeof requestSchema>().toExtend<KoriRequestSchema<typeof testProvider, typeof paramsSchema>>();
   });
 
   test('creates schema with headers', () => {
     const headersSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
       headers: headersSchema,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
-      KoriRequestSchema<typeof TestProvider, never, typeof headersSchema>
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.params).toBeUndefined();
+    expect(requestSchema.headers).toBe(headersSchema);
+    expect(requestSchema.queries).toBeUndefined();
+    expect(requestSchema.body).toBeUndefined();
+
+    expectTypeOf<typeof requestSchema>().toExtend<
+      KoriRequestSchema<typeof testProvider, never, typeof headersSchema>
     >();
   });
 
   test('creates schema with queries', () => {
     const queriesSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
       queries: queriesSchema,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
-      KoriRequestSchema<typeof TestProvider, never, never, typeof queriesSchema>
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.params).toBeUndefined();
+    expect(requestSchema.headers).toBeUndefined();
+    expect(requestSchema.queries).toBe(queriesSchema);
+    expect(requestSchema.body).toBeUndefined();
+
+    expectTypeOf<typeof requestSchema>().toExtend<
+      KoriRequestSchema<typeof testProvider, never, never, typeof queriesSchema>
     >();
   });
 
-  test('creates schema with simple body', () => {
+  test('creates schema with simple body (direct schema)', () => {
     const bodySchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
       body: bodySchema,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
-      KoriRequestSchema<typeof TestProvider, never, never, never, typeof bodySchema>
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.body).toBe(bodySchema);
+
+    expectTypeOf<typeof requestSchema>().toExtend<
+      KoriRequestSchema<typeof testProvider, never, never, never, typeof bodySchema>
     >();
   });
 
-  test('creates schema with simple body wrapper', () => {
+  test('creates schema with simple body (with metadata)', () => {
     const bodySchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      body: {
-        schema: bodySchema,
-        description: 'Test schema',
-        examples: { test: { name: 'test' } },
-      },
+    const bodyWrapper = {
+      schema: bodySchema,
+      description: 'User registration data',
+      examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
+    };
+
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
+      body: bodyWrapper,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
-      KoriRequestSchema<typeof TestProvider, never, never, never, typeof bodySchema>
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.body).toBe(bodyWrapper);
+
+    expectTypeOf<typeof requestSchema>().toExtend<
+      KoriRequestSchema<typeof testProvider, never, never, never, typeof bodySchema>
     >();
   });
 
-  test('creates schema with content body', () => {
+  test('creates schema with content body (direct schema)', () => {
     const jsonSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      body: {
-        content: {
-          'application/json': jsonSchema,
-        },
+    const contentBody = {
+      content: {
+        'application/json': jsonSchema,
       },
+    };
+
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
+      body: contentBody,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
-      KoriRequestSchema<typeof TestProvider, never, never, never, never, { 'application/json': typeof jsonSchema }>
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.body).toBe(contentBody);
+
+    expectTypeOf<typeof requestSchema>().toExtend<
+      KoriRequestSchema<typeof testProvider, never, never, never, never, { 'application/json': typeof jsonSchema }>
     >();
   });
 
-  test('creates schema with content body wrapper', () => {
+  test('creates schema with content body (multiple content types)', () => {
     const jsonSchema = createKoriSchema({
-      provider: TestProvider,
+      provider: testProvider,
       definition: { type: 'object' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-      body: {
-        content: {
-          'application/json': {
-            schema: jsonSchema,
-            examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
-          },
-        },
-      },
+    const xmlSchema = createKoriSchema({
+      provider: testProvider,
+      definition: { type: 'string' },
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
+    const contentBody = {
+      description: 'Contact form submission',
+      content: {
+        'application/json': {
+          schema: jsonSchema,
+          examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
+        },
+        'application/xml': xmlSchema,
+      },
+    };
+
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
+      body: contentBody,
+    });
+
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.body).toBe(contentBody);
+
+    expectTypeOf<typeof requestSchema>().toExtend<
       KoriRequestSchema<
-        typeof TestProvider,
+        typeof testProvider,
         never,
         never,
         never,
         never,
-        { 'application/json': { schema: typeof jsonSchema; examples?: Record<string, unknown> } }
+        {
+          'application/json': { schema: typeof jsonSchema; examples?: Record<string, unknown> };
+          'application/xml': typeof xmlSchema;
+        }
       >
     >();
   });
 
-  test('creates schema with all components', () => {
+  test('creates comprehensive schema with all components', () => {
     const paramsSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
+      provider: testProvider,
+      definition: { type: 'params' },
     });
     const headersSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
+      provider: testProvider,
+      definition: { type: 'headers' },
     });
     const queriesSchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
+      provider: testProvider,
+      definition: { type: 'queries' },
     });
     const bodySchema = createKoriSchema({
-      provider: TestProvider,
-      definition: { type: 'object' },
+      provider: testProvider,
+      definition: { type: 'body' },
     });
 
-    const _requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+    const requestSchema = createKoriRequestSchema({
+      provider: testProvider,
       params: paramsSchema,
       headers: headersSchema,
       queries: queriesSchema,
       body: bodySchema,
     });
 
-    expectTypeOf<typeof _requestSchema>().toExtend<
+    expect(requestSchema.koriKind).toBe('kori-request-schema');
+    expect(requestSchema.provider).toBe(testProvider);
+    expect(requestSchema.params).toBe(paramsSchema);
+    expect(requestSchema.headers).toBe(headersSchema);
+    expect(requestSchema.queries).toBe(queriesSchema);
+    expect(requestSchema.body).toBe(bodySchema);
+
+    expectTypeOf<typeof requestSchema>().toExtend<
       KoriRequestSchema<
-        typeof TestProvider,
+        typeof testProvider,
         typeof paramsSchema,
         typeof headersSchema,
         typeof queriesSchema,
@@ -191,24 +257,22 @@ describe('createKoriRequestSchema', () => {
 });
 
 describe('isKoriRequestSchema', () => {
-  test('identifies request schemas', () => {
+  test('identifies valid request schemas', () => {
     const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
+      provider: testProvider,
     });
 
     expect(isKoriRequestSchema(requestSchema)).toBe(true);
-    expect(isKoriRequestSchema({})).toBe(false);
+  });
+
+  test('rejects invalid values', () => {
     expect(isKoriRequestSchema(null)).toBe(false);
     expect(isKoriRequestSchema(undefined)).toBe(false);
-  });
-});
-
-describe('getKoriRequestSchemaProvider', () => {
-  test('returns provider', () => {
-    const requestSchema = createKoriRequestSchema({
-      provider: TestProvider,
-    });
-
-    expect(getKoriRequestSchemaProvider(requestSchema)).toBe(TestProvider);
+    expect(isKoriRequestSchema({})).toBe(false);
+    expect(isKoriRequestSchema({ koriKind: 'wrong-kind' })).toBe(false);
+    expect(isKoriRequestSchema({ koriKind: 'kori-request-schema' })).toBe(true);
+    expect(isKoriRequestSchema({ provider: testProvider })).toBe(false);
+    expect(isKoriRequestSchema('not-an-object')).toBe(false);
+    expect(isKoriRequestSchema(42)).toBe(false);
   });
 });

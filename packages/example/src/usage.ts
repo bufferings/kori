@@ -11,8 +11,7 @@ import {
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator, createKoriZodResponseValidator } from '@korix/zod-validator';
+import { enableZodRequestAndResponseValidation, zodSchemaRequest } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 // Using Kori's built-in logging
@@ -79,8 +78,7 @@ const ProductSchema = z.object({
 });
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
-  responseValidator: createKoriZodResponseValidator(),
+  ...enableZodRequestAndResponseValidation(),
 })
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())
@@ -135,7 +133,7 @@ app.post('/products', {
     description: 'Create a product with complex validation',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: zodSchemaRequest({
     body: ProductSchema,
     headers: z.object({
       'x-api-version': z.enum(['1.0', '2.0']).optional(),
@@ -169,7 +167,7 @@ app.get('/products/search', {
     description: 'Advanced product search with filtering',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: zodSchemaRequest({
     queries: z.object({
       q: z.string().min(1).meta({ description: 'Search query' }),
       category: z.enum(['electronics', 'books', 'clothing']).optional(),
@@ -261,7 +259,7 @@ app.createChild({
           description: 'Enable or disable maintenance mode',
           tags: ['Admin'],
         }),
-        requestSchema: zodRequestSchema({
+        requestSchema: zodSchemaRequest({
           body: z.object({
             mode: z.enum(['enable', 'disable']),
             reason: z.string().optional(),
@@ -331,7 +329,7 @@ app.post('/validation-demo', {
     description: 'Demonstrates new validation error handling features',
     tags: ['Demo'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: zodSchemaRequest({
     body: z.object({
       age: z.number().int().min(0),
       preferences: z.object({

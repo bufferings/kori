@@ -1,42 +1,34 @@
 /**
- * Unique identifier for a registered route.
+ * Unique identifier for a route.
  *
- * Notes:
- * - Created by the internal route registry when a route is added.
- * - Opaque token for lookups; do not rely on its structure.
+ * Opaque token for route identification; do not rely on its structure.
  */
 export type KoriRouteId = symbol;
 
 /**
  * Matched route information.
  *
- * Contract for implementers: pathParams must correspond to pathTemplate.
- * Conceptually this is PathParams<Path>, derived from tokens in pathTemplate
- * (e.g. "/users/:id" -> { id: string }).
- *
- * TypeScript cannot correlate a runtime string pathTemplate with a type
- * parameter in this design, so compile-time enforcement is not possible here.
- * Implementations must ensure the mapping at runtime.
+ * Contains the route identifier and extracted path parameters.
+ * Path parameters are derived from the route's path template during matching
+ * (e.g. "/users/:id" with request "/users/123" -> { id: "123" }).
  *
  * @example
  * ```typescript
  * const match = matcher(request);
  * if (match) {
- *   // match.pathTemplate === "/users/:id"
  *   // match.pathParams === { id: "123" }
  * }
  * ```
  */
 export type KoriRouteMatch = {
   routeId: KoriRouteId;
-  pathTemplate: string;
   pathParams: Record<string, string>;
 };
 
 /**
  * Compiled matcher that returns a matched route or undefined.
  *
- * The returned object's pathParams must reflect the pathTemplate shape.
+ * Path parameters in the returned match reflect the path template structure.
  * Method matching is case-insensitive.
  *
  * @param request - WHATWG Request to match
@@ -47,8 +39,8 @@ export type KoriCompiledRouteMatcher = (request: Request) => KoriRouteMatch | un
 /**
  * Route matcher collects routes and produces a compiled matcher.
  *
- * Implementers must ensure that, for any produced match, pathParams are
- * consistent with the pathTemplate (as if typed by PathParams<typeof pathTemplate>).
+ * Implementers must ensure that path parameters in matches correspond
+ * to the path template structure.
  */
 export type KoriRouteMatcher = {
   /**

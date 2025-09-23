@@ -57,7 +57,6 @@ export {
 export { defineKoriPlugin, type KoriPlugin } from './plugin/index.js';
 export {
   createKoriRequestSchema,
-  getKoriRequestSchemaProvider,
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaHeadersOutput,
   type InferRequestSchemaParamsOutput,
@@ -65,49 +64,32 @@ export {
   type InferRequestSchemaQueriesOutput,
   isKoriRequestSchema,
   type KoriRequestSchema,
+  type KoriRequestSchemaBase,
   type KoriRequestSchemaContentBody,
-  type KoriRequestSchemaContentBodyDefault,
+  type KoriRequestSchemaContentBodyBase,
   type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyItemDefault,
-  type KoriRequestSchemaContentBodyMappingDefault,
-  type KoriRequestSchemaDefault,
+  type KoriRequestSchemaContentBodyItemBase,
+  type KoriRequestSchemaContentBodyMappingBase,
   type KoriRequestSchemaSimpleBody,
-  type KoriRequestSchemaSimpleBodyDefault,
+  type KoriRequestSchemaSimpleBodyBase,
 } from './request-schema/index.js';
 export {
-  createKoriRequestValidator,
-  getKoriRequestValidatorProvider,
-  type InferRequestValidationProvider,
-  isKoriRequestValidator,
-  type KoriRequestValidator,
-  type KoriRequestValidatorDefault,
-} from './request-validator/index.js';
-export {
   createKoriResponseSchema,
-  getKoriResponseSchemaProvider,
   type InferResponseSchemaBodyOutputByStatusCode,
   type InferResponseSchemaProvider,
   isKoriResponseSchema,
   type KoriResponseSchema,
+  type KoriResponseSchemaBase,
   type KoriResponseSchemaContentEntry,
-  type KoriResponseSchemaContentEntryDefault,
+  type KoriResponseSchemaContentEntryBase,
   type KoriResponseSchemaContentEntryItem,
-  type KoriResponseSchemaContentEntryItemDefault,
-  type KoriResponseSchemaContentEntryMappingDefault,
-  type KoriResponseSchemaDefault,
+  type KoriResponseSchemaContentEntryItemBase,
+  type KoriResponseSchemaContentEntryMappingBase,
   type KoriResponseSchemaEntry,
   type KoriResponseSchemaSimpleEntry,
-  type KoriResponseSchemaSimpleEntryDefault,
+  type KoriResponseSchemaSimpleEntryBase,
   type KoriResponseSchemaStatusCode,
 } from './response-schema/index.js';
-export {
-  createKoriResponseValidator,
-  getKoriResponseValidatorProvider,
-  type InferResponseValidationProvider,
-  isKoriResponseValidator,
-  type KoriResponseValidator,
-  type KoriResponseValidatorDefault,
-} from './response-validator/index.js';
 export {
   createHonoRouteMatcher,
   type KoriCompiledRouteMatcher,
@@ -116,8 +98,6 @@ export {
   type KoriRouteMatcher,
 } from './route-matcher/index.js';
 export {
-  type InferRequestValidationFailureReason,
-  type InferResponseValidationFailureReason,
   type KoriHandler,
   type KoriInstanceRequestValidationFailureHandler,
   type KoriInstanceResponseValidationFailureHandler,
@@ -130,17 +110,10 @@ export {
   normalizeRouteHttpMethod,
   type PathParams,
   type RequestBodyValidationFailure,
-  type RequestBodyValidationFailureDefault,
   type RequestFieldValidationFailure,
-  type RequestFieldValidationFailureDefault,
   type RequestValidationFailure,
-  type RequestValidationFailureDefault,
   type RequestValidationSuccess,
-  type ResponseBodyValidationFailure,
-  type ResponseBodyValidationFailureDefault,
-  type ResponseStatusCodeValidationFailure,
   type ResponseValidationFailure,
-  type ResponseValidationFailureDefault,
   type ResponseValidationSuccess,
   type RouteHttpMethod,
   type ValidatedRequest,
@@ -148,12 +121,19 @@ export {
 } from './routing/index.js';
 export {
   createKoriSchema,
-  getKoriSchemaProvider,
   type InferSchemaOutput,
   type InferSchemaProvider,
   isKoriSchema,
   type KoriSchema,
-  type KoriSchemaDefault,
-  type KoriSchemaFor,
+  type KoriSchemaBase,
+  type KoriSchemaOf,
 } from './schema/index.js';
 export { fail, type KoriFailure, type KoriResult, type KoriSuccess, type MaybePromise, succeed } from './util/index.js';
+export {
+  createKoriValidator,
+  type InferValidatorFailureReason,
+  type InferValidatorProvider,
+  isKoriValidator,
+  type KoriValidator,
+  type KoriValidatorBase,
+} from './validator/index.js';

@@ -116,9 +116,8 @@ const instanceContextPrototype = {
  *
  * @packageInternal Framework infrastructure for creating instance contexts
  *
- * @param params - Context creation parameters
- * @param params.env - Environment object
- * @param params.instanceLogger - Logger instance for this context
+ * @param options.env - Environment object
+ * @param options.instanceLogger - Logger instance for this context
  * @returns New instance context
  */
 export function createKoriInstanceContext<Env extends KoriEnvironment>({

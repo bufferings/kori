@@ -1,7 +1,7 @@
-import { type KoriRequestSchemaDefault } from '../../request-schema/index.js';
-import { type KoriResponseSchemaDefault } from '../../response-schema/index.js';
+import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
+import { type KoriResponseSchemaBase } from '../../response-schema/index.js';
 import { type KoriRouteId } from '../../route-matcher/index.js';
-import { type KoriRoutePluginMetadata, type RouteHttpMethod } from '../../routing/index.js';
+import { normalizeRouteHttpMethod, type KoriRoutePluginMetadata, type RouteHttpMethod } from '../../routing/index.js';
 
 /**
  * Runtime route record stored in the registry.
@@ -16,12 +16,12 @@ export type RouteRecord = {
   method: RouteHttpMethod;
   /** Full path including any prefix */
   path: string;
-  /** Request schema for validation (if any) */
-  requestSchema?: KoriRequestSchemaDefault;
-  /** Response schema for validation (if any) */
-  responseSchema?: KoriResponseSchemaDefault;
   /** Route handler function (type-erased for storage) */
   handler: unknown;
+  /** Request schema for validation (if any) */
+  requestSchema?: KoriRequestSchemaBase;
+  /** Response schema for validation (if any) */
+  responseSchema?: KoriResponseSchemaBase;
   /** Plugin metadata attached to this route */
   pluginMetadata?: KoriRoutePluginMetadata;
 };
@@ -55,7 +55,9 @@ export function createRouteRegistry(): KoriRouteRegistry {
 
   return {
     register(record: RouteRecord): KoriRouteId {
-      const id = Symbol('kori-route');
+      // Add method and path to symbol description for debugging.
+      const description = `${normalizeRouteHttpMethod(record.method)} ${record.path}`;
+      const id = Symbol(description);
       idToRecord.set(id, record);
       return id;
     },

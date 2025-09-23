@@ -1,4 +1,4 @@
-import { type KoriSchemaDefault } from '../schema/index.js';
+import { type KoriSchemaBase } from '../schema/index.js';
 
 /**
  * Simple request body schema with description and examples.
@@ -26,7 +26,7 @@ import { type KoriSchemaDefault } from '../schema/index.js';
  * }
  * ```
  */
-export type KoriRequestSchemaSimpleBody<S extends KoriSchemaDefault> =
+export type KoriRequestSchemaSimpleBody<S extends KoriSchemaBase> =
   | S
   | {
       description?: string;
@@ -35,6 +35,6 @@ export type KoriRequestSchemaSimpleBody<S extends KoriSchemaDefault> =
     };
 
 /**
- * Default simple request body accepting any schema definition.
+ * Base simple request body accepting any schema definition.
  */
-export type KoriRequestSchemaSimpleBodyDefault = KoriRequestSchemaSimpleBody<KoriSchemaDefault>;
+export type KoriRequestSchemaSimpleBodyBase = KoriRequestSchemaSimpleBody<KoriSchemaBase>;
