@@ -25,8 +25,8 @@ import { type Kori } from './kori.js';
  *
  * // With validation
  * const app = createKori({
- *   requestValidation: enableMyRequestValidation(),
- *   responseValidation: enableMyResponseValidation(),
+ *   requestValidator: myRequestValidator,
+ *   responseValidator: myResponseValidator,
  *   loggerOptions: { level: 'warn' }
  * });
  * ```
