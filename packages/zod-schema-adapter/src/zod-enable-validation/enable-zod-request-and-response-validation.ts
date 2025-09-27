@@ -6,52 +6,29 @@ import {
   type KoriInstanceResponseValidationFailureHandler,
 } from '@korix/kori';
 
-import { createKoriZodValidator, type KoriZodValidator } from './zod-validator.js';
+import { createKoriZodValidator, type KoriZodValidator } from '../zod-validator/index.js';
 
-export function enableZodRequestValidation(options?: {
-  onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<
-    KoriEnvironment,
-    KoriRequest,
-    KoriResponse,
-    KoriZodValidator
-  >;
-}): {
-  requestValidator: KoriZodValidator;
-  onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<
-    KoriEnvironment,
-    KoriRequest,
-    KoriResponse,
-    KoriZodValidator
-  >;
-} {
-  return {
-    requestValidator: createKoriZodValidator(),
-    onRequestValidationFailure: options?.onRequestValidationFailure,
-  };
-}
-
-export function enableZodResponseValidation(options?: {
-  onResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<
-    KoriEnvironment,
-    KoriRequest,
-    KoriResponse,
-    KoriZodValidator
-  >;
-}): {
-  responseValidator: KoriZodValidator;
-  onResponseValidationFailure?: KoriInstanceResponseValidationFailureHandler<
-    KoriEnvironment,
-    KoriRequest,
-    KoriResponse,
-    KoriZodValidator
-  >;
-} {
-  return {
-    responseValidator: createKoriZodValidator(),
-    onResponseValidationFailure: options?.onResponseValidationFailure,
-  };
-}
-
+/**
+ * A helper function to enable Zod-based validation for both requests and responses in a Kori instance.
+ *
+ * @param options.onRequestValidationFailure - Custom handler for request validation failures
+ * @param options.onResponseValidationFailure - Custom handler for response validation failures
+ * @returns Configuration object with both validators and their failure handlers
+ *
+ * @example
+ * ```typescript
+ * const app = createKori({
+ *   ...enableZodRequestAndResponseValidation({
+ *     onRequestValidationFailure: (ctx, reason) => {
+ *       return ctx.res.badRequest({ message: 'Invalid request data' });
+ *     },
+ *     onResponseValidationFailure: (ctx, reason) => {
+ *       ctx.log().error('Response validation failed', reason);
+ *     }
+ *   })
+ * });
+ * ```
+ */
 export function enableZodRequestAndResponseValidation(options?: {
   onRequestValidationFailure?: KoriInstanceRequestValidationFailureHandler<
     KoriEnvironment,

@@ -2,7 +2,7 @@ import { createKori, HttpStatus } from '@korix/kori';
 import { startNodeServer } from '@korix/nodejs-adapter';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { zodSchemaRequest, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const UserSchema = z.object({
@@ -66,7 +66,7 @@ app.post('/users', {
     description: 'Create a new user with validation',
     tags: ['Users'],
   }),
-  requestSchema: zodSchemaRequest({
+  requestSchema: zodRequestSchema({
     body: UserSchema,
   }),
   handler: (ctx) => {

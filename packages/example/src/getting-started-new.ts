@@ -1,7 +1,7 @@
 import { createKori, HttpStatus } from '@korix/kori';
 import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { zodSchemaRequest, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const UserSchema = z.object({
@@ -55,7 +55,7 @@ export const app = createKori({
       description: 'Creates a new user with the provided data',
       tags: ['users'],
     }),
-    requestSchema: zodSchemaRequest({
+    requestSchema: zodRequestSchema({
       body: UserSchema,
     }),
     handler: (ctx) => {
@@ -75,7 +75,7 @@ export const app = createKori({
       description: 'Retrieves a user by their ID',
       tags: ['users'],
     }),
-    requestSchema: zodSchemaRequest({
+    requestSchema: zodRequestSchema({
       params: z.object({
         id: z.string().min(1).meta({ description: 'User ID' }),
       }),
