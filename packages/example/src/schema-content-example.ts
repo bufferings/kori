@@ -2,8 +2,8 @@ import { createKori, HttpStatus } from '@korix/kori';
 import {
   enableZodRequestValidation,
   enableZodResponseValidation,
-  zodSchemaRequest,
-  zodSchemaResponse,
+  zodRequestSchema,
+  zodResponseSchema,
 } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
@@ -23,7 +23,7 @@ const UserJsonZod = z.object({
 });
 
 app.post('/users', {
-  requestSchema: zodSchemaRequest({ body: UserJsonZod }),
+  requestSchema: zodRequestSchema({ body: UserJsonZod }),
   handler: (ctx) => {
     const user = ctx.req.validatedBody();
     return ctx.res.status(HttpStatus.CREATED).json({ message: `User created: name=${user.name} age=${user.age}` });
@@ -36,7 +36,7 @@ const UserJson = z.object({ name: z.string().min(1), age: z.number().int().min(0
 const UserForm = z.object({ name: z.string().min(1), avatar: z.any() });
 
 app.post('/users/:content', {
-  requestSchema: zodSchemaRequest({
+  requestSchema: zodRequestSchema({
     body: {
       content: {
         'application/json': UserJson,
@@ -62,7 +62,7 @@ app.post('/users/:content', {
 const UserXml = z.object({ user: z.object({ name: z.string(), age: z.number().int() }) });
 
 app.get('/users/:id', {
-  responseSchema: zodSchemaResponse({
+  responseSchema: zodResponseSchema({
     '200': {
       description: 'User detail',
       content: {
