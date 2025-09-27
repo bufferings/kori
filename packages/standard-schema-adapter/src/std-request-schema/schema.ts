@@ -52,7 +52,7 @@ export type KoriStdRequestSchema<
  *
  * @example
  * ```typescript
- * const schema = stdSchemaRequest({
+ * const schema = stdRequestSchema({
  *   params: z.object({ id: z.string() }),
  *   queries: z.object({ limit: z.coerce.number().optional() }),
  *   body: z.object({ name: z.string() })

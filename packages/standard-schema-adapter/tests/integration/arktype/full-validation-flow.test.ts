@@ -97,7 +97,7 @@ describe('Full validation integration (ArkType)', () => {
         body: type({ name: 'string', email: 'string.email' }),
       }),
       responseSchema: stdResponseSchema({
-        200: type({ id: 'string', updated: 'boolean' }),
+        200: type({ id: 'string', updated: 'boolean', name: 'string' }),
         400: type({
           error: {
             type: 'string',

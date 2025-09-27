@@ -97,7 +97,7 @@ describe('Full validation integration (Zod)', () => {
         body: z.object({ name: z.string(), email: z.email() }),
       }),
       responseSchema: stdResponseSchema({
-        200: z.object({ id: z.string(), updated: z.boolean() }),
+        200: z.object({ id: z.string(), updated: z.boolean(), name: z.string() }),
         400: z.object({
           error: z.object({
             type: z.string(),

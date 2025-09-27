@@ -11,7 +11,7 @@ import {
 } from '../../src/zod-validator/index.js';
 
 describe('zod-failure utilities', () => {
-  describe('failGeneral', () => {
+  describe('failWithZodGeneralFailure', () => {
     test('creates general failure result', () => {
       const result = failWithZodGeneralFailure({
         message: 'Custom error',
@@ -32,7 +32,7 @@ describe('zod-failure utilities', () => {
     });
   });
 
-  describe('failZod', () => {
+  describe('failWithZodValidationFailure', () => {
     test('creates Zod failure result', () => {
       const issues: any[] = [
         {

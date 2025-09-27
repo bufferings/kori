@@ -11,7 +11,7 @@ import {
 } from '../../src/std-validator/index.js';
 
 describe('std-failure utilities', () => {
-  describe('failGeneral', () => {
+  describe('failWithStdGeneralFailure', () => {
     test('creates general failure result', () => {
       const result = failWithStdGeneralFailure({
         message: 'Custom error',

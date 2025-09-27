@@ -100,7 +100,7 @@ describe('Full validation integration (Valibot)', () => {
         }),
       }),
       responseSchema: stdResponseSchema({
-        200: v.object({ id: v.string(), updated: v.boolean() }),
+        200: v.object({ id: v.string(), updated: v.boolean(), name: v.string() }),
         400: v.object({
           error: v.object({
             type: v.string(),
