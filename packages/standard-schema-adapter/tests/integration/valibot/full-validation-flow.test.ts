@@ -1,10 +1,10 @@
 import { createKori, type Kori } from '@korix/kori';
+import * as v from 'valibot';
 import { describe, test, expect, vi } from 'vitest';
-import { z } from 'zod';
 
-import { enableZodRequestAndResponseValidation } from '../../src/zod-enable-validation/index.js';
-import { zodRequestSchema } from '../../src/zod-request-schema/index.js';
-import { zodResponseSchema } from '../../src/zod-response-schema/index.js';
+import { enableStdRequestAndResponseValidation } from '../../../src/std-enable-validation/index.js';
+import { stdRequestSchema } from '../../../src/std-request-schema/index.js';
+import { stdResponseSchema } from '../../../src/std-response-schema/index.js';
 
 async function createFetchHandler(app: Kori<any, any, any, any, any>) {
   const handler = app.generate();
@@ -12,34 +12,34 @@ async function createFetchHandler(app: Kori<any, any, any, any, any>) {
   return initializedHandler.fetchHandler;
 }
 
-describe('Full validation integration', () => {
+describe('Full validation integration (Valibot)', () => {
   test('complete user creation workflow with both validations', async () => {
     const onRequestValidationFailure = vi.fn();
     const onResponseValidationFailure = vi.fn();
 
     const app = createKori({
-      ...enableZodRequestAndResponseValidation({
+      ...enableStdRequestAndResponseValidation({
         onRequestValidationFailure,
         onResponseValidationFailure,
       }),
     }).post('/users', {
-      requestSchema: zodRequestSchema({
-        body: z.object({
-          name: z.string().min(1),
-          email: z.string().email(),
+      requestSchema: stdRequestSchema({
+        body: v.object({
+          name: v.pipe(v.string(), v.minLength(1)),
+          email: v.pipe(v.string(), v.email()),
         }),
       }),
-      responseSchema: zodResponseSchema({
-        201: z.object({
-          id: z.string(),
-          name: z.string(),
-          email: z.string(),
-          createdAt: z.string(),
+      responseSchema: stdResponseSchema({
+        201: v.object({
+          id: v.string(),
+          name: v.string(),
+          email: v.string(),
+          createdAt: v.string(),
         }),
-        400: z.object({
-          error: z.object({
-            type: z.string(),
-            message: z.string(),
+        400: v.object({
+          error: v.object({
+            type: v.string(),
+            message: v.string(),
           }),
         }),
       }),
@@ -87,21 +87,24 @@ describe('Full validation integration', () => {
     const onResponseValidationFailure = vi.fn();
 
     const app = createKori({
-      ...enableZodRequestAndResponseValidation({
+      ...enableStdRequestAndResponseValidation({
         onRequestValidationFailure,
         onResponseValidationFailure,
       }),
     }).put('/users/:id', {
-      requestSchema: zodRequestSchema({
-        params: z.object({ id: z.string() }),
-        body: z.object({ name: z.string(), email: z.string().email() }),
+      requestSchema: stdRequestSchema({
+        params: v.object({ id: v.string() }),
+        body: v.object({
+          name: v.string(),
+          email: v.pipe(v.string(), v.email()),
+        }),
       }),
-      responseSchema: zodResponseSchema({
-        200: z.object({ id: z.string(), updated: z.boolean() }),
-        400: z.object({
-          error: z.object({
-            type: z.string(),
-            message: z.string(),
+      responseSchema: stdResponseSchema({
+        200: v.object({ id: v.string(), updated: v.boolean(), name: v.string() }),
+        400: v.object({
+          error: v.object({
+            type: v.string(),
+            message: v.string(),
           }),
         }),
       }),
@@ -137,12 +140,12 @@ describe('Full validation integration', () => {
   });
 
   test('configures both validators correctly', () => {
-    const config = enableZodRequestAndResponseValidation();
+    const config = enableStdRequestAndResponseValidation();
 
     expect(config.requestValidator).toBeDefined();
     expect(config.responseValidator).toBeDefined();
-    expect(config.requestValidator.provider).toBe('zod');
-    expect(config.responseValidator.provider).toBe('zod');
+    expect(config.requestValidator.provider).toBe('standard-schema');
+    expect(config.responseValidator.provider).toBe('standard-schema');
     expect(config.onRequestValidationFailure).toBeUndefined();
     expect(config.onResponseValidationFailure).toBeUndefined();
   });

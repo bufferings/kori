@@ -2,8 +2,8 @@ import { createKori, type Kori } from '@korix/kori';
 import { describe, test, expect, vi } from 'vitest';
 import { z } from 'zod';
 
-import { enableZodRequestValidation } from '../../src/zod-enable-validation/index.js';
-import { zodRequestSchema } from '../../src/zod-request-schema/index.js';
+import { enableStdRequestValidation } from '../../../src/std-enable-validation/index.js';
+import { stdRequestSchema } from '../../../src/std-request-schema/index.js';
 
 async function createFetchHandler(app: Kori<any, any, any, any, any>) {
   const handler = app.generate();
@@ -11,19 +11,19 @@ async function createFetchHandler(app: Kori<any, any, any, any, any>) {
   return initializedHandler.fetchHandler;
 }
 
-describe('Request validation integration', () => {
+describe('Request validation integration (Zod)', () => {
   test('rejects invalid request data with custom error handler', async () => {
     const onRequestValidationFailure = vi.fn((ctx) => {
       return ctx.res.badRequest({ message: 'Custom validation error' });
     });
 
     const app = createKori({
-      ...enableZodRequestValidation({ onRequestValidationFailure }),
+      ...enableStdRequestValidation({ onRequestValidationFailure }),
     }).post('/users', {
-      requestSchema: zodRequestSchema({
+      requestSchema: stdRequestSchema({
         body: z.object({
           name: z.string().min(1),
-          email: z.string().email(),
+          email: z.email(),
           age: z.number().min(18),
         }),
       }),
@@ -68,10 +68,10 @@ describe('Request validation integration', () => {
     const onRequestValidationFailure = vi.fn();
 
     const app = createKori({
-      ...enableZodRequestValidation({ onRequestValidationFailure }),
+      ...enableStdRequestValidation({ onRequestValidationFailure }),
     }).post('/users', {
-      requestSchema: zodRequestSchema({
-        body: z.object({ name: z.string(), email: z.string().email() }),
+      requestSchema: stdRequestSchema({
+        body: z.object({ name: z.string(), email: z.email() }),
       }),
       handler: (ctx) => {
         const body = ctx.req.validatedBody();
@@ -112,9 +112,9 @@ describe('Request validation integration', () => {
 
   test('uses default error handler when no custom handler provided', async () => {
     const app = createKori({
-      ...enableZodRequestValidation(),
+      ...enableStdRequestValidation(),
     }).post('/users', {
-      requestSchema: zodRequestSchema({
+      requestSchema: stdRequestSchema({
         body: z.object({ name: z.string() }),
       }),
       handler: (ctx) => {
