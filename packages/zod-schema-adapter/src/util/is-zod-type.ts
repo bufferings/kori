@@ -1,5 +1,6 @@
-import { type z } from 'zod';
+import { z } from 'zod';
 
+/** @packageInternal */
 export function isZodType(value: unknown): value is z.ZodType {
-  return typeof value === 'object' && value !== null && 'safeParse' in value;
+  return value instanceof z.ZodType;
 }

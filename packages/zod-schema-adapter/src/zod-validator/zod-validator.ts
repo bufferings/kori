@@ -9,7 +9,7 @@ import {
 
 import { type KoriZodSchemaProvider, ZOD_SCHEMA_PROVIDER, isKoriZodSchema } from '../zod-schema/index.js';
 
-import { failGeneral, failZod, type KoriZodFailure } from './zod-failure.js';
+import { failWithZodGeneralFailure, failWithZodValidationFailure, type KoriZodFailure } from './zod-failure.js';
 
 /**
  * Validator instance specifically configured for Zod schemas.
@@ -36,17 +36,17 @@ export function createKoriZodValidator(): KoriZodValidator {
     }): KoriResult<InferSchemaOutput<S>, KoriZodFailure> => {
       try {
         if (!isKoriZodSchema(schema)) {
-          return failGeneral({ message: 'Validation error', detail: 'Schema is not a Kori Zod schema' });
+          return failWithZodGeneralFailure({ message: 'Validation error', detail: 'Schema is not a Kori Zod schema' });
         }
 
         const r = schema.definition.safeParse(value);
         if (!r.success) {
-          return failZod({ message: 'Validation error', issues: r.error.issues });
+          return failWithZodValidationFailure({ message: 'Validation error', issues: r.error.issues });
         }
         return succeed(r.data as InferSchemaOutput<S>);
       } catch (e) {
         const detail = e instanceof Error ? e.message : String(e);
-        return failGeneral({ message: 'An error occurred during validation', detail });
+        return failWithZodGeneralFailure({ message: 'An error occurred during validation', detail });
       }
     },
   });

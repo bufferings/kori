@@ -20,4 +20,8 @@ describe('isZodType', () => {
   test('returns false for null', () => {
     expect(isZodType(null)).toBe(false);
   });
+
+  test('returns false for undefined', () => {
+    expect(isZodType(undefined)).toBe(false);
+  });
 });

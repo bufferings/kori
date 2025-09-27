@@ -1,20 +1,48 @@
 export {
-  createKoriStandardSchema,
-  isKoriStandardSchema,
-  type KoriStandardSchema,
-  type KoriStandardSchemaBase,
-  type KoriStandardSchemaProvider,
+  enableStdRequestAndResponseValidation,
+  enableStdRequestValidation,
+  enableStdResponseValidation,
+} from './std-enable-validation/index.js';
+export {
+  type KoriRequestSchemaStdToBodyItem,
+  type KoriRequestSchemaStdToBodyMapping,
+  type KoriStdRequestSchema,
+  type KoriStdRequestSchemaContentBody,
+  type KoriStdRequestSchemaContentBodyItem,
+  type KoriStdRequestSchemaContentBodyItemBase,
+  type KoriStdRequestSchemaContentBodyMappingBase,
+  type KoriStdRequestSchemaSimpleBody,
+  stdRequestSchema,
+} from './std-request-schema/index.js';
+export {
+  type KoriResponseSchemaStdToContentItem,
+  type KoriResponseSchemaStdToContentMap,
+  type KoriResponseSchemaStdToEntries,
+  type KoriResponseSchemaStdToEntry,
+  type KoriStdResponseSchema,
+  type KoriStdResponseSchemaContentEntry,
+  type KoriStdResponseSchemaContentEntryItem,
+  type KoriStdResponseSchemaContentEntryItemBase,
+  type KoriStdResponseSchemaContentEntryMappingBase,
+  type KoriStdResponseSchemaEntry,
+  type KoriStdResponseSchemaSimpleEntry,
+  stdResponseSchema,
+} from './std-response-schema/index.js';
+export {
+  createKoriStdSchema,
+  isKoriStdSchema,
+  type KoriStdSchema,
+  type KoriStdSchemaBase,
+  type KoriStdSchemaProvider,
   STANDARD_SCHEMA_PROVIDER,
-} from './standard-schema.js';
+} from './std-schema/index.js';
 export {
-  enableStandardSchemaRequestAndResponseValidation,
-  enableStandardSchemaRequestValidation,
-  enableStandardSchemaResponseValidation,
-} from './standard-schema-enable-validation.js';
-export { type KoriStandardSchemaRequest, standardSchemaRequest } from './standard-schema-request.js';
-export { type KoriStandardSchemaResponse, standardSchemaResponse } from './standard-schema-response.js';
-export {
-  createKoriStandardSchemaValidator,
-  type KoriStandardSchemaFailure,
-  type KoriStandardSchemaValidator,
-} from './standard-schema-validator.js';
+  createKoriStdValidator,
+  failWithStdGeneralFailure,
+  failWithStdValidationFailure,
+  isKoriStdFailure,
+  isKoriStdGeneralFailure,
+  isKoriStdValidationFailure,
+  type KoriStdFailure,
+  type KoriStdValidator,
+} from './std-validator/index.js';

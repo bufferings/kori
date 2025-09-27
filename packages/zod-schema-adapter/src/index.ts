@@ -38,11 +38,11 @@ export {
 } from './zod-schema/index.js';
 export {
   createKoriZodValidator,
-  failGeneral,
-  failZod,
+  failWithZodGeneralFailure,
+  failWithZodValidationFailure,
   isKoriZodFailure,
-  isKoriZodFailureGeneral,
-  isKoriZodFailureZod,
+  isKoriZodGeneralFailure,
+  isKoriZodValidationFailure,
   type KoriZodFailure,
   type KoriZodValidator,
 } from './zod-validator/index.js';

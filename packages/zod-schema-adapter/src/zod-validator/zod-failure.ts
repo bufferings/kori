@@ -7,7 +7,7 @@ import type z from 'zod';
 /**
  * Represents a general failure from Zod validation.
  */
-export type KoriZodFailureGeneral = {
+export type KoriZodGeneralFailure = {
   provider: KoriZodSchemaProvider;
   type: 'General';
   message: string;
@@ -15,73 +15,94 @@ export type KoriZodFailureGeneral = {
 };
 
 /**
- * Represents a Zod validation failure.
+ * Represents a validation failure from Zod validation.
  */
-export type KoriZodFailureZod = {
+export type KoriZodValidationFailure = {
   provider: KoriZodSchemaProvider;
-  type: 'Zod';
+  type: 'Validation';
   message: string;
   issues: z.core.$ZodIssue[];
 };
 
 /**
- * Represents validation failure information from Zod validation.
+ * Represents failure information from Zod validation.
  */
-export type KoriZodFailure = KoriZodFailureGeneral | KoriZodFailureZod;
+export type KoriZodFailure = KoriZodGeneralFailure | KoriZodValidationFailure;
 
 /**
- * Checks if a failure is a general failure from Zod validation.
+ * Guards if the given value is a general failure produced by Zod validation.
+ *
+ * @param failure - The failure to check
+ * @returns True if the failure is a general failure from Zod validation
  */
-export function isKoriZodFailureGeneral(failure: KoriZodFailure): failure is KoriZodFailureGeneral {
+export function isKoriZodGeneralFailure(failure: unknown): failure is KoriZodGeneralFailure {
   return (
     typeof failure === 'object' &&
     failure !== null &&
-    failure?.provider === ZOD_SCHEMA_PROVIDER &&
-    failure?.type === 'General'
+    'provider' in failure &&
+    failure.provider === ZOD_SCHEMA_PROVIDER &&
+    'type' in failure &&
+    failure.type === 'General'
   );
 }
 
 /**
- * Checks if a failure is a Zod validation failure.
+ * Guards if the given value is a validation failure produced by Zod validation.
+ *
+ * @param failure - The failure to check
+ * @returns True if the failure is a validation failure from Zod validation
  */
-export function isKoriZodFailureZod(failure: KoriZodFailure): failure is KoriZodFailureZod {
+export function isKoriZodValidationFailure(failure: unknown): failure is KoriZodValidationFailure {
   return (
     typeof failure === 'object' &&
     failure !== null &&
-    failure?.provider === ZOD_SCHEMA_PROVIDER &&
-    failure?.type === 'Zod'
+    'provider' in failure &&
+    failure.provider === ZOD_SCHEMA_PROVIDER &&
+    'type' in failure &&
+    failure.type === 'Validation'
   );
 }
 
 /**
- * Checks if a failure is a Zod validation failure.
+ * Guards if the given value is a Zod validation failure.
+ *
+ * @param failure - The failure to check
+ * @returns True if the failure is a Zod validation failure
  */
-export function isKoriZodFailure(failure: KoriZodFailure): failure is KoriZodFailure {
-  return isKoriZodFailureGeneral(failure) || isKoriZodFailureZod(failure);
+export function isKoriZodFailure(failure: unknown): failure is KoriZodFailure {
+  return isKoriZodGeneralFailure(failure) || isKoriZodValidationFailure(failure);
 }
 
 /**
  * Creates a failure result for a general failure from Zod validation.
+ *
+ * @param options.message - The message to include in the failure
+ * @param options.detail - The detail to include in the failure
+ * @returns A failure result for a general failure from Zod validation
  */
-export function failGeneral({
+export function failWithZodGeneralFailure({
   message,
   detail,
 }: {
   message: string;
   detail: string;
-}): KoriFailure<KoriZodFailureGeneral> {
+}): KoriFailure<KoriZodGeneralFailure> {
   return fail({ provider: ZOD_SCHEMA_PROVIDER, type: 'General', message, detail });
 }
 
 /**
- * Creates a failure result for a Zod validation failure.
+ * Creates a failure result for a validation failure from Zod validation.
+ *
+ * @param options.message - The message to include in the failure
+ * @param options.issues - The issues to include in the failure
+ * @returns A failure result for a validation failure from Zod validation
  */
-export function failZod({
+export function failWithZodValidationFailure({
   message,
   issues,
 }: {
   message: string;
   issues: z.core.$ZodIssue[];
-}): KoriFailure<KoriZodFailureZod> {
-  return fail({ provider: ZOD_SCHEMA_PROVIDER, type: 'Zod', message, issues });
+}): KoriFailure<KoriZodValidationFailure> {
+  return fail({ provider: ZOD_SCHEMA_PROVIDER, type: 'Validation', message, issues });
 }

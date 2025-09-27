@@ -22,7 +22,7 @@ describe('Response validation integration', () => {
         200: z.object({
           id: z.string(),
           name: z.string(),
-          email: z.string().email(),
+          email: z.email(),
         }),
       }),
       handler: (ctx) => {

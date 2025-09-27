@@ -2,18 +2,18 @@ import { describe, test, expect } from 'vitest';
 
 import { ZOD_SCHEMA_PROVIDER } from '../../src/zod-schema/index.js';
 import {
-  failGeneral,
-  failZod,
+  failWithZodGeneralFailure,
+  failWithZodValidationFailure,
   isKoriZodFailure,
-  isKoriZodFailureGeneral,
-  isKoriZodFailureZod,
+  isKoriZodGeneralFailure,
+  isKoriZodValidationFailure,
   type KoriZodFailure,
 } from '../../src/zod-validator/index.js';
 
 describe('zod-failure utilities', () => {
   describe('failGeneral', () => {
     test('creates general failure result', () => {
-      const result = failGeneral({
+      const result = failWithZodGeneralFailure({
         message: 'Custom error',
         detail: 'Something went wrong',
       });
@@ -44,7 +44,7 @@ describe('zod-failure utilities', () => {
         },
       ];
 
-      const result = failZod({
+      const result = failWithZodValidationFailure({
         message: 'Validation failed',
         issues,
       });
@@ -56,7 +56,7 @@ describe('zod-failure utilities', () => {
 
       expect(result.reason).toEqual({
         provider: ZOD_SCHEMA_PROVIDER,
-        type: 'Zod',
+        type: 'Validation',
         message: 'Validation failed',
         issues,
       });
@@ -64,7 +64,7 @@ describe('zod-failure utilities', () => {
   });
 
   describe('type guards', () => {
-    test('isKoriZodFailureGeneral identifies general failures', () => {
+    test('isKoriZodGeneralFailure identifies general failures', () => {
       const generalFailure: KoriZodFailure = {
         provider: ZOD_SCHEMA_PROVIDER,
         type: 'General',
@@ -74,16 +74,16 @@ describe('zod-failure utilities', () => {
 
       const zodFailure: KoriZodFailure = {
         provider: ZOD_SCHEMA_PROVIDER,
-        type: 'Zod',
+        type: 'Validation',
         message: 'Error',
         issues: [],
       };
 
-      expect(isKoriZodFailureGeneral(generalFailure)).toBe(true);
-      expect(isKoriZodFailureGeneral(zodFailure)).toBe(false);
+      expect(isKoriZodGeneralFailure(generalFailure)).toBe(true);
+      expect(isKoriZodGeneralFailure(zodFailure)).toBe(false);
     });
 
-    test('isKoriZodFailureZod identifies Zod failures', () => {
+    test('isKoriZodValidationFailure identifies validation failures', () => {
       const generalFailure: KoriZodFailure = {
         provider: ZOD_SCHEMA_PROVIDER,
         type: 'General',
@@ -93,13 +93,13 @@ describe('zod-failure utilities', () => {
 
       const zodFailure: KoriZodFailure = {
         provider: ZOD_SCHEMA_PROVIDER,
-        type: 'Zod',
+        type: 'Validation',
         message: 'Error',
         issues: [],
       };
 
-      expect(isKoriZodFailureZod(zodFailure)).toBe(true);
-      expect(isKoriZodFailureZod(generalFailure)).toBe(false);
+      expect(isKoriZodValidationFailure(zodFailure)).toBe(true);
+      expect(isKoriZodValidationFailure(generalFailure)).toBe(false);
     });
 
     test('isKoriZodFailure identifies any Zod failure', () => {
@@ -112,7 +112,7 @@ describe('zod-failure utilities', () => {
 
       const zodFailure: KoriZodFailure = {
         provider: ZOD_SCHEMA_PROVIDER,
-        type: 'Zod',
+        type: 'Validation',
         message: 'Error',
         issues: [],
       };
@@ -128,15 +128,15 @@ describe('zod-failure utilities', () => {
     });
 
     test('type guards handle invalid inputs', () => {
-      expect(isKoriZodFailureGeneral(null as any)).toBe(false);
-      expect(isKoriZodFailureGeneral(undefined as any)).toBe(false);
-      expect(isKoriZodFailureGeneral({} as any)).toBe(false);
-      expect(isKoriZodFailureGeneral({ provider: 'wrong', type: 'General' } as any)).toBe(false);
+      expect(isKoriZodGeneralFailure(null as any)).toBe(false);
+      expect(isKoriZodGeneralFailure(undefined as any)).toBe(false);
+      expect(isKoriZodGeneralFailure({} as any)).toBe(false);
+      expect(isKoriZodGeneralFailure({ provider: 'wrong', type: 'General' } as any)).toBe(false);
 
-      expect(isKoriZodFailureZod(null as any)).toBe(false);
-      expect(isKoriZodFailureZod(undefined as any)).toBe(false);
-      expect(isKoriZodFailureZod({} as any)).toBe(false);
-      expect(isKoriZodFailureZod({ provider: 'wrong', type: 'Zod' } as any)).toBe(false);
+      expect(isKoriZodValidationFailure(null as any)).toBe(false);
+      expect(isKoriZodValidationFailure(undefined as any)).toBe(false);
+      expect(isKoriZodValidationFailure({} as any)).toBe(false);
+      expect(isKoriZodValidationFailure({ provider: 'wrong', type: 'Validation' } as any)).toBe(false);
     });
   });
 });
