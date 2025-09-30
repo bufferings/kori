@@ -232,7 +232,7 @@ function createKoriInternal<
         handler: composedHandler,
         requestSchema: routeOptions.requestSchema,
         responseSchema: routeOptions.responseSchema,
-        pluginMetadata: routeOptions.pluginMetadata,
+        pluginMeta: routeOptions.pluginMeta,
       });
 
       _shared.routeMatcher.addRoute({ method: methodString, path: combinedPath, routeId });
@@ -334,7 +334,7 @@ function createKoriInternal<
         path: route.path,
         requestSchema: route.requestSchema,
         responseSchema: route.responseSchema,
-        pluginMetadata: route.pluginMetadata,
+        pluginMeta: route.pluginMeta,
       }));
     },
   };

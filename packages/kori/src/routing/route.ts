@@ -14,7 +14,7 @@ import { type RouteHttpMethod } from './route-http-method.js';
  *
  * Uses symbol keys to prevent naming conflicts between plugins.
  */
-export type KoriRoutePluginMetadata = Record<symbol, unknown>;
+export type KoriRoutePluginMeta = Record<symbol, unknown>;
 
 /**
  * Configuration options for registering a route with complete control.
@@ -37,7 +37,7 @@ export type KoriRouteOptions<
   requestSchema?: ReqS;
   responseSchema?: ResS;
   handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
-  pluginMetadata?: KoriRoutePluginMetadata;
+  pluginMeta?: KoriRoutePluginMeta;
   onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
   onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
 };
@@ -81,7 +81,7 @@ export type KoriRouteMethodOptions<
   requestSchema?: ReqS;
   responseSchema?: ResS;
   handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
-  pluginMetadata?: KoriRoutePluginMetadata;
+  pluginMeta?: KoriRoutePluginMeta;
   onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
   onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
 };

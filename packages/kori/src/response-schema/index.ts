@@ -1,11 +1,4 @@
-export {
-  type KoriResponseSchemaContentEntry,
-  type KoriResponseSchemaContentEntryBase,
-  type KoriResponseSchemaContentEntryItem,
-  type KoriResponseSchemaContentEntryItemBase,
-  type KoriResponseSchemaContentEntryMappingBase,
-} from './entry-content.js';
-export { type KoriResponseSchemaSimpleEntry, type KoriResponseSchemaSimpleEntryBase } from './entry-simple.js';
+export { type KoriResponseSchemaContentEntry, type KoriResponseSchemaContentEntryBase } from './entry-content.js';
 export { type InferResponseSchemaBodyOutputByStatusCode, type InferResponseSchemaProvider } from './inference.js';
 export {
   createKoriResponseSchema,

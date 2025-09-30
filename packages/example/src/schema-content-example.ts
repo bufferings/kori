@@ -40,7 +40,13 @@ app.post('/users/:content', {
     body: {
       content: {
         'application/json': UserJson,
-        'multipart/form-data': { schema: UserForm, examples: { sample: { name: 'Alice', avatar: '<binary>' } } },
+        'multipart/form-data': UserForm.meta({
+          examples: {
+            sample: {
+              value: { name: 'Alice', avatar: '<binary>' },
+            },
+          },
+        }),
       },
     },
   }),

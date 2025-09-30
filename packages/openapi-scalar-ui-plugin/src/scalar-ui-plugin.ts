@@ -5,7 +5,7 @@ import {
   type KoriRequest,
   type KoriEnvironment,
 } from '@korix/kori';
-import { type OpenApiEnvironmentExtension, openApiMeta } from '@korix/openapi-plugin';
+import { type OpenApiEnvExtension, openApiMeta } from '@korix/openapi-plugin';
 
 import { PLUGIN_VERSION } from './version.js';
 
@@ -18,7 +18,7 @@ export type ScalarUiOptions = {
 };
 
 export function scalarUiPlugin<
-  Env extends KoriEnvironment & OpenApiEnvironmentExtension,
+  Env extends KoriEnvironment & OpenApiEnvExtension,
   Req extends KoriRequest,
   Res extends KoriResponse,
 >(options: ScalarUiOptions = {}): KoriPlugin<Env, Req, Res> {
@@ -45,7 +45,7 @@ export function scalarUiPlugin<
           });
           return ctx.res.html(html);
         },
-        pluginMetadata: openApiMeta({ exclude: true }),
+        pluginMeta: openApiMeta({ exclude: true }),
       });
 
       return kori;

@@ -13,7 +13,7 @@ describe('RouteRegistry contract', () => {
       path: '/users',
       handler: () => {},
       requestSchema: createKoriRequestSchema({ provider: 'test-provider' }),
-      pluginMetadata: { [Symbol('test')]: 'value' },
+      pluginMeta: { [Symbol('test')]: 'value' },
     };
 
     const id = registry.register(record);
@@ -97,7 +97,7 @@ describe('RouteRegistry contract', () => {
       handler: () => {},
       requestSchema: createKoriRequestSchema({ provider: 'request-provider' }),
       responseSchema: createKoriResponseSchema({ provider: 'response-provider' }),
-      pluginMetadata: {
+      pluginMeta: {
         [Symbol('plugin1')]: { config: true },
         [Symbol('plugin2')]: { priority: 'high' },
       },

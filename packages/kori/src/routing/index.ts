@@ -29,7 +29,7 @@ export {
   type KoriRouteMethodImplOptions,
   type KoriRouteMethodOptions,
   type KoriRouteOptions,
-  type KoriRoutePluginMetadata,
+  type KoriRoutePluginMeta,
 } from './route.js';
 export { type KoriRouteDefinition } from './route-definition.js';
 export { normalizeRouteHttpMethod, type RouteHttpMethod } from './route-http-method.js';

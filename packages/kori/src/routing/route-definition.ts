@@ -2,7 +2,7 @@ import { type KoriRequestSchemaBase } from '../request-schema/index.js';
 import { type KoriResponseSchemaBase } from '../response-schema/index.js';
 
 import { type RouteHttpMethod } from './route-http-method.js';
-import { type KoriRoutePluginMetadata } from './route.js';
+import { type KoriRoutePluginMeta } from './route.js';
 
 /**
  * Registered route definition containing metadata for route introspection.
@@ -21,5 +21,5 @@ export type KoriRouteDefinition = {
   /** Optional response schema for validation */
   responseSchema?: KoriResponseSchemaBase;
   /** Optional metadata added by plugins */
-  pluginMetadata?: KoriRoutePluginMetadata;
+  pluginMeta?: KoriRoutePluginMeta;
 };

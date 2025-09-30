@@ -1,16 +1,12 @@
-import { type KoriRequestSchema, type KoriRequestSchemaContentBodyBase, type KoriSchemaBase } from '@korix/kori';
+import { type KoriRequestSchema, type KoriSchemaBase } from '@korix/kori';
 import { describe, test, expect, expectTypeOf } from 'vitest';
 import { z } from 'zod';
 
-import {
-  zodRequestSchema,
-  type KoriZodRequestSchemaContentBody,
-  type KoriZodRequestSchemaSimpleBody,
-} from '../../src/zod-request-schema/index.js';
+import { zodRequestSchema, type KoriZodRequestSchemaContentBody } from '../../src/zod-request-schema/index.js';
 import { ZOD_SCHEMA_PROVIDER, type KoriZodSchema } from '../../src/zod-schema/index.js';
 
 describe('zodRequestSchema', () => {
-  describe('simple body overload - success cases', () => {
+  describe('simple body overload', () => {
     test('creates schema with all parameters', () => {
       const paramsSchema = z.object({ id: z.string() });
       const headersSchema = z.object({ authorization: z.string() });
@@ -75,27 +71,23 @@ describe('zodRequestSchema', () => {
       expect(result.body).toBeUndefined();
     });
 
-    test('creates schema with body description and examples', () => {
+    test('creates schema with only body', () => {
       const bodySchema = z.object({ name: z.string() });
-      const bodyOptions = {
-        description: 'User data',
-        schema: bodySchema,
-        examples: { example1: { name: 'John' } },
-      };
 
       const result = zodRequestSchema({
-        body: bodyOptions,
+        body: bodySchema,
       });
 
       expect(result.provider).toBe(ZOD_SCHEMA_PROVIDER);
-      expect(result.body).toEqual({
-        description: 'User data',
-        schema: expect.objectContaining({
+      expect(result.params).toBeUndefined();
+      expect(result.headers).toBeUndefined();
+      expect(result.queries).toBeUndefined();
+      expect(result.body).toEqual(
+        expect.objectContaining({
           provider: ZOD_SCHEMA_PROVIDER,
           definition: bodySchema,
         }),
-        examples: { example1: { name: 'John' } },
-      });
+      );
     });
 
     test('creates schema with empty options', () => {
@@ -107,29 +99,9 @@ describe('zodRequestSchema', () => {
       expect(result.queries).toBeUndefined();
       expect(result.body).toBeUndefined();
     });
-
-    test('handles empty examples in body wrapper', () => {
-      const bodySchema = z.string();
-      const result = zodRequestSchema({
-        body: {
-          schema: bodySchema,
-          examples: {},
-        },
-      });
-
-      expect(result.provider).toBe(ZOD_SCHEMA_PROVIDER);
-      expect(result.body).toMatchObject({
-        description: undefined,
-        schema: expect.objectContaining({
-          provider: ZOD_SCHEMA_PROVIDER,
-          definition: bodySchema,
-        }),
-        examples: {},
-      });
-    });
   });
 
-  describe('content mapping overload - success cases', () => {
+  describe('content mapping overload', () => {
     test('creates schema with content-type mapping', () => {
       const paramsSchema = z.object({ id: z.string() });
       const jsonBodySchema = z.object({ data: z.string() });
@@ -160,66 +132,6 @@ describe('zodRequestSchema', () => {
             definition: formBodySchema,
           }),
         },
-      });
-    });
-
-    test('creates schema with content mapping and examples', () => {
-      const jsonBodySchema = z.object({ name: z.string() });
-
-      const result = zodRequestSchema({
-        body: {
-          content: {
-            'application/json': {
-              schema: jsonBodySchema,
-              examples: { example1: { name: 'John' } },
-            },
-          },
-        },
-      });
-
-      expect(result.body).toEqual({
-        content: {
-          'application/json': {
-            schema: expect.objectContaining({
-              provider: ZOD_SCHEMA_PROVIDER,
-              definition: jsonBodySchema,
-            }),
-            examples: { example1: { name: 'John' } },
-          },
-        },
-      });
-    });
-
-    test('creates schema with mixed content item types', () => {
-      const directSchema = z.object({ direct: z.string() });
-      const wrappedSchema = z.object({ wrapped: z.number() });
-
-      const result = zodRequestSchema({
-        body: {
-          content: {
-            'application/json': directSchema,
-            'application/xml': {
-              schema: wrappedSchema,
-              examples: { example1: { wrapped: 42 } },
-            },
-          },
-        },
-      });
-
-      const body = result.body as KoriRequestSchemaContentBodyBase;
-
-      expect(body?.content?.['application/json']).toEqual(
-        expect.objectContaining({
-          provider: ZOD_SCHEMA_PROVIDER,
-          definition: directSchema,
-        }),
-      );
-      expect(body?.content?.['application/xml']).toEqual({
-        schema: expect.objectContaining({
-          provider: ZOD_SCHEMA_PROVIDER,
-          definition: wrappedSchema,
-        }),
-        examples: { example1: { wrapped: 42 } },
       });
     });
 
@@ -347,22 +259,6 @@ describe('zodRequestSchema', () => {
   });
 
   describe('type definitions', () => {
-    test('KoriZodRequestSchemaSimpleBody accepts Zod schema directly', () => {
-      const _schema = z.string();
-      expectTypeOf<typeof _schema>().toExtend<KoriZodRequestSchemaSimpleBody<typeof _schema>>();
-    });
-
-    test('KoriZodRequestSchemaSimpleBody accepts schema with metadata', () => {
-      const schema = z.string();
-      const _bodyWithMetadata = {
-        description: 'Test description',
-        schema,
-        examples: { example1: 'test' },
-      };
-
-      expectTypeOf<typeof _bodyWithMetadata>().toExtend<KoriZodRequestSchemaSimpleBody<typeof schema>>();
-    });
-
     test('KoriZodRequestSchemaContentBody accepts content mapping', () => {
       const jsonSchema = z.object({ data: z.string() });
       const _contentBody = {

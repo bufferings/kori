@@ -1,6 +1,5 @@
 import { type InferSchemaOutput, type KoriSchemaBase } from '../schema/index.js';
 
-import { type KoriResponseSchemaContentEntryMappingBase } from './entry-content.js';
 import { type KoriResponseSchema, type KoriResponseSchemaBase, type KoriResponseSchemaEntry } from './schema.js';
 
 /**
@@ -18,17 +17,13 @@ export type InferResponseSchemaProvider<S extends KoriResponseSchemaBase> =
  */
 type InferResponseSchemaBodyOutput<Entry extends KoriResponseSchemaEntry<string>> = Entry extends KoriSchemaBase
   ? InferSchemaOutput<Entry>
-  : Entry extends { schema: infer S extends KoriSchemaBase }
-    ? InferSchemaOutput<S>
-    : Entry extends { content: infer Mapping extends KoriResponseSchemaContentEntryMappingBase }
-      ? {
-          [K in keyof Mapping]: Mapping[K] extends KoriSchemaBase
-            ? { mediaType: K; value: InferSchemaOutput<Mapping[K]> }
-            : Mapping[K] extends { schema: infer S extends KoriSchemaBase }
-              ? { mediaType: K; value: InferSchemaOutput<S> }
-              : never;
-        }[keyof Mapping]
-      : never;
+  : Entry extends { content: infer Mapping extends Record<string, KoriSchemaBase> }
+    ? {
+        [K in keyof Mapping]: Mapping[K] extends KoriSchemaBase
+          ? { mediaType: K; value: InferSchemaOutput<Mapping[K]> }
+          : never;
+      }[keyof Mapping]
+    : never;
 
 /**
  * Map an exact code string (e.g. "404") to its class wildcard ("4XX").

@@ -34,7 +34,7 @@ const app = createKori({
   );
 
 app.get('/hello/:name', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Say hello',
     description: 'Returns a personalized greeting',
     tags: ['Basic'],
@@ -61,7 +61,7 @@ app.get('/hello/:name', {
 });
 
 app.post('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Create user',
     description: 'Create a new user with validation',
     tags: ['Users'],
@@ -95,7 +95,7 @@ app.post('/users', {
 });
 
 app.get('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'List users',
     description: 'Get all users',
     tags: ['Users'],
@@ -120,7 +120,7 @@ app.createChild({
   prefix: '/api/v1',
   configure: (k) =>
     k.get('/status', {
-      pluginMetadata: openApiMeta({
+      pluginMeta: openApiMeta({
         summary: 'API v1 Status',
         description: 'Get API version 1 status',
         tags: ['API v1'],
@@ -147,7 +147,7 @@ app.createChild({
   prefix: '/api/v2',
   configure: (k) =>
     k.get('/status', {
-      pluginMetadata: openApiMeta({
+      pluginMeta: openApiMeta({
         summary: 'API v2 Status',
         description: 'Get API version 2 status',
         tags: ['API v2'],

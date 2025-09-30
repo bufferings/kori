@@ -1,11 +1,8 @@
 import { type KoriResponse } from '../../context/index.js';
 import { KoriValidationConfigError } from '../../error/index.js';
-import {
-  type KoriResponseSchemaBase,
-  type KoriResponseSchemaContentEntryBase,
-  type KoriResponseSchemaSimpleEntryBase,
-} from '../../response-schema/index.js';
+import { type KoriResponseSchemaBase, type KoriResponseSchemaContentEntryBase } from '../../response-schema/index.js';
 import { type ResponseValidationFailureBase, type ResponseValidationSuccess } from '../../routing/index.js';
+import { type KoriSchemaBase } from '../../schema/index.js';
 import { succeed, fail, type KoriResult } from '../../util/index.js';
 import { type KoriValidatorBase } from '../../validator/index.js';
 
@@ -25,7 +22,7 @@ function resolveSchemaEntryByStatusCode({
 }: {
   schemaResponses: NonNullable<KoriResponseSchemaBase['responses']>;
   statusCode: number;
-}): KoriResponseSchemaSimpleEntryBase | KoriResponseSchemaContentEntryBase | undefined {
+}): KoriSchemaBase | KoriResponseSchemaContentEntryBase | undefined {
   const statusCodeStr = statusCode.toString();
 
   if (statusCodeStr in schemaResponses) {

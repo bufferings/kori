@@ -1,4 +1,4 @@
-import { createKoriRequestSchema, type KoriRequestSchema, type KoriRequestSchemaContentBodyItem } from '@korix/kori';
+import { createKoriRequestSchema, type KoriRequestSchema } from '@korix/kori';
 import { type StandardSchemaV1 } from '@standard-schema/spec';
 
 import {
@@ -10,11 +10,7 @@ import {
 } from '../std-schema/index.js';
 import { isStdType } from '../util/index.js';
 
-import {
-  type KoriStdRequestSchemaContentBody,
-  type KoriStdRequestSchemaContentBodyMappingBase,
-} from './body-content.js';
-import { type KoriStdRequestSchemaSimpleBody } from './body-simple.js';
+import { type KoriStdRequestSchemaContentBody } from './body-content.js';
 import { toKoriBodyMapping, type KoriRequestSchemaStdToBodyMapping } from './body-transformer.js';
 
 /**
@@ -33,7 +29,7 @@ export type KoriStdRequestSchema<
   Headers extends KoriStdSchemaBase = never,
   Queries extends KoriStdSchemaBase = never,
   Body extends KoriStdSchemaBase = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriStdSchemaBase>> = never,
+  BodyMapping extends Record<string, KoriStdSchemaBase> = never,
 > = KoriRequestSchema<KoriStdSchemaProvider, Params, Headers, Queries, Body, BodyMapping>;
 
 /**
@@ -68,7 +64,7 @@ export function stdRequestSchema<
   params?: StdParams;
   headers?: StdHeaders;
   queries?: StdQueries;
-  body?: KoriStdRequestSchemaSimpleBody<StdBody>;
+  body?: StdBody;
 }): KoriStdRequestSchema<
   KoriStdSchema<StdParams>,
   KoriStdSchema<StdHeaders>,
@@ -108,7 +104,7 @@ export function stdRequestSchema<
   StdParams extends StandardSchemaV1 = never,
   StdHeaders extends StandardSchemaV1 = never,
   StdQueries extends StandardSchemaV1 = never,
-  StdBodyMapping extends KoriStdRequestSchemaContentBodyMappingBase = never,
+  StdBodyMapping extends Record<string, StandardSchemaV1> = never,
 >(options: {
   params?: StdParams;
   headers?: StdHeaders;
@@ -127,12 +123,12 @@ export function stdRequestSchema<
   StdHeaders extends StandardSchemaV1 = never,
   StdQueries extends StandardSchemaV1 = never,
   StdBody extends StandardSchemaV1 = never,
-  StdBodyMapping extends KoriStdRequestSchemaContentBodyMappingBase = never,
+  StdBodyMapping extends Record<string, StandardSchemaV1> = never,
 >(options: {
   params?: StdParams;
   headers?: StdHeaders;
   queries?: StdQueries;
-  body?: KoriStdRequestSchemaSimpleBody<StdBody> | KoriStdRequestSchemaContentBody<StdBodyMapping>;
+  body?: StdBody | KoriStdRequestSchemaContentBody<StdBodyMapping>;
 }): KoriStdRequestSchema<
   KoriStdSchema<StdParams>,
   KoriStdSchema<StdHeaders>,
@@ -153,22 +149,7 @@ export function stdRequestSchema<
     });
   }
 
-  if ('content' in options.body) {
-    // content body
-    return createKoriRequestSchema({
-      provider: STANDARD_SCHEMA_PROVIDER,
-      params,
-      headers,
-      queries,
-      body: {
-        description: options.body.description,
-        content: toKoriBodyMapping(options.body.content),
-      },
-    });
-  }
-
   // simple body
-
   if (isStdType(options.body)) {
     return createKoriRequestSchema({
       provider: STANDARD_SCHEMA_PROVIDER,
@@ -179,6 +160,7 @@ export function stdRequestSchema<
     });
   }
 
+  // content body
   return createKoriRequestSchema({
     provider: STANDARD_SCHEMA_PROVIDER,
     params,
@@ -186,8 +168,7 @@ export function stdRequestSchema<
     queries,
     body: {
       description: options.body.description,
-      schema: createKoriStdSchema(options.body.schema),
-      examples: options.body.examples,
+      content: toKoriBodyMapping(options.body.content),
     },
   });
 }

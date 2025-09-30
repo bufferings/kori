@@ -1,14 +1,8 @@
 export {
-  type OpenApiEnvironmentExtension,
-  type OpenApiMeta,
+  type OpenApiEnvExtension,
   openApiMeta,
-  OpenApiMetaSymbol,
-  type OpenApiOptions,
   openApiPlugin,
-} from './openapi-plugin.js';
-export {
-  type ConversionContext,
-  createRouteCollector,
-  type RouteCollector,
-  type SchemaConverter,
-} from './route-collector.js';
+  type OpenApiPluginMeta,
+  type OpenApiPluginOptions,
+} from './plugin/index.js';
+export { type SchemaConverter } from './schema-converter/index.js';

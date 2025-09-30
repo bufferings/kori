@@ -97,9 +97,7 @@ export type InferRequestSchemaBodyOutput<S extends KoriRequestSchemaBase> =
         ? {
             [K in keyof BodyMapping]: BodyMapping[K] extends KoriSchemaBase
               ? { mediaType: K; value: InferSchemaOutput<BodyMapping[K]> }
-              : BodyMapping[K] extends { schema: infer SchemaInner extends KoriSchemaBase }
-                ? { mediaType: K; value: InferSchemaOutput<SchemaInner> }
-                : never;
+              : never;
           }[keyof BodyMapping]
         : never
     : never;
