@@ -1,5 +1,5 @@
 import { createKori, type Kori } from '@korix/kori';
-import { describe, test, expect, vi, assert } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { z } from 'zod';
 
 import { enableZodRequestValidation } from '../../src/zod-enable-validation/index.js';
@@ -138,7 +138,7 @@ describe('Request validation integration', () => {
             },
           });
         } else {
-          assert.fail('Invalid media type');
+          expect.fail('Invalid media type');
         }
       },
     });
