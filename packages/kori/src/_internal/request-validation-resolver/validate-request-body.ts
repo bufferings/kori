@@ -58,8 +58,8 @@ function resolveRequestBodySchema({
   bodySchema: NonNullable<KoriRequestSchemaBase['body']>;
   requestMediaType: string;
 }): KoriResult<{ schema: KoriSchemaBase; mediaType?: string }, RequestBodyValidationFailureBase> {
-  if (!('content' in bodySchema)) {
-    // KoriRequestSchemaSimpleBody
+  if (isKoriSchema(bodySchema)) {
+    // simple body
     if (requestMediaType !== DEFAULT_MEDIA_TYPE) {
       return fail({
         stage: 'pre-validation',
@@ -69,11 +69,9 @@ function resolveRequestBodySchema({
         requestMediaType: requestMediaType,
       });
     }
-
-    const schema = isKoriSchema(bodySchema) ? bodySchema : bodySchema.schema;
-    return succeed({ schema });
+    return succeed({ schema: bodySchema });
   } else {
-    // KoriRequestSchemaContentBody
+    // content body
     const contentSchema = bodySchema.content;
 
     const matchedMediaType = findMatchingMediaType({
@@ -93,8 +91,7 @@ function resolveRequestBodySchema({
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const mediaTypeSchema = contentSchema[matchedMediaType]!;
-    const targetSchema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
-    return succeed({ schema: targetSchema, mediaType: matchedMediaType });
+    return succeed({ schema: mediaTypeSchema, mediaType: matchedMediaType });
   }
 }
 

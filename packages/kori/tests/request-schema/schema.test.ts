@@ -93,7 +93,7 @@ describe('createKoriRequestSchema', () => {
     >();
   });
 
-  test('creates schema with simple body (direct schema)', () => {
+  test('creates schema with simple body', () => {
     const bodySchema = createKoriSchema({
       provider: testProvider,
       definition: { type: 'object' },
@@ -113,33 +113,7 @@ describe('createKoriRequestSchema', () => {
     >();
   });
 
-  test('creates schema with simple body (with metadata)', () => {
-    const bodySchema = createKoriSchema({
-      provider: testProvider,
-      definition: { type: 'object' },
-    });
-
-    const bodyWrapper = {
-      schema: bodySchema,
-      description: 'User registration data',
-      examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
-    };
-
-    const requestSchema = createKoriRequestSchema({
-      provider: testProvider,
-      body: bodyWrapper,
-    });
-
-    expect(requestSchema.koriKind).toBe('kori-request-schema');
-    expect(requestSchema.provider).toBe(testProvider);
-    expect(requestSchema.body).toBe(bodyWrapper);
-
-    expectTypeOf<typeof requestSchema>().toExtend<
-      KoriRequestSchema<typeof testProvider, never, never, never, typeof bodySchema>
-    >();
-  });
-
-  test('creates schema with content body (direct schema)', () => {
+  test('creates schema with content body', () => {
     const jsonSchema = createKoriSchema({
       provider: testProvider,
       definition: { type: 'object' },
@@ -179,10 +153,7 @@ describe('createKoriRequestSchema', () => {
     const contentBody = {
       description: 'Contact form submission',
       content: {
-        'application/json': {
-          schema: jsonSchema,
-          examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
-        },
+        'application/json': jsonSchema,
         'application/xml': xmlSchema,
       },
     };
@@ -204,7 +175,7 @@ describe('createKoriRequestSchema', () => {
         never,
         never,
         {
-          'application/json': { schema: typeof jsonSchema; examples?: Record<string, unknown> };
+          'application/json': typeof jsonSchema;
           'application/xml': typeof xmlSchema;
         }
       >

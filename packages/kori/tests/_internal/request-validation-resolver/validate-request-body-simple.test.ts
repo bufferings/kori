@@ -34,121 +34,60 @@ const mockRequest = {
 } as unknown as KoriRequest;
 
 describe('resolveRequestValidator - Simple body validation', () => {
-  describe('Simple body schema - Direct', () => {
-    test('validates simple body with JSON media type', async () => {
-      const v = resolveRequestValidator({
-        validator: testRequestValidator,
-        schema: createKoriRequestSchema({
-          provider: 'test-provider',
-          body: bodySchema,
-        }),
-      });
-
-      expect(v).toBeDefined();
-      if (!v) {
-        expect.unreachable('for type narrowing');
-      }
-
-      const result = await v(mockRequest);
-      expect(result.success).toBe(true);
-      if (!result.success) {
-        expect.unreachable('for type narrowing');
-      }
-
-      expect(result.value.body).toEqual({ name: 'test', __test_processed: 'by-body-validator' });
+  test('validates simple body with JSON media type', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: bodySchema,
+      }),
     });
 
-    test('rejects simple body with non-JSON media type', async () => {
-      const v = resolveRequestValidator({
-        validator: testRequestValidator,
-        schema: createKoriRequestSchema({
-          provider: 'test-provider',
-          body: bodySchema,
-        }),
-      });
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
 
-      expect(v).toBeDefined();
-      if (!v) {
-        expect.unreachable('for type narrowing');
-      }
+    const result = await v(mockRequest);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      expect.unreachable('for type narrowing');
+    }
 
-      const mockReq = {
-        ...mockRequest,
-        mediaType: () => 'text/plain',
-      };
-
-      const result = await v(mockReq);
-      expect(result.success).toBe(false);
-      if (result.success) {
-        expect.unreachable('for type narrowing');
-      }
-
-      expect(result.reason.body).toEqual({
-        stage: 'pre-validation',
-        type: 'UNSUPPORTED_MEDIA_TYPE',
-        message: 'Unsupported Media Type',
-        supportedMediaTypes: ['application/json'],
-        requestMediaType: 'text/plain',
-      });
-    });
+    expect(result.value.body).toEqual({ name: 'test', __test_processed: 'by-body-validator' });
   });
 
-  describe('Simple body schema - Wrapped', () => {
-    test('validates wrapped simple body with JSON media type', async () => {
-      const v = resolveRequestValidator({
-        validator: testRequestValidator,
-        schema: createKoriRequestSchema({
-          provider: 'test-provider',
-          body: { schema: bodySchema },
-        }),
-      });
-
-      expect(v).toBeDefined();
-      if (!v) {
-        expect.unreachable('for type narrowing');
-      }
-
-      const result = await v(mockRequest);
-      expect(result.success).toBe(true);
-      if (!result.success) {
-        expect.unreachable('for type narrowing');
-      }
-
-      expect(result.value.body).toEqual({ name: 'test', __test_processed: 'by-body-validator' });
+  test('rejects simple body with non-JSON media type', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: bodySchema,
+      }),
     });
 
-    test('rejects wrapped simple body with non-JSON media type', async () => {
-      const v = resolveRequestValidator({
-        validator: testRequestValidator,
-        schema: createKoriRequestSchema({
-          provider: 'test-provider',
-          body: { schema: bodySchema },
-        }),
-      });
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
 
-      expect(v).toBeDefined();
-      if (!v) {
-        expect.unreachable('for type narrowing');
-      }
+    const mockReq = {
+      ...mockRequest,
+      mediaType: () => 'text/plain',
+    };
 
-      const mockReq = {
-        ...mockRequest,
-        mediaType: () => 'text/plain',
-      };
+    const result = await v(mockReq);
+    expect(result.success).toBe(false);
+    if (result.success) {
+      expect.unreachable('for type narrowing');
+    }
 
-      const result = await v(mockReq);
-      expect(result.success).toBe(false);
-      if (result.success) {
-        expect.unreachable('for type narrowing');
-      }
-
-      expect(result.reason.body).toEqual({
-        stage: 'pre-validation',
-        type: 'UNSUPPORTED_MEDIA_TYPE',
-        message: 'Unsupported Media Type',
-        supportedMediaTypes: ['application/json'],
-        requestMediaType: 'text/plain',
-      });
+    expect(result.reason.body).toEqual({
+      stage: 'pre-validation',
+      type: 'UNSUPPORTED_MEDIA_TYPE',
+      message: 'Unsupported Media Type',
+      supportedMediaTypes: ['application/json'],
+      requestMediaType: 'text/plain',
     });
   });
 });

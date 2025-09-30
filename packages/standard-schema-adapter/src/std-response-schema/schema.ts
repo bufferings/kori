@@ -33,7 +33,12 @@ export type KoriStdResponseSchema<
  * ```typescript
  * const responseSchema = stdResponseSchema({
  *   200: z.object({ message: z.string() }),
- *   400: { schema: z.object({ error: z.string() }), description: 'Bad request' }
+ *   400: {
+ *     description: 'Bad request',
+ *     content: {
+ *       'application/json': z.object({ error: z.string() })
+ *     }
+ *   }
  * });
  * ```
  */

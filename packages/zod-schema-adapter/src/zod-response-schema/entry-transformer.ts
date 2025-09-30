@@ -1,8 +1,6 @@
 import {
   type KoriResponseSchemaContentEntry,
-  type KoriResponseSchemaContentEntryItem,
   type KoriResponseSchemaEntry,
-  type KoriResponseSchemaSimpleEntry,
   type KoriResponseSchemaStatusCode,
 } from '@korix/kori';
 import { type z } from 'zod';
@@ -10,33 +8,15 @@ import { type z } from 'zod';
 import { isZodType } from '../util/index.js';
 import { type KoriZodSchema, type KoriZodSchemaProvider, createKoriZodSchema } from '../zod-schema/index.js';
 
-import {
-  type KoriZodResponseSchemaContentEntryItemBase,
-  type KoriZodResponseSchemaContentEntryMappingBase,
-} from './entry-content.js';
 import { type KoriZodResponseSchemaEntry } from './entry.js';
-
-/**
- * Maps a Zod content item definition to the matching Kori schema item type.
- *
- * @template Item - Zod content item definition provided in the response schema options
- */
-export type KoriResponseSchemaZodToContentItem<Item extends KoriZodResponseSchemaContentEntryItemBase> =
-  Item extends z.ZodType
-    ? KoriResponseSchemaContentEntryItem<KoriZodSchema<Item>>
-    : Item extends { schema: infer SZ; examples?: infer EX }
-      ? SZ extends z.ZodType
-        ? { schema: KoriZodSchema<SZ>; examples?: EX }
-        : never
-      : never;
 
 /**
  * Maps each content-type entry from Zod definitions to Kori schema items.
  *
  * @template M - Content-type mapping supplied to the response schema builder
  */
-export type KoriResponseSchemaZodToContentMap<M extends KoriZodResponseSchemaContentEntryMappingBase> = {
-  [K in keyof M]: KoriResponseSchemaZodToContentItem<M[K]>;
+export type KoriResponseSchemaZodToContentMap<M extends Record<string, z.ZodType>> = {
+  [K in keyof M]: KoriZodSchema<M[K]>;
 };
 
 /**
@@ -47,17 +27,14 @@ export type KoriResponseSchemaZodToContentMap<M extends KoriZodResponseSchemaCon
 export type KoriResponseSchemaZodToEntry<E extends KoriZodResponseSchemaEntry> =
   // simple
   E extends z.ZodType
-    ? KoriResponseSchemaSimpleEntry<KoriZodSchema<z.ZodType>, KoriZodSchema<E>>
-    : // simple wrapper
-      E extends { schema: infer S extends z.ZodType; headers?: infer H extends z.ZodType }
-      ? KoriResponseSchemaSimpleEntry<KoriZodSchema<H>, KoriZodSchema<S>>
-      : // content: content map
-        E extends { content: infer CM; headers?: infer H extends z.ZodType }
-        ? KoriResponseSchemaContentEntry<
-            KoriZodSchema<H>,
-            KoriResponseSchemaZodToContentMap<Extract<CM, KoriZodResponseSchemaContentEntryMappingBase>>
-          >
-        : never;
+    ? KoriZodSchema<E>
+    : // content: content map
+      E extends { content: infer CM; headers?: infer H extends z.ZodType }
+      ? KoriResponseSchemaContentEntry<
+          KoriZodSchema<H>,
+          KoriResponseSchemaZodToContentMap<Extract<CM, Record<string, z.ZodType>>>
+        >
+      : never;
 
 /**
  * Maps a status-code keyed record of Zod response entries to the Kori schema entry map.
@@ -79,16 +56,10 @@ export type KoriResponseSchemaZodToEntries<
  * @param content - The Zod content mapping to transform
  * @returns The Kori content mapping
  */
-function toKoriContent(
-  content: KoriZodResponseSchemaContentEntryMappingBase,
-): Record<string, KoriResponseSchemaContentEntryItem<KoriZodSchema<z.ZodType>>> {
-  const out: Record<string, KoriResponseSchemaContentEntryItem<KoriZodSchema<z.ZodType>>> = {};
+function toKoriContent(content: Record<string, z.ZodType>): Record<string, KoriZodSchema<z.ZodType>> {
+  const out: Record<string, KoriZodSchema<z.ZodType>> = {};
   for (const [mt, item] of Object.entries(content)) {
-    if (isZodType(item)) {
-      out[mt] = createKoriZodSchema(item);
-    } else {
-      out[mt] = { schema: createKoriZodSchema(item.schema), examples: item.examples };
-    }
+    out[mt] = createKoriZodSchema(item);
   }
   return out;
 }
@@ -96,33 +67,21 @@ function toKoriContent(
 /**
  * Maps a Zod response schema entry to a Kori response schema entry.
  *
- * Handles three types of entries: direct Zod schema, content-type mapping, and simple wrapper.
- *
  * @param entry - The Zod response schema entry to transform
  * @returns The Kori response schema entry
  *
  */
 function toKoriEntry(entry: KoriZodResponseSchemaEntry): KoriResponseSchemaEntry<KoriZodSchemaProvider> {
-  // simple: zod directly
+  // simple entry
   if (isZodType(entry)) {
     return createKoriZodSchema(entry);
   }
+
   // content entry
-  if ('content' in entry) {
-    return {
-      description: entry.description,
-      headers: entry.headers ? createKoriZodSchema(entry.headers) : undefined,
-      content: toKoriContent(entry.content),
-      links: entry.links,
-    };
-  }
-  // simple: spec
   return {
     description: entry.description,
     headers: entry.headers ? createKoriZodSchema(entry.headers) : undefined,
-    schema: createKoriZodSchema(entry.schema),
-    examples: entry.examples,
-    links: entry.links,
+    content: toKoriContent(entry.content),
   };
 }
 

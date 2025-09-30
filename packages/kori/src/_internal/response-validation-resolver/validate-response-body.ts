@@ -1,9 +1,6 @@
 import { type KoriResponse } from '../../context/index.js';
 import { MediaType } from '../../http/index.js';
-import {
-  type KoriResponseSchemaContentEntryBase,
-  type KoriResponseSchemaSimpleEntryBase,
-} from '../../response-schema/index.js';
+import { type KoriResponseSchemaContentEntryBase } from '../../response-schema/index.js';
 import { type ResponseBodyValidationFailureBase } from '../../routing/index.js';
 import { isKoriSchema, type KoriSchemaBase } from '../../schema/index.js';
 import { succeed, fail, type KoriResult } from '../../util/index.js';
@@ -23,11 +20,11 @@ function resolveResponseBodySchema({
   schemaEntry,
   responseMediaType,
 }: {
-  schemaEntry: KoriResponseSchemaSimpleEntryBase | KoriResponseSchemaContentEntryBase;
+  schemaEntry: KoriSchemaBase | KoriResponseSchemaContentEntryBase;
   responseMediaType: string;
 }): KoriResult<KoriSchemaBase, ResponseBodyValidationFailureBase> {
-  if (!('content' in schemaEntry)) {
-    // KoriResponseSchemaSimpleEntry
+  if (isKoriSchema(schemaEntry)) {
+    // simple entry
     if (responseMediaType !== DEFAULT_MEDIA_TYPE) {
       return fail({
         stage: 'pre-validation',
@@ -38,10 +35,9 @@ function resolveResponseBodySchema({
       });
     }
 
-    const schema = isKoriSchema(schemaEntry) ? schemaEntry : schemaEntry.schema;
-    return succeed(schema);
+    return succeed(schemaEntry);
   } else {
-    // KoriResponseSchemaContentEntry
+    // content entry
     const content = schemaEntry.content;
     if (!(responseMediaType in content)) {
       return fail({
@@ -55,8 +51,7 @@ function resolveResponseBodySchema({
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const mediaTypeSchema = content[responseMediaType]!;
-    const schema = isKoriSchema(mediaTypeSchema) ? mediaTypeSchema : mediaTypeSchema.schema;
-    return succeed(schema);
+    return succeed(mediaTypeSchema);
   }
 }
 
@@ -76,7 +71,7 @@ export async function validateResponseBody({
   res,
 }: {
   validator: KoriValidatorBase;
-  schemaEntry: KoriResponseSchemaSimpleEntryBase | KoriResponseSchemaContentEntryBase;
+  schemaEntry: KoriSchemaBase | KoriResponseSchemaContentEntryBase;
   res: KoriResponse;
 }): Promise<KoriResult<unknown, ResponseBodyValidationFailureBase>> {
   // Skip validation for streaming responses

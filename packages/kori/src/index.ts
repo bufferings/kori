@@ -67,11 +67,6 @@ export {
   type KoriRequestSchemaBase,
   type KoriRequestSchemaContentBody,
   type KoriRequestSchemaContentBodyBase,
-  type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyItemBase,
-  type KoriRequestSchemaContentBodyMappingBase,
-  type KoriRequestSchemaSimpleBody,
-  type KoriRequestSchemaSimpleBodyBase,
 } from './request-schema/index.js';
 export {
   createKoriResponseSchema,
@@ -82,12 +77,7 @@ export {
   type KoriResponseSchemaBase,
   type KoriResponseSchemaContentEntry,
   type KoriResponseSchemaContentEntryBase,
-  type KoriResponseSchemaContentEntryItem,
-  type KoriResponseSchemaContentEntryItemBase,
-  type KoriResponseSchemaContentEntryMappingBase,
   type KoriResponseSchemaEntry,
-  type KoriResponseSchemaSimpleEntry,
-  type KoriResponseSchemaSimpleEntryBase,
   type KoriResponseSchemaStatusCode,
 } from './response-schema/index.js';
 export {
@@ -104,7 +94,7 @@ export {
   type KoriRoute,
   type KoriRouteDefinition,
   type KoriRouteMethod,
-  type KoriRoutePluginMetadata,
+  type KoriRoutePluginMeta,
   type KoriRouteRequestValidationFailureHandler,
   type KoriRouteResponseValidationFailureHandler,
   normalizeRouteHttpMethod,

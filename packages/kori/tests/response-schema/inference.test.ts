@@ -41,7 +41,7 @@ describe('InferResponseSchemaBodyOutputByStatusCode', () => {
     definition: { type: 'object' },
   });
 
-  test('infers simple body output type (direct schema)', () => {
+  test('infers simple body output type', () => {
     const _responseSchema = createKoriResponseSchema({
       provider: testProvider,
       responses: {
@@ -53,55 +53,13 @@ describe('InferResponseSchemaBodyOutputByStatusCode', () => {
     expectTypeOf<Output>().toEqualTypeOf<{ id: number; name: string; email: string }>();
   });
 
-  test('infers simple body output type (with metadata)', () => {
-    const _responseSchema = createKoriResponseSchema({
-      provider: testProvider,
-      responses: {
-        '200': {
-          schema: userSchema,
-          description: 'User data',
-          examples: {
-            sample: { id: 1, name: 'Alice', email: 'alice@example.com' },
-          },
-        },
-      },
-    });
-
-    type Output = InferResponseSchemaBodyOutputByStatusCode<typeof _responseSchema, '200'>;
-    expectTypeOf<Output>().toEqualTypeOf<{ id: number; name: string; email: string }>();
-  });
-
-  test('infers content body output type (direct schema)', () => {
+  test('infers content body output type', () => {
     const _responseSchema = createKoriResponseSchema({
       provider: testProvider,
       responses: {
         '200': {
           content: {
             'application/json': userSchema,
-          },
-        },
-      },
-    });
-
-    type Output = InferResponseSchemaBodyOutputByStatusCode<typeof _responseSchema, '200'>;
-    expectTypeOf<Output>().toEqualTypeOf<{
-      mediaType: 'application/json';
-      value: { id: number; name: string; email: string };
-    }>();
-  });
-
-  test('infers content body output type (schema with examples)', () => {
-    const _responseSchema = createKoriResponseSchema({
-      provider: testProvider,
-      responses: {
-        '200': {
-          content: {
-            'application/json': {
-              schema: userSchema,
-              examples: {
-                sample: { id: 1, name: 'Alice', email: 'alice@example.com' },
-              },
-            },
           },
         },
       },

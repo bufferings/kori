@@ -1,11 +1,4 @@
-export {
-  type KoriRequestSchemaContentBody,
-  type KoriRequestSchemaContentBodyBase,
-  type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyItemBase,
-  type KoriRequestSchemaContentBodyMappingBase,
-} from './body-content.js';
-export { type KoriRequestSchemaSimpleBody, type KoriRequestSchemaSimpleBodyBase } from './body-simple.js';
+export { type KoriRequestSchemaContentBody, type KoriRequestSchemaContentBodyBase } from './body-content.js';
 export {
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaHeadersOutput,

@@ -541,9 +541,6 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
-      '@korix/zod-schema-adapter':
-        specifier: workspace:*
-        version: link:../zod-schema-adapter
       '@types/node':
         specifier: 'catalog:'
         version: 20.11.17

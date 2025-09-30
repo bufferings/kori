@@ -128,7 +128,7 @@ const app = createKori({
   });
 
 app.post('/products', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Create product',
     description: 'Create a product with complex validation',
     tags: ['Products'],
@@ -162,7 +162,7 @@ app.post('/products', {
 });
 
 app.get('/products/search', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Search products',
     description: 'Advanced product search with filtering',
     tags: ['Products'],
@@ -237,7 +237,7 @@ app.createChild({
         }
       })
       .get('/dashboard', {
-        pluginMetadata: openApiMeta({
+        pluginMeta: openApiMeta({
           summary: 'Admin dashboard',
           description: 'Get admin dashboard data (requires auth)',
           tags: ['Admin'],
@@ -254,7 +254,7 @@ app.createChild({
           }),
       })
       .post('/maintenance', {
-        pluginMetadata: openApiMeta({
+        pluginMeta: openApiMeta({
           summary: 'Toggle maintenance mode',
           description: 'Enable or disable maintenance mode',
           tags: ['Admin'],
@@ -285,7 +285,7 @@ app.createChild({
 });
 
 app.get('/health', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Health check',
     description: 'Detailed health information',
     tags: ['System'],
@@ -301,7 +301,7 @@ app.get('/health', {
 });
 
 app.get('/error/:type', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Error demo',
     description: 'Demonstrate different error types',
     tags: ['Demo'],
@@ -324,7 +324,7 @@ app.get('/error/:type', {
 
 // Demonstration of new validation error handling
 app.post('/validation-demo', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Validation demo',
     description: 'Demonstrates new validation error handling features',
     tags: ['Demo'],

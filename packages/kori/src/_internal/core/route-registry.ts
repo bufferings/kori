@@ -1,7 +1,7 @@
 import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
 import { type KoriResponseSchemaBase } from '../../response-schema/index.js';
 import { type KoriRouteId } from '../../route-matcher/index.js';
-import { normalizeRouteHttpMethod, type KoriRoutePluginMetadata, type RouteHttpMethod } from '../../routing/index.js';
+import { normalizeRouteHttpMethod, type KoriRoutePluginMeta, type RouteHttpMethod } from '../../routing/index.js';
 
 /**
  * Runtime route record stored in the registry.
@@ -23,7 +23,7 @@ export type RouteRecord = {
   /** Response schema for validation (if any) */
   responseSchema?: KoriResponseSchemaBase;
   /** Plugin metadata attached to this route */
-  pluginMetadata?: KoriRoutePluginMetadata;
+  pluginMeta?: KoriRoutePluginMeta;
 };
 
 /**

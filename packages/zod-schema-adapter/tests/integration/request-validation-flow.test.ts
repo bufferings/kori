@@ -64,7 +64,7 @@ describe('Request validation integration', () => {
     });
   });
 
-  test('processes valid request data through complete workflow', async () => {
+  test('validates simple body with valid data', async () => {
     const onRequestValidationFailure = vi.fn();
 
     const app = createKori({
@@ -74,12 +74,72 @@ describe('Request validation integration', () => {
         body: z.object({ name: z.string(), email: z.email() }),
       }),
       handler: (ctx) => {
-        const body = ctx.req.validatedBody();
+        const { name, email } = ctx.req.validatedBody();
 
         return ctx.res.json({
           success: true,
-          user: body,
+          user: {
+            name,
+            email,
+          },
         });
+      },
+    });
+    const fetchHandler = await createFetchHandler(app);
+
+    const response = await fetchHandler(
+      new Request('http://localhost/users', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'John Doe',
+          email: 'john@example.com',
+        }),
+      }),
+    );
+
+    expect(onRequestValidationFailure).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+
+    const body = await response.json();
+    expect(body).toEqual({
+      success: true,
+      user: {
+        name: 'John Doe',
+        email: 'john@example.com',
+      },
+    });
+  });
+
+  test('validates content body with valid data', async () => {
+    const onRequestValidationFailure = vi.fn();
+
+    const app = createKori({
+      ...enableZodRequestValidation({ onRequestValidationFailure }),
+    }).post('/users', {
+      requestSchema: zodRequestSchema({
+        body: {
+          content: {
+            'application/json': z.object({ name: z.string(), email: z.email() }),
+          },
+        },
+      }),
+      handler: (ctx) => {
+        const body = ctx.req.validatedBody();
+        if (body.mediaType === 'application/json') {
+          const { name, email } = body.value;
+          return ctx.res.json({
+            success: true,
+            user: {
+              name,
+              email,
+            },
+          });
+        } else {
+          expect.fail('Invalid media type');
+        }
       },
     });
     const fetchHandler = await createFetchHandler(app);

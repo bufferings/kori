@@ -1,8 +1,6 @@
 import {
   type KoriResponseSchemaContentEntry,
-  type KoriResponseSchemaContentEntryItem,
   type KoriResponseSchemaEntry,
-  type KoriResponseSchemaSimpleEntry,
   type KoriResponseSchemaStatusCode,
 } from '@korix/kori';
 import { type StandardSchemaV1 } from '@standard-schema/spec';
@@ -10,33 +8,15 @@ import { type StandardSchemaV1 } from '@standard-schema/spec';
 import { createKoriStdSchema, type KoriStdSchemaProvider, type KoriStdSchema } from '../std-schema/index.js';
 import { isStdType } from '../util/index.js';
 
-import {
-  type KoriStdResponseSchemaContentEntryItemBase,
-  type KoriStdResponseSchemaContentEntryMappingBase,
-} from './entry-content.js';
 import { type KoriStdResponseSchemaEntry } from './entry.js';
-
-/**
- * Maps a Standard Schema content item definition to the matching Kori schema item type.
- *
- * @template Item - Standard Schema content item definition provided in the response schema options
- */
-export type KoriResponseSchemaStdToContentItem<Item extends KoriStdResponseSchemaContentEntryItemBase> =
-  Item extends StandardSchemaV1
-    ? KoriResponseSchemaContentEntryItem<KoriStdSchema<Item>>
-    : Item extends { schema: infer S; examples?: infer EX }
-      ? S extends StandardSchemaV1
-        ? { schema: KoriStdSchema<S>; examples?: EX }
-        : never
-      : never;
 
 /**
  * Maps each content-type entry from Standard Schema definitions to Kori schema items.
  *
  * @template M - Content-type mapping supplied to the response schema builder
  */
-export type KoriResponseSchemaStdToContentMap<M extends KoriStdResponseSchemaContentEntryMappingBase> = {
-  [K in keyof M]: KoriResponseSchemaStdToContentItem<M[K]>;
+export type KoriResponseSchemaStdToContentMap<M extends Record<string, StandardSchemaV1>> = {
+  [K in keyof M]: KoriStdSchema<M[K]>;
 };
 
 /**
@@ -47,17 +27,13 @@ export type KoriResponseSchemaStdToContentMap<M extends KoriStdResponseSchemaCon
 export type KoriResponseSchemaStdToEntry<E extends KoriStdResponseSchemaEntry> =
   // simple
   E extends StandardSchemaV1
-    ? KoriResponseSchemaSimpleEntry<KoriStdSchema<StandardSchemaV1>, KoriStdSchema<E>>
-    : // simple wrapper
-      E extends { schema: infer S extends StandardSchemaV1; headers?: infer H extends StandardSchemaV1 }
-      ? KoriResponseSchemaSimpleEntry<KoriStdSchema<H>, KoriStdSchema<S>>
-      : // content: content map
-        E extends { content: infer CM; headers?: infer H extends StandardSchemaV1 }
-        ? KoriResponseSchemaContentEntry<
-            KoriStdSchema<H>,
-            KoriResponseSchemaStdToContentMap<Extract<CM, KoriStdResponseSchemaContentEntryMappingBase>>
-          >
-        : never;
+    ? KoriStdSchema<E>
+    : E extends { content: infer CM; headers?: infer H extends StandardSchemaV1 }
+      ? KoriResponseSchemaContentEntry<
+          KoriStdSchema<H>,
+          KoriResponseSchemaStdToContentMap<Extract<CM, Record<string, StandardSchemaV1>>>
+        >
+      : never;
 
 /**
  * Maps a status-code keyed record of Standard Schema response entries to the Kori schema entry map.
@@ -79,16 +55,10 @@ export type KoriResponseSchemaStdToEntries<
  * @param content - The Standard Schema content mapping to transform
  * @returns The Kori content mapping
  */
-function toKoriContent(
-  content: KoriStdResponseSchemaContentEntryMappingBase,
-): Record<string, KoriResponseSchemaContentEntryItem<KoriStdSchema<StandardSchemaV1>>> {
-  const out: Record<string, KoriResponseSchemaContentEntryItem<KoriStdSchema<StandardSchemaV1>>> = {};
+function toKoriContent(content: Record<string, StandardSchemaV1>): Record<string, KoriStdSchema<StandardSchemaV1>> {
+  const out: Record<string, KoriStdSchema<StandardSchemaV1>> = {};
   for (const [mt, item] of Object.entries(content)) {
-    if (isStdType(item)) {
-      out[mt] = createKoriStdSchema(item);
-    } else {
-      out[mt] = { schema: createKoriStdSchema(item.schema), examples: item.examples };
-    }
+    out[mt] = createKoriStdSchema(item);
   }
   return out;
 }
@@ -96,33 +66,21 @@ function toKoriContent(
 /**
  * Maps a Standard Schema response schema entry to a Kori response schema entry.
  *
- * Handles three types of entries: direct Standard Schema schema, content-type mapping, and simple wrapper.
- *
  * @param entry - The Standard Schema response schema entry to transform
  * @returns The Kori response schema entry
  *
  */
 function toKoriEntry(entry: KoriStdResponseSchemaEntry): KoriResponseSchemaEntry<KoriStdSchemaProvider> {
-  // simple: Standard Schema directly
+  // simple entry
   if (isStdType(entry)) {
     return createKoriStdSchema(entry);
   }
+
   // content entry
-  if ('content' in entry) {
-    return {
-      description: entry.description,
-      headers: entry.headers ? createKoriStdSchema(entry.headers) : undefined,
-      content: toKoriContent(entry.content),
-      links: entry.links,
-    };
-  }
-  // simple: Standard Schema wrapper
   return {
     description: entry.description,
     headers: entry.headers ? createKoriStdSchema(entry.headers) : undefined,
-    schema: createKoriStdSchema(entry.schema),
-    examples: entry.examples,
-    links: entry.links,
+    content: toKoriContent(entry.content),
   };
 }
 

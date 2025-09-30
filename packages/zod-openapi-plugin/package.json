@@ -58,7 +58,6 @@
   "peerDependencies": {
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@korix/zod-schema-adapter": "workspace:*",
     "openapi3-ts": "^4.4.0",
     "zod": "^4.0.0"
   },
@@ -67,7 +66,6 @@
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/script": "workspace:*",
-    "@korix/zod-schema-adapter": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "openapi3-ts": "4.4.0",

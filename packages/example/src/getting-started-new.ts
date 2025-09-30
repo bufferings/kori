@@ -50,7 +50,7 @@ export const app = createKori({
     },
   })
   .post('/users', {
-    pluginMetadata: openApiMeta({
+    pluginMeta: openApiMeta({
       summary: 'Create a new user',
       description: 'Creates a new user with the provided data',
       tags: ['users'],
@@ -70,7 +70,7 @@ export const app = createKori({
     },
   })
   .get('/users/main/:id', {
-    pluginMetadata: openApiMeta({
+    pluginMeta: openApiMeta({
       summary: 'Get user by ID',
       description: 'Retrieves a user by their ID',
       tags: ['users'],

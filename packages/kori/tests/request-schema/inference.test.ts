@@ -93,26 +93,10 @@ describe('InferRequestSchemaBodyOutput', () => {
     definition: { type: 'object' },
   });
 
-  test('infers simple body output type (direct schema)', () => {
+  test('infers simple body output type', () => {
     const _requestSchema = createKoriRequestSchema({
       provider: testProvider,
       body: userSchema,
-    });
-
-    expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<{
-      name: string;
-      email: string;
-    }>();
-  });
-
-  test('infers simple body output type (with metadata)', () => {
-    const _requestSchema = createKoriRequestSchema({
-      provider: testProvider,
-      body: {
-        schema: userSchema,
-        description: 'User schema',
-        examples: { sample: { name: 'John Doe', email: 'john.doe@example.com' } },
-      },
     });
 
     expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<{
@@ -170,59 +154,6 @@ describe('InferRequestSchemaBodyOutput', () => {
       | { mediaType: 'application/json'; value: { name: string; email: string } }
       | { mediaType: 'text/plain'; value: string }
       | { mediaType: 'application/octet-stream'; value: number }
-    >();
-  });
-
-  test('infers content body output type (schema with examples)', () => {
-    const stringSchema = createKoriSchema<typeof testProvider, { type: 'string' }, string>({
-      provider: testProvider,
-      definition: { type: 'string' },
-    });
-
-    const _requestSchema = createKoriRequestSchema({
-      provider: testProvider,
-      body: {
-        content: {
-          'application/json': {
-            schema: userSchema,
-            examples: { sample: { name: 'Alice', email: 'alice@example.com' } },
-          },
-          'text/plain': stringSchema,
-        },
-      },
-    });
-
-    expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<
-      | { mediaType: 'application/json'; value: { name: string; email: string } }
-      | { mediaType: 'text/plain'; value: string }
-    >();
-  });
-
-  test('infers content body output type (mixed direct and wrapped schemas)', () => {
-    const formSchema = createKoriSchema<typeof testProvider, { type: 'form' }, Record<string, string>>({
-      provider: testProvider,
-      definition: { type: 'form' },
-    });
-    const xmlSchema = createKoriSchema<typeof testProvider, { type: 'xml' }, { root: { data: string } }>({
-      provider: testProvider,
-      definition: { type: 'xml' },
-    });
-
-    const _requestSchema = createKoriRequestSchema({
-      provider: testProvider,
-      body: {
-        content: {
-          'application/json': userSchema,
-          'application/x-www-form-urlencoded': { schema: formSchema },
-          'application/xml': { schema: xmlSchema, examples: { sample: { root: { data: 'test' } } } },
-        },
-      },
-    });
-
-    expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<
-      | { mediaType: 'application/json'; value: { name: string; email: string } }
-      | { mediaType: 'application/x-www-form-urlencoded'; value: Record<string, string> }
-      | { mediaType: 'application/xml'; value: { root: { data: string } } }
     >();
   });
 

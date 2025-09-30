@@ -1,8 +1,11 @@
 import { type KoriSchemaBase } from '@korix/kori';
-import { type SchemaConverter, type ConversionContext } from '@korix/openapi-plugin';
-import { isKoriZodSchema } from '@korix/zod-schema-adapter';
+import { type SchemaConverter } from '@korix/openapi-plugin';
 import { type SchemaObject } from 'openapi3-ts/oas31';
 import { z } from 'zod';
+
+export function isZodType(value: unknown): value is z.ZodType {
+  return value instanceof z.ZodType;
+}
 
 /**
  * Create a Zod schema converter for OpenAPI
@@ -10,19 +13,18 @@ import { z } from 'zod';
 export function createZodSchemaConverter(): SchemaConverter {
   return {
     name: 'zod-converter',
-    canConvert: (schema: KoriSchemaBase): boolean => {
-      return isKoriZodSchema(schema);
+    canConvert: ({ schema }: { schema: KoriSchemaBase }): boolean => {
+      return isZodType(schema.definition);
     },
-    convert: (schema: KoriSchemaBase, _context: ConversionContext): SchemaObject => {
-      if (!isKoriZodSchema(schema)) {
+    convert: ({ schema }: { schema: KoriSchemaBase }): SchemaObject | undefined => {
+      if (!isZodType(schema.definition)) {
         throw new Error('Schema is not a valid Kori Zod schema');
       }
 
       try {
         return z.toJSONSchema(schema.definition) as SchemaObject;
       } catch {
-        // Fallback to generic object schema
-        return { type: 'object' };
+        return;
       }
     },
   };

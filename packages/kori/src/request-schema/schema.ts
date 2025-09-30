@@ -1,11 +1,15 @@
 import { type KoriSchemaBase, type KoriSchemaOf } from '../schema/index.js';
 
-import {
-  type KoriRequestSchemaContentBody,
-  type KoriRequestSchemaContentBodyItem,
-  type KoriRequestSchemaContentBodyMappingBase,
-} from './body-content.js';
-import { type KoriRequestSchemaSimpleBody } from './body-simple.js';
+import { type KoriRequestSchemaContentBody } from './body-content.js';
+
+/**
+ * Phantom property that preserves Body and BodyMapping type parameters through type aliases.
+ *
+ * Without this property, TypeScript loses track of these type parameters when the schema
+ * is wrapped in a type alias, causing inference utilities like InferRequestSchemaBodyOutput
+ * to fail. This property is never assigned at runtime and exists only for type checking.
+ */
+declare const PhantomProperty: unique symbol;
 
 /**
  * Schema definition that describes the structure of an HTTP request.
@@ -38,22 +42,6 @@ import { type KoriRequestSchemaSimpleBody } from './body-simple.js';
  *
  * @example
  * ```typescript
- * // Simple body: With description and examples
- * const requestSchema = createKoriRequestSchema({
- *   provider: 'my-schema',
- *   params: paramsSchema,
- *   body: {
- *     description: 'User registration data',
- *     schema: userSchema,
- *     examples: {
- *       sample: { name: 'Alice', email: 'alice@example.com' }
- *     }
- *   }
- * });
- * ```
- *
- * @example
- * ```typescript
  * // Content body: Flexible format for any content type
  * const requestSchema = createKoriRequestSchema({
  *   provider: 'my-schema',
@@ -61,12 +49,7 @@ import { type KoriRequestSchemaSimpleBody } from './body-simple.js';
  *   body: {
  *     description: 'Contact form submission',
  *     content: {
- *       'application/x-www-form-urlencoded': {
- *         schema: contactFormSchema,
- *         examples: {
- *           business: { company: 'Acme Inc', email: 'contact@acme.com' }
- *         }
- *       }
+ *       'application/x-www-form-urlencoded': contactFormSchema
  *     }
  *   }
  * });
@@ -78,14 +61,15 @@ export type KoriRequestSchema<
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
   Body extends KoriSchemaOf<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
+  BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 > = {
   koriKind: 'kori-request-schema';
   provider: Provider;
   params?: Params;
   headers?: Headers;
   queries?: Queries;
-  body?: KoriRequestSchemaSimpleBody<Body> | KoriRequestSchemaContentBody<BodyMapping>;
+  body?: Body | KoriRequestSchemaContentBody<BodyMapping>;
+  [PhantomProperty]?: { body: Body; bodyMapping: BodyMapping };
 };
 
 /**
@@ -97,7 +81,7 @@ export type KoriRequestSchemaBase = KoriRequestSchema<
   KoriSchemaBase,
   KoriSchemaBase,
   KoriSchemaBase,
-  KoriRequestSchemaContentBodyMappingBase
+  Record<string, KoriSchemaBase>
 >;
 
 /**
@@ -153,7 +137,7 @@ export function createKoriRequestSchema<
   params?: Params;
   headers?: Headers;
   queries?: Queries;
-  body?: KoriRequestSchemaSimpleBody<Body>;
+  body?: Body;
 }): KoriRequestSchema<Provider, Params, Headers, Queries, Body, never>;
 
 // Content Body overload
@@ -162,7 +146,7 @@ export function createKoriRequestSchema<
   Params extends KoriSchemaOf<Provider> = never,
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
+  BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 >(options: {
   provider: Provider;
   params?: Params;
@@ -178,13 +162,13 @@ export function createKoriRequestSchema<
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
   Body extends KoriSchemaOf<Provider> = never,
-  BodyMapping extends Record<string, KoriRequestSchemaContentBodyItem<KoriSchemaOf<Provider>>> = never,
+  BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 >(options: {
   provider: Provider;
   params?: Params;
   headers?: Headers;
   queries?: Queries;
-  body?: KoriRequestSchemaSimpleBody<Body> | KoriRequestSchemaContentBody<BodyMapping>;
+  body?: Body | KoriRequestSchemaContentBody<BodyMapping>;
 }): KoriRequestSchema<Provider, Params, Headers, Queries, Body, BodyMapping> {
   const { provider, params, headers, queries, body } = options;
   return {

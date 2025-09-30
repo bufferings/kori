@@ -1,7 +1,6 @@
 import { type KoriSchemaOf } from '../schema/index.js';
 
-import { type KoriResponseSchemaContentEntry, type KoriResponseSchemaContentEntryItem } from './entry-content.js';
-import { type KoriResponseSchemaSimpleEntry } from './entry-simple.js';
+import { type KoriResponseSchemaContentEntry } from './entry-content.js';
 
 /**
  * HTTP status code patterns for response schema keys.
@@ -43,11 +42,8 @@ export type KoriResponseSchemaStatusCode =
  * @template P Provider string
  */
 export type KoriResponseSchemaEntry<P extends string> =
-  | KoriResponseSchemaSimpleEntry<KoriSchemaOf<P>, KoriSchemaOf<P>>
-  | KoriResponseSchemaContentEntry<
-      KoriSchemaOf<P>,
-      Record<string, KoriResponseSchemaContentEntryItem<KoriSchemaOf<P>>>
-    >;
+  | KoriSchemaOf<P>
+  | KoriResponseSchemaContentEntry<KoriSchemaOf<P>, Record<string, KoriSchemaOf<P>>>;
 
 /**
  * Schema definition that describes HTTP response structures by status code.
@@ -81,23 +77,6 @@ export type KoriResponseSchemaEntry<P extends string> =
  *
  * @example
  * ```typescript
- * // Simple body: With description and examples
- * const responseSchema = createKoriResponseSchema({
- *   provider: 'my-schema',
- *   responses: {
- *     '200': {
- *       description: 'User successfully retrieved',
- *       schema: userSchema,
- *       examples: {
- *         standard: { id: 1, name: 'Alice', email: 'alice@example.com' }
- *       }
- *     }
- *   }
- * });
- * ```
- *
- * @example
- * ```typescript
  * // Content body: Flexible format for any content type
  * const responseSchema = createKoriResponseSchema({
  *   provider: 'my-schema',
@@ -106,12 +85,7 @@ export type KoriResponseSchemaEntry<P extends string> =
  *       description: 'User data in multiple formats',
  *       headers: headersSchema,
  *       content: {
- *         'application/json': {
- *           schema: userSchema,
- *           examples: {
- *             sample: { id: 1, name: 'Alice' }
- *           }
- *         },
+ *         'application/json': userSchema,
  *         'application/xml': xmlUserSchema
  *       }
  *     },
