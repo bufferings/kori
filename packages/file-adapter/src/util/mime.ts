@@ -16,7 +16,7 @@ const mimeTypeMap: Record<string, string> = {
   '.css': 'text/css',
   '.js': 'text/javascript',
   '.mjs': 'text/javascript',
-  '.ts': 'text/plain',
+  '.ts': 'application/typescript',
   '.json': 'application/json',
   '.xml': 'application/xml',
   '.md': 'text/markdown',

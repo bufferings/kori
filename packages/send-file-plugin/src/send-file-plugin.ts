@@ -1,3 +1,6 @@
+import type { FileAdapter } from '@korix/file-adapter';
+import { createCacheControl, createContentDisposition, extractFilename } from '@korix/file-adapter';
+
 import {
   defineKoriPlugin,
   type KoriPlugin,
@@ -8,9 +11,6 @@ import {
   createKoriPluginLogger,
   HttpStatus,
 } from '@korix/kori';
-
-import type { FileAdapter } from '@korix/file-adapter';
-import { createCacheControl, createContentDisposition, extractFilename } from '@korix/file-adapter';
 
 /**
  * Options for configuring the send-file plugin.
