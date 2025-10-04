@@ -1,0 +1,1 @@
+export { createNodeFileAdapter, type NodeFileAdapterOptions } from './node-file-adapter.js';
