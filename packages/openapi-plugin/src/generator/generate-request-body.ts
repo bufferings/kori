@@ -1,4 +1,4 @@
-import { isKoriSchema, type KoriRequestSchemaBase } from '@korix/kori';
+import { isKoriSchema, MediaType, type KoriLogger, type KoriRequestSchemaBase } from '@korix/kori';
 import { type RequestBodyObject, type SchemaObject, type MediaTypeObject } from 'openapi3-ts/oas31';
 
 import { type ConvertSchemaFn } from '../schema-converter/index.js';
@@ -9,7 +9,8 @@ import { type ConvertSchemaFn } from '../schema-converter/index.js';
  * Copies example and examples from the SchemaObject to the MediaType level,
  * following OpenAPI specification recommendations.
  *
- * @internal
+ * @param schemaObject - OpenAPI schema object to convert
+ * @returns OpenAPI MediaTypeObject with schema and optional examples
  */
 function createMediaTypeObject({ schemaObject }: { schemaObject: SchemaObject }): MediaTypeObject {
   const mediaType: MediaTypeObject = {
@@ -26,12 +27,28 @@ function createMediaTypeObject({ schemaObject }: { schemaObject: SchemaObject })
   return mediaType;
 }
 
+/**
+ * Generates OpenAPI RequestBodyObject from Kori request schema.
+ *
+ * Handles two cases:
+ * - Simple body: Single schema converted to application/json
+ * - Content body: Multiple schemas with specific media types
+ *
+ * @param schema - Kori request schema containing body definition
+ * @param convertSchema - Function to convert Kori schema to OpenAPI schema
+ * @param log - Logger
+ * @returns OpenAPI RequestBodyObject, or undefined if no body schema or all conversions fail
+ *
+ * @internal
+ */
 export function generateRequestBody({
   schema,
   convertSchema,
+  log,
 }: {
   schema: KoriRequestSchemaBase | undefined;
   convertSchema: ConvertSchemaFn;
+  log: KoriLogger;
 }): RequestBodyObject | undefined {
   if (!schema?.body) {
     return;
@@ -41,28 +58,40 @@ export function generateRequestBody({
     // simple body
     const schemaObject = convertSchema({ schema: schema.body });
     if (!schemaObject) {
+      log.warn('Failed to convert body schema', {
+        provider: schema.body.provider,
+      });
       return;
     }
 
     return {
       content: {
-        'application/json': createMediaTypeObject({ schemaObject }),
+        [MediaType.APPLICATION_JSON]: createMediaTypeObject({ schemaObject }),
       },
       required: true,
     };
-  } else {
-    // content body
-    const content: Record<string, MediaTypeObject> = {};
-    for (const [mediaType, bodySchema] of Object.entries(schema.body.content)) {
-      const schemaObject = convertSchema({ schema: bodySchema });
-      if (schemaObject) {
-        content[mediaType] = createMediaTypeObject({ schemaObject });
-      }
-    }
-    return {
-      description: schema.body.description,
-      content,
-      required: true,
-    };
   }
+
+  // content body
+  const content: Record<string, MediaTypeObject> = {};
+  for (const [mediaType, bodySchema] of Object.entries(schema.body.content)) {
+    const schemaObject = convertSchema({ schema: bodySchema });
+    if (schemaObject) {
+      content[mediaType] = createMediaTypeObject({ schemaObject });
+    }
+  }
+
+  if (Object.keys(content).length === 0) {
+    log.warn('Failed to convert all media types for request body', {
+      description: schema.body.description,
+      mediaTypes: Object.keys(schema.body.content),
+    });
+    return;
+  }
+
+  return {
+    description: schema.body.description,
+    content,
+    required: true,
+  };
 }

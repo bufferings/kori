@@ -1,4 +1,4 @@
-import { isKoriSchema, type KoriResponseSchemaBase, type KoriSchemaBase } from '@korix/kori';
+import { isKoriSchema, type KoriLogger, type KoriResponseSchemaBase, type KoriSchemaBase } from '@korix/kori';
 import {
   type ResponsesObject,
   type SchemaObject,
@@ -15,7 +15,8 @@ import { type ConvertSchemaFn } from '../schema-converter/index.js';
  * Copies example and examples from the SchemaObject to the MediaType level,
  * following OpenAPI specification recommendations.
  *
- * @internal
+ * @param schemaObject - OpenAPI schema object to convert
+ * @returns OpenAPI MediaTypeObject with schema and optional examples
  */
 function createMediaTypeObject({ schemaObject }: { schemaObject: SchemaObject }): MediaTypeObject {
   const mediaType: MediaTypeObject = {
@@ -38,14 +39,19 @@ function createMediaTypeObject({ schemaObject }: { schemaObject: SchemaObject })
  * Extracts individual header definitions from the schema properties and converts them
  * to OpenAPI HeaderObject format with metadata at the header level.
  *
- * @internal
+ * @param headersSchema - Kori schema for response headers
+ * @param convertSchema - Function to convert Kori schema to OpenAPI schema
+ * @param log - Logger
+ * @returns OpenAPI HeadersObject, or undefined if no headers or conversion fails
  */
 function generateResponseHeaders({
   headersSchema,
   convertSchema,
+  log,
 }: {
   headersSchema: KoriSchemaBase | undefined;
   convertSchema: ConvertSchemaFn;
+  log: KoriLogger;
 }): HeadersObject | undefined {
   if (!headersSchema) {
     return;
@@ -53,6 +59,11 @@ function generateResponseHeaders({
 
   const schemaObject = convertSchema({ schema: headersSchema });
   if (!schemaObject?.properties) {
+    if (!schemaObject) {
+      log.warn('Failed to convert response headers schema', {
+        provider: headersSchema.provider,
+      });
+    }
     return;
   }
 
@@ -83,27 +94,70 @@ function generateResponseHeaders({
   return headers;
 }
 
+/**
+ * Gets a default description for a given HTTP status code.
+ *
+ * Returns standard descriptions for common status codes (200, 201, 204, 400, 401, 403, 404, 500).
+ * Falls back to "Response" for unknown status codes.
+ *
+ * @param statusCode - HTTP status code as a string
+ * @returns Default description for the status code
+ */
+function getStatusDescription(statusCode: string): string {
+  const descriptions: Record<string, string> = {
+    '200': 'OK',
+    '201': 'Created',
+    '204': 'No Content',
+    '400': 'Bad Request',
+    '401': 'Unauthorized',
+    '403': 'Forbidden',
+    '404': 'Not Found',
+    '500': 'Internal Server Error',
+  };
+  return descriptions[statusCode] ?? 'Response';
+}
+
+/**
+ * Generates OpenAPI ResponsesObject from Kori response schema.
+ *
+ * Handles two response formats:
+ * - Simple response: Direct schema converted to application/json
+ * - Content response: Multiple schemas with specific media types and headers
+ *
+ * @param schema - Kori response schema containing response definitions by status code
+ * @param convertSchema - Function to convert Kori schema to OpenAPI schema
+ * @param log - Logger
+ * @returns OpenAPI ResponsesObject mapping status codes to response definitions
+ *
+ * @internal
+ */
 export function generateResponses({
   schema,
   convertSchema,
+  log,
 }: {
   schema: KoriResponseSchemaBase | undefined;
   convertSchema: ConvertSchemaFn;
+  log: KoriLogger;
 }): ResponsesObject | undefined {
-  if (!schema) {
+  if (!schema?.responses) {
     return;
   }
 
   const responses: ResponsesObject = {};
-  for (const [statusCode, entry] of Object.entries(schema.responses ?? {})) {
+  for (const [statusCode, entry] of Object.entries(schema.responses)) {
     if (!entry) {
       continue;
     }
 
-    // Simple entry: direct schema
+    // Simple entry
     if (isKoriSchema(entry)) {
       const schemaObject = convertSchema({ schema: entry });
       if (!schemaObject) {
+        log.warn('Failed to convert response schema', {
+          statusCode,
+          provider: entry.provider,
+        });
         continue;
       }
 
@@ -125,26 +179,22 @@ export function generateResponses({
       }
     }
 
+    const headers = generateResponseHeaders({ headersSchema: entry.headers, convertSchema, log });
+
+    if (Object.keys(content).length === 0 && !headers) {
+      log.warn('Failed to convert all media types for response', {
+        statusCode,
+        mediaTypes: Object.keys(entry.content),
+      });
+      continue;
+    }
+
     responses[statusCode] = {
       description: entry.description ?? getStatusDescription(statusCode),
-      headers: generateResponseHeaders({ headersSchema: entry.headers, convertSchema }),
-      content,
+      headers,
+      ...(Object.keys(content).length > 0 && { content }),
     };
   }
 
-  return responses;
-}
-
-function getStatusDescription(statusCode: string): string {
-  const descriptions: Record<string, string> = {
-    '200': 'OK',
-    '201': 'Created',
-    '204': 'No Content',
-    '400': 'Bad Request',
-    '401': 'Unauthorized',
-    '403': 'Forbidden',
-    '404': 'Not Found',
-    '500': 'Internal Server Error',
-  };
-  return descriptions[statusCode] ?? 'Response';
+  return Object.keys(responses).length > 0 ? responses : undefined;
 }
