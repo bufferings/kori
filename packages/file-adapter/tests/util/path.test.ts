@@ -39,9 +39,9 @@ describe('Path utilities', () => {
     });
 
     test('handles parent directory at root level', () => {
-      expect(normalizePath('../file.txt')).toBe('file.txt'); // Allow traversal in normalization
-      expect(normalizePath('../../file.txt')).toBe('file.txt');
-      expect(normalizePath('/../file.txt')).toBe('file.txt');
+      expect(normalizePath('../file.txt')).toBe(''); // Can't go above root
+      expect(normalizePath('../../file.txt')).toBe('');
+      expect(normalizePath('/../file.txt')).toBe('');
     });
 
     test('handles complex paths', () => {

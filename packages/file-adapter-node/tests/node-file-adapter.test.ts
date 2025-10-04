@@ -1,9 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import  { type FileAdapter } from '@korix/file-adapter';
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
 import { createNodeFileAdapter } from '../src/node-file-adapter.js';
-import type { FileAdapter } from '@korix/file-adapter';
+
 
 describe('Node.js File Adapter', () => {
   let adapter: FileAdapter;
@@ -126,7 +128,7 @@ describe('Node.js File Adapter', () => {
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {break;}
           chunks.push(value);
         }
       } finally {

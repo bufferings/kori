@@ -1,12 +1,13 @@
-import fs from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
-import { Readable } from 'node:stream';
-import path from 'node:path';
-import { lookup as mimeTypesLookup } from 'mime-types';
-import etag from 'etag';
+import { createReadStream } from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
+import { Readable } from 'stream';
 
-import type { FileAdapter, FileInfo, FileStats, ReadOptions } from '@korix/file-adapter';
 import { safeJoin, validatePath, detectMimeType } from '@korix/file-adapter';
+import  { type FileAdapter, type FileInfo, type FileStats, type ReadOptions } from '@korix/file-adapter';
+import etag from 'etag';
+import { lookup as mimeTypesLookup } from 'mime-types';
+
 
 /**
  * Options for creating a Node.js file adapter.

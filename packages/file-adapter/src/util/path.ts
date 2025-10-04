@@ -30,14 +30,26 @@ export function normalizePath(path: string): string {
   // Split into segments and resolve . and ..
   const segments: string[] = [];
   
+  // Track if we've tried to go above root
+  let hasTraversalAboveRoot = false;
+  
   for (const segment of cleanPath.split('/')) {
     if (segment === '' || segment === '.') {
       continue; // Skip empty and current directory references
     } else if (segment === '..') {
-      segments.pop(); // Go up one directory (even if empty - allows traversal)
+      if (segments.length > 0) {
+        segments.pop(); // Go up one directory
+      } else {
+        hasTraversalAboveRoot = true; // Attempted to go above root
+      }
     } else {
       segments.push(segment);
     }
+  }
+  
+  // If we tried to go above root, return empty (security measure)
+  if (hasTraversalAboveRoot) {
+    return '';
   }
   
   return segments.join('/');
