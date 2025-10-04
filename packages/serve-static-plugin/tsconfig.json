@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.dev.json",
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "include": ["src/**/*", "tests/**/*"],
+  "references": [
+    { "path": "../kori" },
+    { "path": "../file-adapter" }
+  ]
+}
