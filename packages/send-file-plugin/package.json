@@ -1,6 +1,6 @@
 {
   "name": "@korix/send-file-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "File sending plugin for Kori framework - provides sendFile and download methods",
   "type": "module",
   "author": "mitz (@bufferings)",
