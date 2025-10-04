@@ -1,6 +1,6 @@
 {
   "name": "@korix/script",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Development CLI scripts for Kori framework",
   "private": true,
   "type": "module",
