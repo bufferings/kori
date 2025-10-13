@@ -11,7 +11,7 @@ The `@korix/zod-openapi-plugin` transforms your existing Zod schemas into beauti
 The Zod OpenAPI Plugin provides:
 
 - 📖 **Auto Documentation** - Generate OpenAPI specs from your schemas
-- 🎨 **Interactive UI** - Beautiful documentation with Scalar UI integration
+- 🎨 **Interactive UI** - Beautiful documentation with Swagger UI integration
 - 🔄 **Zero Maintenance** - Documentation stays in sync with your code
 - 🎯 **Type-Safe Metadata** - Rich, validated documentation metadata
 
@@ -20,7 +20,7 @@ The Zod OpenAPI Plugin provides:
 ```typescript
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 
 const app = createKori()
@@ -36,7 +36,7 @@ const app = createKori()
   )
   // Serve interactive documentation
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
       title: 'My API Documentation',
     }),
@@ -221,22 +221,15 @@ app.post('/auth/login', {
 
 ## UI Customization
 
-### Scalar UI Configuration
+### Swagger UI Configuration
 
-Customize the documentation interface:
+Configure the documentation interface:
 
 ```typescript
-const appWithScalarUi = app.applyPlugin(
-  scalarUiPlugin({
+app.applyPlugin(
+  swaggerUiPlugin({
     path: '/docs',
     title: 'My API Documentation',
-    theme: 'auto', // 'light', 'dark', or 'auto'
-    customCss: `
-      .scalar-app {
-        --scalar-color-1: #2563eb;
-        --scalar-color-accent: #3b82f6;
-      }
-    `,
   }),
 );
 ```
@@ -247,20 +240,18 @@ Serve different documentation for different audiences:
 
 ```typescript
 // Public API docs
-const appWithPublicDocs = app.applyPlugin(
-  scalarUiPlugin({
+app.applyPlugin(
+  swaggerUiPlugin({
     path: '/docs',
     title: 'Public API',
-    theme: 'light',
   }),
 );
 
 // Internal API docs
-const appWithInternalDocs = app.applyPlugin(
-  scalarUiPlugin({
+app.applyPlugin(
+  swaggerUiPlugin({
     path: '/internal-docs',
     title: 'Internal API',
-    theme: 'dark',
   }),
 );
 ```
@@ -333,7 +324,7 @@ Use schemas for documentation only (no runtime validation):
 // No validator - documentation only
 const app = createKori()
   .applyPlugin(zodOpenApiPlugin())
-  .applyPlugin(scalarUiPlugin({ path: '/docs' }));
+  .applyPlugin(swaggerUiPlugin({ path: '/docs' }));
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserSchema }), // Docs only

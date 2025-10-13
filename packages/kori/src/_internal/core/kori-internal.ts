@@ -217,25 +217,29 @@ function createKoriInternal<
       });
 
       const combinedPath = joinPaths(_prefix, routeOptions.path);
-      const methodString = normalizeRouteHttpMethod(routeOptions.method);
+      const methods = Array.isArray(routeOptions.method) ? routeOptions.method : [routeOptions.method];
 
-      if (hasNonTrailingOptionalParam(combinedPath)) {
-        throw new KoriRouteDefinitionError(
-          'Kori does not support optional parameters ":param?" in the middle of paths.',
-          { method: methodString, path: combinedPath },
-        );
+      for (const method of methods) {
+        const methodString = normalizeRouteHttpMethod(method);
+
+        if (hasNonTrailingOptionalParam(combinedPath)) {
+          throw new KoriRouteDefinitionError(
+            'Kori does not support optional parameters ":param?" in the middle of paths.',
+            { method: methodString, path: combinedPath },
+          );
+        }
+
+        const routeId = _shared.routeRegistry.register({
+          method,
+          path: combinedPath,
+          handler: composedHandler,
+          requestSchema: routeOptions.requestSchema,
+          responseSchema: routeOptions.responseSchema,
+          pluginMeta: routeOptions.pluginMeta,
+        });
+
+        _shared.routeMatcher.addRoute({ method: methodString, path: combinedPath, routeId });
       }
-
-      const routeId = _shared.routeRegistry.register({
-        method: routeOptions.method,
-        path: combinedPath,
-        handler: composedHandler,
-        requestSchema: routeOptions.requestSchema,
-        responseSchema: routeOptions.responseSchema,
-        pluginMeta: routeOptions.pluginMeta,
-      });
-
-      _shared.routeMatcher.addRoute({ method: methodString, path: combinedPath, routeId });
 
       return _kori;
     },

@@ -11,7 +11,7 @@
     "lint:fix": "turbo run lint:fix",
     "format": "prettier --write .",
     "build": "turbo run build",
-    "dev": "turbo watch dev:getting-started dev:usage",
+    "dev": "turbo watch dev:getting-started dev:advanced-usage",
     "test": "turbo run test",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm sync:version",

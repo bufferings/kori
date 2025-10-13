@@ -7,7 +7,7 @@
 Zod OpenAPI統合プラグインをインストール：
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/openapi-scalar-ui-plugin
+npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
 ```
 
 Koriアプリケーションに2つのプラグインを追加：
@@ -15,7 +15,7 @@ Koriアプリケーションに2つのプラグインを追加：
 ```typescript
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
 
@@ -34,7 +34,7 @@ const app = createKori({
   )
   // インタラクティブなドキュメントUIを提供
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
       title: 'My API Documentation',
     }),
@@ -281,12 +281,12 @@ zodOpenApiPlugin({
 });
 ```
 
-### Scalar UIプラグイン
+### Swagger UIプラグイン
 
 ドキュメントインターフェースを設定：
 
 ```typescript
-scalarUiPlugin({
+swaggerUiPlugin({
   // UIエンドポイントパス
   path: '/docs',
   // ページタイトル
@@ -316,7 +316,7 @@ OpenAPIドキュメントは既存のバリデーションとシームレスに�
 ```typescript
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
 import { z } from 'zod';
 
@@ -332,7 +332,7 @@ const app = createKori()
     }),
   )
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
     }),
   );

@@ -5,12 +5,10 @@
   },
   "include": ["src/**/*", "tests/**/*"],
   "references": [
-    { "path": "../body-limit-plugin" },
-    { "path": "../cors-plugin" },
     { "path": "../kori" },
-    { "path": "../nodejs-adapter" },
+    { "path": "../nodejs-server" },
     { "path": "../openapi-plugin" },
-    { "path": "../openapi-scalar-ui-plugin" },
+    { "path": "../openapi-swagger-ui-plugin" },
     { "path": "../standard-schema-adapter" },
     { "path": "../zod-openapi-plugin" },
     { "path": "../zod-schema-adapter" }

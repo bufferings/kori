@@ -1,15 +1,9 @@
-import { createKori, type Kori } from '@korix/kori';
+import { createKori } from '@korix/kori';
 import { describe, test, expect, vi } from 'vitest';
 import { z } from 'zod';
 
 import { enableStdRequestValidation } from '../../../src/std-enable-validation/index.js';
 import { stdRequestSchema } from '../../../src/std-request-schema/index.js';
-
-async function createFetchHandler(app: Kori<any, any, any, any, any>) {
-  const handler = app.generate();
-  const initializedHandler = await handler.onStart();
-  return initializedHandler.fetchHandler;
-}
 
 describe('Request validation integration (Zod)', () => {
   test('rejects invalid request data with custom error handler', async () => {
@@ -38,7 +32,7 @@ describe('Request validation integration (Zod)', () => {
         });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -82,7 +76,7 @@ describe('Request validation integration (Zod)', () => {
         });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -121,7 +115,7 @@ describe('Request validation integration (Zod)', () => {
         return ctx.res.json({ success: true });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {

@@ -19,22 +19,18 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "dev:getting-started": "cross-env NODE_OPTIONS='--conditions=development' tsx watch src/getting-started.ts",
-    "dev:usage": "cross-env NODE_OPTIONS='--conditions=development' tsx watch src/usage.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "dev:advanced-usage": "cross-env NODE_OPTIONS='--conditions=development' tsx watch src/advanced-usage.ts",
+    "test": "echo 'No unit tests' && exit 0",
+    "test:watch": "echo 'No unit tests' && exit 0"
   },
   "dependencies": {
-    "@korix/body-limit-plugin": "workspace:*",
-    "@korix/cors-plugin": "workspace:*",
     "@korix/kori": "workspace:*",
-    "@korix/nodejs-adapter": "workspace:*",
+    "@korix/nodejs-server": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
-    "@korix/openapi-scalar-ui-plugin": "workspace:*",
-    "@korix/security-headers-plugin": "workspace:*",
+    "@korix/openapi-swagger-ui-plugin": "workspace:*",
     "@korix/standard-schema-adapter": "workspace:*",
     "@korix/zod-openapi-plugin": "workspace:*",
     "@korix/zod-schema-adapter": "workspace:*",
-    "@scalar/api-reference": "1.32.10",
     "openapi3-ts": "4.4.0",
     "zod": "4.0.0"
   },

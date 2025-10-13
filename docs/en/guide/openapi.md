@@ -7,7 +7,7 @@ Generate interactive API documentation automatically from your schemas. Kori's e
 Install the Zod OpenAPI integration plugins:
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/openapi-scalar-ui-plugin
+npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
 ```
 
 Add two plugins to your Kori application:
@@ -15,7 +15,7 @@ Add two plugins to your Kori application:
 ```typescript
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
 
@@ -34,7 +34,7 @@ const app = createKori({
   )
   // Serve interactive documentation UI
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
       title: 'My API Documentation',
     }),
@@ -281,12 +281,12 @@ zodOpenApiPlugin({
 });
 ```
 
-### Scalar UI Plugin
+### Swagger UI Plugin
 
 Configure the documentation interface:
 
 ```typescript
-scalarUiPlugin({
+swaggerUiPlugin({
   // UI endpoint path
   path: '/docs',
   // Page title
@@ -316,7 +316,7 @@ You can generate OpenAPI documentation without runtime validation. This is usefu
 ```typescript
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
 import { z } from 'zod';
 
@@ -332,7 +332,7 @@ const app = createKori()
     }),
   )
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
     }),
   );

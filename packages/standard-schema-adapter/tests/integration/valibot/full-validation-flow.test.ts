@@ -1,16 +1,10 @@
-import { createKori, type Kori } from '@korix/kori';
+import { createKori } from '@korix/kori';
 import * as v from 'valibot';
 import { describe, test, expect, vi } from 'vitest';
 
 import { enableStdRequestAndResponseValidation } from '../../../src/std-enable-validation/index.js';
 import { stdRequestSchema } from '../../../src/std-request-schema/index.js';
 import { stdResponseSchema } from '../../../src/std-response-schema/index.js';
-
-async function createFetchHandler(app: Kori<any, any, any, any, any>) {
-  const handler = app.generate();
-  const initializedHandler = await handler.onStart();
-  return initializedHandler.fetchHandler;
-}
 
 describe('Full validation integration (Valibot)', () => {
   test('complete user creation workflow with both validations', async () => {
@@ -54,7 +48,7 @@ describe('Full validation integration (Valibot)', () => {
         });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -114,7 +108,7 @@ describe('Full validation integration (Valibot)', () => {
         return ctx.res.json({ id, updated: true, name });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(
       new Request('http://localhost/users/user-123', {
