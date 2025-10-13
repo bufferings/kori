@@ -1,5 +1,11 @@
 # @korix/kori
 
+## 0.3.1
+
+### Patch Changes
+
+- 7f80d5d: Fix response validation bug where validators received stringified JSON instead of objects
+
 ## 0.3.0
 
 ### Minor Changes
