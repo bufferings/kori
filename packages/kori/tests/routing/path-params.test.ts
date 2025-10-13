@@ -58,8 +58,13 @@ describe('PathParams type extraction', () => {
 describe('WithPathParams request extension', () => {
   test('replaces pathParams method with typed version', () => {
     type ExtendedReq = WithPathParams<KoriRequest, '/users/:id'>;
+    type PathParamsReturn = ReturnType<ExtendedReq['pathParams']>;
 
-    expectTypeOf<ExtendedReq['pathParams']>().toEqualTypeOf<() => { id: string }>();
+    // Own path parameters are type-safe
+    expectTypeOf<PathParamsReturn['id']>().toEqualTypeOf<string>();
+
+    // Allows access to any string key (for parent parameters)
+    expectTypeOf<PathParamsReturn['anyKey']>().toEqualTypeOf<string | undefined>();
   });
 
   test('preserves other request methods', () => {
@@ -72,12 +77,39 @@ describe('WithPathParams request extension', () => {
 
   test('works with complex path patterns', () => {
     type ExtendedReq = WithPathParams<KoriRequest, '/teams/:team/users/:user{[a-z]+}'>;
+    type PathParamsReturn = ReturnType<ExtendedReq['pathParams']>;
 
-    expectTypeOf<ExtendedReq['pathParams']>().toEqualTypeOf<
-      () => {
-        team: string;
-        user: string;
-      }
-    >();
+    // Own path parameters are type-safe
+    expectTypeOf<PathParamsReturn['team']>().toEqualTypeOf<string>();
+    expectTypeOf<PathParamsReturn['user']>().toEqualTypeOf<string>();
+
+    // Allows access to any string key (for parent parameters)
+    expectTypeOf<PathParamsReturn['anyKey']>().toEqualTypeOf<string | undefined>();
+  });
+
+  test('allows access to parent path parameters', () => {
+    // Simulates a nested route scenario where:
+    // - Parent route has /users/:userId
+    // - Child route has /posts/:postId
+    // - Child handler receives both parameters at runtime
+    type ChildReq = WithPathParams<KoriRequest, '/posts/:postId'>;
+    type PathParamsReturn = ReturnType<ChildReq['pathParams']>;
+
+    // Own parameter (postId) is type-safe
+    expectTypeOf<PathParamsReturn['postId']>().toEqualTypeOf<string>();
+
+    // Parent parameter (userId) is accessible via index signature
+    expectTypeOf<PathParamsReturn['userId']>().toEqualTypeOf<string | undefined>();
+  });
+
+  test('handles optional parameters with index signature', () => {
+    type ExtendedReq = WithPathParams<KoriRequest, '/api/:version?'>;
+    type PathParamsReturn = ReturnType<ExtendedReq['pathParams']>;
+
+    // Optional parameter from own path
+    expectTypeOf<PathParamsReturn['version']>().toEqualTypeOf<string | undefined>();
+
+    // Other keys via index signature
+    expectTypeOf<PathParamsReturn['anyKey']>().toEqualTypeOf<string | undefined>();
   });
 });
