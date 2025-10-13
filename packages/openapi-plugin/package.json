@@ -53,7 +53,7 @@
     "build": "tsdown --tsconfig tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:version": "ks sync-version && prettier --write src/version.ts"
+    "sync:version": "pnpm exec ks sync-version version/version.ts && prettier --write src/version/version.ts"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
