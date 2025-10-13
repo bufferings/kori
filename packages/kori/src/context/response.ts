@@ -549,7 +549,7 @@ type BodyConfig<T> = {
 
 function setBodyJsonInternal<T>({ res, body }: BodyConfig<T>): void {
   res.bodyKind = 'json';
-  res.bodyValue = JSON.stringify(body);
+  res.bodyValue = body;
 }
 
 function setBodyTextInternal({ res, body }: BodyConfig<string>): void {
@@ -848,6 +848,13 @@ const sharedMethods = {
     let body: BodyInit | null = null;
     switch (this.bodyKind) {
       case 'json':
+        try {
+          body = JSON.stringify(this.bodyValue);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          throw new KoriResponseBuildError(`Failed to serialize response body as JSON: ${message}`);
+        }
+        break;
       case 'text':
       case 'html':
         body = this.bodyValue as string;

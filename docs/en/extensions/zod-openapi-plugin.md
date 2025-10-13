@@ -369,18 +369,20 @@ Document all possible error responses:
 
 ```typescript
 const CommonErrorSchema = z.object({
-  error: z
-    .string()
-    .meta({ description: 'Error type', example: 'Validation Error' }),
-  message: z.string().meta({ description: 'Human-readable error message' }),
-  details: z
-    .array(
-      z.object({
-        field: z.string(),
-        message: z.string(),
-      }),
-    )
-    .optional(),
+  error: z.object({
+    type: z
+      .string()
+      .meta({ description: 'Error type', example: 'VALIDATION_ERROR' }),
+    message: z.string().meta({ description: 'Human-readable error message' }),
+    details: z
+      .array(
+        z.object({
+          field: z.string(),
+          message: z.string(),
+        }),
+      )
+      .optional(),
+  }),
 });
 
 app.post('/users', {
@@ -388,8 +390,10 @@ app.post('/users', {
     '201': UserResponseSchema,
     '400': CommonErrorSchema,
     '409': z.object({
-      error: z.literal('Conflict'),
-      message: z.literal('Email already exists'),
+      error: z.object({
+        type: z.literal('CONFLICT'),
+        message: z.literal('Email already exists'),
+      }),
     }),
   }),
   // ... rest of configuration

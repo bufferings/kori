@@ -144,7 +144,7 @@ describe('composeRouteHandler', () => {
 
       expect(res.getStatus()).toBe(200);
       expect(res.getContentType()).toBe('application/json; charset=utf-8');
-      expect(res.getBody()).toBe(JSON.stringify({ ok: true }));
+      expect(res.getBody()).toEqual({ ok: true });
       expect(handler).toHaveBeenCalledTimes(1);
     });
   });
@@ -354,7 +354,7 @@ describe('composeRouteHandler', () => {
       expect(res.getStatus()).toBe(200);
       expect(handler).toHaveBeenCalledTimes(1);
 
-      const responseBody = JSON.parse(res.getBody() as string);
+      const responseBody = res.getBody() as any;
       expect(responseBody.body).toEqual({ test: 'data', __validated: 'body' });
       expect(responseBody.params).toEqual({ __validated: 'params' });
       expect(responseBody.queries).toEqual({ __validated: 'queries' });
@@ -386,7 +386,7 @@ describe('composeRouteHandler', () => {
       expect(routeOnFail).toHaveBeenCalledTimes(1);
       expect(instanceOnFail).not.toHaveBeenCalled();
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('route handled');
+      expect((res.getBody() as any).error.message).toBe('route handled');
       expect(handler).not.toHaveBeenCalled();
     });
 
@@ -413,7 +413,7 @@ describe('composeRouteHandler', () => {
       expect(routeOnFail).toHaveBeenCalledTimes(1);
       expect(instanceOnFail).toHaveBeenCalledTimes(1);
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('instance handled');
+      expect((res.getBody() as any).error.message).toBe('instance handled');
       expect(handler).not.toHaveBeenCalled();
     });
 
@@ -534,7 +534,7 @@ describe('composeRouteHandler', () => {
       expect(routeOnFail).toHaveBeenCalledTimes(1);
       expect(instanceOnFail).not.toHaveBeenCalled();
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('route handled response failure');
+      expect((res.getBody() as any).error.message).toBe('route handled response failure');
     });
 
     test('stops early at instance handler', async () => {
@@ -560,7 +560,7 @@ describe('composeRouteHandler', () => {
       expect(routeOnFail).toHaveBeenCalledTimes(1);
       expect(instanceOnFail).toHaveBeenCalledTimes(1);
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('instance handled response failure');
+      expect((res.getBody() as any).error.message).toBe('instance handled response failure');
     });
 
     test('cascades through all handlers to fallback', async () => {
@@ -631,7 +631,7 @@ describe('composeRouteHandler', () => {
       expect(errorHook2).toHaveBeenCalledTimes(1);
       expect(errorHook3).not.toHaveBeenCalled();
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('handled by hook2');
+      expect((res.getBody() as any).error.message).toBe('handled by hook2');
     });
 
     test('falls back to 500 when no error hook handles', async () => {
@@ -674,7 +674,7 @@ describe('composeRouteHandler', () => {
       expect(errorHook2).toHaveBeenCalledTimes(1);
       expect(errorHook3).not.toHaveBeenCalled();
       expect(res.getStatus()).toBe(400);
-      expect(JSON.parse(res.getBody() as string).error.message).toBe('recovered by hook2');
+      expect((res.getBody() as any).error.message).toBe('recovered by hook2');
     });
   });
 });

@@ -40,8 +40,10 @@ const UserSchema = z.object({
 });
 
 const ErrorSchema = z.object({
-  error: z.string(),
-  message: z.string(),
+  error: z.object({
+    type: z.string(),
+    message: z.string(),
+  }),
 });
 
 app.get('/users/:id', {
@@ -56,10 +58,7 @@ app.get('/users/:id', {
 
     if (userId === 999) {
       // This 404 response will be validated against ErrorSchema
-      return ctx.res.notFound({
-        error: 'NOT_FOUND',
-        message: 'User not found',
-      });
+      return ctx.res.notFound({ message: 'User not found' });
     }
 
     // This 200 response will be validated against UserSchema
