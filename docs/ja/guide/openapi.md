@@ -157,8 +157,10 @@ const ProductSchema = z.object({
 });
 
 const ErrorSchema = z.object({
-  error: z.string(),
-  message: z.string(),
+  error: z.object({
+    type: z.string(),
+    message: z.string(),
+  }),
 });
 
 app.get('/products/:id', {
