@@ -2,8 +2,6 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "./packages/asset-provider" },
-    { "path": "./packages/asset-provider-nodejs" },
     { "path": "./packages/eslint-config" },
     { "path": "./packages/example" },
     { "path": "./packages/kori" },
@@ -11,7 +9,6 @@
     { "path": "./packages/openapi-plugin" },
     { "path": "./packages/openapi-swagger-ui-plugin" },
     { "path": "./packages/script" },
-    { "path": "./packages/serve-static-plugin" },
     { "path": "./packages/standard-schema-adapter" },
     { "path": "./packages/zod-openapi-plugin" },
     { "path": "./packages/zod-schema-adapter" }
