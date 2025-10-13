@@ -40,8 +40,7 @@ describe('KoriHandlerContext contract', () => {
       const extendedCtx = ctx.withRes({ ok: (data: unknown) => ctx.res.json({ ok: true, data }) });
 
       const response = extendedCtx.res.ok({ message: 'success' });
-      const bodyString = response.getBody() as string;
-      const bodyObj = JSON.parse(bodyString);
+      const bodyObj = response.getBody();
       expect(bodyObj).toEqual({ ok: true, data: { message: 'success' } });
     });
 
