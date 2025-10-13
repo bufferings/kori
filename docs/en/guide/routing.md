@@ -92,6 +92,13 @@ app.get('/files/:id{[0-9]+}', (ctx) => {
 
 The type inference works by parsing the route string at compile time and extracting parameter names, helping prevent typos and improve IDE autocompletion.
 
+**Important:** Type inference only works when you pass the route path as a string literal directly to the route method. It does **not** work for:
+
+- Routes defined with variables: `const path = '/users/:id'; app.get(path, ...)` - no inference
+- Path parameters from parent routes (defined in `createChild` prefix) - these are not included in the inferred type
+
+Only parameters defined directly in the string literal of the route method itself will be type-safe.
+
 ## Route Groups and Children
 
 Create modular route groups using `createChild()`:
@@ -118,7 +125,6 @@ const apiV2 = app.createChild({
       .onRequest((ctx) => {
         // Add request logging for v2 only
         ctx.log().info('API v2 request', { path: ctx.req.url().pathname });
-        return ctx; // Must return context
       })
       .get('/status', (ctx) => {
         return ctx.res.json({
@@ -140,14 +146,9 @@ const adminRoutes = app.createChild({
       .onRequest((ctx) => {
         const token = ctx.req.header('authorization')?.replace('Bearer ', '');
         if (!token || !isValidAdminToken(token)) {
-          throw new Error('Unauthorized');
-        }
-        return ctx.withReq({ isAdmin: true });
-      })
-      .onError((ctx, err) => {
-        if (err instanceof Error && err.message === 'Unauthorized') {
           return ctx.res.unauthorized({ message: 'Admin access required' });
         }
+        return ctx.withReq({ isAdmin: true });
       })
       .get('/dashboard', (ctx) => {
         return ctx.res.json({ dashboard: 'admin data' });

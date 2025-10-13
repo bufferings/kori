@@ -92,6 +92,13 @@ app.get('/files/:id{[0-9]+}', (ctx) => {
 
 型推論は、コンパイル時にルート文字列を解析してパラメータ名を抽出することで動作し、タイプミスを防ぎ、IDE自動補完を改善します。
 
+**重要：** 型推論は、ルートパスを文字列リテラルとしてルートメソッドに直接渡す場合にのみ機能します。以下の場合は機能**しません**：
+
+- 変数で定義されたルート：`const path = '/users/:id'; app.get(path, ...)` - 推論なし
+- 親ルートからのパスパラメータ（`createChild`プレフィックスで定義）- これらは推論される型に含まれません
+
+ルートメソッド自体の文字列リテラルで直接定義されたパラメータのみが型安全になります。
+
 ## ルートグループと子ルート
 
 `createChild()`を使用してモジュラーなルートグループを作成：
@@ -118,7 +125,6 @@ const apiV2 = app.createChild({
       .onRequest((ctx) => {
         // v2のみのリクエストログ
         ctx.log().info('API v2 request', { path: ctx.req.url().pathname });
-        return ctx; // コンテキストを返す必要がある
       })
       .get('/status', (ctx) => {
         return ctx.res.json({
@@ -140,14 +146,9 @@ const adminRoutes = app.createChild({
       .onRequest((ctx) => {
         const token = ctx.req.header('authorization')?.replace('Bearer ', '');
         if (!token || !isValidAdminToken(token)) {
-          throw new Error('Unauthorized');
-        }
-        return ctx.withReq({ isAdmin: true });
-      })
-      .onError((ctx, err) => {
-        if (err instanceof Error && err.message === 'Unauthorized') {
           return ctx.res.unauthorized({ message: 'Admin access required' });
         }
+        return ctx.withReq({ isAdmin: true });
       })
       .get('/dashboard', (ctx) => {
         return ctx.res.json({ dashboard: 'admin data' });

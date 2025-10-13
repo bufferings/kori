@@ -102,8 +102,8 @@ const UserResponseSchema = z.object({
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserSchema }),
   responseSchema: zodResponseSchema({
-    201: UserResponseSchema,
-    400: z.object({ error: z.string(), details: z.array(z.string()) }),
+    '201': UserResponseSchema,
+    '400': z.object({ error: z.string(), details: z.array(z.string()) }),
   }),
   pluginMetadata: openApiMeta({
     summary: 'Create user',
@@ -385,9 +385,9 @@ const CommonErrorSchema = z.object({
 
 app.post('/users', {
   responseSchema: zodResponseSchema({
-    201: UserResponseSchema,
-    400: CommonErrorSchema,
-    409: z.object({
+    '201': UserResponseSchema,
+    '400': CommonErrorSchema,
+    '409': z.object({
       error: z.literal('Conflict'),
       message: z.literal('Email already exists'),
     }),

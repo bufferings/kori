@@ -8,21 +8,22 @@ Koriのプラグインは、アプリケーションの機能を拡張する再�
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { corsPlugin } from '@korix/cors-plugin';
-import { bodyLimitPlugin } from '@korix/body-limit-plugin';
+import { enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 
-const app = createKori()
+const app = createKori({
+  ...enableZodRequestValidation(),
+})
   .applyPlugin(
-    corsPlugin({
-      origin: ['https://myapp.com'],
-      credentials: true,
+    zodOpenApiPlugin({
+      info: {
+        title: 'My API',
+        version: '1.0.0',
+      },
     }),
   )
-  .applyPlugin(
-    bodyLimitPlugin({
-      maxSize: 10 * 1024 * 1024, // 10MB in bytes
-    }),
-  );
+  .applyPlugin(swaggerUiPlugin());
 ```
 
 ## プラグインの動作原理
@@ -34,24 +35,37 @@ const app = createKori()
 ```typescript
 import {
   defineKoriPlugin,
+  createKoriPluginLogger,
   type KoriEnvironment,
   type KoriRequest,
   type KoriResponse,
   type KoriPlugin,
 } from '@korix/kori';
 
-// シンプルなログプラグインの構造
+// 専用ロガーを使ったより良いログプラグイン
 export function loggingPlugin<
   Env extends KoriEnvironment,
   Req extends KoriRequest,
   Res extends KoriResponse,
 >(): KoriPlugin<Env, Req, Res, unknown, { startTime: number }, unknown> {
   return defineKoriPlugin({
-    name: 'simple-logging',
-    apply: (kori) =>
-      kori.onRequest((ctx) => {
+    name: 'request-logging',
+    apply: (kori) => {
+      const log = createKoriPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'request-logging',
+      });
+
+      log.info('Request logging plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        const requestLog = createKoriPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'request-logging',
+        });
+
         // リクエスト開始時にログ
-        ctx.log().info('Request started', {
+        requestLog.info('Request started', {
           method: ctx.req.method(),
           path: ctx.req.url().pathname,
         });
@@ -59,14 +73,15 @@ export function loggingPlugin<
         // レスポンスログを遅延
         ctx.defer(() => {
           const duration = Date.now() - ctx.req.startTime;
-          ctx.log().info('Request completed', {
+          requestLog.info('Request completed', {
             status: ctx.res.getStatus(),
             duration: `${duration}ms`,
           });
         });
 
         return ctx.withReq({ startTime: Date.now() });
-      }),
+      });
+    },
   });
 }
 ```
@@ -76,14 +91,16 @@ export function loggingPlugin<
 プラグインは登録された順序で適用されます。各プラグインはそのフックをアプリケーションに登録します：
 
 ```typescript
-// 一般的な順序の例：
+import { createKori } from '@korix/kori';
+import { requestIdPlugin, timingPlugin, loggingPlugin } from './my-plugins';
+
 const app = createKori()
-  // 1番目：CORSプリフライト用のフックを登録
-  .applyPlugin(corsPlugin({ origin: true }))
-  // 2番目：ボディサイズチェック用のフックを登録
-  .applyPlugin(bodyLimitPlugin())
-  // 3番目：セキュリティヘッダー用のフックを登録
-  .applyPlugin(securityHeadersPlugin());
+  // 1番目：すべてのリクエストにリクエストIDを追加
+  .applyPlugin(requestIdPlugin())
+  // 2番目：タイミングを追跡（timingがrequestIdを使用する場合はrequestIdの後に）
+  .applyPlugin(timingPlugin())
+  // 3番目：リクエストをログ（完全なコンテキストをログするため最後に）
+  .applyPlugin(loggingPlugin());
 ```
 
 ## 型拡張
@@ -235,6 +252,95 @@ const requestIdPlugin = <
         return ctx.withReq({ requestId });
       }),
   });
+```
+
+## プラグインログ
+
+プラグインは、より良い整理とデバッグ機能を提供するために専用のロガーを使用すべきです。`createKoriPluginLogger()`を使用して、自動的に名前空間が付けられたプラグイン専用ロガーを作成します。
+
+### プラグイン専用ロガー
+
+```typescript
+import {
+  defineKoriPlugin,
+  createKoriPluginLogger,
+  type KoriEnvironment,
+  type KoriRequest,
+  type KoriResponse,
+  type KoriPlugin,
+} from '@korix/kori';
+
+export function authPlugin<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res> {
+  return defineKoriPlugin({
+    name: 'auth',
+    apply: (kori) => {
+      // インスタンスレベルのプラグインロガー
+      const log = createKoriPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'auth',
+      });
+
+      log.info('Auth plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        // リクエストレベルのプラグインロガー
+        const requestLog = createKoriPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'auth',
+        });
+
+        requestLog.info('Checking authentication', {
+          path: ctx.req.url().pathname,
+        });
+
+        // 認証ロジック...
+      });
+    },
+  });
+}
+```
+
+### プラグインロガーの利点
+
+プラグイン専用ロガーはいくつかの利点を提供します：
+
+- **名前空間の分離**：ログは自動的に`plugin.{pluginName}`でプレフィックスされる
+- **デバッグの改善**：特定のプラグインでログをフィルタリングしやすい
+- **一貫したフォーマット**：ベースロガーからすべてのバインディングを継承
+- **チャネルの分離**：プラグインログは整理のために専用チャネルを使用
+
+### ロガー出力
+
+プラグインロガーは自動的に名前空間を付けて出力します：
+
+```json
+{
+  "time": 1754201824386,
+  "level": "info",
+  "channel": "plugin.auth",
+  "name": "request",
+  "message": "Checking authentication",
+  "meta": {
+    "path": "/api/users"
+  }
+}
+```
+
+通常のコンテキストログと比較：
+
+```json
+{
+  "time": 1754201824386,
+  "level": "info",
+  "channel": "app",
+  "name": "request",
+  "message": "Processing request",
+  "meta": {}
+}
 ```
 
 ## 公式プラグイン

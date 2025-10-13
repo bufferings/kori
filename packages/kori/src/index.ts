@@ -42,6 +42,7 @@ export {
   createKoriLoggerFactory,
   createKoriPluginLogger,
   createKoriSystemLogger,
+  KoriConsoleReporterPresets,
   type KoriLogEntry,
   type KoriLogger,
   type KoriLoggerFactory,

@@ -24,13 +24,13 @@ describe('Full validation integration', () => {
         }),
       }),
       responseSchema: zodResponseSchema({
-        201: z.object({
+        '201': z.object({
           id: z.string(),
           name: z.string(),
           email: z.string(),
           createdAt: z.string(),
         }),
-        400: z.object({
+        '400': z.object({
           error: z.object({
             type: z.string(),
             message: z.string(),
@@ -91,8 +91,8 @@ describe('Full validation integration', () => {
         body: z.object({ name: z.string(), email: z.email() }),
       }),
       responseSchema: zodResponseSchema({
-        200: z.object({ id: z.string(), updated: z.boolean(), name: z.string() }),
-        400: z.object({
+        '200': z.object({ id: z.string(), updated: z.boolean(), name: z.string() }),
+        '400': z.object({
           error: z.object({
             type: z.string(),
             message: z.string(),

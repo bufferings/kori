@@ -68,12 +68,12 @@ const app = createKori({
   ...enableStdResponseValidation(),
 }).get('/users/:id', {
   responseSchema: stdResponseSchema({
-    200: v.object({
+    '200': v.object({
       id: v.string(),
       name: v.string(),
       email: v.pipe(v.string(), v.email()),
     }),
-    404: v.object({
+    '404': v.object({
       error: v.object({
         type: v.string(),
         message: v.string(),
@@ -115,7 +115,7 @@ const app = createKori({
     }),
   }),
   responseSchema: stdResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.string(),
       name: z.string(),
       email: z.string(),

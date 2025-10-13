@@ -24,13 +24,13 @@ describe('Full validation integration (Valibot)', () => {
         }),
       }),
       responseSchema: stdResponseSchema({
-        201: v.object({
+        '201': v.object({
           id: v.string(),
           name: v.string(),
           email: v.string(),
           createdAt: v.string(),
         }),
-        400: v.object({
+        '400': v.object({
           error: v.object({
             type: v.string(),
             message: v.string(),
@@ -94,8 +94,8 @@ describe('Full validation integration (Valibot)', () => {
         }),
       }),
       responseSchema: stdResponseSchema({
-        200: v.object({ id: v.string(), updated: v.boolean(), name: v.string() }),
-        400: v.object({
+        '200': v.object({ id: v.string(), updated: v.boolean(), name: v.string() }),
+        '400': v.object({
           error: v.object({
             type: v.string(),
             message: v.string(),

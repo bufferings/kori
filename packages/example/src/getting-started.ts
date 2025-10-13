@@ -60,7 +60,7 @@ app.get('/hello/:name', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       message: z.string().meta({ description: 'Greeting message' }),
       timestamp: z.string().meta({ description: 'ISO 8601 timestamp' }),
     }),
@@ -89,7 +89,7 @@ app.get('/search', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       query: z.string().meta({ description: 'The search query' }),
       limit: z.number().meta({ description: 'Results limit' }),
       results: z.array(z.string()).meta({ description: 'Search results' }),
@@ -127,7 +127,7 @@ app.post('/users', {
     body: UserSchema,
   }),
   responseSchema: zodResponseSchema({
-    201: UserSchema.extend({
+    '201': UserSchema.extend({
       id: z.number().meta({ description: 'User ID' }),
       createdAt: z.string().meta({ description: 'Creation timestamp' }),
     }),
@@ -159,7 +159,7 @@ app.get('/users/:id', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       id: z.string().meta({ description: 'User ID' }),
       name: z.string().meta({ description: 'User name' }),
       age: z.number().meta({ description: 'User age' }),
@@ -187,7 +187,7 @@ app.get('/users', {
     tags: ['Users'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       users: z
         .array(
           z.object({

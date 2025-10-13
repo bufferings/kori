@@ -62,7 +62,7 @@ const app = createKori()
       }),
     }),
     responseSchema: zodResponseSchema({
-      200: z.object({
+      '200': z.object({
         id: z.string().uuid(),
         name: z.string(),
         email: z.string().email(),
@@ -127,7 +127,7 @@ app.post('/users', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.string(),
       name: z.string(),
       email: z.string(),
@@ -212,12 +212,12 @@ import { z } from 'zod';
 // Multiple response status codes
 app.get('/users/:id', {
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       id: z.string(),
       name: z.string(),
       email: z.string().email(),
     }),
-    404: z.object({
+    '404': z.object({
       error: z.object({
         type: z.string(),
         message: z.string(),

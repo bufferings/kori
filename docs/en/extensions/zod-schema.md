@@ -32,8 +32,8 @@ const requestSchema = zodRequestSchema({
 
 // Use in response schema
 const responseSchema = zodResponseSchema({
-  201: UserSchema,
-  400: z.object({ error: z.string() }),
+  '201': UserSchema,
+  '400': z.object({ error: z.string() }),
 });
 ```
 
@@ -62,10 +62,10 @@ Response schemas define the structure of outgoing data:
 import { zodResponseSchema } from '@korix/zod-schema';
 
 const responseSchema = zodResponseSchema({
-  200: SuccessResponseSchema,
-  400: ValidationErrorSchema,
-  404: NotFoundErrorSchema,
-  500: InternalErrorSchema,
+  '200': SuccessResponseSchema,
+  '400': ValidationErrorSchema,
+  '404': NotFoundErrorSchema,
+  '500': InternalErrorSchema,
 });
 ```
 

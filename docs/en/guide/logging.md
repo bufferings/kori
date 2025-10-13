@@ -4,9 +4,9 @@ Learn how to use Kori's logging features including structured JSON output, conte
 
 ## Overview
 
-Kori provides a structured logging system with configurable reporters. The logger generates structured log entries, and the default console reporter provides simple JSON output for learning and getting started quickly.
+Kori provides a structured logging system with configurable reporters. The logger generates structured log entries, and the default console reporter provides human-readable colored output for development.
 
-For actual application development, consider using dedicated reporters like Pino (for Node.js), LogTape (universal) or other production-grade logging solutions for better performance and features.
+For production applications, we recommend using high-performance loggers like Pino for better performance and features (official adapter coming soon).
 
 ## Logger Types
 
@@ -73,7 +73,7 @@ const app = createKori({
 
 ## Structured Logging
 
-Kori generates structured log entries. The default console reporter outputs these as JSON with consistent fields and timestamps. All metadata is placed in the `meta` object.
+Kori generates structured log entries with consistent fields and timestamps. The default console reporter outputs human-readable colored logs for development:
 
 ```typescript
 app.get('/users/:id', (ctx) => {
@@ -85,7 +85,25 @@ app.get('/users/:id', (ctx) => {
 });
 ```
 
-Output (formatted for readability, actual output is a single line):
+Default output (pretty format):
+
+```log
+2025-10-13T15:22:11.921Z INFO  [app:request] Fetching user {"userId":"1"}
+```
+
+For JSON format, configure the logger:
+
+```typescript
+import { KoriConsoleReporterPresets } from '@korix/kori';
+
+const app = createKori({
+  loggerOptions: {
+    reporter: KoriConsoleReporterPresets.json(),
+  },
+});
+```
+
+JSON output:
 
 ```json
 {
@@ -94,9 +112,7 @@ Output (formatted for readability, actual output is a single line):
   "channel": "app",
   "name": "request",
   "message": "Fetching user",
-  "meta": {
-    "userId": "1"
-  }
+  "meta": { "userId": "1" }
 }
 ```
 
@@ -105,6 +121,8 @@ Output (formatted for readability, actual output is a single line):
 Configure logging behavior at application startup:
 
 ```typescript
+import { KoriConsoleReporterPresets, serializeError } from '@korix/kori';
+
 const app = createKori({
   loggerOptions: {
     level: 'debug',
@@ -112,12 +130,18 @@ const app = createKori({
       service: 'user-api',
       version: '1.2.0',
     },
+    reporter: KoriConsoleReporterPresets.json(),
+    errorSerializer: serializeError,
   },
 });
 ```
 
+Available options:
+
 - `level`: Sets the minimum log level (logs below this level are ignored)
 - `bindings`: Key-value pairs automatically added to all log entries
+- `reporter`: Output configuration (default: `KoriConsoleReporterPresets.pretty()`)
+- `errorSerializer`: Controls how errors are serialized for logging. Customize this to filter out sensitive information like passwords or tokens from error logs (default: `serializeError`)
 
 ## Performance Optimization
 
@@ -164,7 +188,7 @@ The metadata function is executed lazily - only when the log level is enabled, a
 
 ## Plugin Development
 
-When developing plugins, use `createPluginLogger()` for better log organization:
+When developing plugins, use `createKoriPluginLogger()` for better log organization:
 
 ```typescript
 export function myPlugin<
@@ -176,14 +200,14 @@ export function myPlugin<
     name: 'my-plugin',
     version: '0.0.0',
     apply(kori) {
-      const log = createPluginLogger({
+      const log = createKoriPluginLogger({
         baseLogger: kori.log(),
         pluginName: 'my-plugin',
       });
       log.info('Plugin initialized');
 
       return kori.onRequest((ctx) => {
-        const requestLog = createPluginLogger({
+        const requestLog = createKoriPluginLogger({
           baseLogger: ctx.log(),
           pluginName: 'my-plugin',
         });

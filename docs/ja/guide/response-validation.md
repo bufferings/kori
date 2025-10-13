@@ -1,25 +1,29 @@
 # レスポンスバリデーション
 
-レスポンスバリデーションは、APIが定義されたスキーマに一致するデータを返すことを保証します。これにより、API利用者への型安全性を提供し、開発の早期段階でバグを発見できます。
+レスポンスバリデーションは、APIが定義されたスキーマに一致するデータを返すことを保証します。これにより、API利用者への型安全性を提供し、開発の早期段階でバグを発見できます。Koriのアーキテクチャは異なるバリデーションライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合を提供し、Standard Schemaもサポートしています。
+
+このガイドではZodを例として使用します。
 
 ## セットアップ
 
 Zod統合パッケージをインストール：
 
 ```bash
-npm install @korix/zod-validator @korix/zod-schema zod
+npm install @korix/zod-schema-adapter zod
 ```
 
 レスポンスバリデーション付きのKoriアプリケーションをセットアップ：
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { createKoriZodResponseValidator } from '@korix/zod-validator';
-import { zodResponseSchema } from '@korix/zod-schema';
+import {
+  zodResponseSchema,
+  enableZodResponseValidation,
+} from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  responseValidator: createKoriZodResponseValidator(),
+  ...enableZodResponseValidation(),
 });
 ```
 
@@ -42,23 +46,25 @@ const ErrorSchema = z.object({
 
 app.get('/users/:id', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
+    '200': UserSchema,
+    '404': ErrorSchema,
+    '500': ErrorSchema,
   }),
   handler: (ctx) => {
-    const id = Number(ctx.req.pathParam('id'));
+    const { id } = ctx.req.pathParams();
+    const userId = Number(id);
 
-    if (id === 999) {
+    if (userId === 999) {
       // この404レスポンスはErrorSchemaに対してバリデーションされる
       return ctx.res.notFound({
+        error: 'NOT_FOUND',
         message: 'User not found',
       });
     }
 
     // この200レスポンスはUserSchemaに対してバリデーションされる
     return ctx.res.status(200).json({
-      id,
+      id: userId,
       name: 'John Doe',
       age: 30,
       createdAt: new Date().toISOString(),
@@ -79,9 +85,9 @@ app.get('/users/:id', {
 app.post('/users', {
   responseSchema: zodResponseSchema({
     // 正確なステータスコード
-    201: UserSchema,
-    400: ErrorSchema,
-    409: ErrorSchema,
+    '201': UserSchema,
+    '400': ErrorSchema,
+    '409': ErrorSchema,
 
     // ワイルドカードパターン（5で始まるステータスコードにマッチ）
     '5XX': ErrorSchema,
@@ -108,8 +114,8 @@ const JsonErrorSchema = z.object({
 
 app.get('/data', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
-    400: {
+    '200': UserSchema,
+    '400': {
       content: {
         'application/json': JsonErrorSchema,
         'text/html': HtmlErrorSchema,
@@ -145,12 +151,12 @@ app.get('/data', {
 ```typescript
 app.get('/users/:id', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
+    '200': UserSchema,
   }),
-  onResponseValidationError: (ctx, error) => {
+  onResponseValidationFailure: (ctx, error) => {
     // より多くのコンテキストでバリデーションエラーをログ
     ctx.log().error('Response validation failed', {
-      path: ctx.req.path(),
+      path: ctx.req.url().pathname,
       status: ctx.res.getStatus(),
       error,
     });
@@ -170,13 +176,12 @@ app.get('/users/:id', {
 
 ```typescript
 const app = createKori({
-  responseValidator: createKoriZodResponseValidator(),
-  onResponseValidationError: (ctx, error) => {
+  ...enableZodResponseValidation(),
+  onResponseValidationFailure: (ctx, error) => {
     // グローバルレスポンスバリデーションエラーハンドリング
     ctx.log().error('Response validation failed globally', { error });
 
     // 元のレスポンスを使用するためにundefinedを返却
-    return undefined;
   },
 });
 ```
@@ -198,7 +203,7 @@ const app = createKori({
 ```typescript
 app.get('/download', {
   responseSchema: zodResponseSchema({
-    200: z.string(), // これはストリームに対してバリデーションされない
+    '200': z.string(), // これはストリームに対してバリデーションされない
   }),
   handler: (ctx) => {
     // ストリーミングレスポンスはバリデーションされない

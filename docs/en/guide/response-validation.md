@@ -1,25 +1,29 @@
 # Response Validation
 
-Response validation ensures your API returns data that matches your defined schemas. This provides type safety for API consumers and helps catch bugs early in development.
+Response validation ensures your API returns data that matches your defined schemas. This provides type safety for API consumers and helps catch bugs early in development. While Kori's architecture supports different validation libraries, we officially provide first-class Zod integration, with additional support for Standard Schema.
+
+This guide uses Zod for examples.
 
 ## Setup
 
 Install the Zod integration packages:
 
 ```bash
-npm install @korix/zod-validator @korix/zod-schema zod
+npm install @korix/zod-schema-adapter zod
 ```
 
 Set up your Kori application with response validation:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { createKoriZodResponseValidator } from '@korix/zod-validator';
-import { zodResponseSchema } from '@korix/zod-schema';
+import {
+  zodResponseSchema,
+  enableZodResponseValidation,
+} from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  responseValidator: createKoriZodResponseValidator(),
+  ...enableZodResponseValidation(),
 });
 ```
 
@@ -42,23 +46,25 @@ const ErrorSchema = z.object({
 
 app.get('/users/:id', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
+    '200': UserSchema,
+    '404': ErrorSchema,
+    '500': ErrorSchema,
   }),
   handler: (ctx) => {
-    const id = Number(ctx.req.pathParam('id'));
+    const { id } = ctx.req.pathParams();
+    const userId = Number(id);
 
-    if (id === 999) {
+    if (userId === 999) {
       // This 404 response will be validated against ErrorSchema
       return ctx.res.notFound({
+        error: 'NOT_FOUND',
         message: 'User not found',
       });
     }
 
     // This 200 response will be validated against UserSchema
     return ctx.res.status(200).json({
-      id,
+      id: userId,
       name: 'John Doe',
       age: 30,
       createdAt: new Date().toISOString(),
@@ -79,9 +85,9 @@ Response schemas support multiple status code patterns:
 app.post('/users', {
   responseSchema: zodResponseSchema({
     // Exact status codes
-    201: UserSchema,
-    400: ErrorSchema,
-    409: ErrorSchema,
+    '201': UserSchema,
+    '400': ErrorSchema,
+    '409': ErrorSchema,
 
     // Wildcard patterns (matches any status code starting with 5)
     '5XX': ErrorSchema,
@@ -108,8 +114,8 @@ const JsonErrorSchema = z.object({
 
 app.get('/data', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
-    400: {
+    '200': UserSchema,
+    '400': {
       content: {
         'application/json': JsonErrorSchema,
         'text/html': HtmlErrorSchema,
@@ -145,12 +151,12 @@ You can provide custom response validation error handlers:
 ```typescript
 app.get('/users/:id', {
   responseSchema: zodResponseSchema({
-    200: UserSchema,
+    '200': UserSchema,
   }),
-  onResponseValidationError: (ctx, error) => {
+  onResponseValidationFailure: (ctx, error) => {
     // Log the validation error with more context
     ctx.log().error('Response validation failed', {
-      path: ctx.req.path(),
+      path: ctx.req.url().pathname,
       status: ctx.res.getStatus(),
       error,
     });
@@ -170,13 +176,12 @@ app.get('/users/:id', {
 
 ```typescript
 const app = createKori({
-  responseValidator: createKoriZodResponseValidator(),
-  onResponseValidationError: (ctx, error) => {
+  ...enableZodResponseValidation(),
+  onResponseValidationFailure: (ctx, error) => {
     // Global response validation error handling
     ctx.log().error('Response validation failed globally', { error });
 
     // Return undefined to use the original response
-    return undefined;
   },
 });
 ```
@@ -198,7 +203,7 @@ Response validation automatically skips validation for streaming responses, as t
 ```typescript
 app.get('/download', {
   responseSchema: zodResponseSchema({
-    200: z.string(), // This won't be validated for streams
+    '200': z.string(), // This won't be validated for streams
   }),
   handler: (ctx) => {
     // Streaming responses are not validated

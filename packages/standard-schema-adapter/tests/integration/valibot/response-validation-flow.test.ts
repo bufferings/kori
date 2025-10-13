@@ -13,7 +13,7 @@ describe('Response validation integration (Valibot)', () => {
       ...enableStdResponseValidation({ onResponseValidationFailure }),
     }).get('/users/:id', {
       responseSchema: stdResponseSchema({
-        200: v.object({
+        '200': v.object({
           id: v.string(),
           name: v.string(),
           email: v.pipe(v.string(), v.email()),
@@ -45,7 +45,7 @@ describe('Response validation integration (Valibot)', () => {
       ...enableStdResponseValidation(),
     }).get('/health', {
       responseSchema: stdResponseSchema({
-        200: v.object({ status: v.string() }),
+        '200': v.object({ status: v.string() }),
       }),
       handler: (ctx) => {
         return ctx.res.json({ status: 'ok' });

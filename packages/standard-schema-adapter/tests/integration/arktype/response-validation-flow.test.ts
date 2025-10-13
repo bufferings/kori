@@ -13,7 +13,7 @@ describe('Response validation integration (ArkType)', () => {
       ...enableStdResponseValidation({ onResponseValidationFailure }),
     }).get('/users/:id', {
       responseSchema: stdResponseSchema({
-        200: type({
+        '200': type({
           id: 'string',
           name: 'string',
           email: 'string.email',
@@ -45,7 +45,7 @@ describe('Response validation integration (ArkType)', () => {
       ...enableStdResponseValidation(),
     }).get('/health', {
       responseSchema: stdResponseSchema({
-        200: type({ status: 'string' }),
+        '200': type({ status: 'string' }),
       }),
       handler: (ctx) => {
         return ctx.res.json({ status: 'ok' });

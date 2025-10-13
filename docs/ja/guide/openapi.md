@@ -1,6 +1,8 @@
 # OpenAPI統合
 
-スキーマからインタラクティブなAPIドキュメントを自動生成します。Koriの拡張可能なOpenAPIシステムは、ドキュメントをバリデーションスキーマと完璧に同期させます。Koriのアーキテクチャは異なるスキーマライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合をすぐに提供しています。
+スキーマからインタラクティブなAPIドキュメントを自動生成します。Koriの拡張可能なOpenAPIシステムは、ドキュメントをバリデーションスキーマと完璧に同期させます。Koriのアーキテクチャは異なるスキーマライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合をすぐに提供しています（Standard SchemaはOpenAPI生成では現在サポートされていません）。
+
+このガイドではZodを例として使用します。
 
 ## セットアップ
 
@@ -16,11 +18,13 @@ Koriアプリケーションに2つのプラグインを追加：
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 })
   // ZodスキーマからOpenAPI仕様を生成
   .applyPlugin(
@@ -64,13 +68,16 @@ const UserSchema = z.object({
 
 // ルートに追加
 app.post('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'ユーザー作成',
     description: '新しいユーザーアカウントを作成',
     tags: ['Users'],
   }),
   requestSchema: zodRequestSchema({
     body: UserSchema,
+  }),
+  responseSchema: zodResponseSchema({
+    default: z.any(),
   }),
   handler: (ctx) => {
     const user = ctx.req.validatedBody();
@@ -90,7 +97,7 @@ app.post('/users', {
 
 ```typescript
 app.get('/products/:id', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'IDで商品を取得',
     description: '詳細な商品情報を取得',
     tags: ['Products'],
@@ -122,6 +129,9 @@ app.get('/products/:id', {
       }),
     }),
   }),
+  responseSchema: zodResponseSchema({
+    default: z.any(),
+  }),
   handler: (ctx) => {
     const { id } = ctx.req.validatedParams();
     const queries = ctx.req.validatedQueries();
@@ -137,7 +147,7 @@ app.get('/products/:id', {
 さまざまなレスポンスシナリオをドキュメント化：
 
 ```typescript
-import { zodResponseSchema } from '@korix/zod-schema';
+import { zodResponseSchema } from '@korix/zod-schema-adapter';
 
 const ProductSchema = z.object({
   id: z.number(),
@@ -152,7 +162,7 @@ const ErrorSchema = z.object({
 });
 
 app.get('/products/:id', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'IDで商品を取得',
     tags: ['Products'],
   }),
@@ -162,9 +172,9 @@ app.get('/products/:id', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: ProductSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
+    '200': ProductSchema,
+    '404': ErrorSchema,
+    '500': ErrorSchema,
   }),
   handler: (ctx) => {
     const { id } = ctx.req.validatedParams();
@@ -214,7 +224,7 @@ const ProductCreateSchema = z.object({
 });
 
 app.post('/products', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: '商品作成',
     description: 'バリデーション付きで新しい商品を作成',
     tags: ['Products'],
@@ -230,14 +240,14 @@ app.post('/products', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.number(),
       name: z.string(),
       price: z.number(),
       category: z.string(),
       createdAt: z.string(),
     }),
-    400: z.object({
+    '400': z.object({
       error: z.string(),
       details: z.array(z.string()),
     }),
@@ -262,6 +272,8 @@ app.post('/products', {
 ### Zod OpenAPIプラグイン
 
 このガイドでは公式のZod統合に焦点を当てています。他のスキーマライブラリについては、基盤となる`@korix/openapi-plugin`を使用してカスタムスキーマコンバーターを実装できます。
+
+Zod OpenAPIプラグインは、ZodのネイティブAPIである`toJSONSchema()`メソッドを使用してZodスキーマをJSON Schema形式に変換します。つまり、生成されるOpenAPIドキュメントは、Zodの`toJSONSchema()`がサポートする機能とスキーマタイプに限定されます。詳細は[ZodのJSON Schemaドキュメント](https://zod.dev/json-schema?id=unrepresentable)を参照してください。
 
 OpenAPI仕様を設定：
 
@@ -291,10 +303,6 @@ swaggerUiPlugin({
   path: '/docs',
   // ページタイトル
   title: 'APIドキュメント',
-  // テーマ：'light', 'dark', または 'auto'
-  theme: 'auto',
-  // オプションのカスタムスタイリング
-  customCss: 'body { font-family: "Custom Font"; }',
 });
 ```
 
@@ -317,7 +325,7 @@ OpenAPIドキュメントは既存のバリデーションとシームレスに�
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
+import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 // requestValidatorまたはresponseValidatorなし
@@ -339,7 +347,7 @@ const app = createKori()
 
 // スキーマはドキュメントのみに使用され、バリデーションには使用されない
 app.post('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'ユーザー作成',
     tags: ['Users'],
   }),
@@ -350,7 +358,7 @@ app.post('/users', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.number(),
       name: z.string(),
       email: z.string(),

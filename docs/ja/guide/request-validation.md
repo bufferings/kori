@@ -1,25 +1,29 @@
 # リクエストバリデーション
 
-リクエストバリデーションはKoriの型安全な開発体験の中核です。Koriの拡張可能なバリデーションシステムは、自動型生成を伴う型安全なランタイムバリデーションを提供します - キャストは不要です。Koriのアーキテクチャは異なるバリデーションライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合をすぐに提供しています。
+リクエストバリデーションはKoriの型安全な開発体験の中核です。Koriの拡張可能なバリデーションシステムは、自動型生成を伴う型安全なランタイムバリデーションを提供します - キャストは不要です。Koriのアーキテクチャは異なるバリデーションライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合を提供し、Standard Schemaもサポートしています。
+
+このガイドではZodを例として使用します。
 
 ## セットアップ
 
 Zod統合パッケージをインストール：
 
 ```bash
-npm install @korix/zod-validator @korix/zod-schema zod
+npm install @korix/zod-schema-adapter zod
 ```
 
 バリデーション付きのKoriアプリケーションをセットアップ：
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { zodRequestSchema } from '@korix/zod-schema';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 });
 ```
 
@@ -180,12 +184,17 @@ app.post('/users', {
   requestSchema: zodRequestSchema({
     body: UserCreateSchema,
   }),
-  onRequestValidationError: (ctx, error) => {
+  onRequestValidationFailure: (ctx, error) => {
     // 詳細なZodバリデーションエラーにアクセス
-    if (error.body && 'issues' in error.body) {
+    if (
+      error.body &&
+      error.body.stage === 'validation' &&
+      error.body.reason.type === 'Validation'
+    ) {
+      const zodError = error.body.reason;
       return ctx.res.badRequest({
         message: 'Validation failed',
-        details: error.body.issues.map((issue) => ({
+        details: zodError.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
           code: issue.code,
@@ -211,8 +220,8 @@ app.post('/users', {
 
 ```typescript
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
-  onRequestValidationError: (ctx, error) => {
+  ...enableZodRequestValidation(),
+  onRequestValidationFailure: (ctx, error) => {
     // グローバルバリデーションエラーハンドリング
     ctx.log().warn('Validation failed', { error });
 
