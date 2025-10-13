@@ -1,4 +1,4 @@
 [tools]
-lefthook = "latest"
-node = "23.6.0"
-pnpm = "10.14.0"
+lefthook = "1.13.6"
+node = "20.19.5"
+pnpm = "10.18.2"
