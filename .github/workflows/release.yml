@@ -47,10 +47,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
+      - name: Install dependencies (initial)
         run: pnpm install --frozen-lockfile
 
-      - name: Build packages
+      - name: Build script package
+        run: pnpm --filter @korix/script build
+
+      - name: Install dependencies (final)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
         run: pnpm build
 
       - name: Create Release Pull Request or Publish to npm
