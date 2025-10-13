@@ -7,6 +7,8 @@ Start simple, then use type-safe features as you need them.
 ## Start Simple
 
 ```typescript
+const app = createKori();
+
 app.get('/', (ctx) => {
   return ctx.res.json({ message: 'Hello Kori!' });
 });
@@ -36,13 +38,17 @@ app.get('/status', (ctx) => {
 Define schemas once, get validation and types automatically:
 
 ```typescript
-const UserSchema = z.object({
-  name: z.string().min(1),
-  age: z.number().int().min(0),
+const app = createKori({
+  ...enableZodRequestValidation(),
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({ body: UserSchema }),
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string().min(1),
+      age: z.number().int().min(0),
+    }),
+  }),
   handler: (ctx) => {
     // Fully typed and validated - no casting needed!
     const { name, age } = ctx.req.validatedBody();
@@ -54,6 +60,39 @@ app.post('/users', {
 ## Same Schema, OpenAPI Documentation
 
 With the OpenAPI plugin, your validation schemas become OpenAPI documentation:
+
+```typescript
+const app = createKori({
+  ...enableZodRequestValidation(),
+})
+  .applyPlugin(
+    zodOpenApiPlugin({
+      info: { title: 'My API', version: '1.0.0' },
+    }),
+  )
+  .applyPlugin(swaggerUiPlugin());
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string().min(1),
+      age: z.number().int().min(0),
+    }),
+  }),
+  responseSchema: zodResponseSchema({
+    '200': z.object({
+      id: z.string(),
+      name: z.string(),
+      age: z.number().int().min(0),
+    }),
+  }),
+  handler: (ctx) => {
+    // Fully typed and validated - no casting needed!
+    const { name, age } = ctx.req.validatedBody();
+    return ctx.res.json({ id: '123', name, age });
+  },
+});
+```
 
 [Image placeholder: Interactive OpenAPI documentation generated from UserSchema]
 

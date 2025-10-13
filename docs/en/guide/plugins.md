@@ -8,21 +8,22 @@ Apply plugins to your Kori application using the `applyPlugin()` method. This in
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { corsPlugin } from '@korix/cors-plugin';
-import { bodyLimitPlugin } from '@korix/body-limit-plugin';
+import { enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 
-const app = createKori()
+const app = createKori({
+  ...enableZodRequestValidation(),
+})
   .applyPlugin(
-    corsPlugin({
-      origin: ['https://myapp.com'],
-      credentials: true,
+    zodOpenApiPlugin({
+      info: {
+        title: 'My API',
+        version: '1.0.0',
+      },
     }),
   )
-  .applyPlugin(
-    bodyLimitPlugin({
-      maxSize: 10 * 1024 * 1024, // 10MB in bytes
-    }),
-  );
+  .applyPlugin(swaggerUiPlugin());
 ```
 
 ## How Plugins Work
@@ -34,7 +35,7 @@ For example, a logging plugin might use multiple hooks:
 ```typescript
 import {
   defineKoriPlugin,
-  createPluginLogger,
+  createKoriPluginLogger,
   type KoriEnvironment,
   type KoriRequest,
   type KoriResponse,
@@ -50,7 +51,7 @@ export function loggingPlugin<
   return defineKoriPlugin({
     name: 'request-logging',
     apply: (kori) => {
-      const log = createPluginLogger({
+      const log = createKoriPluginLogger({
         baseLogger: kori.log(),
         pluginName: 'request-logging',
       });
@@ -58,7 +59,7 @@ export function loggingPlugin<
       log.info('Request logging plugin initialized');
 
       return kori.onRequest((ctx) => {
-        const requestLog = createPluginLogger({
+        const requestLog = createKoriPluginLogger({
           baseLogger: ctx.log(),
           pluginName: 'request-logging',
         });
@@ -90,14 +91,16 @@ export function loggingPlugin<
 Plugins are applied in the order they are registered. Each plugin registers its hooks to the application:
 
 ```typescript
-// Common order example:
+import { createKori } from '@korix/kori';
+import { requestIdPlugin, timingPlugin, loggingPlugin } from './my-plugins';
+
 const app = createKori()
-  // 1st: Registers hooks for CORS preflight
-  .applyPlugin(corsPlugin({ origin: true }))
-  // 2nd: Registers hooks for body size check
-  .applyPlugin(bodyLimitPlugin())
-  // 3rd: Registers hooks for security headers
-  .applyPlugin(securityHeadersPlugin());
+  // 1st: Add request ID to all requests
+  .applyPlugin(requestIdPlugin())
+  // 2nd: Track timing (needs to be after requestId if timing uses it)
+  .applyPlugin(timingPlugin())
+  // 3rd: Log requests (should be last to log complete context)
+  .applyPlugin(loggingPlugin());
 ```
 
 ## Type Extensions
@@ -253,14 +256,14 @@ const requestIdPlugin = <
 
 ## Plugin Logging
 
-Plugins should use dedicated loggers to provide better organization and debugging capabilities. Use `createPluginLogger()` to create plugin-specific loggers that are automatically namespaced.
+Plugins should use dedicated loggers to provide better organization and debugging capabilities. Use `createKoriPluginLogger()` to create plugin-specific loggers that are automatically namespaced.
 
 ### Plugin-Specific Loggers
 
 ```typescript
 import {
   defineKoriPlugin,
-  createPluginLogger,
+  createKoriPluginLogger,
   type KoriEnvironment,
   type KoriRequest,
   type KoriResponse,
@@ -276,7 +279,7 @@ export function authPlugin<
     name: 'auth',
     apply: (kori) => {
       // Instance-level plugin logger
-      const log = createPluginLogger({
+      const log = createKoriPluginLogger({
         baseLogger: kori.log(),
         pluginName: 'auth',
       });
@@ -285,7 +288,7 @@ export function authPlugin<
 
       return kori.onRequest((ctx) => {
         // Request-level plugin logger
-        const requestLog = createPluginLogger({
+        const requestLog = createKoriPluginLogger({
           baseLogger: ctx.log(),
           pluginName: 'auth',
         });

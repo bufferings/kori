@@ -7,6 +7,8 @@ Kori - 日本語で氷🧊を意味する - は、クールで型安全性ファ
 ## シンプルに始める
 
 ```typescript
+const app = createKori();
+
 app.get('/', (ctx) => {
   return ctx.res.json({ message: 'Hello Kori!' });
 });
@@ -36,13 +38,17 @@ app.get('/status', (ctx) => {
 スキーマを一度定義すれば、バリデーションと型が自動的に取得：
 
 ```typescript
-const UserSchema = z.object({
-  name: z.string().min(1),
-  age: z.number().int().min(0),
+const app = createKori({
+  ...enableZodRequestValidation(),
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({ body: UserSchema }),
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string().min(1),
+      age: z.number().int().min(0),
+    }),
+  }),
   handler: (ctx) => {
     // 完全に型付けされバリデーション済み - キャストは不要！
     const { name, age } = ctx.req.validatedBody();
@@ -54,6 +60,39 @@ app.post('/users', {
 ## 同じスキーマ、OpenAPIドキュメント
 
 OpenAPIプラグインを使用すると、バリデーションスキーマがOpenAPIドキュメントになります：
+
+```typescript
+const app = createKori({
+  ...enableZodRequestValidation(),
+})
+  .applyPlugin(
+    zodOpenApiPlugin({
+      info: { title: 'My API', version: '1.0.0' },
+    }),
+  )
+  .applyPlugin(swaggerUiPlugin());
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string().min(1),
+      age: z.number().int().min(0),
+    }),
+  }),
+  responseSchema: zodResponseSchema({
+    '200': z.object({
+      id: z.string(),
+      name: z.string(),
+      age: z.number().int().min(0),
+    }),
+  }),
+  handler: (ctx) => {
+    // 完全に型付けされバリデーション済み - キャストは不要！
+    const { name, age } = ctx.req.validatedBody();
+    return ctx.res.json({ id: '123', name, age });
+  },
+});
+```
 
 [画像プレースホルダー: UserSchemaから生成されたインタラクティブなOpenAPIドキュメント]
 

@@ -1,12 +1,12 @@
 # ログ
 
-構造化JSON出力、コンテキスト対応ログ、設定オプションを含むKoriのログ機能の使用方法を学びます。
+構造化ログ出力、コンテキスト対応ログ、設定オプションを含むKoriのログ機能の使用方法を学びます。
 
 ## 概要
 
-Koriは設定可能なレポーターを持つ構造化ログシステムを提供します。ロガーは構造化ログエントリを生成し、デフォルトのコンソールレポーターは学習と素早い開始のためのシンプルなJSON出力を提供します。
+Koriは設定可能なレポーターを持つ構造化ログシステムを提供します。ロガーは構造化ログエントリを生成し、デフォルトのコンソールレポーターは学習と素早い開始のための開発用の人間が読みやすい色付き出力を提供します。
 
-実際のアプリケーション開発では、より良いパフォーマンスと機能のためにPino（Node.js用）、LogTape（ユニバーサル）、または他のプロダクションレベルのログソリューション専用レポーターの使用を検討してください。
+実際のアプリケーションには、より良いパフォーマンスと機能のためにPinoなどの高性能ロガーの使用を推奨します（公式アダプターは準備中です）。
 
 ## ログの種類
 
@@ -73,7 +73,7 @@ const app = createKori({
 
 ## 構造化ログ
 
-Koriは構造化ログエントリを生成します。デフォルトのコンソールレポーターは、一貫したフィールドとタイムスタンプを持つJSONとしてこれらを出力します。すべてのメタデータは`meta`オブジェクトに配置されます。
+Koriは一貫したフィールドとタイムスタンプを持つ構造化ログエントリを生成します。デフォルトのコンソールレポーターは開発用に人間が読みやすい色付きログを出力します：
 
 ```typescript
 app.get('/users/:id', (ctx) => {
@@ -85,7 +85,25 @@ app.get('/users/:id', (ctx) => {
 });
 ```
 
-出力（読みやすさのためにフォーマット、実際の出力は1行）：
+デフォルト出力（pretty形式）：
+
+```log
+2025-10-13T15:22:11.921Z INFO  [app:request] Fetching user {"userId":"1"}
+```
+
+JSON形式が必要な場合は、ロガーを設定します：
+
+```typescript
+import { KoriConsoleReporterPresets } from '@korix/kori';
+
+const app = createKori({
+  loggerOptions: {
+    reporter: KoriConsoleReporterPresets.json(),
+  },
+});
+```
+
+JSON出力：
 
 ```json
 {
@@ -94,9 +112,7 @@ app.get('/users/:id', (ctx) => {
   "channel": "app",
   "name": "request",
   "message": "Fetching user",
-  "meta": {
-    "userId": "1"
-  }
+  "meta": { "userId": "1" }
 }
 ```
 
@@ -105,6 +121,8 @@ app.get('/users/:id', (ctx) => {
 アプリケーション起動時にログ動作を設定：
 
 ```typescript
+import { KoriConsoleReporterPresets, serializeError } from '@korix/kori';
+
 const app = createKori({
   loggerOptions: {
     level: 'debug',
@@ -112,12 +130,18 @@ const app = createKori({
       service: 'user-api',
       version: '1.2.0',
     },
+    reporter: KoriConsoleReporterPresets.json(),
+    errorSerializer: serializeError,
   },
 });
 ```
 
+利用可能なオプション：
+
 - `level`：最小ログレベルを設定（このレベル以下のログは無視される）
 - `bindings`：すべてのログエントリに自動的に追加されるキー値ペア
+- `reporter`：出力設定（デフォルト：`KoriConsoleReporterPresets.pretty()`）
+- `errorSerializer`：エラーログのシリアライズ方法を制御。パスワードやトークンなどの機密情報をエラーログから除外するためにカスタマイズ可能（デフォルト：`serializeError`）
 
 ## パフォーマンス最適化
 
@@ -161,3 +185,37 @@ app.get('/profile', (ctx) => {
 ```
 
 メタデータ関数は遅延実行されます - ログレベルが有効な場合のみ実行され、不要な計算を回避します。
+
+## プラグイン開発
+
+プラグイン開発時は、`createKoriPluginLogger()`を使用してログをより良く整理します：
+
+```typescript
+export function myPlugin<
+  Env extends KoriEnvironment,
+  Req extends KoriRequest,
+  Res extends KoriResponse,
+>(): KoriPlugin<Env, Req, Res> {
+  return defineKoriPlugin({
+    name: 'my-plugin',
+    version: '0.0.0',
+    apply(kori) {
+      const log = createKoriPluginLogger({
+        baseLogger: kori.log(),
+        pluginName: 'my-plugin',
+      });
+      log.info('Plugin initialized');
+
+      return kori.onRequest((ctx) => {
+        const requestLog = createKoriPluginLogger({
+          baseLogger: ctx.log(),
+          pluginName: 'my-plugin',
+        });
+        requestLog.info('Processing request');
+      });
+    },
+  });
+}
+```
+
+プラグインロガーは、より良い整理とデバッグのために、自動的にログを`plugin.{pluginName}`チャネルに名前空間化します。

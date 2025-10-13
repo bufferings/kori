@@ -24,13 +24,13 @@ describe('Full validation integration (ArkType)', () => {
         }),
       }),
       responseSchema: stdResponseSchema({
-        201: type({
+        '201': type({
           id: 'string',
           name: 'string',
           email: 'string',
           createdAt: 'string',
         }),
-        400: type({
+        '400': type({
           error: {
             type: 'string',
             message: 'string',
@@ -91,8 +91,8 @@ describe('Full validation integration (ArkType)', () => {
         body: type({ name: 'string', email: 'string.email' }),
       }),
       responseSchema: stdResponseSchema({
-        200: type({ id: 'string', updated: 'boolean', name: 'string' }),
-        400: type({
+        '200': type({ id: 'string', updated: 'boolean', name: 'string' }),
+        '400': type({
           error: {
             type: 'string',
             message: 'string',

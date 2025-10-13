@@ -1,6 +1,8 @@
 # OpenAPI Integration
 
-Generate interactive API documentation automatically from your schemas. Kori's extensible OpenAPI system keeps your documentation perfectly synchronized with your validation schemas. While Kori's architecture is designed to support different schema libraries, we officially provide first-class Zod integration out of the box.
+Generate interactive API documentation automatically from your schemas. Kori's extensible OpenAPI system keeps your documentation perfectly synchronized with your validation schemas. While Kori's architecture is designed to support different schema libraries, we officially provide first-class Zod integration out of the box (Standard Schema is not currently supported for OpenAPI generation).
+
+This guide uses Zod for examples.
 
 ## Setup
 
@@ -16,11 +18,13 @@ Add two plugins to your Kori application:
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 })
   // Generate OpenAPI specification from Zod schemas
   .applyPlugin(
@@ -64,13 +68,16 @@ const UserSchema = z.object({
 
 // Add to your route
 app.post('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Create user',
     description: 'Creates a new user account',
     tags: ['Users'],
   }),
   requestSchema: zodRequestSchema({
     body: UserSchema,
+  }),
+  responseSchema: zodResponseSchema({
+    default: z.any(),
   }),
   handler: (ctx) => {
     const user = ctx.req.validatedBody();
@@ -90,7 +97,7 @@ Document all types of request parameters:
 
 ```typescript
 app.get('/products/:id', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Get product by ID',
     description: 'Retrieve detailed product information',
     tags: ['Products'],
@@ -122,6 +129,9 @@ app.get('/products/:id', {
       }),
     }),
   }),
+  responseSchema: zodResponseSchema({
+    default: z.any(),
+  }),
   handler: (ctx) => {
     const { id } = ctx.req.validatedParams();
     const queries = ctx.req.validatedQueries();
@@ -137,7 +147,7 @@ app.get('/products/:id', {
 Document different response scenarios:
 
 ```typescript
-import { zodResponseSchema } from '@korix/zod-schema';
+import { zodResponseSchema } from '@korix/zod-schema-adapter';
 
 const ProductSchema = z.object({
   id: z.number(),
@@ -152,7 +162,7 @@ const ErrorSchema = z.object({
 });
 
 app.get('/products/:id', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Get product by ID',
     tags: ['Products'],
   }),
@@ -162,9 +172,9 @@ app.get('/products/:id', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: ProductSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
+    '200': ProductSchema,
+    '404': ErrorSchema,
+    '500': ErrorSchema,
   }),
   handler: (ctx) => {
     const { id } = ctx.req.validatedParams();
@@ -214,7 +224,7 @@ const ProductCreateSchema = z.object({
 });
 
 app.post('/products', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Create product',
     description: 'Create a new product with validation',
     tags: ['Products'],
@@ -230,14 +240,14 @@ app.post('/products', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.number(),
       name: z.string(),
       price: z.number(),
       category: z.string(),
       createdAt: z.string(),
     }),
-    400: z.object({
+    '400': z.object({
       error: z.string(),
       details: z.array(z.string()),
     }),
@@ -262,6 +272,8 @@ app.post('/products', {
 ### Zod OpenAPI Plugin
 
 This guide focuses on the official Zod integration. For other schema libraries, you can implement custom schema converters using the underlying `@korix/openapi-plugin`.
+
+The Zod OpenAPI plugin uses Zod's native `toJSONSchema()` method to convert Zod schemas to JSON Schema format. This means the generated OpenAPI documentation is limited to the features and schema types that Zod's `toJSONSchema()` supports. For details, see [Zod's JSON Schema documentation](https://zod.dev/json-schema?id=unrepresentable).
 
 Configure the OpenAPI specification:
 
@@ -291,10 +303,6 @@ swaggerUiPlugin({
   path: '/docs',
   // Page title
   title: 'API Documentation',
-  // Theme: 'light', 'dark', or 'auto'
-  theme: 'auto',
-  // Optional custom styling
-  customCss: 'body { font-family: "Custom Font"; }',
 });
 ```
 
@@ -317,7 +325,7 @@ You can generate OpenAPI documentation without runtime validation. This is usefu
 import { createKori } from '@korix/kori';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema';
+import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 // No requestValidator or responseValidator
@@ -339,7 +347,7 @@ const app = createKori()
 
 // Schema is used for documentation only, not validation
 app.post('/users', {
-  pluginMetadata: openApiMeta({
+  pluginMeta: openApiMeta({
     summary: 'Create user',
     tags: ['Users'],
   }),
@@ -350,7 +358,7 @@ app.post('/users', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.number(),
       name: z.string(),
       email: z.string(),

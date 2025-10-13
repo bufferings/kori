@@ -192,7 +192,7 @@ app.post('/products', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: ProductSchema.extend({
+    '201': ProductSchema.extend({
       id: z.number().meta({ description: 'Product ID' }),
       createdAt: z.string().meta({ description: 'Creation timestamp' }),
       clientId: z.string().meta({ description: 'Client identifier' }),
@@ -244,7 +244,7 @@ app.get('/products/search', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.object({
+    '200': z.object({
       query: z.string().meta({ description: 'Search query' }),
       filters: z.object({
         category: z.enum(['electronics', 'books', 'clothing']).optional().meta({ description: 'Category filter' }),
@@ -322,8 +322,8 @@ app.createChild({
           tags: ['Admin'],
         }),
         responseSchema: zodResponseSchema({
-          200: z.any(),
-          401: z.any(),
+          '200': z.any(),
+          '401': z.any(),
         }),
         handler: (ctx) =>
           ctx.res.json({
@@ -349,8 +349,8 @@ app.createChild({
           }),
         }),
         responseSchema: zodResponseSchema({
-          200: z.any(),
-          401: z.any(),
+          '200': z.any(),
+          '401': z.any(),
         }),
         handler: (ctx) => {
           const { mode, reason } = ctx.req.validatedBody();
@@ -378,7 +378,7 @@ app.get('/health', {
     tags: ['System'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
+    '200': z.any(),
   }),
   handler: (ctx) =>
     ctx.res.json({
@@ -397,8 +397,8 @@ app.get('/error/:type', {
     tags: ['Demo'],
   }),
   responseSchema: zodResponseSchema({
-    400: z.any(),
-    500: z.any(),
+    '400': z.any(),
+    '500': z.any(),
   }),
   handler: (ctx) => {
     const { type } = ctx.req.pathParams();
@@ -433,8 +433,8 @@ app.post('/validation-demo', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
-    400: z.any(),
+    '200': z.any(),
+    '400': z.any(),
   }),
   // Route-level validation error handling
   onRequestValidationFailure: (ctx, reason) => {
@@ -482,7 +482,7 @@ app.post('/users/simple', {
   }),
   requestSchema: zodRequestSchema({ body: UserJsonSchema }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       message: z.string().meta({ description: 'Success message' }),
     }),
   }),
@@ -516,8 +516,8 @@ app.post('/users/multi', {
     },
   }),
   responseSchema: zodResponseSchema({
-    201: z.union([UserJsonSchema, UserFormSchema]),
-    400: z.object({
+    '201': z.union([UserJsonSchema, UserFormSchema]),
+    '400': z.object({
       message: z.string().meta({ description: 'Error message' }),
     }),
   }),
@@ -609,9 +609,9 @@ app.post('/stream/upload', {
     tags: ['Streaming'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
-    400: z.any(),
-    500: z.any(),
+    '200': z.any(),
+    '400': z.any(),
+    '500': z.any(),
   }),
   handler: async (ctx) => {
     const bodyStream = (ctx.req as KoriRequest).bodyStream();
@@ -712,7 +712,7 @@ app.post('/cookies/preferences', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
+    '200': z.any(),
   }),
   handler: (ctx) => {
     const { theme, language, timezone } = ctx.req.validatedBody();
@@ -734,7 +734,7 @@ app.post('/cookies/secure-session', {
     tags: ['Cookies'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
+    '200': z.any(),
   }),
   handler: (ctx) => {
     // Secure cookie settings for production
@@ -757,7 +757,7 @@ app.get('/cookies/visit', {
     tags: ['Cookies'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
+    '200': z.any(),
   }),
   handler: (ctx) => {
     const visitCount = ctx.req.cookie('visitCount');
@@ -792,7 +792,7 @@ app.get('/performance/lazy-logging', {
     tags: ['Performance'],
   }),
   responseSchema: zodResponseSchema({
-    200: z.any(),
+    '200': z.any(),
   }),
   handler: (ctx) => {
     const startTime = Date.now();

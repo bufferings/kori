@@ -1,25 +1,29 @@
 # Request Validation
 
-Request validation is at the heart of Kori's type-safe development experience. Kori's extensible validation system provides type-safe, runtime validation with automatic type generation - no casting required. While Kori's architecture is designed to support different validation libraries, we officially provide first-class Zod integration out of the box.
+Request validation is at the heart of Kori's type-safe development experience. Kori's extensible validation system provides type-safe, runtime validation with automatic type generation - no casting required. While Kori's architecture is designed to support different validation libraries, we officially provide first-class Zod integration, with additional support for Standard Schema.
+
+This guide uses Zod for examples.
 
 ## Setup
 
 Install the Zod integration packages:
 
 ```bash
-npm install @korix/zod-validator @korix/zod-schema zod
+npm install @korix/zod-schema-adapter zod
 ```
 
 Set up your Kori application with validation:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { zodRequestSchema } from '@korix/zod-schema';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 });
 ```
 
@@ -180,12 +184,17 @@ app.post('/users', {
   requestSchema: zodRequestSchema({
     body: UserCreateSchema,
   }),
-  onRequestValidationError: (ctx, error) => {
+  onRequestValidationFailure: (ctx, error) => {
     // Access detailed Zod validation errors
-    if (error.body && 'issues' in error.body) {
+    if (
+      error.body &&
+      error.body.stage === 'validation' &&
+      error.body.reason.type === 'Validation'
+    ) {
+      const zodError = error.body.reason;
       return ctx.res.badRequest({
         message: 'Validation failed',
-        details: error.body.issues.map((issue) => ({
+        details: zodError.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
           code: issue.code,
@@ -211,8 +220,8 @@ Set a global error handler for all routes:
 
 ```typescript
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
-  onRequestValidationError: (ctx, error) => {
+  ...enableZodRequestValidation(),
+  onRequestValidationFailure: (ctx, error) => {
     // Global validation error handling
     ctx.log().warn('Validation failed', { error });
 

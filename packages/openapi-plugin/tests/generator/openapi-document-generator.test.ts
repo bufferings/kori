@@ -640,7 +640,7 @@ describe('createOpenApiDocumentGenerator', () => {
             koriKind: 'kori-response-schema',
             provider: 'test',
             responses: {
-              200: createTestSchema(),
+              '200': createTestSchema(),
             },
           },
         },

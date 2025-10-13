@@ -117,7 +117,7 @@ describe('openApiPlugin integration', () => {
             koriKind: 'kori-response-schema',
             provider: 'test',
             responses: {
-              200: {
+              '200': {
                 koriKind: 'kori-schema',
                 provider: 'counting',
                 definition: {},
@@ -382,7 +382,7 @@ describe('openApiPlugin integration', () => {
             koriKind: 'kori-response-schema',
             provider: 'test',
             responses: {
-              200: {
+              '200': {
                 koriKind: 'kori-schema',
                 provider: 'response',
                 definition: {},

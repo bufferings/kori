@@ -177,7 +177,7 @@ const UserResponseSchema = z.object({
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: UserCreateSchema }),
   responseSchema: zodResponseSchema({
-    201: UserResponseSchema,
+    '201': UserResponseSchema,
   }),
   handler: (ctx) => {
     const userData = ctx.req.validatedBody();

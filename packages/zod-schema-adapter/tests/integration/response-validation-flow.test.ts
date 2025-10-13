@@ -13,7 +13,7 @@ describe('Response validation integration', () => {
       ...enableZodResponseValidation({ onResponseValidationFailure }),
     }).get('/users/:id', {
       responseSchema: zodResponseSchema({
-        200: z.object({
+        '200': z.object({
           id: z.string(),
           name: z.string(),
           email: z.email(),
@@ -45,7 +45,7 @@ describe('Response validation integration', () => {
       ...enableZodResponseValidation(),
     }).get('/health', {
       responseSchema: zodResponseSchema({
-        200: z.object({ status: z.string() }),
+        '200': z.object({ status: z.string() }),
       }),
       handler: (ctx) => {
         return ctx.res.json({ status: 'ok' });

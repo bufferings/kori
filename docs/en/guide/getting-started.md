@@ -76,7 +76,7 @@ app.get('/hello', (ctx) => {
 });
 
 // Application-level logging (outside of Kori context)
-app.log().info('Application ready');
+app.log().info('Application will start');
 
 export { app };
 ```
@@ -86,14 +86,14 @@ export { app };
 
 Sample log output:
 
-```json
-{"time":1754198335875,"level":"info","channel":"app","name":"instance","message":"Application ready","meta":{}}
-{"time":1754198335875,"level":"info","channel":"app","name":"instance","message":"Application initializing","meta":{}}
-{"time":1754198335879,"level":"info","channel":"sys","name":"instance","message":"Kori server started at http://127.0.0.1:3000","meta":{}}
-{"time":1754198349150,"level":"info","channel":"app","name":"request","message":"Processing hello request","meta":{}}
+```log
+2025-10-13T17:52:18.186Z INFO  [app:instance] Application will start
+2025-10-13T17:52:18.187Z INFO  [app:instance] Application initializing
+2025-10-13T17:52:18.193Z INFO  [sys:instance] Kori server started at http://localhost:3000
+2025-10-13T17:52:26.795Z INFO  [app:request] Processing hello request
 ```
 
-Kori provides a simple console logger by default for quick development. For real applications, use high-performance loggers like Pino or LogTape. We provide the adapters for easy integration.
+Kori provides a simple console logger by default for quick development. For production applications, we recommend using high-performance loggers like Pino (official adapter coming soon).
 
 ## Hooks
 
@@ -131,15 +131,29 @@ export { app };
 Extend functionality with reusable plugins:
 
 ```typescript
-import { createKori } from '@korix/kori';
-import { securityHeadersPlugin } from '@korix/security-headers-plugin';
+import { createKori, defineKoriPlugin } from '@korix/kori';
 
-const app = createKori()
-  // Add security headers to all responses
-  .applyPlugin(securityHeadersPlugin());
+// Create a simple request logging plugin
+const requestLoggerPlugin = () =>
+  defineKoriPlugin({
+    name: 'requestLogger',
+    apply: (k) =>
+      k.onRequest((ctx) => {
+        const startTime = Date.now();
+
+        ctx.log().info(`→ ${ctx.req.method()} ${ctx.req.url().pathname}`);
+
+        ctx.defer(() => {
+          const duration = Date.now() - startTime;
+          ctx.log().info(`← ${ctx.res.getStatus()} (${duration}ms)`);
+        });
+      }),
+  });
+
+const app = createKori().applyPlugin(requestLoggerPlugin());
 
 app.get('/api/data', (ctx) => {
-  return ctx.res.json({ message: 'Secure API!' });
+  return ctx.res.json({ message: 'Hello!' });
 });
 
 export { app };
@@ -151,8 +165,10 @@ Type-safe validation with first-class Zod support:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodRequestSchema } from '@korix/zod-schema';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const CreateUserSchema = z.object({
@@ -161,7 +177,7 @@ const CreateUserSchema = z.object({
 });
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 });
 
 app.post('/users', {
@@ -173,7 +189,7 @@ app.post('/users', {
     // Your business logic here (save to database, etc.)
 
     return ctx.res.status(201).json({
-      id: Math.random().toString(36),
+      id: '42',
       name,
       age,
       createdAt: new Date().toISOString(),
@@ -190,8 +206,10 @@ Generate interactive API documentation from your validation schemas:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { createKoriZodRequestValidator } from '@korix/zod-validator';
-import { zodRequestSchema } from '@korix/zod-schema';
+import {
+  zodRequestSchema,
+  enableZodRequestValidation,
+} from '@korix/zod-schema-adapter';
 import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { z } from 'zod';
@@ -202,7 +220,7 @@ const CreateUserSchema = z.object({
 });
 
 const app = createKori({
-  requestValidator: createKoriZodRequestValidator(),
+  ...enableZodRequestValidation(),
 })
   // Generate OpenAPI specification from Zod schemas
   .applyPlugin(
@@ -215,6 +233,7 @@ const app = createKori({
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
+  responseSchema: zodResponseSchema({ default: z.any() }),
   handler: (ctx) => {
     // Type-safe validated body access
     const { name, age } = ctx.req.validatedBody();
@@ -222,7 +241,7 @@ app.post('/users', {
     // Your business logic here (save to database, etc.)
 
     return ctx.res.status(201).json({
-      id: Math.random().toString(36),
+      id: '42',
       name,
       age,
       createdAt: new Date().toISOString(),

@@ -57,7 +57,7 @@ app.post('/users', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    201: z.object({
+    '201': z.object({
       id: z.number(),
       name: z.string(),
       age: z.number(),
