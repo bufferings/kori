@@ -35,3 +35,6 @@ tsconfig.tsbuildinfo
 # VitePress
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+# Claude
+.claude/settings.local.json

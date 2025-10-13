@@ -1,5 +1,5 @@
 ---
-'@korix/nodejs-adapter': patch
+'@korix/nodejs-server': patch
 ---
 
 Improve Node.js adapter with better documentation, error handling, and graceful shutdown

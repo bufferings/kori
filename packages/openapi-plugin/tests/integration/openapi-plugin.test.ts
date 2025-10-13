@@ -1,4 +1,4 @@
-import { createKori, type Kori } from '@korix/kori';
+import { createKori } from '@korix/kori';
 import { type OpenAPIObject } from 'openapi3-ts/oas31';
 import { describe, test, expect } from 'vitest';
 
@@ -6,12 +6,6 @@ import { type SchemaConverter } from '../../src/schema-converter/index.js';
 
 import { openApiMeta } from '../../src/plugin/openapi-plugin-meta.js';
 import { openApiPlugin } from '../../src/plugin/openapi-plugin.js';
-
-async function createFetchHandler(app: Kori<any, any, any, any, any>) {
-  const handler = app.generate();
-  const initializedHandler = await handler.onStart();
-  return initializedHandler.fetchHandler;
-}
 
 describe('openApiPlugin integration', () => {
   const mockConverter: SchemaConverter = {
@@ -29,7 +23,7 @@ describe('openApiPlugin integration', () => {
         }),
       );
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
 
@@ -54,7 +48,7 @@ describe('openApiPlugin integration', () => {
         }),
       );
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/api-docs.json');
       const response = await fetchHandler(request);
 
@@ -75,7 +69,7 @@ describe('openApiPlugin integration', () => {
         }),
       );
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
       const doc = (await response.json()) as OpenAPIObject;
@@ -92,7 +86,7 @@ describe('openApiPlugin integration', () => {
         }),
       );
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
       const doc = (await response.json()) as OpenAPIObject;
@@ -133,7 +127,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({ id: '1' }),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       await fetchHandler(new Request('http://localhost/openapi.json'));
       expect(converterCallCount).toBe(1);
 
@@ -155,7 +149,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json([]),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
       const doc = (await response.json()) as OpenAPIObject;
@@ -188,7 +182,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json([]),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
       const doc = (await response.json()) as OpenAPIObject;
@@ -223,7 +217,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({}),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const request = new Request('http://localhost/openapi.json');
       const response = await fetchHandler(request);
       const doc = (await response.json()) as OpenAPIObject;
@@ -275,7 +269,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const response = await fetchHandler(new Request('http://localhost/openapi.json'));
       const doc = (await response.json()) as OpenAPIObject;
 
@@ -333,7 +327,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({ id: '1' }),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const response = await fetchHandler(new Request('http://localhost/openapi.json'));
       const doc = (await response.json()) as OpenAPIObject;
 
@@ -398,7 +392,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id, name: 'John' }),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const response = await fetchHandler(new Request('http://localhost/openapi.json'));
       const doc = (await response.json()) as OpenAPIObject;
 
@@ -453,7 +447,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({}),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const response = await fetchHandler(new Request('http://localhost/openapi.json'));
       const doc = (await response.json()) as OpenAPIObject;
 
@@ -511,7 +505,7 @@ describe('openApiPlugin integration', () => {
           handler: (ctx) => ctx.res.json({}),
         });
 
-      const fetchHandler = await createFetchHandler(kori);
+      const { fetchHandler } = await kori.generate().onStart();
       const response = await fetchHandler(new Request('http://localhost/openapi.json'));
       const doc = (await response.json()) as OpenAPIObject;
 

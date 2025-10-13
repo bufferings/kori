@@ -23,7 +23,7 @@
       "cache": false,
       "persistent": true
     },
-    "@korix/example#dev:usage": {
+    "@korix/example#dev:advanced-usage": {
       "cache": false,
       "persistent": true
     },

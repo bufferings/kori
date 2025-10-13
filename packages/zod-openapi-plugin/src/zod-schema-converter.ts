@@ -22,7 +22,7 @@ export function createZodSchemaConverter(): SchemaConverter {
       }
 
       try {
-        return z.toJSONSchema(schema.definition) as SchemaObject;
+        return z.toJSONSchema(schema.definition, { target: 'draft-2020-12' }) as SchemaObject;
       } catch {
         return;
       }

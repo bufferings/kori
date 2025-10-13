@@ -1,15 +1,9 @@
-import { createKori, type Kori } from '@korix/kori';
+import { createKori } from '@korix/kori';
 import { describe, test, expect, vi } from 'vitest';
 import { z } from 'zod';
 
 import { enableZodResponseValidation } from '../../src/zod-enable-validation/index.js';
 import { zodResponseSchema } from '../../src/zod-response-schema/index.js';
-
-async function createFetchHandler(app: Kori<any, any, any, any, any>) {
-  const handler = app.generate();
-  const initializedHandler = await handler.onStart();
-  return initializedHandler.fetchHandler;
-}
 
 describe('Response validation integration', () => {
   test('validates response data and logs validation failures', async () => {
@@ -34,7 +28,7 @@ describe('Response validation integration', () => {
         } as any);
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(new Request('http://localhost/users/user-123', { method: 'GET' }));
 
@@ -57,7 +51,7 @@ describe('Response validation integration', () => {
         return ctx.res.json({ status: 'ok' });
       },
     });
-    const fetchHandler = await createFetchHandler(app);
+    const { fetchHandler } = await app.generate().onStart();
 
     const response = await fetchHandler(new Request('http://localhost/health', { method: 'GET' }));
 

@@ -23,6 +23,9 @@ npm install @korix/openapi-plugin
 ## Basic Usage
 
 ```typescript
+import { createKori } from '@korix/kori';
+import { openApiPlugin } from '@korix/openapi-plugin';
+
 const app = createKori()
   .applyPlugin(
     openApiPlugin({

@@ -1,2 +1,5 @@
 dist
 **/pnpm-lock.yaml
+
+# Auto-generated assets
+packages/openapi-swagger-ui-plugin/src/assets/

@@ -193,7 +193,7 @@ import { createKori } from '@korix/kori';
 import { createKoriZodRequestValidator } from '@korix/zod-validator';
 import { zodRequestSchema } from '@korix/zod-schema';
 import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { z } from 'zod';
 
 const CreateUserSchema = z.object({
@@ -211,7 +211,7 @@ const app = createKori({
     }),
   )
   // Serve interactive documentation UI
-  .applyPlugin(scalarUiPlugin());
+  .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),

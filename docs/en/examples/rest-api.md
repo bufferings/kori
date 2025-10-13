@@ -11,7 +11,7 @@ import { corsPlugin } from '@korix/cors-plugin';
 import { bodyLimitPlugin } from '@korix/body-limit-plugin';
 import { securityHeadersPlugin } from '@korix/security-headers-plugin';
 import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { scalarUiPlugin } from '@korix/openapi-scalar-ui-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { zodRequestSchema } from '@korix/zod-schema';
 import {
   createKoriZodRequestValidator,
@@ -86,7 +86,7 @@ const app = createKori({
     }),
   )
   .applyPlugin(
-    scalarUiPlugin({
+    swaggerUiPlugin({
       path: '/docs',
       title: 'Users API Documentation',
     }),

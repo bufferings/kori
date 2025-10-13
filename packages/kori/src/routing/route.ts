@@ -32,13 +32,21 @@ export type KoriRouteOptions<
   ReqS extends KoriRequestSchemaBase | undefined,
   ResS extends KoriResponseSchemaBase | undefined,
 > = {
-  method: RouteHttpMethod;
+  /** HTTP method or array of methods for this route */
+  method: RouteHttpMethod | RouteHttpMethod[];
+  /** URL path pattern with parameter placeholders */
   path: Path;
+  /** Optional request schema for validation */
   requestSchema?: ReqS;
+  /** Optional response schema for validation */
   responseSchema?: ResS;
+  /** Handler function to process requests for this route */
   handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  /** Optional metadata added by plugins */
   pluginMeta?: KoriRoutePluginMeta;
+  /** Optional custom handler for request validation failures */
   onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  /** Optional custom handler for response validation failures */
   onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
 };
 
@@ -78,11 +86,17 @@ export type KoriRouteMethodOptions<
   ReqS extends KoriRequestSchemaBase | undefined,
   ResS extends KoriResponseSchemaBase | undefined,
 > = {
+  /** Optional request schema for validation */
   requestSchema?: ReqS;
+  /** Optional response schema for validation */
   responseSchema?: ResS;
+  /** Handler function to process requests for this route */
   handler: KoriHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  /** Optional metadata added by plugins */
   pluginMeta?: KoriRoutePluginMeta;
+  /** Optional custom handler for request validation failures */
   onRequestValidationFailure?: KoriRouteRequestValidationFailureHandler<Env, Req, Res, Path, ReqV, ReqS>;
+  /** Optional custom handler for response validation failures */
   onResponseValidationFailure?: KoriRouteResponseValidationFailureHandler<Env, Req, Res, Path, ResV, ResS>;
 };
 

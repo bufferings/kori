@@ -1,14 +1,9 @@
 ---
-'@korix/body-limit-plugin': minor
-'@korix/cors-plugin': minor
 '@korix/eslint-config': minor
-'@korix/file-plugin-nodejs': minor
 '@korix/kori': minor
-'@korix/nodejs-adapter': minor
+'@korix/nodejs-server': minor
 '@korix/openapi-plugin': minor
-'@korix/openapi-scalar-ui-plugin': minor
 '@korix/script': minor
-'@korix/security-headers-plugin': minor
 '@korix/standard-schema-adapter': minor
 '@korix/zod-openapi-plugin': minor
 '@korix/zod-schema-adapter': minor
