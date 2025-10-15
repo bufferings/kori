@@ -1,6 +1,6 @@
 {
   "name": "@korix/nodejs-server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Node.js server for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
