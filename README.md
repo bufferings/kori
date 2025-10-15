@@ -10,43 +10,125 @@ A modern, type-safe web framework for TypeScript, built on [Hono](https://hono.d
 - Schema validation with Zod and other libraries
 - Extensible plugin architecture
 
-## Installation
+## Hello, Kori!
+
+Here's an example with Node.js:
 
 ```bash
-npm install @korix/kori
+npm install @korix/kori @korix/nodejs-server
 ```
-
-## Quick Example
 
 ```typescript
 import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
 
+const app = createKori().get('/greeting', (ctx) => {
+  return ctx.res.json({ message: 'Hello, Kori!' });
+});
+
+await startNodejsServer(app, { port: 3000 });
+```
+
+These examples use [HTTPie](https://httpie.io/), but feel free to use any other tool you prefer.
+
+```bash
+❯ http -b localhost:3000/greeting
+{
+    "message": "Hello, Kori!"
+}
+```
+
+## With PathParams
+
+You can use path parameters to create dynamic routes:
+
+```typescript
 const app = createKori()
-  .get('/hello/:name', (ctx) => {
+  .get('/greeting', (ctx) => {
+    return ctx.res.json({ message: 'Hello, Kori!' });
+  })
+  .get('/greeting/:name', (ctx) => {
     const { name } = ctx.req.pathParams();
     return ctx.res.json({ message: `Hello, ${name}!` });
-  })
-  .post('/users', async (ctx) => {
-    const body = await ctx.req.bodyJson();
-    return ctx.res.status(201).json({ id: 1, ...body });
   });
-
-// Generate the fetch handler
-const { fetchHandler } = await app.generate().onStart();
-
-// Use with any platform that supports Fetch API
-const response = await fetchHandler(new Request('http://localhost/hello/world'));
 ```
 
-## With Validation
+```bash
+❯ http -b localhost:3000/greeting/world
+{
+    "message": "Hello, world!"
+}
+```
+
+## With Request Validation
+
+Let's add request schema validation:
+
+```bash
+npm install @korix/zod-schema-adapter zod
+```
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodRequestSchema, zodResponseSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { startNodejsServer } from '@korix/nodejs-server';
+import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
   ...enableZodRequestValidation(),
+});
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string(),
+      age: z.number(),
+    }),
+  }),
+  handler: (ctx) => {
+    const { name, age } = ctx.req.validatedBody();
+    return ctx.res.status(201).json({ id: 1, name, age });
+  },
+});
+
+await startNodejsServer(app, { port: 3000 });
+```
+
+Valid request with correct types:
+
+```bash
+❯ http -b POST http://localhost:3000/users name=Mitz age:=45
+{
+    "age": 45,
+    "id": 1,
+    "name": "Mitz"
+}
+```
+
+Invalid request with wrong type:
+
+```bash
+❯ http -b POST http://localhost:3000/users name=Mitz age=SHIIBA
+{
+    "error": {
+        "message": "Request validation failed",
+        "type": "BAD_REQUEST"
+    }
+}
+```
+
+## With Response Validation
+
+You can also add response schema validation to catch unexpected responses. By default, validation failures are only logged and the response is still returned:
+
+```typescript
+import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
+import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { z } from 'zod';
+
+const app = createKori({
+  ...enableZodRequestAndResponseValidation(),
 });
 
 app.post('/users', {
@@ -64,44 +146,116 @@ app.post('/users', {
     }),
   }),
   handler: (ctx) => {
-    // Types are automatically inferred from schemas
     const { name, age } = ctx.req.validatedBody();
+    // Intentionally return invalid response for demonstration
+    if (name === 'invalid') {
+      return ctx.res.status(201).json({ id: 1, name });
+    }
     return ctx.res.status(201).json({ id: 1, name, age });
   },
 });
+
+await startNodejsServer(app, { port: 3000 });
+```
+
+Valid response:
+
+```bash
+❯ http -b POST http://localhost:3000/users name=Mitz age:=45
+{
+    "age": 45,
+    "id": 1,
+    "name": "Mitz"
+}
+```
+
+Invalid response (missing age field) is still returned as-is:
+
+```bash
+❯ http POST http://localhost:3000/users name=invalid age:=45
+HTTP/1.1 201 Created
+... (other headers omitted)
+
+{
+    "id": 1,
+    "name": "invalid"
+}
+```
+
+Server log output:
+
+```
+2025-10-15T02:13:34.470Z INFO  [sys:request] Response validation failed {
+  "type": "response-validation",
+  "err": {
+    "body": {
+      "stage": "validation",
+      "reason": {
+        "provider": "zod",
+        "type": "Validation",
+        "message": "Validation error",
+        "issues": [
+          {
+            "expected": "number",
+            "code": "invalid_type",
+            "path": ["age"],
+            "message": "Invalid input: expected number, received undefined"
+          }
+        ]
+      }
+    }
+  }
+}
 ```
 
 ## And OpenAPI
 
+Add OpenAPI documentation with Swagger UI:
+
+```bash
+npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
+```
+
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { startNodejsServer } from '@korix/nodejs-server';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { z } from 'zod';
 
-const app = createKori()
-  .applyPlugin(
-    zodOpenApiPlugin({
-      info: { title: 'My API', version: '1.0.0' },
+const app = createKori({
+  ...enableZodRequestAndResponseValidation(),
+})
+  .applyPlugin(zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }))
+  .applyPlugin(swaggerUiPlugin());
+
+app.post('/users', {
+  requestSchema: zodRequestSchema({
+    body: z.object({
+      name: z.string(),
+      age: z.number(),
     }),
-  )
-  .applyPlugin(swaggerUiPlugin())
-  .get('/hello/:name', {
-    pluginMeta: openApiMeta({
-      summary: 'Say hello',
-      description: 'Returns a personalized greeting',
-      tags: ['Greetings'],
+  }),
+  responseSchema: zodResponseSchema({
+    '201': z.object({
+      id: z.number(),
+      name: z.string(),
+      age: z.number(),
     }),
-    handler: (ctx) => {
-      const { name } = ctx.req.pathParams();
-      return ctx.res.json({ message: `Hello, ${name}!` });
-    },
-  });
+  }),
+  handler: (ctx) => {
+    const { name, age } = ctx.req.validatedBody();
+    return ctx.res.status(201).json({ id: 1, name, age });
+  },
+});
 
 await startNodejsServer(app, { port: 3000 });
-
-// Visit http://localhost:3000/docs for interactive API documentation
 ```
+
+Now you can visit http://localhost:3000/docs for interactive API documentation.
+
+![Swagger UI](readme-img/swagger-ui.png)
 
 ## Documentation
 

@@ -212,7 +212,8 @@ describe('createPrettyFormatter', () => {
     expect(result).toContain('DEBUG');
     expect(result).toContain('[plugin:cors]');
     expect(result).toContain('CORS check passed');
-    expect(result).toContain('{"origin":"https://example.com","method":"GET"}');
+    expect(result).toContain('"origin": "https://example.com"');
+    expect(result).toContain('"method": "GET"');
   });
 
   test('should handle meta serialization errors gracefully', () => {

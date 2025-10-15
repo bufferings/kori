@@ -70,7 +70,7 @@ export function createPrettyFormatter(
 
     if (entry.meta && Object.keys(entry.meta).length > 0) {
       try {
-        parts.push(JSON.stringify(entry.meta));
+        parts.push(JSON.stringify(entry.meta, null, 2));
       } catch {
         parts.push('[meta serialization error]');
       }
