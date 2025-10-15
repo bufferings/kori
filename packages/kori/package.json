@@ -1,6 +1,6 @@
 {
   "name": "@korix/kori",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "A modern TypeScript web framework",
   "author": "mitz (@bufferings)",

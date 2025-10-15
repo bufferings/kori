@@ -1,6 +1,6 @@
 {
   "name": "@korix/openapi-swagger-ui-plugin",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Swagger UI plugin for OpenAPI documentation in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

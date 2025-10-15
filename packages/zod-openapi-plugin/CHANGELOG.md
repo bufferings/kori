@@ -1,5 +1,13 @@
 # @korix/zod-openapi-plugin
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [68d5511]
+  - @korix/kori@0.3.2
+  - @korix/openapi-plugin@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
