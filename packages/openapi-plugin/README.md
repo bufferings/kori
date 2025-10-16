@@ -133,7 +133,7 @@ Provide a `params` schema to add type information and descriptions (Zod example)
 app.get('/users/:id', {
   requestSchema: zodRequestSchema({
     params: z.object({
-      id: z.string().uuid().describe('User UUID'),
+      id: z.string().uuid().meta({ description: 'User UUID' }),
     }),
   }),
   handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),

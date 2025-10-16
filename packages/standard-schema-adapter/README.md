@@ -2,14 +2,14 @@
 
 Standard Schema adapter for request and response validation in the Kori framework.
 
-This adapter enables validation using any library that conforms to the [@standard-schema/spec](https://github.com/standard-schema/standard-schema), including Zod, Valibot, and ArkType.
+This adapter enables validation using any library that conforms to the [@standard-schema/spec](https://github.com/standard-schema/standard-schema), including Zod, Valibot, ArkType, etc.
 
 ## Features
 
 - Request validation (body, params, query, headers)
 - Response validation by status code
 - Custom error handlers for validation failures
-- Support for all Standard Schema-compliant libraries (Zod, Valibot, ArkType, etc.)
+- Support for all Standard Schema-compliant libraries
 - Type-safe validated data access
 
 ## Installation
@@ -100,11 +100,12 @@ import { z } from 'zod';
 
 const app = createKori({
   ...enableStdRequestAndResponseValidation({
-    onRequestValidationFailure: (ctx) => {
+    onRequestValidationFailure: (ctx, reason) => {
+      ctx.log().warn('Request validation failed', { reason });
       return ctx.res.badRequest({ message: 'Invalid request data' });
     },
-    onResponseValidationFailure: (ctx, failure) => {
-      console.error('Response validation failed:', failure);
+    onResponseValidationFailure: (ctx, reason) => {
+      ctx.log().error('Response validation failed', { reason });
     },
   }),
 }).post('/users', {
@@ -256,10 +257,10 @@ By default, request validation failures return a 400 Bad Request response. You c
 ```typescript
 const app = createKori({
   ...enableStdRequestValidation({
-    onRequestValidationFailure: (ctx) => {
+    onRequestValidationFailure: (ctx, reason) => {
+      ctx.log().warn('Request validation failed', { reason });
       return ctx.res.status(422).json({
-        error: 'Validation failed',
-        details: ctx.req.validationFailure,
+        message: 'Validation failed',
       });
     },
   }),
@@ -273,10 +274,10 @@ Response validation failures are logged but do not affect the response sent to c
 ```typescript
 const app = createKori({
   ...enableStdResponseValidation({
-    onResponseValidationFailure: (ctx, failure) => {
-      console.error('Response validation failed:', {
+    onResponseValidationFailure: (ctx, reason) => {
+      ctx.log().error('Response validation failed', {
         path: ctx.req.path(),
-        failure,
+        reason,
       });
       // Optionally send alerts, metrics, etc.
     },
@@ -301,15 +302,6 @@ Use [@korix/zod-schema-adapter](../zod-schema-adapter) if you're only using Zod 
 - **Full Zod error types** - Access to `z.core.$ZodIssue[]` with all Zod-specific error information
 - Direct Zod integration for optimal type inference
 - Zod-specific error handling in custom validation failure handlers
-
-## Supported Libraries
-
-This adapter works with any library that implements the [@standard-schema/spec](https://github.com/standard-schema/standard-schema):
-
-- [Zod](https://github.com/colinhacks/zod) v4.0+
-- [Valibot](https://github.com/fabian-hiller/valibot) v1.0+
-- [ArkType](https://github.com/arktypeio/arktype) v2.0+
-- Any other Standard Schema-compliant library
 
 ## License
 

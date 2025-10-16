@@ -19,25 +19,25 @@ For details, see [Zod's JSON Schema documentation](https://zod.dev/json-schema?i
 
 ## Installation
 
-You need to install this plugin along with a schema adapter. This plugin only supports Zod schemas - use [@korix/openapi-plugin](../openapi-plugin) directly if you need support for other validation libraries.
+You need to install this plugin along with a schema adapter. This plugin only supports Zod schemas.
 
 Option 1: Using @korix/zod-schema-adapter (recommended)
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/zod-schema-adapter @korix/kori @korix/openapi-plugin zod openapi3-ts
+npm install @korix/kori zod @korix/zod-schema-adapter @korix/zod-openapi-plugin
 ```
 
 Option 2: Using @korix/standard-schema-adapter
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/standard-schema-adapter @korix/kori @korix/openapi-plugin zod openapi3-ts @standard-schema/spec
+npm install @korix/kori @standard-schema/spec zod @korix/standard-schema-adapter @korix/zod-openapi-plugin
 ```
 
-Note: While @korix/standard-schema-adapter supports multiple validation libraries (Zod, Valibot, ArkType), this plugin only generates OpenAPI documentation from Zod schemas.
-
-See [@korix/zod-schema-adapter](../zod-schema-adapter) vs [@korix/standard-schema-adapter](../standard-schema-adapter) for detailed comparison.
+Note: While @korix/standard-schema-adapter supports multiple validation libraries (Zod, Valibot, ArkType, etc.), this plugin only generates OpenAPI documentation from Zod schemas.
 
 ## Quick Start
+
+The following example uses @korix/zod-schema-adapter:
 
 ```typescript
 import { createKori } from '@korix/kori';
@@ -85,8 +85,6 @@ const app = createKori()
 
 // OpenAPI document available at: GET /openapi.json
 ```
-
-Note: This plugin only supports Zod schemas. You can use either `zodRequestSchema`/`zodResponseSchema` from `@korix/zod-schema-adapter` or `stdRequestSchema`/`stdResponseSchema` from `@korix/standard-schema-adapter` to wrap your Zod schemas. The examples in this README use `@korix/zod-schema-adapter`, but both adapters work with this plugin when using Zod.
 
 ## Configuration
 
@@ -161,8 +159,8 @@ import { z } from 'zod';
 app.get('/posts/:postId/comments/:commentId', {
   requestSchema: zodRequestSchema({
     params: z.object({
-      postId: z.string().uuid().describe('Post UUID'),
-      commentId: z.string().uuid().describe('Comment UUID'),
+      postId: z.string().uuid().meta({ description: 'Post UUID' }),
+      commentId: z.string().uuid().meta({ description: 'Comment UUID' }),
     }),
   }),
   handler: (ctx) => {
@@ -175,9 +173,9 @@ app.get('/posts/:postId/comments/:commentId', {
 app.get('/users', {
   requestSchema: zodRequestSchema({
     query: z.object({
-      page: z.coerce.number().min(1).default(1).describe('Page number'),
-      limit: z.coerce.number().min(1).max(100).default(10).describe('Items per page'),
-      search: z.string().optional().describe('Search query'),
+      page: z.coerce.number().min(1).default(1).meta({ description: 'Page number' }),
+      limit: z.coerce.number().min(1).max(100).default(10).meta({ description: 'Items per page' }),
+      search: z.string().optional().meta({ description: 'Search query' }),
     }),
   }),
   handler: (ctx) => {
@@ -232,17 +230,28 @@ app.get('/users/:id', {
 });
 ```
 
-## Zod Schema Descriptions
+## Zod Schema Metadata
 
-Use `.describe()` to add descriptions to OpenAPI documentation:
+Use `.meta()` to add descriptions and examples to OpenAPI documentation:
 
 ```typescript
 const userSchema = z.object({
-  id: z.string().uuid().describe('Unique user identifier'),
-  name: z.string().min(1).describe('User full name'),
-  email: z.string().email().describe('User email address'),
-  age: z.number().int().min(0).max(150).describe('User age in years'),
-  role: z.enum(['admin', 'user', 'guest']).describe('User role'),
+  id: z.string().uuid().meta({ description: 'Unique user identifier' }),
+  name: z.string().min(1).meta({
+    description: 'User full name',
+    example: 'John Doe',
+  }),
+  email: z.string().email().meta({ description: 'User email address' }),
+  age: z
+    .number()
+    .int()
+    .min(0)
+    .max(150)
+    .meta({
+      description: 'User age in years',
+      examples: [25, 30, 45],
+    }),
+  role: z.enum(['admin', 'user', 'guest']).meta({ description: 'User role' }),
 });
 ```
 
@@ -255,13 +264,6 @@ This plugin is a convenience wrapper that:
 - Simplifies the setup for Zod-based projects
 
 If you need to use multiple schema libraries or custom converters, use [@korix/openapi-plugin](../openapi-plugin) directly.
-
-## Related Packages
-
-- [@korix/openapi-plugin](../openapi-plugin): Base OpenAPI plugin with detailed documentation
-- [@korix/zod-schema-adapter](../zod-schema-adapter): Zod schema adapter for request/response validation (recommended for Zod-only projects)
-- [@korix/standard-schema-adapter](../standard-schema-adapter): Multi-library schema adapter (works with Zod, Valibot, ArkType, etc.)
-- [@korix/openapi-swagger-ui-plugin](../openapi-swagger-ui-plugin): Swagger UI for viewing OpenAPI documentation
 
 ## License
 

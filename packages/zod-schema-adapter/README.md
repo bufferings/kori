@@ -83,11 +83,12 @@ import { z } from 'zod';
 
 const app = createKori({
   ...enableZodRequestAndResponseValidation({
-    onRequestValidationFailure: (ctx) => {
+    onRequestValidationFailure: (ctx, reason) => {
+      ctx.log().warn('Request validation failed', { reason });
       return ctx.res.badRequest({ message: 'Invalid request data' });
     },
-    onResponseValidationFailure: (ctx, failure) => {
-      console.error('Response validation failed:', failure);
+    onResponseValidationFailure: (ctx, reason) => {
+      ctx.log().error('Response validation failed', { reason });
     },
   }),
 }).post('/users', {
@@ -239,10 +240,10 @@ By default, request validation failures return a 400 Bad Request response. You c
 ```typescript
 const app = createKori({
   ...enableZodRequestValidation({
-    onRequestValidationFailure: (ctx) => {
+    onRequestValidationFailure: (ctx, reason) => {
+      ctx.log().warn('Request validation failed', { reason });
       return ctx.res.status(422).json({
-        error: 'Validation failed',
-        details: ctx.req.validationFailure,
+        message: 'Validation failed',
       });
     },
   }),
@@ -256,10 +257,10 @@ Response validation failures are logged but do not affect the response sent to c
 ```typescript
 const app = createKori({
   ...enableZodResponseValidation({
-    onResponseValidationFailure: (ctx, failure) => {
-      console.error('Response validation failed:', {
+    onResponseValidationFailure: (ctx, reason) => {
+      ctx.log().error('Response validation failed', {
         path: ctx.req.path(),
-        failure,
+        reason,
       });
       // Optionally send alerts, metrics, etc.
     },
@@ -284,11 +285,6 @@ Use [@korix/standard-schema-adapter](../standard-schema-adapter) if you need:
 - Support for multiple validation libraries (Zod, Valibot, ArkType, etc.)
 - Library-agnostic validation setup
 - Standard Schema-compliant error types (`StandardSchemaV1.Issue[]`)
-
-## Related Packages
-
-- [@korix/standard-schema-adapter](../standard-schema-adapter): Multi-library schema adapter using Standard Schema
-- [@korix/zod-openapi-plugin](../zod-openapi-plugin): OpenAPI documentation generation with Zod schemas
 
 ## License
 
