@@ -5,7 +5,9 @@ import { lintStaged, syncVersion } from './command/index.js';
 function printUsage(): void {
   console.log('Usage: ks <command>');
   console.log('Commands:');
-  console.log('  sync-version [file-path]    Sync version to src/version.ts (default) or src/<file-path>');
+  console.log(
+    '  sync-version [file-path]    Sync version to TypeScript file (path relative to src/, default: version.ts)',
+  );
   console.log('  lint-staged');
 }
 

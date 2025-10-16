@@ -5,10 +5,12 @@ A modern, type-safe web framework for TypeScript, built on [Hono](https://hono.d
 ## Features
 
 - Fast and lightweight routing powered by Hono's router
-- Full TypeScript type inference throughout your application
-- Automatic OpenAPI specification generation
-- Schema validation with Zod and other libraries
+- TypeScript type inference throughout your application
+- Request and response validation with Zod schemas
+- OpenAPI specification generation from Zod schemas
 - Extensible plugin architecture
+
+Kori also supports Standard Schema for validation with other schema libraries.
 
 ## Hello, Kori!
 
@@ -22,7 +24,9 @@ npm install @korix/kori @korix/nodejs-server
 import { createKori } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
 
-const app = createKori().get('/greeting', (ctx) => {
+const app = createKori();
+
+app.get('/greeting', (ctx) => {
   return ctx.res.json({ message: 'Hello, Kori!' });
 });
 
@@ -43,14 +47,17 @@ These examples use [HTTPie](https://httpie.io/), but feel free to use any other 
 You can use path parameters to create dynamic routes:
 
 ```typescript
-const app = createKori()
-  .get('/greeting', (ctx) => {
-    return ctx.res.json({ message: 'Hello, Kori!' });
-  })
-  .get('/greeting/:name', (ctx) => {
-    const { name } = ctx.req.pathParams();
-    return ctx.res.json({ message: `Hello, ${name}!` });
-  });
+const app = createKori();
+
+app.get('/greeting', (ctx) => {
+  return ctx.res.json({ message: 'Hello, Kori!' });
+});
+
+// With path parameter
+app.get('/greeting/:name', (ctx) => {
+  const { name } = ctx.req.pathParams();
+  return ctx.res.json({ message: `Hello, ${name}!` });
+});
 ```
 
 ```bash
@@ -60,9 +67,44 @@ const app = createKori()
 }
 ```
 
+## With onRequest Hook
+
+The `onRequest` hook lets you run logic before and after request handling:
+
+```typescript
+const app = createKori().onRequest((ctx) => {
+  // Before handler execution
+  ctx.log().info('Request started');
+  ctx.defer((ctx) => {
+    // After handler execution
+    ctx.log().info('Request finished');
+  });
+});
+
+app.get('/greeting', (ctx) => {
+  ctx.log().info('Processing greeting request');
+  return ctx.res.json({ message: 'Hello, Kori!' });
+});
+```
+
+```bash
+❯ http -b localhost:3000/greeting
+{
+    "message": "Hello, Kori!"
+}
+```
+
+Server log output:
+
+```bash
+2025-10-16T14:33:59.683Z INFO  [app:request] Request started
+2025-10-16T14:33:59.683Z INFO  [app:request] Processing greeting request
+2025-10-16T14:33:59.683Z INFO  [app:request] Request finished
+```
+
 ## With Request Validation
 
-Let's add request schema validation:
+Let's create a user API with request validation:
 
 ```bash
 npm install @korix/zod-schema-adapter zod
@@ -210,7 +252,7 @@ Server log output:
 
 ## And OpenAPI
 
-Add OpenAPI documentation with Swagger UI:
+Generate OpenAPI documentation from your validation schemas:
 
 ```bash
 npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
@@ -264,18 +306,12 @@ Now you can visit http://localhost:3000/docs for interactive API documentation.
 ## Packages
 
 - [`@korix/kori`](./packages/kori) - Core framework
-- [`@korix/zod-openapi-plugin`](./packages/zod-openapi-plugin) - Zod schema validation with OpenAPI generation
-- [`@korix/openapi-swagger-ui-plugin`](./packages/openapi-swagger-ui-plugin) - Interactive API documentation with Swagger UI
 - [`@korix/nodejs-server`](./packages/nodejs-server) - Node.js HTTP server adapter
+- [`@korix/zod-schema-adapter`](./packages/zod-schema-adapter) - Zod schema adapter for request and response validation
+- [`@korix/zod-openapi-plugin`](./packages/zod-openapi-plugin) - OpenAPI document generation from Zod schemas
+- [`@korix/openapi-swagger-ui-plugin`](./packages/openapi-swagger-ui-plugin) - Interactive API documentation with Swagger UI
 
 [View all packages →](./packages)
-
-## Built With
-
-Kori is built on top of excellent open source projects:
-
-- [Hono Router](https://hono.dev/) - Fast, lightweight, and battle-tested routing engine
-- [Swagger UI](https://swagger.io/tools/swagger-ui/) - Interactive API documentation
 
 ## License
 

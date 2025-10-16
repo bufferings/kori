@@ -45,7 +45,6 @@ Starts a Node.js HTTP server for a Kori application.
 
 - Graceful shutdown handling (SIGINT/SIGTERM)
 - Automatic logging of server startup and shutdown events
-- Error handling and process exit on fatal errors
 
 ## License
 
