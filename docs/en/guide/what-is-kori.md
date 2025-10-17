@@ -63,38 +63,37 @@ With the OpenAPI plugin, your validation schemas become OpenAPI documentation:
 
 ```typescript
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableZodRequestAndResponseValidation(),
 })
   .applyPlugin(
-    zodOpenApiPlugin({
-      info: { title: 'My API', version: '1.0.0' },
-    }),
+    zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }),
   )
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
   requestSchema: zodRequestSchema({
     body: z.object({
-      name: z.string().min(1),
-      age: z.number().int().min(0),
+      name: z.string(),
+      age: z.number(),
     }),
   }),
   responseSchema: zodResponseSchema({
-    '200': z.object({
-      id: z.string(),
+    '201': z.object({
+      id: z.number(),
       name: z.string(),
-      age: z.number().int().min(0),
+      age: z.number(),
     }),
   }),
   handler: (ctx) => {
-    // Fully typed and validated - no casting needed!
     const { name, age } = ctx.req.validatedBody();
-    return ctx.res.json({ id: '123', name, age });
+    return ctx.res.status(201).json({ id: 1, name, age });
   },
 });
 ```
 
-[Image placeholder: Interactive OpenAPI documentation generated from UserSchema]
+Now you can visit http://localhost:3000/docs for interactive API documentation.
+
+![Swagger UI](/swagger-ui.png)
 
 ## Powered by Hono Router
 

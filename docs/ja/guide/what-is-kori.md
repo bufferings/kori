@@ -63,38 +63,37 @@ OpenAPIプラグインを使用すると、バリデーションスキーマがO
 
 ```typescript
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableZodRequestAndResponseValidation(),
 })
   .applyPlugin(
-    zodOpenApiPlugin({
-      info: { title: 'My API', version: '1.0.0' },
-    }),
+    zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }),
   )
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
   requestSchema: zodRequestSchema({
     body: z.object({
-      name: z.string().min(1),
-      age: z.number().int().min(0),
+      name: z.string(),
+      age: z.number(),
     }),
   }),
   responseSchema: zodResponseSchema({
-    '200': z.object({
-      id: z.string(),
+    '201': z.object({
+      id: z.number(),
       name: z.string(),
-      age: z.number().int().min(0),
+      age: z.number(),
     }),
   }),
   handler: (ctx) => {
-    // 完全に型付けされバリデーション済み - キャストは不要！
     const { name, age } = ctx.req.validatedBody();
-    return ctx.res.json({ id: '123', name, age });
+    return ctx.res.status(201).json({ id: 1, name, age });
   },
 });
 ```
 
-[画像プレースホルダー: UserSchemaから生成されたインタラクティブなOpenAPIドキュメント]
+http://localhost:3000/docs にアクセスすると、インタラクティブなAPIドキュメントが表示されます。
+
+![Swagger UI](/swagger-ui.png)
 
 ## Honoルーターによる実装
 

@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: 'Kori (WIP)',
-  description: 'A TypeScript web framework for type-safety-first development',
+  title: 'Kori',
+  description: 'Type safety in your flow - From schemas to types, validation, and docs',
   base: '/kori/',
 
   // Internationalization configuration
@@ -10,14 +10,14 @@ export default defineConfig({
     en: {
       label: 'English',
       lang: 'en',
-      title: 'Kori (WIP)',
-      description: 'A TypeScript web framework for type-safety-first development',
+      title: 'Kori',
+      description: 'Type safety in your flow - From schemas to types, validation, and docs',
     },
     ja: {
       label: '日本語',
       lang: 'ja',
-      title: 'Kori (WIP)',
-      description: '型安全性ファーストな開発のためのTypeScript Webフレームワーク',
+      title: 'Kori',
+      description: '流れるような型安全性 - スキーマから型、バリデーション、ドキュメントへ',
     },
   },
 
