@@ -19,8 +19,6 @@ export const MediaType = {
   TEXT_XML: 'text/xml',
 } as const;
 
-const CHARSET_UTF8 = 'charset=utf-8';
-
 /**
  * Content-Type constants with UTF-8 charset for response headers.
  *
@@ -29,7 +27,7 @@ const CHARSET_UTF8 = 'charset=utf-8';
  */
 export const ContentType = {
   ...MediaType,
-  APPLICATION_JSON_UTF8: `${MediaType.APPLICATION_JSON}; ${CHARSET_UTF8}`,
-  TEXT_PLAIN_UTF8: `${MediaType.TEXT_PLAIN}; ${CHARSET_UTF8}`,
-  TEXT_HTML_UTF8: `${MediaType.TEXT_HTML}; ${CHARSET_UTF8}`,
+  APPLICATION_JSON_UTF8: 'application/json; charset=utf-8',
+  TEXT_PLAIN_UTF8: 'text/plain; charset=utf-8',
+  TEXT_HTML_UTF8: 'text/html; charset=utf-8',
 } as const;
