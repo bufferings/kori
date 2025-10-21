@@ -1,5 +1,7 @@
 import { parseCookies, MediaType, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
 
+import { parseQueryParam, parseQueryParamArray, parseAllQueryParams } from './request-query.js';
+
 /**
  * Kori request object for accessing HTTP request data in handlers.
  */
@@ -282,7 +284,7 @@ type ReqState = {
   paramsValue: Record<string, string>;
   queriesCache?: Record<string, string | string[]>;
   querySingleValueCache?: Map<string, string | undefined>;
-  queryMultiValueCache?: Map<string, string[] | undefined>;
+  queryArrayValueCache?: Map<string, string[] | undefined>;
   headersCache?: Record<string, string>;
   contentTypeCache?: string | undefined;
   hasContentTypeCache?: boolean;
@@ -316,38 +318,8 @@ function getParamInternal(req: ReqState, name: string): string | undefined {
 }
 
 function getQueriesInternal(req: ReqState): Record<string, string | string[]> {
-  if (req.queriesCache) {
-    return req.queriesCache;
-  }
-
-  const rawParams = new URLSearchParams(getUrlInternal(req).search);
-  const obj: Record<string, string | string[]> = {};
-  for (const key of rawParams.keys()) {
-    const vals = rawParams.getAll(key);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    obj[key] = vals.length === 1 ? vals[0]! : vals;
-  }
-  req.queriesCache = obj;
-  return obj;
-}
-
-function decodeQueryValue(value: string): string {
-  if (!/[%+]/.test(value)) {
-    return value;
-  }
-  // eslint-disable-next-line @typescript-eslint/prefer-includes
-  if (value.indexOf('+') !== -1) {
-    value = value.replace(/\+/g, ' ');
-  }
-  // eslint-disable-next-line @typescript-eslint/prefer-includes
-  if (value.indexOf('%') !== -1) {
-    try {
-      return decodeURIComponent(value);
-    } catch {
-      return value;
-    }
-  }
-  return value;
+  req.queriesCache ??= parseAllQueryParams(req.rawRequest.url);
+  return req.queriesCache;
 }
 
 function getQueryInternal(req: ReqState, name: string): string | undefined {
@@ -355,85 +327,20 @@ function getQueryInternal(req: ReqState, name: string): string | undefined {
     return req.querySingleValueCache.get(name);
   }
 
-  if (req.queriesCache) {
-    const value = req.queriesCache[name];
-    const singleValue = Array.isArray(value) ? value[0] : value;
-    req.querySingleValueCache ??= new Map();
-    req.querySingleValueCache.set(name, singleValue);
-    return singleValue;
-  }
-
-  const url = req.rawRequest.url;
-
-  let keyIndex = url.indexOf(`?${name}`, 8);
-  if (keyIndex === -1) {
-    keyIndex = url.indexOf(`&${name}`, 8);
-  }
-
-  while (keyIndex !== -1) {
-    const trailingKeyCode = url.charCodeAt(keyIndex + name.length + 1);
-    if (trailingKeyCode === 61) {
-      // '='
-      const valueIndex = keyIndex + name.length + 2;
-      const endIndex = url.indexOf('&', valueIndex);
-      const value = url.slice(valueIndex, endIndex === -1 ? undefined : endIndex);
-      const decoded = decodeQueryValue(value);
-      req.querySingleValueCache ??= new Map();
-      req.querySingleValueCache.set(name, decoded);
-      return decoded;
-    } else if (trailingKeyCode === 38 || isNaN(trailingKeyCode)) {
-      // '&' or end of string
-      req.querySingleValueCache ??= new Map();
-      req.querySingleValueCache.set(name, '');
-      return '';
-    }
-    keyIndex = url.indexOf(`&${name}`, keyIndex + 1);
-  }
-
+  const value = parseQueryParam(req.rawRequest.url, name);
   req.querySingleValueCache ??= new Map();
-  req.querySingleValueCache.set(name, undefined);
-  return undefined;
+  req.querySingleValueCache.set(name, value);
+  return value;
 }
 
 function getQueryArrayInternal(req: ReqState, name: string): string[] | undefined {
-  if (req.queryMultiValueCache?.has(name)) {
-    return req.queryMultiValueCache.get(name);
+  if (req.queryArrayValueCache?.has(name)) {
+    return req.queryArrayValueCache.get(name);
   }
 
-  if (req.queriesCache) {
-    const value = req.queriesCache[name];
-    const multiValue = Array.isArray(value) ? value : value !== undefined ? [value] : undefined;
-    req.queryMultiValueCache ??= new Map();
-    req.queryMultiValueCache.set(name, multiValue);
-    return multiValue;
-  }
-
-  const url = req.rawRequest.url;
-  const values: string[] = [];
-
-  let keyIndex = url.indexOf(`?${name}`, 8);
-  if (keyIndex === -1) {
-    keyIndex = url.indexOf(`&${name}`, 8);
-  }
-
-  while (keyIndex !== -1) {
-    const trailingKeyCode = url.charCodeAt(keyIndex + name.length + 1);
-    if (trailingKeyCode === 61) {
-      // '='
-      const valueIndex = keyIndex + name.length + 2;
-      const endIndex = url.indexOf('&', valueIndex);
-      const value = url.slice(valueIndex, endIndex === -1 ? undefined : endIndex);
-      values.push(decodeQueryValue(value));
-    } else if (trailingKeyCode === 38 || isNaN(trailingKeyCode)) {
-      // '&' or end of string
-      values.push('');
-    }
-    keyIndex = url.indexOf(`&${name}`, keyIndex + 1);
-  }
-
-  const result = values.length > 0 ? values : undefined;
-  req.queryMultiValueCache ??= new Map();
-  req.queryMultiValueCache.set(name, result);
+  const result = parseQueryParamArray(req.rawRequest.url, name);
+  req.queryArrayValueCache ??= new Map();
+  req.queryArrayValueCache.set(name, result);
   return result;
 }
 
