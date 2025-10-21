@@ -42,7 +42,7 @@ app.get('/api/users/:id', async (ctx) => {
   // ctx.req - request data and methods
   // ctx.res - response building methods
 
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const user = await ctx.env.db.findUser(id);
 
   return ctx.res.json({ user });
@@ -72,10 +72,12 @@ Access all incoming request data:
 ```typescript
 app.get('/users/:id/posts', async (ctx) => {
   // Path parameters
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
 
-  // Query parameters
-  const { limit, offset } = ctx.req.queryParams();
+  // Query parameters (may be undefined)
+  const queries = ctx.req.queries();
+  const limit = queries.limit ?? '10';
+  const offset = queries.offset ?? '0';
 
   // Headers
   const authorization = ctx.req.header('authorization');
@@ -94,6 +96,36 @@ app.get('/users/:id/posts', async (ctx) => {
     query: { limit, offset },
     hasAuth: !!authorization,
   });
+});
+```
+
+### Path and Query Parameters
+
+Access parameters using convenient methods:
+
+```typescript
+app.get('/users/:id', (ctx) => {
+  // Single path parameter
+  const id = ctx.req.param('id');
+
+  // Or get all path parameters as object
+  const params = ctx.req.params();
+
+  return ctx.res.json({ userId: id });
+});
+
+app.get('/search', (ctx) => {
+  // Single query parameter (may be undefined)
+  const searchTerm = ctx.req.query('q') ?? '';
+
+  // All query parameters
+  const allQueries = ctx.req.queries();
+  // { q: 'hello', page: '1', tags: ['a', 'b'] }
+
+  // Query parameter as array (may be undefined)
+  const tags = ctx.req.queryArray('tags') ?? [];
+
+  return ctx.res.json({ searchTerm, tags });
 });
 ```
 
@@ -136,7 +168,7 @@ app.get('/page', (ctx) => {
 });
 
 app.delete('/users/:id', (ctx) => {
-  await ctx.env.db.deleteUser(ctx.req.pathParams().id);
+  await ctx.env.db.deleteUser(ctx.req.param('id'));
   return ctx.res.status(204).empty();
 });
 ```

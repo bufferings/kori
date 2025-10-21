@@ -39,7 +39,7 @@ const app = createKori();
 
 app.get('/users/:id', (ctx) => {
   // Path parameters
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   return ctx.res.json({
     id,
     name: `User ${id}`,

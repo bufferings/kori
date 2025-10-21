@@ -79,7 +79,7 @@ Kori generates structured log entries with consistent fields and timestamps. The
 app.get('/users/:id', (ctx) => {
   const logger = ctx.log();
 
-  logger.info('Fetching user', { userId: ctx.req.pathParams().id });
+  logger.info('Fetching user', { userId: ctx.req.param('id') });
 
   return ctx.res.json({ user: { id: '123', name: 'John' } });
 });
@@ -174,7 +174,7 @@ app.get('/profile', (ctx) => {
   // Function is only called if info level is enabled
   logger.info('User profile accessed', () => {
     return {
-      userStats: calculateUserStatistics(ctx.req.pathParams().id),
+      userStats: calculateUserStatistics(ctx.req.param('id')),
       memoryUsage: process.memoryUsage(),
       timestamp: Date.now(),
     };

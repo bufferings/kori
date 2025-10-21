@@ -8,7 +8,7 @@ Kori includes ready-to-use error response methods that set the appropriate HTTP 
 
 ```typescript
 app.get('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
 
   const user = await getUser(Number(id));
 
