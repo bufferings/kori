@@ -74,7 +74,7 @@ const app = createKori()
       tags: ['users'],
     }),
     handler: (ctx) => {
-      const { id } = ctx.req.pathParams();
+      const { id } = ctx.req.params();
       return ctx.res.json({
         id,
         name: 'John Doe',
@@ -223,7 +223,7 @@ app.get('/users/:id', {
     }),
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
+    const { id } = ctx.req.params();
     // Handler logic...
     return ctx.res.json({ id, name: 'John', email: 'john@example.com' });
   },

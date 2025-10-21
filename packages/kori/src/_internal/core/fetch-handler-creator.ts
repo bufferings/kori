@@ -1,10 +1,10 @@
 import {
   createKoriEnvironment,
-  createKoriInstanceContext,
-  executeInstanceDeferredCallbacks,
   createKoriHandlerContext,
+  createKoriInstanceContext,
   createKoriRequest,
   createKoriResponse,
+  executeInstanceDeferredCallbacks,
   type KoriResponse,
 } from '../../context/index.js';
 import { type KoriFetchHandler } from '../../fetch-handler/index.js';

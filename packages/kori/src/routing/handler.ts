@@ -32,7 +32,7 @@ import { type ValidatedRequest } from './validated-request.js';
  * ```typescript
  * // Basic handler with path parameters
  * app.get('/users/:id', (ctx) => {
- *   const userId = ctx.req.pathParams().id;
+ *   const userId = ctx.req.param('id');
  *   return ctx.res.json({ userId });
  * });
  * ```

@@ -47,8 +47,8 @@ export function resolveRequestValidator({
     const { body: bodySchema, params: paramsSchema, queries: queriesSchema, headers: headersSchema } = schema;
 
     const [paramsResult, queriesResult, headersResult, bodyResult] = await Promise.all([
-      validateRequestField({ validator, schema: paramsSchema, value: req.pathParams() }),
-      validateRequestField({ validator, schema: queriesSchema, value: req.queryParams() }),
+      validateRequestField({ validator, schema: paramsSchema, value: req.params() }),
+      validateRequestField({ validator, schema: queriesSchema, value: req.queries() }),
       validateRequestField({ validator, schema: headersSchema, value: req.headers() }),
       validateRequestBody({ validator, schema: bodySchema, req }),
     ]);

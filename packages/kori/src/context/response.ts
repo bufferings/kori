@@ -489,7 +489,7 @@ type ResState = {
   koriKind: 'kori-response';
 
   statusCode: HttpStatusCode | null;
-  headers: Headers | undefined;
+  headers: Map<string, string[]>;
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
   built: boolean;
@@ -498,31 +498,32 @@ type ResState = {
 };
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  if (name.toLowerCase() === HttpResponseHeader.SET_COOKIE) {
+  const key = name.toLowerCase();
+  if (key === HttpResponseHeader.SET_COOKIE) {
     throw new KoriSetCookieHeaderError();
   }
-  res.headers ??= new Headers();
-  res.headers.set(name, value);
+  res.headers.set(key, [value]);
 }
 
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
-  if (name.toLowerCase() === HttpResponseHeader.SET_COOKIE) {
+  const key = name.toLowerCase();
+  if (key === HttpResponseHeader.SET_COOKIE) {
     throw new KoriSetCookieHeaderError();
   }
-  res.headers ??= new Headers();
-  res.headers.append(name, value);
+  const existing = res.headers.get(key) ?? [];
+  existing.push(value);
+  res.headers.set(key, existing);
 }
 
 function appendSetCookieHeaderInternal(res: ResState, value: string): void {
-  res.headers ??= new Headers();
-  res.headers.append(HttpResponseHeader.SET_COOKIE, value);
+  const existing = res.headers.get(HttpResponseHeader.SET_COOKIE) ?? [];
+  existing.push(value);
+  res.headers.set(HttpResponseHeader.SET_COOKIE, existing);
 }
 
 function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void {
-  if (!res.headers) {
-    return;
-  }
-  res.headers.delete(name);
+  const key = name.toLowerCase();
+  res.headers.delete(key);
 }
 
 function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
@@ -649,58 +650,57 @@ function getFinalStatusCode(res: ResState): HttpStatusCode {
 }
 
 /**
- * Pre-built Headers objects for each response body type.
+ * Pre-built header records for each response body type.
  *
- * Avoids creating new Headers and setting content-type on every response
- * for better performance. Used when no custom headers are set.
+ * Uses plain objects instead of Headers for better performance with new Response().
+ * Used when no custom headers are set.
  */
 const DefaultHeaders = {
-  json: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON_UTF8,
-  }),
-  text: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN_UTF8,
-  }),
-  html: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_HTML_UTF8,
-  }),
-  stream: new Headers({
-    [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM,
-  }),
-  // No content-type for empty responses
-  empty: new Headers(),
-  // No content-type for uninitialized responses
-  none: new Headers(),
+  json: { [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON_UTF8 },
+  text: { [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN_UTF8 },
+  html: { [HttpResponseHeader.CONTENT_TYPE]: ContentType.TEXT_HTML_UTF8 },
+  stream: { [HttpResponseHeader.CONTENT_TYPE]: ContentType.APPLICATION_OCTET_STREAM },
+  empty: {},
+  none: {},
 } as const;
 
-function getFinalHeaders(res: ResState): Headers {
-  if (!res.headers) {
-    const defaultHeaders = DefaultHeaders[res.bodyKind];
-    return defaultHeaders ?? new Headers();
-  } else if (!res.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
-    const finalHeaders = new Headers(res.headers);
-    const getDefaultContentType = (): string | null => {
-      switch (res.bodyKind) {
-        case 'json':
-          return ContentType.APPLICATION_JSON_UTF8;
-        case 'text':
-          return ContentType.TEXT_PLAIN_UTF8;
-        case 'html':
-          return ContentType.TEXT_HTML_UTF8;
-        case 'stream':
-          return ContentType.APPLICATION_OCTET_STREAM;
-        default:
-          return null;
-      }
-    };
-    const defaultContentType = getDefaultContentType();
-    if (defaultContentType) {
-      finalHeaders.set(HttpResponseHeader.CONTENT_TYPE, defaultContentType);
-    }
-    return finalHeaders;
-  } else {
-    return res.headers;
+function getDefaultContentType(bodyKind: ResState['bodyKind']): string | null {
+  switch (bodyKind) {
+    case 'json':
+      return ContentType.APPLICATION_JSON_UTF8;
+    case 'text':
+      return ContentType.TEXT_PLAIN_UTF8;
+    case 'html':
+      return ContentType.TEXT_HTML_UTF8;
+    case 'stream':
+      return ContentType.APPLICATION_OCTET_STREAM;
+    default:
+      return null;
   }
+}
+
+function getFinalHeaders(res: ResState): HeadersInit {
+  if (res.headers.size === 0) {
+    return DefaultHeaders[res.bodyKind];
+  }
+
+  const hasContentType = res.headers.has(HttpResponseHeader.CONTENT_TYPE);
+
+  const headerArray: [string, string][] = [];
+  for (const [name, values] of res.headers) {
+    for (const value of values) {
+      headerArray.push([name, value]);
+    }
+  }
+
+  if (!hasContentType) {
+    const defaultContentType = getDefaultContentType(res.bodyKind);
+    if (defaultContentType) {
+      headerArray.push([HttpResponseHeader.CONTENT_TYPE, defaultContentType]);
+    }
+  }
+
+  return headerArray;
 }
 
 /**
@@ -879,13 +879,54 @@ const sharedMethods = {
     return new Headers(getFinalHeaders(this));
   },
   getHeader(name: HttpResponseHeaderName): string | undefined {
-    return getFinalHeaders(this).get(name) ?? undefined;
+    const key = name.toLowerCase();
+    const values = this.headers.get(key);
+    if (values && values.length > 0) {
+      return values.join(', ');
+    }
+    if (key === HttpResponseHeader.CONTENT_TYPE && this.headers.size === 0) {
+      const defaults = DefaultHeaders[this.bodyKind];
+      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
+        return defaults[HttpResponseHeader.CONTENT_TYPE];
+      }
+    }
+    if (key === HttpResponseHeader.CONTENT_TYPE && !this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+      return getDefaultContentType(this.bodyKind) ?? undefined;
+    }
+    return undefined;
   },
-  getContentType(): string | undefined {
-    return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE) ?? undefined;
+  getContentType(this: ResState): string | undefined {
+    const key = HttpResponseHeader.CONTENT_TYPE;
+    const values = this.headers.get(key);
+    if (values && values.length > 0) {
+      return values.join(', ');
+    }
+    if (this.headers.size === 0) {
+      const defaults = DefaultHeaders[this.bodyKind];
+      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
+        return defaults[HttpResponseHeader.CONTENT_TYPE];
+      }
+    }
+    if (!this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+      return getDefaultContentType(this.bodyKind) ?? undefined;
+    }
+    return undefined;
   },
-  getMediaType(): string | undefined {
-    return getFinalHeaders(this).get(HttpResponseHeader.CONTENT_TYPE)?.split(';')[0]?.trim();
+  getMediaType(this: ResState): string | undefined {
+    const key = HttpResponseHeader.CONTENT_TYPE;
+    const values = this.headers.get(key);
+    let contentType: string | undefined;
+    if (values && values.length > 0) {
+      contentType = values.join(', ');
+    } else if (this.headers.size === 0) {
+      const defaults = DefaultHeaders[this.bodyKind];
+      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
+        contentType = defaults[HttpResponseHeader.CONTENT_TYPE];
+      }
+    } else if (!this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+      contentType = getDefaultContentType(this.bodyKind) ?? undefined;
+    }
+    return contentType?.split(';')[0]?.trim();
   },
   getBody(): unknown {
     return this.bodyValue;
@@ -911,7 +952,7 @@ export function createKoriResponse(req: KoriRequest): KoriResponse {
 
   obj.koriKind = 'kori-response';
   obj.statusCode = null;
-  obj.headers = undefined;
+  obj.headers = new Map();
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
   obj.built = false;
