@@ -136,7 +136,7 @@ app.get('/page', (ctx) => {
 });
 
 app.delete('/users/:id', async (ctx) => {
-  await ctx.env.db.deleteUser(ctx.req.pathParams().id);
+  await ctx.env.db.deleteUser(ctx.req.param('id'));
   return ctx.res.status(204).empty();
 });
 ```
