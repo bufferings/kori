@@ -649,6 +649,24 @@ function getFinalStatusCode(res: ResState): HttpStatusCode {
   }
 }
 
+function getContentTypeInternal(res: ResState): string | undefined {
+  const key = HttpResponseHeader.CONTENT_TYPE;
+  const values = res.headers.get(key);
+  if (values && values.length > 0) {
+    return values.join(', ');
+  }
+  if (res.headers.size === 0) {
+    const defaults = DefaultHeaders[res.bodyKind];
+    if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
+      return defaults[HttpResponseHeader.CONTENT_TYPE];
+    }
+  }
+  if (!res.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
+    return getDefaultContentType(res.bodyKind) ?? undefined;
+  }
+  return undefined;
+}
+
 /**
  * Pre-built header records for each response body type.
  *
@@ -880,52 +898,20 @@ const sharedMethods = {
   },
   getHeader(name: HttpResponseHeaderName): string | undefined {
     const key = name.toLowerCase();
+    if (key === HttpResponseHeader.CONTENT_TYPE) {
+      return getContentTypeInternal(this);
+    }
     const values = this.headers.get(key);
     if (values && values.length > 0) {
       return values.join(', ');
-    }
-    if (key === HttpResponseHeader.CONTENT_TYPE && this.headers.size === 0) {
-      const defaults = DefaultHeaders[this.bodyKind];
-      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
-        return defaults[HttpResponseHeader.CONTENT_TYPE];
-      }
-    }
-    if (key === HttpResponseHeader.CONTENT_TYPE && !this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
-      return getDefaultContentType(this.bodyKind) ?? undefined;
     }
     return undefined;
   },
   getContentType(this: ResState): string | undefined {
-    const key = HttpResponseHeader.CONTENT_TYPE;
-    const values = this.headers.get(key);
-    if (values && values.length > 0) {
-      return values.join(', ');
-    }
-    if (this.headers.size === 0) {
-      const defaults = DefaultHeaders[this.bodyKind];
-      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
-        return defaults[HttpResponseHeader.CONTENT_TYPE];
-      }
-    }
-    if (!this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
-      return getDefaultContentType(this.bodyKind) ?? undefined;
-    }
-    return undefined;
+    return getContentTypeInternal(this);
   },
   getMediaType(this: ResState): string | undefined {
-    const key = HttpResponseHeader.CONTENT_TYPE;
-    const values = this.headers.get(key);
-    let contentType: string | undefined;
-    if (values && values.length > 0) {
-      contentType = values.join(', ');
-    } else if (this.headers.size === 0) {
-      const defaults = DefaultHeaders[this.bodyKind];
-      if (defaults && HttpResponseHeader.CONTENT_TYPE in defaults) {
-        contentType = defaults[HttpResponseHeader.CONTENT_TYPE];
-      }
-    } else if (!this.headers.has(HttpResponseHeader.CONTENT_TYPE)) {
-      contentType = getDefaultContentType(this.bodyKind) ?? undefined;
-    }
+    const contentType = getContentTypeInternal(this);
     return contentType?.split(';')[0]?.trim();
   },
   getBody(): unknown {
