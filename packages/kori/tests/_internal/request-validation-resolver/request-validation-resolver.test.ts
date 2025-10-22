@@ -56,8 +56,8 @@ const testRequestSchema = createKoriRequestSchema({
 });
 
 const mockRequest = {
-  pathParams: () => ({ id: '123' }),
-  queryParams: () => ({ page: '1' }),
+  params: () => ({ id: '123' }),
+  queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
   parseBody: () => Promise.resolve({ name: 'test' }),
   mediaType: () => 'application/json',

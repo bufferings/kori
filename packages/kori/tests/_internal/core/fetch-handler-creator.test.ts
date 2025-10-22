@@ -11,7 +11,7 @@ describe('createFetchHandler', () => {
     const routeId = registry.register({
       method: 'GET',
       path: '/users/:id',
-      handler: (ctx: any) => ctx.res.json({ ok: true, id: ctx.req.pathParams().id, env: ctx.env?.flag }),
+      handler: (ctx: any) => ctx.res.json({ ok: true, id: ctx.req.param('id'), env: ctx.env?.flag }),
     });
 
     const compiledRouteMatcher = (_req: Request) => ({ routeId, pathParams: { id: '123' } });

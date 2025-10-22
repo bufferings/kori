@@ -384,7 +384,7 @@ app.post('/users', {
 In this mode:
 
 - `ctx.req.validatedBody()` is not available
-- Use `ctx.req.bodyJson()`, `ctx.req.pathParams()`, etc. for raw data
+- Use `ctx.req.bodyJson()`, `ctx.req.params()`, etc. for raw data
 - Implement your own validation logic if needed
 - OpenAPI documentation is still generated from schemas
 - Interactive documentation is available at `/docs`

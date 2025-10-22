@@ -266,7 +266,7 @@ describe('openApiPlugin integration', () => {
               definition: {},
             },
           },
-          handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),
+          handler: (ctx) => ctx.res.json({ id: ctx.req.param('id') }),
         });
 
       const { fetchHandler } = await kori.generate().onStart();
@@ -389,7 +389,7 @@ describe('openApiPlugin integration', () => {
               },
             },
           },
-          handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id, name: 'John' }),
+          handler: (ctx) => ctx.res.json({ id: ctx.req.param('id'), name: 'John' }),
         });
 
       const { fetchHandler } = await kori.generate().onStart();
@@ -494,7 +494,7 @@ describe('openApiPlugin integration', () => {
           }),
         )
         .get('/users/:id', {
-          handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),
+          handler: (ctx) => ctx.res.json({ id: ctx.req.param('id') }),
         })
         .get('/files/*', {
           handler: (ctx) => ctx.res.text('file content'),

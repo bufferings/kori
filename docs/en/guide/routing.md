@@ -27,7 +27,7 @@ app.post('/users', async (ctx) => {
 
 // PUT route
 app.put('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const body = await ctx.req.bodyJson();
   const user = await updateUser(id, body);
   return ctx.res.json({ user });
@@ -35,14 +35,14 @@ app.put('/users/:id', async (ctx) => {
 
 // DELETE route
 app.delete('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   await deleteUser(id);
   return ctx.res.empty();
 });
 
 // PATCH route
 app.patch('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const body = await ctx.req.bodyJson();
   const user = await partialUpdateUser(id, body);
   return ctx.res.json({ user });
@@ -58,15 +58,15 @@ Kori automatically infers path parameter names at compile time for better IDE su
 ```typescript
 // Single parameter - TypeScript infers { id: string }
 app.get('/users/:id', (ctx) => {
-  // ctx.req.pathParams() is typed as { id: string }
-  const { id } = ctx.req.pathParams(); // id is string
+  // ctx.req.param('id') is typed as string
+  const id = ctx.req.param('id');
   return ctx.res.json({ userId: id });
 });
 
 // Multiple parameters - automatically inferred
 app.get('/users/:userId/posts/:postId', (ctx) => {
-  // ctx.req.pathParams() is typed as { userId: string, postId: string }
-  const { userId, postId } = ctx.req.pathParams();
+  // ctx.req.params() is typed as { userId: string, postId: string }
+  const { userId, postId } = ctx.req.params();
   return ctx.res.json({
     userId, // string
     postId, // string
@@ -76,16 +76,16 @@ app.get('/users/:userId/posts/:postId', (ctx) => {
 
 // Optional parameters (with ?)
 app.get('/search/:query/:page?', (ctx) => {
-  // ctx.req.pathParams() is typed as { query: string, page?: string }
-  const { query, page } = ctx.req.pathParams();
+  // ctx.req.params() is typed as { query: string, page?: string }
+  const { query, page } = ctx.req.params();
   const pageNumber = page ? parseInt(page) : 1;
   return ctx.res.json({ query, page: pageNumber });
 });
 
 // Custom regex patterns
 app.get('/files/:id{[0-9]+}', (ctx) => {
-  // ctx.req.pathParams() is typed as { id: string }
-  const { id } = ctx.req.pathParams(); // id will match only digits
+  // ctx.req.param('id') is typed as string
+  const id = ctx.req.param('id'); // id will match only digits
   return ctx.res.json({ fileId: id });
 });
 ```
@@ -98,6 +98,27 @@ The type inference works by parsing the route string at compile time and extract
 - Path parameters from parent routes (defined in `createChild` prefix) - these are not included in the inferred type
 
 Only parameters defined directly in the string literal of the route method itself will be type-safe.
+
+### Accessing Individual Parameters
+
+When you only need one parameter, use `param(name)` for cleaner code:
+
+```typescript
+app.get('/users/:id', (ctx) => {
+  // Simple and direct
+  const id = ctx.req.param('id');
+  return ctx.res.json({ userId: id });
+});
+```
+
+For multiple parameters, use `params()` with destructuring:
+
+```typescript
+app.get('/users/:userId/posts/:postId', (ctx) => {
+  const { userId, postId } = ctx.req.params();
+  return ctx.res.json({ userId, postId });
+});
+```
 
 ## Route Groups and Children
 
@@ -167,7 +188,7 @@ app.get('/users/me', (ctx) => {
 });
 
 app.get('/users/:id', (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   return ctx.res.json({ user: getUserById(id) });
 });
 

@@ -1,5 +1,7 @@
 import { parseCookies, MediaType, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
 
+import { parseQueryParam, parseQueryParamArray, parseAllQueryParams } from './request-query.js';
+
 /**
  * Kori request object for accessing HTTP request data in handlers.
  */
@@ -31,19 +33,6 @@ export type KoriRequest = {
   method(): string;
 
   /**
-   * Gets the path parameters extracted from the route pattern.
-   *
-   * @returns Object containing path parameter key-value pairs
-   *
-   * @example
-   * ```typescript
-   * // For route '/users/:id' and request '/users/123'
-   * ctx.req.pathParams() // { id: '123' }
-   * ```
-   */
-  pathParams(): Record<string, string>;
-
-  /**
    * Gets the path template pattern used for routing.
    *
    * @returns Path template string with parameter placeholders
@@ -57,7 +46,34 @@ export type KoriRequest = {
   pathTemplate(): string;
 
   /**
-   * Gets the parsed query parameters from the URL.
+   * Gets all path parameters extracted from the route pattern.
+   *
+   * @returns Object containing path parameter key-value pairs
+   *
+   * @example
+   * ```typescript
+   * // For route '/users/:id' and request '/users/123'
+   * ctx.req.params() // { id: '123' }
+   * ```
+   */
+  params(): Record<string, string>;
+
+  /**
+   * Gets a specific path parameter value by name.
+   *
+   * @param name - Path parameter name
+   * @returns Path parameter value or undefined if not present
+   *
+   * @example
+   * ```typescript
+   * // For route '/users/:id' and request '/users/123'
+   * ctx.req.param('id') // '123'
+   * ```
+   */
+  param(name: string): string | undefined;
+
+  /**
+   * Gets all query parameters from the URL.
    *
    * Single values are returned as strings, multiple values as string arrays.
    *
@@ -66,10 +82,38 @@ export type KoriRequest = {
    * @example
    * ```typescript
    * // For URL '/search?q=hello&tags=a&tags=b'
-   * ctx.req.queryParams() // { q: 'hello', tags: ['a', 'b'] }
+   * ctx.req.queries() // { q: 'hello', tags: ['a', 'b'] }
    * ```
    */
-  queryParams(): Record<string, string | string[]>;
+  queries(): Record<string, string | string[]>;
+
+  /**
+   * Gets a specific query parameter value by name.
+   *
+   * @param name - Query parameter name
+   * @returns First value for the parameter or undefined if not present
+   *
+   * @example
+   * ```typescript
+   * // For URL '/search?q=hello'
+   * ctx.req.query('q') // 'hello'
+   * ```
+   */
+  query(name: string): string | undefined;
+
+  /**
+   * Gets all values for a specific query parameter as an array.
+   *
+   * @param name - Query parameter name
+   * @returns Array of all values for the parameter or undefined if not present
+   *
+   * @example
+   * ```typescript
+   * // For URL '/search?tags=a&tags=b'
+   * ctx.req.queryArray('tags') // ['a', 'b']
+   * ```
+   */
+  queryArray(name: string): string[] | undefined;
 
   /**
    * Gets all request headers as a lowercase-keyed object.
@@ -151,7 +195,8 @@ export type KoriRequest = {
   /**
    * Parses the request body as JSON.
    *
-   * The result is cached to avoid multiple parsing of the same body.
+   * The result is cached. If the body was already read in another format
+   * (e.g., text), it will be converted from the cached value.
    *
    * @returns Promise resolving to parsed JSON data
    */
@@ -160,7 +205,8 @@ export type KoriRequest = {
   /**
    * Reads the request body as text.
    *
-   * The result is cached to avoid multiple reads of the same body.
+   * The result is cached. If the body was already read in another format,
+   * it will be converted from the cached value.
    *
    * @returns Promise resolving to body text
    */
@@ -169,7 +215,8 @@ export type KoriRequest = {
   /**
    * Parses the request body as FormData.
    *
-   * The result is cached to avoid multiple parsing of the same body.
+   * The result is cached. If the body was already read in another format,
+   * it will be converted from the cached value.
    *
    * @returns Promise resolving to FormData object
    */
@@ -178,7 +225,8 @@ export type KoriRequest = {
   /**
    * Reads the request body as ArrayBuffer.
    *
-   * The result is cached to avoid multiple reads of the same body.
+   * The result is cached. If the body was already read in another format,
+   * it will be converted from the cached value.
    *
    * @returns Promise resolving to ArrayBuffer
    */
@@ -187,7 +235,12 @@ export type KoriRequest = {
   /**
    * Gets a readable stream of the request body.
    *
-   * **Note**: Returns a new stream each time as ReadableStreams can only be consumed once.
+   * Returns the raw body stream, which can only be consumed once per Web standards.
+   * Once consumed, the stream cannot be read again.
+   *
+   * Note: After calling this method, other body methods (bodyJson, bodyText, etc.)
+   * may not work if the stream is consumed. Use body methods before accessing the stream,
+   * or use body methods exclusively without accessing the stream.
    *
    * @returns ReadableStream for the body or null if no body
    */
@@ -203,7 +256,8 @@ export type KoriRequest = {
    * - `application/octet-stream` -> ArrayBuffer
    * - Other types -> Text
    *
-   * The result is cached to avoid multiple parsing of the same body.
+   * The result is cached. If the body was already read in another format,
+   * it will be converted from the cached value.
    *
    * @returns Promise resolving to parsed body data
    */
@@ -213,28 +267,32 @@ export type KoriRequest = {
 /** Cache for parsed body data to avoid re-parsing */
 type BodyCache = {
   json?: Promise<unknown>;
-  text?: Promise<string>;
-  formData?: Promise<FormData>;
-  arrayBuffer?: Promise<ArrayBuffer>;
+  text?: Promise<unknown>;
+  formData?: Promise<unknown>;
+  arrayBuffer?: Promise<unknown>;
 };
 
 /** Internal state structure for request object */
 type ReqState = {
   koriKind: 'kori-request';
   rawRequest: Request;
-  pathParamsValue: Record<string, string>;
-  pathTemplateValue: string;
-  bodyCache: BodyCache;
-  clonedRawRequest?: Request;
+
   urlCache?: URL;
   methodCache?: string;
+  pathTemplateValue: string;
+
+  paramsValue: Record<string, string>;
   queriesCache?: Record<string, string | string[]>;
+  querySingleValueCache?: Map<string, string | undefined>;
+  queryArrayValueCache?: Map<string, string[] | undefined>;
   headersCache?: Record<string, string>;
-  cookiesCache?: Record<string, string>;
   contentTypeCache?: string | undefined;
-  mediaTypeCache?: string | undefined;
   hasContentTypeCache?: boolean;
+  mediaTypeCache?: string | undefined;
   hasMediaTypeCache?: boolean;
+  cookiesCache?: Record<string, string>;
+
+  bodyCache: BodyCache;
 };
 
 function getUrlInternal(req: ReqState): URL {
@@ -247,28 +305,43 @@ function getMethodInternal(req: ReqState): string {
   return req.methodCache;
 }
 
-function getPathParamsInternal(req: ReqState): Record<string, string> {
-  return req.pathParamsValue;
-}
-
 function getPathTemplateInternal(req: ReqState): string {
   return req.pathTemplateValue;
 }
 
-function getQueryParamsInternal(req: ReqState): Record<string, string | string[]> {
-  if (req.queriesCache) {
-    return req.queriesCache;
+function getParamsInternal(req: ReqState): Record<string, string> {
+  return req.paramsValue;
+}
+
+function getParamInternal(req: ReqState, name: string): string | undefined {
+  return req.paramsValue[name];
+}
+
+function getQueriesInternal(req: ReqState): Record<string, string | string[]> {
+  req.queriesCache ??= parseAllQueryParams(req.rawRequest.url);
+  return req.queriesCache;
+}
+
+function getQueryInternal(req: ReqState, name: string): string | undefined {
+  if (req.querySingleValueCache?.has(name)) {
+    return req.querySingleValueCache.get(name);
   }
 
-  const rawParams = new URLSearchParams(getUrlInternal(req).search);
-  const obj: Record<string, string | string[]> = {};
-  for (const key of rawParams.keys()) {
-    const vals = rawParams.getAll(key);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    obj[key] = vals.length === 1 ? vals[0]! : vals;
+  const value = parseQueryParam(req.rawRequest.url, name);
+  req.querySingleValueCache ??= new Map();
+  req.querySingleValueCache.set(name, value);
+  return value;
+}
+
+function getQueryArrayInternal(req: ReqState, name: string): string[] | undefined {
+  if (req.queryArrayValueCache?.has(name)) {
+    return req.queryArrayValueCache.get(name);
   }
-  req.queriesCache = obj;
-  return obj;
+
+  const result = parseQueryParamArray(req.rawRequest.url, name);
+  req.queryArrayValueCache ??= new Map();
+  req.queryArrayValueCache.set(name, result);
+  return result;
 }
 
 /** Caches headers as lowercase-keyed object for performance */
@@ -335,29 +408,48 @@ function getCookieInternal(req: ReqState, name: string): string | undefined {
   return allCookies[name];
 }
 
+function cachedBody(req: ReqState, key: keyof BodyCache): Promise<unknown> {
+  const cachedValue = req.bodyCache[key];
+  if (cachedValue) {
+    return cachedValue;
+  }
+
+  const anyCachedKey = Object.keys(req.bodyCache)[0] as keyof BodyCache | undefined;
+  if (anyCachedKey) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const bodyPromise = req.bodyCache[anyCachedKey]!.then<unknown>((body) => {
+      return new Response(body as BodyInit)[key]();
+    });
+    return (req.bodyCache[key] = bodyPromise);
+  }
+
+  if (key === 'json') {
+    req.bodyCache.text = req.rawRequest.text();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return (req.bodyCache.json = req.bodyCache.text.then((text) => JSON.parse(text as string)));
+  }
+
+  return (req.bodyCache[key] = req.rawRequest[key]());
+}
+
 function getBodyJsonInternal(req: ReqState): Promise<unknown> {
-  req.bodyCache.json ??= req.rawRequest.clone().json();
-  return req.bodyCache.json;
+  return cachedBody(req, 'json');
 }
 
 function getBodyTextInternal(req: ReqState): Promise<string> {
-  req.bodyCache.text ??= req.rawRequest.clone().text();
-  return req.bodyCache.text;
+  return cachedBody(req, 'text') as Promise<string>;
 }
 
 function getBodyFormDataInternal(req: ReqState): Promise<FormData> {
-  req.bodyCache.formData ??= req.rawRequest.clone().formData();
-  return req.bodyCache.formData;
+  return cachedBody(req, 'formData') as Promise<FormData>;
 }
 
 function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
-  req.bodyCache.arrayBuffer ??= req.rawRequest.clone().arrayBuffer();
-  return req.bodyCache.arrayBuffer;
+  return cachedBody(req, 'arrayBuffer') as Promise<ArrayBuffer>;
 }
 
 function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null {
-  // Don't cache stream - ReadableStreams are single-use and can't be reused after consumption
-  return req.rawRequest.clone().body;
+  return req.rawRequest.body;
 }
 
 function parseBodyInternal(req: ReqState): Promise<unknown> {
@@ -387,14 +479,25 @@ const sharedMethods = {
   method(): string {
     return getMethodInternal(this);
   },
-  pathParams(): Record<string, string> {
-    return getPathParamsInternal(this);
-  },
   pathTemplate(): string {
     return getPathTemplateInternal(this);
   },
-  queryParams(): Record<string, string | string[]> {
-    return getQueryParamsInternal(this);
+
+  params(): Record<string, string> {
+    return getParamsInternal(this);
+  },
+  param(name: string): string | undefined {
+    return getParamInternal(this, name);
+  },
+
+  queries(): Record<string, string | string[]> {
+    return getQueriesInternal(this);
+  },
+  query(name: string): string | undefined {
+    return getQueryInternal(this, name);
+  },
+  queryArray(name: string): string[] | undefined {
+    return getQueryArrayInternal(this, name);
   },
 
   headers(): Record<string, string> {
@@ -461,8 +564,8 @@ export function createKoriRequest({
 
   obj.koriKind = 'kori-request';
   obj.rawRequest = rawRequest;
-  obj.pathParamsValue = pathParams;
   obj.pathTemplateValue = pathTemplate;
+  obj.paramsValue = pathParams;
   obj.bodyCache = {};
   obj.hasContentTypeCache = false;
   obj.hasMediaTypeCache = false;

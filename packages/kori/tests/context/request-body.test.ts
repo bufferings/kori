@@ -4,7 +4,7 @@ import { createKoriRequest } from '../../src/context/request.js';
 
 describe('KoriRequest body contract', () => {
   describe('parseBody()', () => {
-    test('default parseBody is JSON when content-type is missing', async () => {
+    test('defaults to JSON when content-type is missing', async () => {
       // Create request without automatic content-type assignment
       const rawRequest = new Request('http://x', {
         method: 'POST',
@@ -24,7 +24,7 @@ describe('KoriRequest body contract', () => {
       expect(body).toEqual({ ok: true });
     });
 
-    test('text/plain -> parseBody returns string', async () => {
+    test('text/plain returns string', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -39,7 +39,7 @@ describe('KoriRequest body contract', () => {
       expect(body).toBe('hello');
     });
 
-    test('application/json -> parseBody returns parsed JSON', async () => {
+    test('application/json returns parsed JSON', async () => {
       const data = { name: 'test', count: 42 };
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -55,7 +55,7 @@ describe('KoriRequest body contract', () => {
       expect(body).toEqual(data);
     });
 
-    test('application/json with parameters (case-insensitive) -> parseBody returns parsed JSON', async () => {
+    test('application/json with parameters (case-insensitive) returns parsed JSON', async () => {
       const data = { ok: true };
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -71,7 +71,7 @@ describe('KoriRequest body contract', () => {
       expect(body).toEqual(data);
     });
 
-    test('application/x-www-form-urlencoded -> parseBody returns FormData', async () => {
+    test('application/x-www-form-urlencoded returns FormData', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -88,7 +88,7 @@ describe('KoriRequest body contract', () => {
       expect((body as FormData).get('email')).toBe('test@example.com');
     });
 
-    test('multipart/form-data -> parseBody returns FormData', async () => {
+    test('multipart/form-data returns FormData', async () => {
       const formData = new FormData();
       formData.append('file', new Blob(['hello world'], { type: 'text/plain' }), 'test.txt');
       formData.append('description', 'A test file');
@@ -108,7 +108,7 @@ describe('KoriRequest body contract', () => {
       expect((body as FormData).get('file')).toBeInstanceOf(File);
     });
 
-    test('application/octet-stream -> parseBody returns ArrayBuffer', async () => {
+    test('application/octet-stream returns ArrayBuffer', async () => {
       const buf = new Uint8Array([1, 2, 3]).buffer;
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -124,7 +124,7 @@ describe('KoriRequest body contract', () => {
       expect(body instanceof ArrayBuffer).toBe(true);
     });
 
-    test('parseBody returns stable content across multiple calls (json)', async () => {
+    test('returns stable content across multiple calls (json)', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -140,7 +140,7 @@ describe('KoriRequest body contract', () => {
       expect(b).toEqual({ a: 1 });
     });
 
-    test('parseBody returns stable content across multiple calls (urlencoded)', async () => {
+    test('returns stable content across multiple calls (urlencoded)', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -158,7 +158,7 @@ describe('KoriRequest body contract', () => {
       expect(f2.get('b')).toBe('hello');
     });
 
-    test('parseBody returns stable content across multiple calls (octet-stream)', async () => {
+    test('returns stable content across multiple calls (octet-stream)', async () => {
       const data = new Uint8Array([9, 8, 7]).buffer;
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -174,7 +174,7 @@ describe('KoriRequest body contract', () => {
       expect(new Uint8Array(a)).toEqual(new Uint8Array(b));
     });
 
-    test('other content types -> parseBody returns text', async () => {
+    test('other content types return text', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -189,7 +189,7 @@ describe('KoriRequest body contract', () => {
       expect(body).toBe('<h1>Hello World</h1>');
     });
 
-    test('default parseBody throws when invalid JSON and no content-type', async () => {
+    test('throws when invalid JSON and no content-type', async () => {
       const raw = new Request('http://x', { method: 'POST', body: '{bad' });
       raw.headers.delete('content-type');
       const req = createKoriRequest({ rawRequest: raw, pathParams: {}, pathTemplate: '/' });
@@ -198,16 +198,15 @@ describe('KoriRequest body contract', () => {
   });
 
   describe('bodyStream()', () => {
-    test('returns a new ReadableStream each call', () => {
+    test('returns the raw request body stream', () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', { method: 'POST', body: 'x' }),
         pathParams: {},
         pathTemplate: '/',
       });
 
-      const s1 = req.bodyStream();
-      const s2 = req.bodyStream();
-      expect(s1).not.toBe(s2);
+      const stream = req.bodyStream();
+      expect(stream).toBeInstanceOf(ReadableStream);
     });
 
     test('returns null when no body', () => {
@@ -217,6 +216,71 @@ describe('KoriRequest body contract', () => {
         pathTemplate: '/',
       });
       expect(req.bodyStream()).toBeNull();
+    });
+
+    test('stream can only be consumed once', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { method: 'POST', body: 'hello' }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      const stream = req.bodyStream();
+      if (!stream) {
+        expect.unreachable('stream should not be null');
+      }
+
+      const text1 = await new Response(stream).text();
+      expect(text1).toBe('hello');
+
+      const stream2 = req.bodyStream();
+      expect(stream2).toBe(stream);
+      if (!stream2) {
+        expect.unreachable('stream should not be null');
+      }
+
+      expect(stream2.locked).toBe(true);
+    });
+
+    test('consuming bodyStream() prevents other body methods from working', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          body: JSON.stringify({ a: 1 }),
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      const stream = req.bodyStream();
+      if (!stream) {
+        expect.unreachable('stream should not be null');
+      }
+
+      await new Response(stream).text();
+
+      await expect(req.bodyJson()).rejects.toThrow();
+      await expect(req.bodyText()).rejects.toThrow();
+    });
+
+    test('calling bodyJson() first makes bodyStream() locked', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          body: JSON.stringify({ a: 1 }),
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      await req.bodyJson();
+
+      const stream = req.bodyStream();
+      if (!stream) {
+        expect.unreachable('stream should not be null');
+      }
+
+      expect(stream.locked).toBe(true);
     });
   });
 
@@ -358,7 +422,7 @@ describe('KoriRequest body contract', () => {
       expect(buf.byteLength).toBe(3);
     });
 
-    test('caches across calls (content-equal)', async () => {
+    test('is stable across multiple calls', async () => {
       const data = new Uint8Array([10, 20, 30]).buffer;
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -375,52 +439,8 @@ describe('KoriRequest body contract', () => {
     });
   });
 
-  describe('method independence', () => {
-    test('consuming bodyStream first does not prevent bodyJson', async () => {
-      const payload = { x: 1 };
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      const stream = req.bodyStream();
-
-      expect(stream).toBeTruthy();
-      if (stream) {
-        // consume the stream fully
-        await new Response(stream).text();
-      }
-      await expect(req.bodyJson()).resolves.toEqual(payload);
-    });
-
-    test('calling bodyJson first still allows reading bodyStream', async () => {
-      const payload = { x: 2 };
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      await req.bodyJson();
-      const stream = req.bodyStream();
-
-      expect(stream).toBeTruthy();
-      if (stream) {
-        const text = await new Response(stream).text();
-        expect(text).toBe(JSON.stringify(payload));
-      }
-    });
-
-    test('after parseBody(json), bodyJson returns the same content', async () => {
+  describe('body method interoperability', () => {
+    test('parseBody then bodyJson', async () => {
       const payload = { y: 3 };
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -433,11 +453,10 @@ describe('KoriRequest body contract', () => {
       });
 
       await req.parseBody();
-
       await expect(req.bodyJson()).resolves.toEqual(payload);
     });
 
-    test('after parseBody(octet), bodyArrayBuffer returns the same content', async () => {
+    test('parseBody then bodyArrayBuffer', async () => {
       const data = new Uint8Array([1, 2, 3]).buffer;
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
@@ -450,9 +469,88 @@ describe('KoriRequest body contract', () => {
       });
 
       await req.parseBody();
-
       const buf = await req.bodyArrayBuffer();
       expect(new Uint8Array(buf)).toEqual(new Uint8Array(data));
+    });
+
+    test('bodyText then bodyJson and bodyArrayBuffer', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ a: 1 }),
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      await expect(req.bodyText()).resolves.toBe('{"a":1}');
+      await expect(req.bodyJson()).resolves.toEqual({ a: 1 });
+      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
+    });
+
+    test('bodyJson then bodyText and bodyArrayBuffer', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ x: 'hello' }),
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      await expect(req.bodyJson()).resolves.toEqual({ x: 'hello' });
+      await expect(req.bodyText()).resolves.toBe('{"x":"hello"}');
+      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
+    });
+
+    test('bodyFormData then bodyText and bodyArrayBuffer', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: 'name=test&value=123',
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      const formData = await req.bodyFormData();
+      expect(formData.get('name')).toBe('test');
+
+      await expect(req.bodyText()).resolves.toBeDefined();
+      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
+    });
+
+    test('bodyArrayBuffer then bodyText', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          headers: { 'content-type': 'application/octet-stream' },
+          body: 'binary data',
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
+      await expect(req.bodyText()).resolves.toBe('binary data');
+    });
+
+    test('bodyJson parse error then bodyText still works', async () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: '{invalid json}',
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+
+      await expect(req.bodyJson()).rejects.toBeInstanceOf(SyntaxError);
+      await expect(req.bodyText()).resolves.toBe('{invalid json}');
     });
   });
 });

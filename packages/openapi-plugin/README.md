@@ -40,7 +40,7 @@ const app = createKori()
   .get('/users/:id', {
     requestSchema: myRequestSchema,
     handler: (ctx) => {
-      const { id } = ctx.req.pathParams();
+      const { id } = ctx.req.params();
       return ctx.res.json({ id, name: 'John' });
     },
   });
@@ -100,7 +100,7 @@ Path parameters are automatically extracted from route patterns:
 
 ```typescript
 app.get('/users/:id', {
-  handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),
+  handler: (ctx) => ctx.res.json({ id: ctx.req.param('id') }),
 });
 ```
 
@@ -136,7 +136,7 @@ app.get('/users/:id', {
       id: z.string().uuid().meta({ description: 'User UUID' }),
     }),
   }),
-  handler: (ctx) => ctx.res.json({ id: ctx.req.pathParams().id }),
+  handler: (ctx) => ctx.res.json({ id: ctx.req.param('id') }),
 });
 ```
 

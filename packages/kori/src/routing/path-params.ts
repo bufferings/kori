@@ -54,7 +54,7 @@ export type PathParams<Path extends string> = string extends Path
 /**
  * Extends a request type with path parameter access method.
  *
- * Replaces the generic `pathParams()` method with a type-safe version
+ * Replaces the generic `params()` method with a type-safe version
  * that returns parameters extracted from the specific path pattern.
  * Also allows access to parent path parameters through index signature.
  *
@@ -65,19 +65,21 @@ export type PathParams<Path extends string> = string extends Path
  * ```typescript
  * // For route '/users/:id/posts/:postId'
  * type ExtendedReq = WithPathParams<KoriRequest, '/users/:id/posts/:postId'>;
- * // req.pathParams() returns { id: string; postId: string }
+ * // req.params() returns { id: string; postId: string }
  *
  * // When used in nested routes, parent parameters are also accessible:
  * app.createChild({
  *   prefix: '/users/:userId',
  *   configure: (child) => child.get('/posts/:postId', (ctx) => {
- *     const params = ctx.req.pathParams();
+ *     const params = ctx.req.params();
  *     params.postId;  // string (type-safe, from own path)
  *     params.userId;  // string | undefined (accessible, from parent path)
  *   })
  * })
  * ```
  */
-export type WithPathParams<Req extends KoriRequest, Path extends string> = Omit<Req, 'pathParams'> & {
-  pathParams: () => PathParams<Path> & Record<string, string | undefined>;
+export type WithPathParams<Req extends KoriRequest, Path extends string> = Omit<Req, 'param' | 'params'> & {
+  param<K extends keyof PathParams<Path>>(name: K): string;
+  param(name: string): string | undefined;
+  params: () => PathParams<Path> & Record<string, string | undefined>;
 };

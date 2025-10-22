@@ -401,7 +401,7 @@ app.get('/error/:type', {
     '500': z.any(),
   }),
   handler: (ctx) => {
-    const { type } = ctx.req.pathParams();
+    const { type } = ctx.req.params();
 
     switch (type) {
       case 'validation':
@@ -556,7 +556,7 @@ app.get('/users/:id/detailed', {
     },
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
+    const { id } = ctx.req.params();
     return ctx.res.json({ id, name: 'Alice', age: 20 });
   },
 });

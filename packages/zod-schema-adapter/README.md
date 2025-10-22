@@ -68,7 +68,7 @@ const app = createKori({
     }),
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
+    const { id } = ctx.req.params();
     return ctx.res.json({ id, name: 'John', email: 'john@example.com' });
   },
 });
