@@ -167,7 +167,7 @@ app.get('/page', (ctx) => {
   return ctx.res.html('<h1>Welcome</h1>');
 });
 
-app.delete('/users/:id', (ctx) => {
+app.delete('/users/:id', async (ctx) => {
   await ctx.env.db.deleteUser(ctx.req.param('id'));
   return ctx.res.status(204).empty();
 });

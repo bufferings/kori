@@ -66,7 +66,7 @@ app.get('/hello/:name', {
     }),
   }),
   handler: (ctx) => {
-    const { name } = ctx.req.params();
+    const { name } = ctx.req.validatedParams();
 
     return ctx.res.json({
       message: `Hello, ${name}!`,
