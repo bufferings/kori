@@ -359,7 +359,10 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
 }
 
 function getHeaderInternal(req: ReqState, name: HttpRequestHeaderName): string | undefined {
-  return getHeadersInternal(req)[name.toLowerCase()];
+  if (req.headersCache) {
+    return req.headersCache[name.toLowerCase()];
+  }
+  return req.rawRequest.headers.get(name.toLowerCase()) ?? undefined;
 }
 
 function getContentTypeInternal(req: ReqState): string | undefined {
@@ -370,13 +373,15 @@ function getContentTypeInternal(req: ReqState): string | undefined {
   if (!value) {
     req.hasContentTypeCache = true;
     req.contentTypeCache = undefined;
+    req.hasMediaTypeCache = true;
+    req.mediaTypeCache = undefined;
     return undefined;
   }
-  const normalized = value
-    .toLowerCase()
-    .split(';')
-    .map((part) => part.trim().replace(/\s*=\s*/g, '='))
-    .join('; ');
+  const parts = value.toLowerCase().split(';');
+  const mediaType = parts[0]?.trim();
+  req.hasMediaTypeCache = true;
+  req.mediaTypeCache = mediaType;
+  const normalized = parts.map((part) => part.trim().replace(/\s*=\s*/g, '=')).join('; ');
   req.hasContentTypeCache = true;
   req.contentTypeCache = normalized;
   return normalized;
@@ -386,11 +391,8 @@ function getMediaTypeInternal(req: ReqState): string | undefined {
   if (req.hasMediaTypeCache) {
     return req.mediaTypeCache;
   }
-  const contentType = getContentTypeInternal(req);
-  const media = contentType?.split(';')[0]?.trim();
-  req.hasMediaTypeCache = true;
-  req.mediaTypeCache = media;
-  return media;
+  getContentTypeInternal(req);
+  return req.mediaTypeCache;
 }
 
 function getCookiesInternal(req: ReqState): Record<string, string> {
