@@ -7,7 +7,7 @@ catalog:
   rimraf: 6.1.2
   tsdown: 0.16.6
   typescript: 5.9.3
-  vitest: 3.2.4
+  vitest: 4.0.13
 
 patchedDependencies:
   '@changesets/assemble-release-plan@6.0.9': patches/@changesets__assemble-release-plan@6.0.9.patch

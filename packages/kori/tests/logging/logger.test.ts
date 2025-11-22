@@ -2,14 +2,15 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 
 import { serializeError } from '../../src/logging/error-serializer.js';
 import { type KoriLogEntry, type KoriLogLevel } from '../../src/logging/log-entry.js';
+import { type KoriLogWriter } from '../../src/logging/log-sink.js';
 import { createKoriLogger, type KoriLogger } from '../../src/logging/logger.js';
 
 describe('KoriLogger', () => {
-  let mockWriteFn: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn<KoriLogWriter>>;
   let logger: KoriLogger;
 
   beforeEach(() => {
-    mockWriteFn = vi.fn();
+    mockWriteFn = vi.fn<KoriLogWriter>();
     const mockReporter = {
       sinks: [
         {
@@ -41,7 +42,7 @@ describe('KoriLogger', () => {
         logger.info('Test message');
 
         expect(mockWriteFn).toHaveBeenCalledTimes(1);
-        const logEntry: KoriLogEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
+        const logEntry = mockWriteFn.mock.calls[0]?.[1]; // Second argument is the entry
 
         expect(logEntry).toEqual({
           time: fixedTime,
@@ -184,7 +185,7 @@ describe('KoriLogger', () => {
 
   describe('reporter error handling', () => {
     test('should handle reporter errors gracefully', () => {
-      const failingWriteFn = vi.fn(() => {
+      const failingWriteFn = vi.fn<KoriLogWriter>(() => {
         throw new Error('Reporter error');
       });
       const failingReporter = {
