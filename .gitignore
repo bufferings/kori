@@ -38,3 +38,6 @@ docs/.vitepress/cache
 
 # Claude
 .claude/settings.local.json
+
+# tgz files
+*.tgz
