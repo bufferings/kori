@@ -11,7 +11,7 @@ export type KoriRequest = {
   /**
    * Gets the raw Web API Request object for direct access to native features.
    *
-   * **Warning**: Reading the body will prevent other Kori methods from working.
+   * Warning: Reading the body will prevent other Kori methods from working.
    * Use this when you need to access Web API features not exposed by Kori's request methods.
    *
    * @returns The underlying Request object
@@ -426,10 +426,12 @@ function cachedBody(req: ReqState, key: keyof BodyCache): Promise<unknown> {
     return cachedValue;
   }
 
-  const anyCachedKey = Object.keys(req.bodyCache)[0] as keyof BodyCache | undefined;
-  if (anyCachedKey) {
+  const keys = Object.keys(req.bodyCache) as (keyof BodyCache)[];
+  const sourceKey = keys.find((k) => k !== 'json');
+
+  if (sourceKey) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const bodyPromise = req.bodyCache[anyCachedKey]!.then<unknown>((body) => {
+    const bodyPromise = req.bodyCache[sourceKey]!.then<unknown>((body) => {
       return new Response(body as BodyInit)[key]();
     });
     return (req.bodyCache[key] = bodyPromise);

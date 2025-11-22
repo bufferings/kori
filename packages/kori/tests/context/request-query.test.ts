@@ -34,6 +34,11 @@ describe('decodeQueryValue()', () => {
     expect(decodeQueryValue('hello%ZZworld')).toBe('hello%ZZworld');
   });
 
+  test('handles incomplete percent encoding (URIError case)', () => {
+    expect(decodeQueryValue('%')).toBe('%');
+    expect(decodeQueryValue('value%')).toBe('value%');
+  });
+
   test('decodes complex URL-encoded values', () => {
     expect(decodeQueryValue('https%3A%2F%2Fexample.com')).toBe('https://example.com');
     expect(decodeQueryValue('%7B%22key%22%3A%22value%22%7D')).toBe('{"key":"value"}');
