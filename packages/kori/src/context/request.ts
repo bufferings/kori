@@ -1,4 +1,4 @@
-import { parseCookies, MediaType, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
+import { parseCookies, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
 
 import { parseQueryParam, parseQueryParamArray, parseAllQueryParams } from './request-query.js';
 
@@ -142,20 +142,20 @@ export type KoriRequest = {
    * Gets the content-type header value including parameters.
    *
    * Returns a normalized value:
-   * - Lowercases the media type and parameter names/values
+   * - Lowercases the media type and parameter names
    * - Normalizes separators to a single "; " (semicolon + single space)
-   * - Removes spaces around "=" in parameters (e.g., "charset = UTF-8" -> "charset=utf-8")
-   * - Preserves parameter order and values
+   * - Removes spaces around "=" in parameters (e.g., "charset = UTF-8" -> "charset=UTF-8")
+   * - Preserves parameter order and values (case-sensitive)
    *
    * Examples:
-   * - "Application/JSON; Charset=UTF-8" -> "application/json; charset=utf-8"
-   * - "  Text/HTML ; Charset = UTF-8  " -> "text/html; charset=utf-8"
+   * - "Application/JSON; Charset=UTF-8" -> "application/json; charset=UTF-8"
+   * - "  Text/HTML ; Charset = UTF-8  " -> "text/html; charset=UTF-8"
    *
    * @returns Content-type header value (normalized) or undefined if not present
    *
    * @example
    * ```typescript
-   * ctx.req.contentType() // 'application/json; charset=utf-8'
+   * ctx.req.contentType() // 'application/json; charset=UTF-8'
    * ```
    */
   contentType(): string | undefined;
@@ -245,23 +245,6 @@ export type KoriRequest = {
    * @returns ReadableStream for the body or null if no body
    */
   bodyStream(): ReadableStream<Uint8Array> | null;
-
-  /**
-   * Parses the request body based on content-type header.
-   *
-   * Automatically chooses the appropriate parsing method:
-   * - `application/json` -> JSON parsing
-   * - `application/x-www-form-urlencoded` -> FormData
-   * - `multipart/form-data` -> FormData
-   * - `application/octet-stream` -> ArrayBuffer
-   * - Other types -> Text
-   *
-   * The result is cached. If the body was already read in another format,
-   * it will be converted from the cached value.
-   *
-   * @returns Promise resolving to parsed body data
-   */
-  parseBody(): Promise<unknown>;
 };
 
 /** Cache for parsed body data to avoid re-parsing */
@@ -370,18 +353,45 @@ function getContentTypeInternal(req: ReqState): string | undefined {
     return req.contentTypeCache;
   }
   const value = getHeaderInternal(req, HttpRequestHeader.CONTENT_TYPE);
-  if (!value) {
+  if (!value?.trim()) {
     req.hasContentTypeCache = true;
     req.contentTypeCache = undefined;
     req.hasMediaTypeCache = true;
     req.mediaTypeCache = undefined;
     return undefined;
   }
-  const parts = value.toLowerCase().split(';');
-  const mediaType = parts[0]?.trim();
+
+  const parts = value.split(';');
+
+  const mediaTypePart = parts[0]?.trim();
+  if (!mediaTypePart) {
+    req.hasContentTypeCache = true;
+    req.contentTypeCache = undefined;
+    req.hasMediaTypeCache = true;
+    req.mediaTypeCache = undefined;
+    return undefined;
+  }
+
+  const lowerMediaType = mediaTypePart.toLowerCase();
   req.hasMediaTypeCache = true;
-  req.mediaTypeCache = mediaType;
-  const normalized = parts.map((part) => part.trim().replace(/\s*=\s*/g, '=')).join('; ');
+  req.mediaTypeCache = lowerMediaType;
+
+  const normalized = parts
+    .map((part, index) => {
+      if (index === 0) {
+        return lowerMediaType;
+      }
+
+      const trimmed = part.trim();
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex === -1) {
+        return trimmed.toLowerCase();
+      }
+      const name = trimmed.slice(0, eqIndex).trim().toLowerCase();
+      const val = trimmed.slice(eqIndex + 1).trim();
+      return `${name}=${val}`;
+    })
+    .join('; ');
   req.hasContentTypeCache = true;
   req.contentTypeCache = normalized;
   return normalized;
@@ -454,21 +464,6 @@ function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null
   return req.rawRequest.body;
 }
 
-function parseBodyInternal(req: ReqState): Promise<unknown> {
-  const ct = getMediaTypeInternal(req) ?? MediaType.APPLICATION_JSON;
-  switch (ct) {
-    case MediaType.APPLICATION_JSON:
-      return getBodyJsonInternal(req);
-    case MediaType.APPLICATION_FORM_URLENCODED:
-    case MediaType.MULTIPART_FORM_DATA:
-      return getBodyFormDataInternal(req);
-    case MediaType.APPLICATION_OCTET_STREAM:
-      return getBodyArrayBufferInternal(req);
-    default:
-      return getBodyTextInternal(req);
-  }
-}
-
 /** Shared methods prototype for memory efficiency */
 const sharedMethods = {
   raw(): Request {
@@ -536,10 +531,6 @@ const sharedMethods = {
   },
   bodyStream(): ReadableStream<Uint8Array> | null {
     return getBodyStreamInternal(this);
-  },
-
-  parseBody() {
-    return parseBodyInternal(this);
   },
 } satisfies Omit<KoriRequest, 'koriKind'> & ThisType<ReqState>;
 

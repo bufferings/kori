@@ -53,10 +53,46 @@ describe('KoriRequest headers contract', () => {
       const req = createKoriRequest({ rawRequest: new Request('http://x'), pathParams: {}, pathTemplate: '/' });
       expect(req.mediaType()).toBeUndefined();
     });
+
+    test('is undefined when header is empty string', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.mediaType()).toBeUndefined();
+    });
+
+    test('is undefined when header is whitespace only', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '   ' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.mediaType()).toBeUndefined();
+    });
+
+    test('is undefined when media type is missing (starts with delimiter)', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '; charset=utf-8' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.mediaType()).toBeUndefined();
+    });
+
+    test('is undefined when media type is whitespace (delimiter with spaces)', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '  ; charset=utf-8' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.mediaType()).toBeUndefined();
+    });
   });
 
   describe('contentType()', () => {
-    test('lowercases and trims with parameters', () => {
+    test('lowercases media type and parameter names but preserves parameter values', () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           headers: { 'Content-Type': '  Text/HTML ; Charset=UTF-8  ' },
@@ -64,7 +100,18 @@ describe('KoriRequest headers contract', () => {
         pathParams: {},
         pathTemplate: '/',
       });
-      expect(req.contentType()).toBe('text/html; charset=utf-8');
+      expect(req.contentType()).toBe('text/html; charset=UTF-8');
+    });
+
+    test('preserves case for multipart boundary', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', {
+          headers: { 'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' },
+        }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.contentType()).toBe('multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
     });
 
     test('normalizes spaces around = in parameters', () => {
@@ -75,11 +122,47 @@ describe('KoriRequest headers contract', () => {
         pathParams: {},
         pathTemplate: '/',
       });
-      expect(req.contentType()).toBe('text/html; charset=utf-8');
+      expect(req.contentType()).toBe('text/html; charset=UTF-8');
     });
 
     test('is undefined when header is missing', () => {
       const req = createKoriRequest({ rawRequest: new Request('http://x'), pathParams: {}, pathTemplate: '/' });
+      expect(req.contentType()).toBeUndefined();
+    });
+
+    test('is undefined when header is empty string', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.contentType()).toBeUndefined();
+    });
+
+    test('is undefined when header is whitespace only', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '   ' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.contentType()).toBeUndefined();
+    });
+
+    test('is undefined when media type is missing (starts with delimiter)', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '; charset=utf-8' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      expect(req.contentType()).toBeUndefined();
+    });
+
+    test('is undefined when media type is whitespace (delimiter with spaces)', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x', { headers: { 'Content-Type': '  ; charset=utf-8' } }),
+        pathParams: {},
+        pathTemplate: '/',
+      });
       expect(req.contentType()).toBeUndefined();
     });
   });

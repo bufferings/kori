@@ -26,7 +26,7 @@ const testRequestValidator = createKoriValidator({
       case 'body-json':
         return succeed({ ...(value as any), __test_processed: 'by-json-validator' });
       case 'body-text':
-        return succeed({ ...(value as any), __test_processed: 'by-text-validator' });
+        return succeed({ raw: value, __test_processed: 'by-text-validator' });
       default:
         return succeed({ ...(value as any), __test_processed: 'by-unknown-validator' });
     }
@@ -37,7 +37,8 @@ const mockRequest = {
   params: () => ({ id: '123' }),
   queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
-  parseBody: () => Promise.resolve({ name: 'test' }),
+  bodyJson: () => Promise.resolve({ name: 'test' }),
+  bodyText: () => Promise.resolve('test-text-content'),
   mediaType: () => 'application/json',
 } as unknown as KoriRequest;
 
@@ -105,7 +106,7 @@ describe('resolveRequestValidator - Content body validation', () => {
 
     expect(result.value.body).toEqual({
       mediaType: 'text/plain',
-      value: { name: 'test', __test_processed: 'by-text-validator' },
+      value: { raw: 'test-text-content', __test_processed: 'by-text-validator' },
     });
   });
 

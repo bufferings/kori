@@ -95,17 +95,59 @@ function resolveRequestBodySchema({
   }
 }
 
+type BodyParseType = 'json' | 'form' | 'text' | 'binary';
+
+function getBodyParseType(mediaType: string): BodyParseType {
+  if (mediaType === MediaType.APPLICATION_JSON || mediaType.endsWith('+json')) {
+    return 'json';
+  }
+  if (mediaType === MediaType.APPLICATION_FORM_URLENCODED || mediaType === MediaType.MULTIPART_FORM_DATA) {
+    return 'form';
+  }
+  if (mediaType.startsWith('text/') || mediaType === MediaType.APPLICATION_XML || mediaType.endsWith('+xml')) {
+    return 'text';
+  }
+  return 'binary';
+}
+
 /**
  * Parses the raw request body based on its Content-Type.
  * Gracefully handles parsing errors.
  *
- * @param req - The Kori request object.
+ * @param options.req - The Kori request object.
+ * @param options.parseType - The type of parsing to perform.
  * @returns A result containing the parsed body, or a failure if parsing fails.
  */
-async function parseRequestBody(req: KoriRequest): Promise<KoriResult<unknown, RequestBodyValidationFailureBase>> {
+async function parseRequestBody({
+  req,
+  parseType,
+}: {
+  req: KoriRequest;
+  parseType: BodyParseType;
+}): Promise<KoriResult<unknown, RequestBodyValidationFailureBase>> {
   try {
-    const body = await req.parseBody();
-    return succeed(body);
+    switch (parseType) {
+      case 'json': {
+        const jsonBody = await req.bodyJson();
+        return succeed(jsonBody);
+      }
+      case 'form': {
+        const formBody = await req.bodyFormData();
+        return succeed(formBody);
+      }
+      case 'text': {
+        const textBody = await req.bodyText();
+        return succeed(textBody);
+      }
+      case 'binary': {
+        const binaryBody = await req.bodyArrayBuffer();
+        return succeed(binaryBody);
+      }
+      default: {
+        const _exhaustiveCheck: never = parseType;
+        return _exhaustiveCheck;
+      }
+    }
   } catch (error) {
     return fail({
       stage: 'pre-validation' as const,
@@ -183,7 +225,8 @@ export async function validateRequestBody<V extends KoriValidatorBase>({
 
   const { schema: resolvedSchema, mediaType: resolvedMediaType } = resolveResult.value;
 
-  const parseResult = await parseRequestBody(req);
+  const parseType = getBodyParseType(requestMediaType);
+  const parseResult = await parseRequestBody({ req, parseType });
   if (!parseResult.success) {
     return parseResult;
   }

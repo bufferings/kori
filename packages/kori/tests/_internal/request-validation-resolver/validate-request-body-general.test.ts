@@ -29,7 +29,7 @@ const mockRequest = {
   params: () => ({ id: '123' }),
   queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
-  parseBody: () => Promise.resolve({ name: 'test' }),
+  bodyJson: () => Promise.resolve({ name: 'test' }),
   mediaType: () => 'application/json',
 } as unknown as KoriRequest;
 
@@ -87,7 +87,7 @@ describe('resolveRequestValidator - General body validation', () => {
 
       const mockReq = {
         ...mockRequest,
-        parseBody: () => Promise.reject(new Error('Invalid JSON')),
+        bodyJson: () => Promise.reject(new Error('Invalid JSON')),
       };
 
       const result = await v(mockReq);
