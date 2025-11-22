@@ -209,8 +209,8 @@ importers:
   packages/nodejs-server:
     dependencies:
       '@hono/node-server':
-        specifier: 1.15.0
-        version: 1.15.0(hono@4.9.8)
+        specifier: 1.19.6
+        version: 1.19.6(hono@4.9.8)
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -1132,8 +1132,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@hono/node-server@1.15.0':
-    resolution: {integrity: sha512-MjmK4l5N4dQpZ9OSWN0tCj7ejuc7WvuWMzSKtc89bnknJykAeHxzRigXBTYZk85H6Awrii6RM59iUiUluApu2A==}
+  '@hono/node-server@1.19.6':
+    resolution: {integrity: sha512-Shz/KjlIeAhfiuE93NDKVdZ7HdBVLQAfdbaXEaoAVO3ic9ibRSLGIQGkcBbFyuLr+7/1D5ZCINM8B+6IvXeMtw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -4108,7 +4108,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@hono/node-server@1.15.0(hono@4.9.8)':
+  '@hono/node-server@1.19.6(hono@4.9.8)':
     dependencies:
       hono: 4.9.8
 
