@@ -229,4 +229,10 @@ describe('parseAllQueryParams()', () => {
       b: 'valid',
     });
   });
+
+  test('returns null-prototype object to prevent prototype pollution', () => {
+    const queries = parseAllQueryParams('http://x/?a=1');
+    expect(Object.getPrototypeOf(queries)).toBeNull();
+    expect(queries.constructor).toBeUndefined();
+  });
 });

@@ -333,7 +333,7 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const obj: Record<string, string> = {};
+  const obj = Object.create(null) as Record<string, string>;
   req.rawRequest.headers.forEach((v, k) => {
     obj[k.toLowerCase()] = v;
   });
@@ -558,7 +558,13 @@ export function createKoriRequest({
   obj.koriKind = 'kori-request';
   obj.rawRequest = rawRequest;
   obj.pathTemplateValue = pathTemplate;
-  obj.paramsValue = pathParams;
+
+  // Create a null-prototype object for path params to prevent prototype pollution
+  // and isolate from external reference changes
+  const safeParams = Object.create(null) as Record<string, string>;
+  Object.assign(safeParams, pathParams);
+  obj.paramsValue = safeParams;
+
   obj.bodyCache = {};
   obj.hasContentTypeCache = false;
   obj.hasMediaTypeCache = false;

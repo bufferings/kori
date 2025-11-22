@@ -20,6 +20,17 @@ describe('KoriRequest headers contract', () => {
       expect(headers['x-custom']).toBe('A');
       expect(headers['content-type']).toBe('Application/JSON; charset=UTF-8');
     });
+
+    test('returns null-prototype object to prevent prototype pollution', () => {
+      const req = createKoriRequest({
+        rawRequest: new Request('http://x'),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      const headers = req.headers();
+      expect(Object.getPrototypeOf(headers)).toBeNull();
+      expect(headers.constructor).toBeUndefined();
+    });
   });
 
   describe('header()', () => {

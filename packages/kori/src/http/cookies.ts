@@ -19,14 +19,6 @@ const SECURE_PREFIX = '__Secure-' as const;
 const HOST_PREFIX = '__Host-' as const;
 
 /**
- * Parsed cookie data structure.
- *
- * Maps cookie names to their decoded string values. All values are automatically
- * URI-decoded during parsing for immediate use in application logic.
- */
-export type Cookie = Record<string, string>;
-
-/**
  * Structured failure types for cookie operations.
  *
  * Provides type-safe failure handling with detailed contextual information for each
@@ -195,20 +187,20 @@ function safeDecodeURIComponent(value: string): string {
  * console.log(cookies.sessionId); // 'abc123'
  * ```
  */
-export function parseCookies(options: { cookieHeader?: string; targetName?: string } = {}): Cookie {
+export function parseCookies(options: { cookieHeader?: string; targetName?: string } = {}): Record<string, string> {
   const { cookieHeader, targetName } = options;
 
   if (!cookieHeader) {
-    return {};
+    return Object.create(null) as Record<string, string>;
   }
 
   // Fast-path: return immediately if the target cookie is not in the header
   if (targetName && !cookieHeader.includes(targetName)) {
-    return {};
+    return Object.create(null) as Record<string, string>;
   }
 
   const pairs = cookieHeader.trim().split(';');
-  const parsedCookie: Cookie = {};
+  const parsedCookie = Object.create(null) as Record<string, string>;
 
   for (let pairStr of pairs) {
     pairStr = pairStr.trim();

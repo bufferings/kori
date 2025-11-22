@@ -88,4 +88,17 @@ describe('KoriRequest cookies contract', () => {
 
     expect(req.cookies()).toEqual({});
   });
+
+  test('returns null-prototype object to prevent prototype pollution', () => {
+    const req = createKoriRequest({
+      rawRequest: new Request('http://x', {
+        headers: { cookie: 'a=1' },
+      }),
+      pathParams: {},
+      pathTemplate: '/',
+    });
+    const cookies = req.cookies();
+    expect(Object.getPrototypeOf(cookies)).toBeNull();
+    expect(cookies.constructor).toBeUndefined();
+  });
 });

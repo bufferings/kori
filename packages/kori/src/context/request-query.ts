@@ -126,16 +126,15 @@ export function parseQueryParamArray(url: string, name: string): string[] | unde
 export function parseAllQueryParams(url: string): Record<string, string | string[]> {
   const queryStart = url.indexOf('?');
   if (queryStart === -1) {
-    return {};
+    return Object.create(null) as Record<string, string[]>;
   }
 
-  const result: Record<string, string[]> = {};
   const queryString = url.slice(queryStart + 1);
-
   if (!queryString) {
-    return {};
+    return Object.create(null) as Record<string, string[]>;
   }
 
+  const tempResult = Object.create(null) as Record<string, string[]>;
   const pairs = queryString.split('&');
   for (const pair of pairs) {
     const eqIndex = pair.indexOf('=');
@@ -143,22 +142,22 @@ export function parseAllQueryParams(url: string): Record<string, string | string
     if (eqIndex === -1) {
       const key = pair;
       if (key) {
-        result[key] ??= [];
-        result[key].push('');
+        tempResult[key] ??= [];
+        tempResult[key].push('');
       }
     } else {
       const key = pair.slice(0, eqIndex);
       const value = pair.slice(eqIndex + 1);
       if (key) {
-        result[key] ??= [];
-        result[key].push(decodeQueryValue(value));
+        tempResult[key] ??= [];
+        tempResult[key].push(decodeQueryValue(value));
       }
     }
   }
 
-  const finalResult: Record<string, string | string[]> = {};
-  for (const key in result) {
-    const values = result[key];
+  const finalResult = Object.create(null) as Record<string, string | string[]>;
+  for (const key in tempResult) {
+    const values = tempResult[key];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     finalResult[key] = values!.length === 1 ? values![0]! : values!;
   }

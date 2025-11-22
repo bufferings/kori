@@ -22,7 +22,6 @@ export {
 } from './hook/index.js';
 export {
   ContentType,
-  type Cookie,
   type CookieConstraint,
   type CookieFailure,
   type CookieOptions,
