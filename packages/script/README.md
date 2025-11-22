@@ -23,9 +23,11 @@ ks sync-version [file-path]
 ```
 
 Arguments:
+
 - `file-path` - Optional. Target file path relative to `src/` (default: `version.ts`)
 
 Example:
+
 ```bash
 # Sync to src/version.ts (default)
 ks sync-version
@@ -49,9 +51,11 @@ ks lint-staged [files...]
 ```
 
 Arguments:
+
 - `files...` - List of files to lint (typically provided by lefthook's `{staged_files}`)
 
 Example:
+
 ```bash
 # Typically called from lefthook
 ks lint-staged src/index.ts packages/kori/src/plugin.ts

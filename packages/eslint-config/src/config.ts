@@ -1,4 +1,6 @@
 import eslint from '@eslint/js';
+import { type ESLint } from 'eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import importX from 'eslint-plugin-import-x';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
@@ -7,16 +9,13 @@ import tseslint from 'typescript-eslint';
 
 import { asciiOnlySource, noBarrelInternal, noDuplicateExportFrom, noIndexImports } from './rules/index.js';
 
-export const baseConfig = tseslint.config(
-  // Ignore patterns
-  {
-    ignores: ['**/dist/', '*.config.js', '**/config.js'],
-  },
+export const baseConfig = defineConfig(
+  globalIgnores(['**/dist/', '*.config.js', '**/config.js']),
 
   // Extend recommended configs
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  tseslint.configs.recommendedTypeChecked,
+  tseslint.configs.stylisticTypeChecked,
 
   // TypeScript parser options
   {
@@ -42,7 +41,8 @@ export const baseConfig = tseslint.config(
     plugins: {
       'unused-imports': unusedImports,
       'simple-import-sort': simpleImportSort,
-      'import-x': importX,
+      // Temporary workaround until https://github.com/un-ts/eslint-plugin-import-x/issues/421 is resolved
+      'import-x': importX as unknown as ESLint.Plugin,
     },
     rules: {
       'no-console': 'error',
