@@ -50,6 +50,9 @@ export type KoriRequest = {
    *
    * @returns Object containing path parameter key-value pairs
    *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
+   *
    * @example
    * ```typescript
    * // For route '/users/:id' and request '/users/123'
@@ -78,6 +81,9 @@ export type KoriRequest = {
    * Single values are returned as strings, multiple values as string arrays.
    *
    * @returns Object containing query parameter key-value pairs
+   *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
    *
    * @example
    * ```typescript
@@ -122,6 +128,9 @@ export type KoriRequest = {
    * Header values are returned verbatim; no normalization is applied.
    *
    * Headers are cached on first access for performance.
+   *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
    *
    * @returns Object containing all header key-value pairs
    */
@@ -179,6 +188,9 @@ export type KoriRequest = {
    * Gets all cookies as a key-value object.
    *
    * Cookies are parsed and cached on first access.
+   *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
    *
    * @returns Object containing all cookie key-value pairs
    */
