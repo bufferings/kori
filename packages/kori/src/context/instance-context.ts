@@ -19,7 +19,7 @@ export type KoriInstanceContext<Env extends KoriEnvironment> = {
   /**
    * Extends the environment object with additional properties.
    *
-   * **Performance Note**: This method mutates the existing environment object
+   * Performance Note: This method mutates the existing environment object
    * rather than creating a new one for hot path optimization.
    *
    * @param envExt - Additional properties to add to the environment

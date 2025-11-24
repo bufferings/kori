@@ -466,7 +466,7 @@ export type KoriResponse = {
    * Builds the final Web API Response object.
    *
    * Typically called by the Kori framework automatically.
-   * **Note**: This method can only be called once per response instance.
+   * Note: This method can only be called once per response instance.
    *
    * @returns Web API Response object
    * @throws {KoriResponseBuildError} if called more than once

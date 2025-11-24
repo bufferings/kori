@@ -34,7 +34,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
   /**
    * Extends the request object with additional properties.
    *
-   * **Performance Note**: This method mutates the existing request object
+   * Performance Note: This method mutates the existing request object
    * rather than creating a new one for hot path optimization.
    *
    * @param reqExt - Additional properties to add to the request
@@ -63,7 +63,7 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
   /**
    * Extends the response object with additional properties.
    *
-   * **Performance Note**: This method mutates the existing response object
+   * Performance Note: This method mutates the existing response object
    * rather than creating a new one for hot path optimization.
    *
    * @param resExt - Additional properties to add to the response
