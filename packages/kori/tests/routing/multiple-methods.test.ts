@@ -15,7 +15,7 @@ describe('Multiple methods registration', () => {
       const app = createKori();
       app.route({ method: 'GET', path: '/users', handler: mockHandler });
 
-      const { fetchHandler } = await app.generate().onStart();
+      const { fetchHandler } = await app.start();
       const request = new Request('http://localhost/users', { method: 'GET' });
       const response = await fetchHandler(request);
 
@@ -29,7 +29,7 @@ describe('Multiple methods registration', () => {
       const app = createKori();
       app.route({ method: ['GET', 'POST'], path: '/users', handler: mockHandler });
 
-      const { fetchHandler } = await app.generate().onStart();
+      const { fetchHandler } = await app.start();
 
       const getResponse = await fetchHandler(new Request('http://localhost/users', { method: 'GET' }));
       expect(getResponse.status).toBe(200);
@@ -42,7 +42,7 @@ describe('Multiple methods registration', () => {
       const app = createKori();
       app.route({ method: ['GET', 'POST'], path: '/users', handler: mockHandler });
 
-      const { fetchHandler } = await app.generate().onStart();
+      const { fetchHandler } = await app.start();
 
       const putResponse = await fetchHandler(new Request('http://localhost/users', { method: 'PUT' }));
       expect(putResponse.status).toBe(404);
@@ -52,7 +52,7 @@ describe('Multiple methods registration', () => {
       const app = createKori();
       app.route({ method: ['GET', { custom: 'PURGE' }], path: '/cache', handler: mockHandler });
 
-      const { fetchHandler } = await app.generate().onStart();
+      const { fetchHandler } = await app.start();
 
       const getResponse = await fetchHandler(new Request('http://localhost/cache', { method: 'GET' }));
       expect(getResponse.status).toBe(200);
@@ -65,7 +65,7 @@ describe('Multiple methods registration', () => {
       const app = createKori();
       app.route({ method: ['GET', 'GET', 'POST'], path: '/duplicate', handler: mockHandler });
 
-      const { fetchHandler } = await app.generate().onStart();
+      const { fetchHandler } = await app.start();
 
       const getResponse = await fetchHandler(new Request('http://localhost/duplicate', { method: 'GET' }));
       expect(getResponse.status).toBe(200);

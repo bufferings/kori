@@ -32,7 +32,7 @@ describe('Request validation integration (ArkType)', () => {
         });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -76,7 +76,7 @@ describe('Request validation integration (ArkType)', () => {
         });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -115,7 +115,7 @@ describe('Request validation integration (ArkType)', () => {
         return ctx.res.json({ success: true });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
