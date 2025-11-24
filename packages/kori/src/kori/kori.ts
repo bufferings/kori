@@ -1,5 +1,5 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { type KoriFetchHandler } from '../fetch-handler/index.js';
+import { type KoriFetchHandler, type KoriInitializedFetchHandler } from '../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
@@ -93,6 +93,12 @@ export type Kori<
 
   /** Generates a fetch handler for deployment to runtime environments */
   generate(): KoriFetchHandler;
+
+  /**
+   * Shortcut for `generate().onStart()`.
+   * Initializes the application and returns the initialized fetch handler.
+   */
+  start(): Promise<KoriInitializedFetchHandler>;
 
   /** Returns all registered route definitions for introspection */
   routeDefinitions(): KoriRouteDefinition[];

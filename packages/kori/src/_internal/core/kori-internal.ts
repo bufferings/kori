@@ -332,6 +332,10 @@ function createKoriInternal<
       });
     },
 
+    async start() {
+      return this.generate().onStart();
+    },
+
     routeDefinitions() {
       return _shared.routeRegistry.getAll().map((route) => ({
         method: route.method,
