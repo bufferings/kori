@@ -1,9 +1,8 @@
 ---
 description: 'Rules for creating changeset files for version management'
-globs: ['**/.changeset/**']
+globs: .changeset/*
 alwaysApply: false
 ---
-
 # Changeset Operation Rules
 
 ## Overview
