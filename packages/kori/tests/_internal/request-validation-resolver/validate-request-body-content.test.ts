@@ -7,39 +7,42 @@ import { succeed } from '../../../src/util/index.js';
 
 import { resolveRequestValidator } from '../../../src/_internal/request-validation-resolver/request-validation-resolver.js';
 
-const testSchema = createKoriSchema({
+const testSchemaJson = createKoriSchema({
   provider: 'test-provider',
   definition: { type: 'body-json' },
 });
 
-const testSchema2 = createKoriSchema({
+const testSchemaText = createKoriSchema({
   provider: 'test-provider',
   definition: { type: 'body-text' },
+});
+
+const testSchemaForm = createKoriSchema({
+  provider: 'test-provider',
+  definition: { type: 'body-form' },
 });
 
 const testRequestValidator = createKoriValidator({
   provider: 'test-provider',
   validate: ({ schema, value }) => {
     const schemaType = (schema as any).definition.type;
-
     switch (schemaType) {
       case 'body-json':
-        return succeed({ ...(value as any), __test_processed: 'by-json-validator' });
+        return succeed({ received: value, __test_processed: 'by-json-validator' } as any);
       case 'body-text':
-        return succeed({ raw: value, __test_processed: 'by-text-validator' });
+        return succeed({ received: value, __test_processed: 'by-text-validator' } as any);
+      case 'body-form':
+        return succeed({ received: value, __test_processed: 'by-form-validator' } as any);
       default:
-        return succeed({ ...(value as any), __test_processed: 'by-unknown-validator' });
+        return succeed({ received: value, __test_processed: 'by-unknown-validator' } as any);
     }
   },
 });
 
-const mockRequest = {
+const mockRequestBase = {
   params: () => ({ id: '123' }),
   queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
-  bodyJson: () => Promise.resolve({ name: 'test' }),
-  bodyText: () => Promise.resolve('test-text-content'),
-  mediaType: () => 'application/json',
 } as unknown as KoriRequest;
 
 describe('resolveRequestValidator - Content body validation', () => {
@@ -50,8 +53,8 @@ describe('resolveRequestValidator - Content body validation', () => {
         provider: 'test-provider',
         body: {
           content: {
-            'application/json': testSchema,
-            'text/plain': testSchema2,
+            'application/json': testSchemaJson,
+            'text/plain': testSchemaText,
           },
         },
       }),
@@ -62,7 +65,13 @@ describe('resolveRequestValidator - Content body validation', () => {
       expect.unreachable('for type narrowing');
     }
 
-    const result = await v(mockRequest);
+    const mockReq = {
+      ...mockRequestBase,
+      mediaType: () => 'application/json',
+      bodyJson: () => Promise.resolve({ name: 'test' }),
+    };
+
+    const result = await v(mockReq);
     expect(result.success).toBe(true);
     if (!result.success) {
       expect.unreachable('for type narrowing');
@@ -70,7 +79,10 @@ describe('resolveRequestValidator - Content body validation', () => {
 
     expect(result.value.body).toEqual({
       mediaType: 'application/json',
-      value: { name: 'test', __test_processed: 'by-json-validator' },
+      value: {
+        received: { name: 'test' },
+        __test_processed: 'by-json-validator',
+      },
     });
   });
 
@@ -81,8 +93,8 @@ describe('resolveRequestValidator - Content body validation', () => {
         provider: 'test-provider',
         body: {
           content: {
-            'application/json': testSchema,
-            'text/plain': testSchema2,
+            'application/json': testSchemaJson,
+            'text/plain': testSchemaText,
           },
         },
       }),
@@ -94,8 +106,9 @@ describe('resolveRequestValidator - Content body validation', () => {
     }
 
     const mockReq = {
-      ...mockRequest,
+      ...mockRequestBase,
       mediaType: () => 'text/plain',
+      bodyText: () => Promise.resolve('test-text-content'),
     };
 
     const result = await v(mockReq);
@@ -106,7 +119,7 @@ describe('resolveRequestValidator - Content body validation', () => {
 
     expect(result.value.body).toEqual({
       mediaType: 'text/plain',
-      value: { raw: 'test-text-content', __test_processed: 'by-text-validator' },
+      value: { received: 'test-text-content', __test_processed: 'by-text-validator' },
     });
   });
 
@@ -117,7 +130,7 @@ describe('resolveRequestValidator - Content body validation', () => {
         provider: 'test-provider',
         body: {
           content: {
-            'application/*': testSchema,
+            'application/*': testSchemaJson,
           },
         },
       }),
@@ -129,8 +142,9 @@ describe('resolveRequestValidator - Content body validation', () => {
     }
 
     const mockReq = {
-      ...mockRequest,
+      ...mockRequestBase,
       mediaType: () => 'application/json',
+      bodyJson: () => Promise.resolve({ name: 'test' }),
     };
 
     const result = await v(mockReq);
@@ -141,7 +155,10 @@ describe('resolveRequestValidator - Content body validation', () => {
 
     expect(result.value.body).toEqual({
       mediaType: 'application/*',
-      value: { name: 'test', __test_processed: 'by-json-validator' },
+      value: {
+        received: { name: 'test' },
+        __test_processed: 'by-json-validator',
+      },
     });
   });
 
@@ -152,7 +169,7 @@ describe('resolveRequestValidator - Content body validation', () => {
         provider: 'test-provider',
         body: {
           content: {
-            '*/*': testSchema,
+            '*/*': testSchemaJson,
           },
         },
       }),
@@ -164,8 +181,9 @@ describe('resolveRequestValidator - Content body validation', () => {
     }
 
     const mockReq = {
-      ...mockRequest,
+      ...mockRequestBase,
       mediaType: () => 'application/json',
+      bodyJson: () => Promise.resolve({ name: 'test' }),
     };
 
     const result = await v(mockReq);
@@ -176,7 +194,10 @@ describe('resolveRequestValidator - Content body validation', () => {
 
     expect(result.value.body).toEqual({
       mediaType: '*/*',
-      value: { name: 'test', __test_processed: 'by-json-validator' },
+      value: {
+        received: { name: 'test' },
+        __test_processed: 'by-json-validator',
+      },
     });
   });
 
@@ -187,7 +208,7 @@ describe('resolveRequestValidator - Content body validation', () => {
         provider: 'test-provider',
         body: {
           content: {
-            'application/json': testSchema,
+            'application/json': testSchemaJson,
           },
         },
       }),
@@ -199,8 +220,9 @@ describe('resolveRequestValidator - Content body validation', () => {
     }
 
     const mockReq = {
-      ...mockRequest,
+      ...mockRequestBase,
       mediaType: () => 'text/plain',
+      bodyText: () => Promise.resolve('test-text-content'),
     };
 
     const result = await v(mockReq);
@@ -215,6 +237,99 @@ describe('resolveRequestValidator - Content body validation', () => {
       message: 'Unsupported Media Type',
       supportedMediaTypes: ['application/json'],
       requestMediaType: 'text/plain',
+    });
+  });
+
+  test('converts FormData to plain object', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'multipart/form-data': testSchemaForm,
+          },
+        },
+      }),
+    });
+
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
+
+    const formData = new FormData();
+    formData.append('name', 'Alice');
+    formData.append('age', '30');
+
+    const mockReq = {
+      ...mockRequestBase,
+      mediaType: () => 'multipart/form-data',
+      bodyFormData: () => Promise.resolve(formData),
+    };
+
+    const result = await v(mockReq);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      expect.unreachable('for type narrowing');
+    }
+
+    expect(result.value.body).toEqual({
+      mediaType: 'multipart/form-data',
+      value: {
+        received: {
+          name: 'Alice',
+          age: '30',
+        },
+        __test_processed: 'by-form-validator',
+      },
+    });
+  });
+
+  test('converts repeated keys in FormData to array', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'multipart/form-data': testSchemaForm,
+          },
+        },
+      }),
+    });
+
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
+
+    const formData = new FormData();
+    formData.append('tags', 'tag1');
+    formData.append('tags', 'tag2');
+    formData.append('single', 'value');
+
+    const mockReq = {
+      ...mockRequestBase,
+      mediaType: () => 'multipart/form-data',
+      bodyFormData: () => Promise.resolve(formData),
+    };
+
+    const result = await v(mockReq);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      expect.unreachable('for type narrowing');
+    }
+
+    expect(result.value.body).toEqual({
+      mediaType: 'multipart/form-data',
+      value: {
+        received: {
+          tags: ['tag1', 'tag2'],
+          single: 'value',
+        },
+        __test_processed: 'by-form-validator',
+      },
     });
   });
 });

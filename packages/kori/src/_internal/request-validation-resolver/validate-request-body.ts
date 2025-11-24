@@ -110,6 +110,25 @@ function getBodyParseType(mediaType: string): BodyParseType {
   return 'binary';
 }
 
+function formDataToObject(formData: FormData): Record<string, unknown> {
+  const obj: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+
+  formData.forEach((value, key) => {
+    if (key in obj) {
+      const existing = obj[key];
+      if (Array.isArray(existing)) {
+        existing.push(value);
+      } else {
+        obj[key] = [existing, value];
+      }
+    } else {
+      obj[key] = value;
+    }
+  });
+
+  return obj;
+}
+
 /**
  * Parses the raw request body based on its Content-Type.
  * Gracefully handles parsing errors.
@@ -133,7 +152,7 @@ async function parseRequestBody({
       }
       case 'form': {
         const formBody = await req.bodyFormData();
-        return succeed(formBody);
+        return succeed(formDataToObject(formBody));
       }
       case 'text': {
         const textBody = await req.bodyText();
