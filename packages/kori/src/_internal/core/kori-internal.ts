@@ -1,6 +1,6 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../context/index.js';
 import { KoriRouteDefinitionError } from '../../error/index.js';
-import { type KoriFetchHandler } from '../../fetch-handler/index.js';
+import { type KoriFetchHandler, type KoriInitializedFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../../hook/index.js';
 import {
   type Kori,
@@ -330,6 +330,10 @@ function createKoriInternal<
         instanceLogger: _shared.instanceLogger,
         onRouteNotFound: _shared.onRouteNotFound,
       });
+    },
+
+    async start(): Promise<KoriInitializedFetchHandler> {
+      return this.generate().onStart();
     },
 
     routeDefinitions() {

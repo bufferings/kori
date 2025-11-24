@@ -203,4 +203,12 @@ describe('KoriRequest basics contract', () => {
     expect(raw.url).toBe('http://x/path?x=1');
     expect(raw.method).toBe('PUT');
   });
+
+  test('params() returns null-prototype object to prevent prototype pollution', () => {
+    const rawRequest = new Request('http://x/users/123');
+    const req = createKoriRequest({ rawRequest, pathParams: { id: '123' }, pathTemplate: '/users/:id' });
+    const params = req.params();
+    expect(Object.getPrototypeOf(params)).toBeNull();
+    expect(params.constructor).toBeUndefined();
+  });
 });

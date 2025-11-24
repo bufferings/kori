@@ -1,14 +1,15 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 
 import { type KoriLogEntry } from '../../src/logging/log-entry.js';
+import { type KoriLogWriter } from '../../src/logging/log-sink.js';
 import { createKoriLoggerFactory, type KoriLoggerFactory } from '../../src/logging/logger-factory.js';
 
 describe('Logger Hierarchy', () => {
-  let mockWriteFn: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn<KoriLogWriter>>;
   let loggerFactory: KoriLoggerFactory;
 
   beforeEach(() => {
-    mockWriteFn = vi.fn();
+    mockWriteFn = vi.fn<KoriLogWriter>();
     const mockReporter = {
       sinks: [
         {

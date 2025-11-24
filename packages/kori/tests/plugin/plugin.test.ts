@@ -39,7 +39,7 @@ describe('defineKoriPlugin', () => {
       return ctx.res.json({ region });
     });
 
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
     const res = await fetchHandler(new Request('http://localhost/region'));
     const body = await res.json();
 
@@ -61,7 +61,7 @@ describe('defineKoriPlugin', () => {
       return ctx.res.json({ id: userId });
     });
 
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
     const res = await fetchHandler(new Request('http://localhost/me'));
     const body = await res.json();
 
@@ -90,7 +90,7 @@ describe('defineKoriPlugin', () => {
       return ctx.res.json({ userId, role });
     });
 
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
     const res = await fetchHandler(new Request('http://localhost/auth'));
     const body = await res.json();
 
@@ -125,7 +125,7 @@ describe('defineKoriPlugin', () => {
       return ctx.res.ok({ id: uid, region });
     });
 
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
     const res = await fetchHandler(new Request('http://localhost/whoami'));
     const body = await res.json();
 

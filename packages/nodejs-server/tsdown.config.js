@@ -6,4 +6,6 @@ export default defineConfig({
   dts: true,
   clean: false,
   sourcemap: true,
+  // to use js extension instead of mjs
+  fixedExtension: false,
 });

@@ -48,7 +48,7 @@ describe('Full validation integration (Zod)', () => {
         });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -105,7 +105,7 @@ describe('Full validation integration (Zod)', () => {
         return ctx.res.json({ id, updated: true, name });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users/user-123', {

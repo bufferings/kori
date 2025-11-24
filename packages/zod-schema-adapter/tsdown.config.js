@@ -7,4 +7,6 @@ export default defineConfig({
   clean: false,
   sourcemap: true,
   external: ['@korix/kori', 'zod'],
+  // to use js extension instead of mjs
+  fixedExtension: false,
 });

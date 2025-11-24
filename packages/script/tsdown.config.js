@@ -7,4 +7,6 @@ export default defineConfig({
   clean: false,
   sourcemap: true,
   external: ['node:fs', 'node:fs/promises', 'node:path', 'node:os'],
+  // to use js extension instead of mjs
+  fixedExtension: false,
 });

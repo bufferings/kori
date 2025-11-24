@@ -7,4 +7,6 @@ export default defineConfig({
   clean: false,
   sourcemap: true,
   external: ['@korix/kori', '@korix/openapi-plugin', '@korix/zod-schema-adapter', 'openapi3-ts', 'zod'],
+  // to use js extension instead of mjs
+  fixedExtension: false,
 });

@@ -56,25 +56,25 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@eslint/js": "9.16.0",
-    "@typescript-eslint/parser": "8.33.1",
-    "@typescript-eslint/types": "8.33.1",
-    "@typescript-eslint/utils": "8.33.1",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-import-x": "4.15.0",
+    "@eslint/js": "9.39.1",
+    "@typescript-eslint/parser": "8.47.0",
+    "@typescript-eslint/types": "8.47.0",
+    "@typescript-eslint/utils": "8.47.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-import-x": "4.16.1",
     "eslint-plugin-simple-import-sort": "12.1.1",
-    "eslint-plugin-unused-imports": "4.1.4",
-    "typescript-eslint": "8.33.1"
+    "eslint-plugin-unused-imports": "4.3.0",
+    "typescript-eslint": "8.47.0"
   },
   "peerDependencies": {
-    "eslint": "^9.16.0",
-    "typescript": "^5.8.0"
+    "eslint": "^9.39.0",
+    "typescript": "^5.9.0"
   },
   "devDependencies": {
     "@types/eslint": "9.6.1",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/node": "catalog:",
-    "@typescript-eslint/rule-tester": "8.33.1",
+    "@typescript-eslint/rule-tester": "8.47.0",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "tsdown": "catalog:",

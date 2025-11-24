@@ -1,6 +1,5 @@
 export { ContentType, MediaType } from './content-types.js';
 export {
-  type Cookie,
   type CookieConstraint,
   type CookieFailure,
   type CookieOptions,

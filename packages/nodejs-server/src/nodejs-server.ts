@@ -48,7 +48,7 @@ function startListening(options: {
         } catch (cleanupErr) {
           log.error('Error during startup cleanup', { err: cleanupErr });
         } finally {
-          server.close((closeErr) => {
+          server.close((closeErr: unknown) => {
             if (closeErr) {
               log.error('Error closing server during startup cleanup', { err: closeErr });
             }

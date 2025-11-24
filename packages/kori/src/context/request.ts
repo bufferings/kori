@@ -1,4 +1,4 @@
-import { parseCookies, MediaType, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
+import { parseCookies, type HttpRequestHeaderName, HttpRequestHeader } from '../http/index.js';
 
 import { parseQueryParam, parseQueryParamArray, parseAllQueryParams } from './request-query.js';
 
@@ -11,7 +11,7 @@ export type KoriRequest = {
   /**
    * Gets the raw Web API Request object for direct access to native features.
    *
-   * **Warning**: Reading the body will prevent other Kori methods from working.
+   * Warning: Reading the body will prevent other Kori methods from working.
    * Use this when you need to access Web API features not exposed by Kori's request methods.
    *
    * @returns The underlying Request object
@@ -50,6 +50,9 @@ export type KoriRequest = {
    *
    * @returns Object containing path parameter key-value pairs
    *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
+   *
    * @example
    * ```typescript
    * // For route '/users/:id' and request '/users/123'
@@ -78,6 +81,9 @@ export type KoriRequest = {
    * Single values are returned as strings, multiple values as string arrays.
    *
    * @returns Object containing query parameter key-value pairs
+   *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
    *
    * @example
    * ```typescript
@@ -123,6 +129,9 @@ export type KoriRequest = {
    *
    * Headers are cached on first access for performance.
    *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
+   *
    * @returns Object containing all header key-value pairs
    */
   headers(): Record<string, string>;
@@ -142,20 +151,20 @@ export type KoriRequest = {
    * Gets the content-type header value including parameters.
    *
    * Returns a normalized value:
-   * - Lowercases the media type and parameter names/values
+   * - Lowercases the media type and parameter names
    * - Normalizes separators to a single "; " (semicolon + single space)
-   * - Removes spaces around "=" in parameters (e.g., "charset = UTF-8" -> "charset=utf-8")
-   * - Preserves parameter order and values
+   * - Removes spaces around "=" in parameters (e.g., "charset = UTF-8" -> "charset=UTF-8")
+   * - Preserves parameter order and values (case-sensitive)
    *
    * Examples:
-   * - "Application/JSON; Charset=UTF-8" -> "application/json; charset=utf-8"
-   * - "  Text/HTML ; Charset = UTF-8  " -> "text/html; charset=utf-8"
+   * - "Application/JSON; Charset=UTF-8" -> "application/json; charset=UTF-8"
+   * - "  Text/HTML ; Charset = UTF-8  " -> "text/html; charset=UTF-8"
    *
    * @returns Content-type header value (normalized) or undefined if not present
    *
    * @example
    * ```typescript
-   * ctx.req.contentType() // 'application/json; charset=utf-8'
+   * ctx.req.contentType() // 'application/json; charset=UTF-8'
    * ```
    */
   contentType(): string | undefined;
@@ -179,6 +188,9 @@ export type KoriRequest = {
    * Gets all cookies as a key-value object.
    *
    * Cookies are parsed and cached on first access.
+   *
+   * Note: Returns a null-prototype object (`Object.create(null)`).
+   * Do not use methods like `hasOwnProperty` directly on the returned object.
    *
    * @returns Object containing all cookie key-value pairs
    */
@@ -245,23 +257,6 @@ export type KoriRequest = {
    * @returns ReadableStream for the body or null if no body
    */
   bodyStream(): ReadableStream<Uint8Array> | null;
-
-  /**
-   * Parses the request body based on content-type header.
-   *
-   * Automatically chooses the appropriate parsing method:
-   * - `application/json` -> JSON parsing
-   * - `application/x-www-form-urlencoded` -> FormData
-   * - `multipart/form-data` -> FormData
-   * - `application/octet-stream` -> ArrayBuffer
-   * - Other types -> Text
-   *
-   * The result is cached. If the body was already read in another format,
-   * it will be converted from the cached value.
-   *
-   * @returns Promise resolving to parsed body data
-   */
-  parseBody(): Promise<unknown>;
 };
 
 /** Cache for parsed body data to avoid re-parsing */
@@ -350,7 +345,7 @@ function getHeadersInternal(req: ReqState): Record<string, string> {
     return req.headersCache;
   }
 
-  const obj: Record<string, string> = {};
+  const obj = Object.create(null) as Record<string, string>;
   req.rawRequest.headers.forEach((v, k) => {
     obj[k.toLowerCase()] = v;
   });
@@ -370,18 +365,45 @@ function getContentTypeInternal(req: ReqState): string | undefined {
     return req.contentTypeCache;
   }
   const value = getHeaderInternal(req, HttpRequestHeader.CONTENT_TYPE);
-  if (!value) {
+  if (!value?.trim()) {
     req.hasContentTypeCache = true;
     req.contentTypeCache = undefined;
     req.hasMediaTypeCache = true;
     req.mediaTypeCache = undefined;
     return undefined;
   }
-  const parts = value.toLowerCase().split(';');
-  const mediaType = parts[0]?.trim();
+
+  const parts = value.split(';');
+
+  const mediaTypePart = parts[0]?.trim();
+  if (!mediaTypePart) {
+    req.hasContentTypeCache = true;
+    req.contentTypeCache = undefined;
+    req.hasMediaTypeCache = true;
+    req.mediaTypeCache = undefined;
+    return undefined;
+  }
+
+  const lowerMediaType = mediaTypePart.toLowerCase();
   req.hasMediaTypeCache = true;
-  req.mediaTypeCache = mediaType;
-  const normalized = parts.map((part) => part.trim().replace(/\s*=\s*/g, '=')).join('; ');
+  req.mediaTypeCache = lowerMediaType;
+
+  const normalized = parts
+    .map((part, index) => {
+      if (index === 0) {
+        return lowerMediaType;
+      }
+
+      const trimmed = part.trim();
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex === -1) {
+        return trimmed.toLowerCase();
+      }
+      const name = trimmed.slice(0, eqIndex).trim().toLowerCase();
+      const val = trimmed.slice(eqIndex + 1).trim();
+      return `${name}=${val}`;
+    })
+    .join('; ');
   req.hasContentTypeCache = true;
   req.contentTypeCache = normalized;
   return normalized;
@@ -416,10 +438,12 @@ function cachedBody(req: ReqState, key: keyof BodyCache): Promise<unknown> {
     return cachedValue;
   }
 
-  const anyCachedKey = Object.keys(req.bodyCache)[0] as keyof BodyCache | undefined;
-  if (anyCachedKey) {
+  const keys = Object.keys(req.bodyCache) as (keyof BodyCache)[];
+  const sourceKey = keys.find((k) => k !== 'json');
+
+  if (sourceKey) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const bodyPromise = req.bodyCache[anyCachedKey]!.then<unknown>((body) => {
+    const bodyPromise = req.bodyCache[sourceKey]!.then<unknown>((body) => {
       return new Response(body as BodyInit)[key]();
     });
     return (req.bodyCache[key] = bodyPromise);
@@ -452,21 +476,6 @@ function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
 
 function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null {
   return req.rawRequest.body;
-}
-
-function parseBodyInternal(req: ReqState): Promise<unknown> {
-  const ct = getMediaTypeInternal(req) ?? MediaType.APPLICATION_JSON;
-  switch (ct) {
-    case MediaType.APPLICATION_JSON:
-      return getBodyJsonInternal(req);
-    case MediaType.APPLICATION_FORM_URLENCODED:
-    case MediaType.MULTIPART_FORM_DATA:
-      return getBodyFormDataInternal(req);
-    case MediaType.APPLICATION_OCTET_STREAM:
-      return getBodyArrayBufferInternal(req);
-    default:
-      return getBodyTextInternal(req);
-  }
 }
 
 /** Shared methods prototype for memory efficiency */
@@ -537,10 +546,6 @@ const sharedMethods = {
   bodyStream(): ReadableStream<Uint8Array> | null {
     return getBodyStreamInternal(this);
   },
-
-  parseBody() {
-    return parseBodyInternal(this);
-  },
 } satisfies Omit<KoriRequest, 'koriKind'> & ThisType<ReqState>;
 
 /**
@@ -567,7 +572,13 @@ export function createKoriRequest({
   obj.koriKind = 'kori-request';
   obj.rawRequest = rawRequest;
   obj.pathTemplateValue = pathTemplate;
-  obj.paramsValue = pathParams;
+
+  // Create a null-prototype object for path params to prevent prototype pollution
+  // and isolate from external reference changes
+  const safeParams = Object.create(null) as Record<string, string>;
+  Object.assign(safeParams, pathParams);
+  obj.paramsValue = safeParams;
+
   obj.bodyCache = {};
   obj.hasContentTypeCache = false;
   obj.hasMediaTypeCache = false;

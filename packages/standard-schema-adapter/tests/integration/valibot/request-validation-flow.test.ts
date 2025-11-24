@@ -32,7 +32,7 @@ describe('Request validation integration (Valibot)', () => {
         });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -79,7 +79,7 @@ describe('Request validation integration (Valibot)', () => {
         });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {
@@ -118,7 +118,7 @@ describe('Request validation integration (Valibot)', () => {
         return ctx.res.json({ success: true });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(
       new Request('http://localhost/users', {

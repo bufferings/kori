@@ -1,5 +1,5 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../context/index.js';
-import { type KoriFetchHandler } from '../fetch-handler/index.js';
+import { type KoriFetchHandler, type KoriInitializedFetchHandler } from '../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../hook/index.js';
 import { type KoriLogger } from '../logging/index.js';
 import { type KoriPlugin } from '../plugin/index.js';
@@ -48,52 +48,124 @@ export type Kori<
   ReqV extends KoriValidatorBase | undefined = undefined,
   ResV extends KoriValidatorBase | undefined = undefined,
 > = {
-  /** Gets the instance logger for this Kori instance */
+  /**
+   * Gets the instance logger for this Kori instance.
+   *
+   * @returns The instance logger
+   */
   log(): KoriLogger;
 
-  /** Registers a startup hook that executes during instance initialization */
+  /**
+   * Registers a startup hook that executes during instance initialization.
+   *
+   * @returns The Kori instance for method chaining
+   */
   onStart<EnvExt extends object>(hook: KoriOnStartHook<Env, EnvExt>): Kori<Env & EnvExt, Req, Res, ReqV, ResV>;
 
-  /** Registers a request hook that executes before each route handler */
+  /**
+   * Registers a request hook that executes before each route handler.
+   *
+   * @returns The Kori instance for method chaining
+   */
   onRequest<ReqExt extends object, ResExt extends object>(
     hook: KoriOnRequestHook<Env, Req, Res, ReqExt, ResExt>,
   ): Kori<Env, Req & ReqExt, Res & ResExt, ReqV, ResV>;
 
-  /** Registers an error hook that executes when errors occur during request processing */
+  /**
+   * Registers an error hook that executes when errors occur during request processing.
+   *
+   * @returns The Kori instance for method chaining
+   */
   onError(hook: KoriOnErrorHook<Env, Req, Res>): Kori<Env, Req, Res, ReqV, ResV>;
 
-  /** Applies a plugin to extend the Kori instance with additional functionality */
+  /**
+   * Applies a plugin to extend the Kori instance with additional functionality.
+   *
+   * @returns The Kori instance for method chaining
+   */
   applyPlugin<EnvExt extends object, ReqExt extends object, ResExt extends object>(
     plugin: KoriPlugin<Env, Req, Res, EnvExt, ReqExt, ResExt>,
   ): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
 
-  /** Creates a child instance with optional path prefix and configuration */
+  /**
+   * Creates a child instance with optional path prefix and configuration.
+   *
+   * @returns The Kori instance for method chaining
+   */
   createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions?: {
     configure: (kori: Kori<Env, Req, Res, ReqV, ResV>) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
     prefix?: string;
   }): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
 
-  /** Generic route registration for any HTTP method */
+  /**
+   * Generic route registration for any HTTP method.
+   *
+   * @returns The Kori instance for method chaining
+   */
   route: KoriRoute<Env, Req, Res, ReqV, ResV>;
 
-  /** Registers a GET route */
+  /**
+   * Registers a GET route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   get: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers a POST route */
+  /**
+   * Registers a POST route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   post: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers a PUT route */
+  /**
+   * Registers a PUT route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   put: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers a DELETE route */
+  /**
+   * Registers a DELETE route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   delete: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers a PATCH route */
+  /**
+   * Registers a PATCH route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   patch: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers a HEAD route */
+  /**
+   * Registers a HEAD route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   head: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /** Registers an OPTIONS route */
+  /**
+   * Registers an OPTIONS route.
+   *
+   * @returns The Kori instance for method chaining
+   */
   options: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
 
-  /** Generates a fetch handler for deployment to runtime environments */
+  /**
+   * Generates a fetch handler for deployment to runtime environments.
+   *
+   * @returns The fetch handler with startup hook
+   */
   generate(): KoriFetchHandler;
 
-  /** Returns all registered route definitions for introspection */
+  /**
+   * Shortcut for `generate().onStart()`.
+   * Initializes the application and returns the initialized fetch handler.
+   *
+   * @returns Promise resolving to the initialized fetch handler
+   */
+  start(): Promise<KoriInitializedFetchHandler>;
+
+  /**
+   * Returns all registered route definitions for introspection.
+   *
+   * @returns Array of registered route definitions
+   */
   routeDefinitions(): KoriRouteDefinition[];
 };

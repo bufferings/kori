@@ -52,11 +52,11 @@ function serializeErrorInstance(options: { error: Error; visited: Set<Error> }):
 /**
  * Serializes Error instances for safe logging, with fallback for non-Error values.
  *
- * **Error Processing**: Converts Error objects to serializable format preserving
+ * Error Processing: Converts Error objects to serializable format preserving
  * standard properties (name, message, stack), custom properties, and ES2022 cause
  * chains with circular reference protection.
  *
- * **Non-Error Values**: Returns the value unchanged, allowing primitives and
+ * Non-Error Values: Returns the value unchanged, allowing primitives and
  * objects to be logged directly.
  *
  * @param error - Any value that might be an error (typically from catch blocks)

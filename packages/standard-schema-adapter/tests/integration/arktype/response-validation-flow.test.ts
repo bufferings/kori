@@ -28,7 +28,7 @@ describe('Response validation integration (ArkType)', () => {
         } as any);
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(new Request('http://localhost/users/user-123', { method: 'GET' }));
 
@@ -51,7 +51,7 @@ describe('Response validation integration (ArkType)', () => {
         return ctx.res.json({ status: 'ok' });
       },
     });
-    const { fetchHandler } = await app.generate().onStart();
+    const { fetchHandler } = await app.start();
 
     const response = await fetchHandler(new Request('http://localhost/health', { method: 'GET' }));
 

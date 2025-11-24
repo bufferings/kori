@@ -2,14 +2,15 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 
 import { serializeError } from '../../src/logging/error-serializer.js';
 import { type KoriLogEntry } from '../../src/logging/log-entry.js';
+import { type KoriLogWriter } from '../../src/logging/log-sink.js';
 import { createKoriLogger, type KoriLogger } from '../../src/logging/logger.js';
 
 describe('KoriLogger meta handling', () => {
-  let mockWriteFn: ReturnType<typeof vi.fn>;
+  let mockWriteFn: ReturnType<typeof vi.fn<KoriLogWriter>>;
   let logger: KoriLogger;
 
   beforeEach(() => {
-    mockWriteFn = vi.fn();
+    mockWriteFn = vi.fn<KoriLogWriter>();
     const mockReporter = {
       sinks: [
         {
