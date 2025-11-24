@@ -163,6 +163,9 @@ function safeDecodeURIComponent(value: string): string {
  * with early string search and loop termination for significant performance improvement
  * in scenarios with many cookies.
  *
+ * Note: Returns a null-prototype object (`Object.create(null)`) to prevent prototype
+ * pollution. Do not use methods like `hasOwnProperty` directly on the returned object.
+ *
  * @param options - Parsing options
  * @param options.cookieHeader - Raw Cookie header value from HTTP request, may be undefined
  * @param options.targetName - Specific cookie name to extract, enables performance optimization
