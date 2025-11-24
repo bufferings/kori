@@ -39,7 +39,7 @@ export type KoriLoggerFactoryOptions = {
 /**
  * Creates a KoriLoggerFactory.
  *
- * **Defaults**: level='info', reporter=pretty console output, no bindings.
+ * Defaults: level='info', reporter=pretty console output, no bindings.
  *
  * @param options - Configuration options for the logger factory
  * @returns Logger factory function
