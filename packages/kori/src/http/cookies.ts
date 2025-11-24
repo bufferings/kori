@@ -67,7 +67,7 @@ type PartitionedConstraint =
  * Defines all supported cookie attributes according to RFC 6265 and modern
  * browser extensions. All attributes are optional and have sensible defaults.
  *
- * **Security Note**: For production use, always consider setting `secure: true`,
+ * Security Note: For production use, always consider setting `secure: true`,
  * `httpOnly: true`, and appropriate `sameSite` values to prevent common
  * cookie-based attacks.
  */
@@ -92,15 +92,15 @@ export type CookieOptions = {
  * to the Cookie Name Prefixes specification. Provides type safety to prevent
  * runtime security violations.
  *
- * **__Secure- Prefix**: Requires `secure: true` to ensure HTTPS-only transmission.
+ * __Secure- Prefix: Requires `secure: true` to ensure HTTPS-only transmission.
  * Prevents downgrade attacks where an insecure connection could set a cookie
  * that overwrites a secure one.
  *
- * **__Host- Prefix**: Requires `secure: true`, `path: '/'`, and no `domain`
+ * __Host- Prefix: Requires `secure: true`, `path: '/'`, and no `domain`
  * attribute. This creates the most restrictive cookie scope, preventing
  * subdomain and path-based cookie injection attacks.
  *
- * **Regular Cookies**: No additional constraints beyond standard CookieOptions.
+ * Regular Cookies: No additional constraints beyond standard CookieOptions.
  *
  * @template Name - Cookie name literal type for prefix detection
  */
@@ -159,7 +159,7 @@ function safeDecodeURIComponent(value: string): string {
  * Malformed cookie pairs are gracefully skipped (lenient) to maximize robustness
  * against real-world HTTP traffic variations. This function never throws.
  *
- * **Performance Note**: When `targetName` is provided, enables fast-path optimization
+ * Performance Note: When `targetName` is provided, enables fast-path optimization
  * with early string search and loop termination for significant performance improvement
  * in scenarios with many cookies.
  *
@@ -248,14 +248,14 @@ export function parseCookies(options: { cookieHeader?: string; targetName?: stri
  * cookie name compliance, prefix constraints, age limits, and security requirements.
  * Automatically applies URI encoding to values and validates all attributes.
  *
- * **Type Safety**: Enforces prefix constraints at compile-time. `__Secure-` prefixed
+ * Type Safety: Enforces prefix constraints at compile-time. `__Secure-` prefixed
  * cookies require `secure: true`, `__Host-` cookies require `secure: true`, `path: '/'`
  * and no domain attribute.
  *
- * **RFC 6265bis Compliance**: Enforces 400-day maximum age limit for both MaxAge
+ * RFC 6265bis Compliance: Enforces 400-day maximum age limit for both MaxAge
  * and Expires attributes to prevent excessively long-lived cookies.
  *
- * **Security Validation**: Validates Partitioned cookies require Secure attribute
+ * Security Validation: Validates Partitioned cookies require Secure attribute
  * and ensures all cookie names contain only RFC 6265 compliant characters.
  *
  * @template Name - Cookie name type for compile-time prefix constraint enforcement
@@ -483,12 +483,12 @@ export function serializeCookie<Name extends string>(
  * expires date to Unix epoch (January 1, 1970), and maxAge to 0. This signals
  * the browser to immediately remove the cookie from its storage.
  *
- * **Critical Security Note**: Cookie deletion only succeeds when path and domain
+ * Critical Security Note: Cookie deletion only succeeds when path and domain
  * attributes exactly match the original cookie. Browsers use path/domain for
  * cookie isolation, so mismatched attributes create a new cookie instead of
  * deleting the existing one.
  *
- * **Implementation Detail**: Internally delegates to serializeCookie with
+ * Implementation Detail: Internally delegates to serializeCookie with
  * deletion-specific attributes, inheriting all validation and failure handling.
  *
  * @param name - Cookie name to delete, must be RFC 6265 compliant token
