@@ -16,11 +16,12 @@ import { toKoriBodyMapping, type KoriRequestSchemaStdToBodyMapping } from './bod
 /**
  * Request schema type definition for Standard Schema validation.
  * Represents the shape of a request schema that uses Standard Schema schemas
- * for URL parameters, headers, query strings, and request body.
+ * for URL parameters, headers, query strings, cookies, and request body.
  *
  * @template Params - Standard Schema schema for URL path parameters
  * @template Headers - Standard Schema schema for HTTP headers
  * @template Queries - Standard Schema schema for query string parameters
+ * @template Cookies - Standard Schema schema for HTTP cookies
  * @template Body - Standard Schema schema for simple request body
  * @template BodyMapping - Content-type mapping for complex request body
  */
@@ -28,9 +29,10 @@ export type KoriStdRequestSchema<
   Params extends KoriStdSchemaBase = never,
   Headers extends KoriStdSchemaBase = never,
   Queries extends KoriStdSchemaBase = never,
+  Cookies extends KoriStdSchemaBase = never,
   Body extends KoriStdSchemaBase = never,
   BodyMapping extends Record<string, KoriStdSchemaBase> = never,
-> = KoriRequestSchema<KoriStdSchemaProvider, Params, Headers, Queries, Body, BodyMapping>;
+> = KoriRequestSchema<KoriStdSchemaProvider, Params, Headers, Queries, Cookies, Body, BodyMapping>;
 
 /**
  * Creates a request schema with Standard Schema validation for simple body types.
@@ -39,10 +41,12 @@ export type KoriStdRequestSchema<
  * @template StdParams - Standard Schema type for URL path parameters
  * @template StdHeaders - Standard Schema type for HTTP headers
  * @template StdQueries - Standard Schema type for query string parameters
+ * @template StdCookies - Standard Schema type for HTTP cookies
  * @template StdBody - Standard Schema type for request body
  * @param options.params - Standard Schema schema for validating URL parameters
  * @param options.headers - Standard Schema schema for validating HTTP headers
  * @param options.queries - Standard Schema schema for validating query parameters
+ * @param options.cookies - Standard Schema schema for validating HTTP cookies
  * @param options.body - Standard Schema schema or configuration for request body
  * @returns Request schema with Standard Schema validation
  *
@@ -59,16 +63,19 @@ export function stdRequestSchema<
   StdParams extends StandardSchemaV1 = never,
   StdHeaders extends StandardSchemaV1 = never,
   StdQueries extends StandardSchemaV1 = never,
+  StdCookies extends StandardSchemaV1 = never,
   StdBody extends StandardSchemaV1 = never,
 >(options: {
   params?: StdParams;
   headers?: StdHeaders;
   queries?: StdQueries;
+  cookies?: StdCookies;
   body?: StdBody;
 }): KoriStdRequestSchema<
   KoriStdSchema<StdParams>,
   KoriStdSchema<StdHeaders>,
   KoriStdSchema<StdQueries>,
+  KoriStdSchema<StdCookies>,
   KoriStdSchema<StdBody>
 >;
 
@@ -80,10 +87,12 @@ export function stdRequestSchema<
  * @template StdParams - Standard Schema type for URL path parameters
  * @template StdHeaders - Standard Schema type for HTTP headers
  * @template StdQueries - Standard Schema type for query string parameters
+ * @template StdCookies - Standard Schema type for HTTP cookies
  * @template StdBodyMapping - Content-type to Standard Schema schema mapping
  * @param options.params - Standard Schema schema for validating URL parameters
  * @param options.headers - Standard Schema schema for validating HTTP headers
  * @param options.queries - Standard Schema schema for validating query parameters
+ * @param options.cookies - Standard Schema schema for validating HTTP cookies
  * @param options.body - Content-type mapping with different schemas
  * @returns Request schema with Standard Schema validation
  *
@@ -104,16 +113,19 @@ export function stdRequestSchema<
   StdParams extends StandardSchemaV1 = never,
   StdHeaders extends StandardSchemaV1 = never,
   StdQueries extends StandardSchemaV1 = never,
+  StdCookies extends StandardSchemaV1 = never,
   StdBodyMapping extends Record<string, StandardSchemaV1> = never,
 >(options: {
   params?: StdParams;
   headers?: StdHeaders;
   queries?: StdQueries;
+  cookies?: StdCookies;
   body?: KoriStdRequestSchemaContentBody<StdBodyMapping>;
 }): KoriStdRequestSchema<
   KoriStdSchema<StdParams>,
   KoriStdSchema<StdHeaders>,
   KoriStdSchema<StdQueries>,
+  KoriStdSchema<StdCookies>,
   never,
   KoriRequestSchemaStdToBodyMapping<StdBodyMapping>
 >;
@@ -122,23 +134,27 @@ export function stdRequestSchema<
   StdParams extends StandardSchemaV1 = never,
   StdHeaders extends StandardSchemaV1 = never,
   StdQueries extends StandardSchemaV1 = never,
+  StdCookies extends StandardSchemaV1 = never,
   StdBody extends StandardSchemaV1 = never,
   StdBodyMapping extends Record<string, StandardSchemaV1> = never,
 >(options: {
   params?: StdParams;
   headers?: StdHeaders;
   queries?: StdQueries;
+  cookies?: StdCookies;
   body?: StdBody | KoriStdRequestSchemaContentBody<StdBodyMapping>;
 }): KoriStdRequestSchema<
   KoriStdSchema<StdParams>,
   KoriStdSchema<StdHeaders>,
   KoriStdSchema<StdQueries>,
+  KoriStdSchema<StdCookies>,
   KoriStdSchema<StdBody>,
   KoriRequestSchemaStdToBodyMapping<StdBodyMapping>
 > {
   const params = options.params ? createKoriStdSchema(options.params) : undefined;
   const headers = options.headers ? createKoriStdSchema(options.headers) : undefined;
   const queries = options.queries ? createKoriStdSchema(options.queries) : undefined;
+  const cookies = options.cookies ? createKoriStdSchema(options.cookies) : undefined;
 
   if (!options.body) {
     return createKoriRequestSchema({
@@ -146,6 +162,7 @@ export function stdRequestSchema<
       params,
       headers,
       queries,
+      cookies,
     });
   }
 
@@ -156,6 +173,7 @@ export function stdRequestSchema<
       params,
       headers,
       queries,
+      cookies,
       body: createKoriStdSchema(options.body),
     });
   }
@@ -166,6 +184,7 @@ export function stdRequestSchema<
     params,
     headers,
     queries,
+    cookies,
     body: {
       description: options.body.description,
       content: toKoriBodyMapping(options.body.content),

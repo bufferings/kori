@@ -43,6 +43,7 @@ const mockRequestBase = {
   params: () => ({ id: '123' }),
   queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
+  cookies: () => ({}),
 } as unknown as KoriRequest;
 
 describe('resolveRequestValidator - Content body validation', () => {

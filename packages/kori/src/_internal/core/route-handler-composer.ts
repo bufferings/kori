@@ -343,6 +343,7 @@ export function composeRouteHandler<
         validatedParams: () => validationResult.value.params,
         validatedQueries: () => validationResult.value.queries,
         validatedHeaders: () => validationResult.value.headers,
+        validatedCookies: () => validationResult.value.cookies,
       });
     }
 

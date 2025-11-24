@@ -181,6 +181,7 @@ describe('zodRequestSchema', () => {
           KoriZodSchema<typeof paramsSchema>,
           KoriZodSchema<never>,
           KoriZodSchema<never>,
+          KoriZodSchema<never>,
           KoriZodSchema<typeof bodySchema>,
           never
         >
@@ -206,6 +207,7 @@ describe('zodRequestSchema', () => {
           KoriZodSchema<typeof paramsSchema>,
           KoriZodSchema<never>,
           KoriZodSchema<never>,
+          KoriZodSchema<never>,
           never,
           { 'application/json': KoriZodSchema<typeof jsonBodySchema> }
         >
@@ -218,6 +220,7 @@ describe('zodRequestSchema', () => {
       expectTypeOf(result).toExtend<
         KoriRequestSchema<
           'zod',
+          KoriZodSchema<never>,
           KoriZodSchema<never>,
           KoriZodSchema<never>,
           KoriZodSchema<never>,

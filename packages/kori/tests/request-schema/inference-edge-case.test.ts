@@ -24,6 +24,7 @@ type TestRequestSchema<
   KoriSchema<typeof testProvider, never, never>,
   KoriSchema<typeof testProvider, never, never>,
   KoriSchema<typeof testProvider, never, never>,
+  KoriSchema<typeof testProvider, never, never>,
   Body,
   BodyMapping
 >;

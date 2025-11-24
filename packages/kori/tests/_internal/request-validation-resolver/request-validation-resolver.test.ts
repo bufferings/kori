@@ -22,6 +22,11 @@ const headersSchema = createKoriSchema({
   definition: { type: 'headers' },
 });
 
+const cookiesSchema = createKoriSchema({
+  provider: 'test-provider',
+  definition: { type: 'cookies' },
+});
+
 const bodySchema = createKoriSchema({
   provider: 'test-provider',
   definition: { type: 'body' },
@@ -39,6 +44,8 @@ const testRequestValidator = createKoriValidator({
         return succeed({ ...(value as any), __test_processed: 'by-queries-validator' });
       case 'headers':
         return succeed({ ...(value as any), __test_processed: 'by-headers-validator' });
+      case 'cookies':
+        return succeed({ ...(value as any), __test_processed: 'by-cookies-validator' });
       case 'body':
         return succeed({ ...(value as any), __test_processed: 'by-body-validator' });
       default:
@@ -52,6 +59,7 @@ const testRequestSchema = createKoriRequestSchema({
   params: paramsSchema,
   queries: queriesSchema,
   headers: headersSchema,
+  cookies: cookiesSchema,
   body: bodySchema,
 });
 
@@ -59,6 +67,7 @@ const mockRequest = {
   params: () => ({ id: '123' }),
   queries: () => ({ page: '1' }),
   headers: () => ({ authorization: 'Bearer token' }),
+  cookies: () => ({ sessionId: 'abc123' }),
   bodyJson: () => Promise.resolve({ name: 'test' }),
   mediaType: () => 'application/json',
 } as unknown as KoriRequest;
@@ -125,6 +134,7 @@ describe('resolveRequestValidator', () => {
         params: { id: '123', __test_processed: 'by-params-validator' },
         queries: undefined,
         headers: undefined,
+        cookies: undefined,
         body: undefined,
       });
     });
@@ -150,6 +160,7 @@ describe('resolveRequestValidator', () => {
         params: { id: '123', __test_processed: 'by-params-validator' },
         queries: { page: '1', __test_processed: 'by-queries-validator' },
         headers: { authorization: 'Bearer token', __test_processed: 'by-headers-validator' },
+        cookies: { sessionId: 'abc123', __test_processed: 'by-cookies-validator' },
         body: { name: 'test', __test_processed: 'by-body-validator' },
       });
     });
@@ -179,6 +190,7 @@ describe('resolveRequestValidator', () => {
         params: undefined,
         queries: undefined,
         headers: undefined,
+        cookies: undefined,
         body: undefined,
       });
     });
@@ -228,6 +240,7 @@ describe('resolveRequestValidator', () => {
         headers: { stage: 'validation', reason: 'headers failure' },
       });
       expect(result.reason.queries).toBeUndefined();
+      expect(result.reason.cookies).toBeUndefined();
       expect(result.reason.body).toBeUndefined();
     });
 
@@ -271,6 +284,7 @@ describe('resolveRequestValidator', () => {
       });
       expect(result.reason.params).toBeUndefined();
       expect(result.reason.headers).toBeUndefined();
+      expect(result.reason.cookies).toBeUndefined();
       expect(result.reason.body).toBeUndefined();
     });
   });

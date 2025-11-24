@@ -181,6 +181,7 @@ describe('stdRequestSchema', () => {
           KoriStdSchema<typeof paramsSchema>,
           KoriStdSchema<never>,
           KoriStdSchema<never>,
+          KoriStdSchema<never>,
           KoriStdSchema<typeof bodySchema>,
           never
         >
@@ -206,6 +207,7 @@ describe('stdRequestSchema', () => {
           KoriStdSchema<typeof paramsSchema>,
           KoriStdSchema<never>,
           KoriStdSchema<never>,
+          KoriStdSchema<never>,
           never,
           { 'application/json': KoriStdSchema<typeof jsonBodySchema> }
         >
@@ -218,6 +220,7 @@ describe('stdRequestSchema', () => {
       expectTypeOf(result).toExtend<
         KoriRequestSchema<
           'standard-schema',
+          KoriStdSchema<never>,
           KoriStdSchema<never>,
           KoriStdSchema<never>,
           KoriStdSchema<never>,

@@ -1,6 +1,7 @@
 import { type KoriRequest } from '../context/index.js';
 import {
   type InferRequestSchemaBodyOutput,
+  type InferRequestSchemaCookiesOutput,
   type InferRequestSchemaHeadersOutput,
   type InferRequestSchemaParamsOutput,
   type InferRequestSchemaProvider,
@@ -47,6 +48,7 @@ export type ValidatedRequest<
             validatedParams(): InferRequestSchemaParamsOutput<ReqS>;
             validatedQueries(): InferRequestSchemaQueriesOutput<ReqS>;
             validatedHeaders(): InferRequestSchemaHeadersOutput<ReqS>;
+            validatedCookies(): InferRequestSchemaCookiesOutput<ReqS>;
             validatedBody(): InferRequestSchemaBodyOutput<ReqS>;
           }
         : unknown

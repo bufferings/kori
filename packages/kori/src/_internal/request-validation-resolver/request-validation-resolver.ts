@@ -14,7 +14,7 @@ import { validateRequestField } from './validate-request-field.js';
  * This function checks for configuration errors, such as a mismatch between the
  * schema provider and the validator provider. If the configuration is valid, it
  * returns a new function that performs validation for all parts of a request
- * (params, queries, headers, and body) in parallel.
+ * (params, queries, headers, cookies, and body) in parallel.
  *
  * If no schema or validator is provided, it returns `undefined`, indicating
  * that no validation is necessary for the route.
@@ -44,20 +44,34 @@ export function resolveRequestValidator({
   }
 
   return async (req) => {
-    const { body: bodySchema, params: paramsSchema, queries: queriesSchema, headers: headersSchema } = schema;
+    const {
+      body: bodySchema,
+      params: paramsSchema,
+      queries: queriesSchema,
+      headers: headersSchema,
+      cookies: cookiesSchema,
+    } = schema;
 
-    const [paramsResult, queriesResult, headersResult, bodyResult] = await Promise.all([
+    const [paramsResult, queriesResult, headersResult, cookiesResult, bodyResult] = await Promise.all([
       validateRequestField({ validator, schema: paramsSchema, value: req.params() }),
       validateRequestField({ validator, schema: queriesSchema, value: req.queries() }),
       validateRequestField({ validator, schema: headersSchema, value: req.headers() }),
+      validateRequestField({ validator, schema: cookiesSchema, value: req.cookies() }),
       validateRequestBody({ validator, schema: bodySchema, req }),
     ]);
 
-    if (paramsResult.success && queriesResult.success && headersResult.success && bodyResult.success) {
+    if (
+      paramsResult.success &&
+      queriesResult.success &&
+      headersResult.success &&
+      cookiesResult.success &&
+      bodyResult.success
+    ) {
       return succeed({
         params: paramsResult.value,
         queries: queriesResult.value,
         headers: headersResult.value,
+        cookies: cookiesResult.value,
         body: bodyResult.value,
       });
     }
@@ -71,6 +85,9 @@ export function resolveRequestValidator({
     }
     if (!headersResult.success) {
       reasons.headers = headersResult.reason;
+    }
+    if (!cookiesResult.success) {
+      reasons.cookies = cookiesResult.reason;
     }
     if (!bodyResult.success) {
       reasons.body = bodyResult.reason;

@@ -16,11 +16,12 @@ import { toKoriBodyMapping, type KoriRequestSchemaZodToBodyMapping } from './bod
 /**
  * Request schema type definition for Zod-based validation.
  * Represents the shape of a request schema that uses Zod schemas
- * for URL parameters, headers, query strings, and request body.
+ * for URL parameters, headers, query strings, cookies, and request body.
  *
  * @template Params - Zod schema for URL path parameters
  * @template Headers - Zod schema for HTTP headers
  * @template Queries - Zod schema for query string parameters
+ * @template Cookies - Zod schema for HTTP cookies
  * @template Body - Zod schema for simple request body
  * @template BodyMapping - Content-type mapping for complex request body
  */
@@ -28,9 +29,10 @@ export type KoriZodRequestSchema<
   Params extends KoriZodSchemaBase = never,
   Headers extends KoriZodSchemaBase = never,
   Queries extends KoriZodSchemaBase = never,
+  Cookies extends KoriZodSchemaBase = never,
   Body extends KoriZodSchemaBase = never,
   BodyMapping extends Record<string, KoriZodSchemaBase> = never,
-> = KoriRequestSchema<KoriZodSchemaProvider, Params, Headers, Queries, Body, BodyMapping>;
+> = KoriRequestSchema<KoriZodSchemaProvider, Params, Headers, Queries, Cookies, Body, BodyMapping>;
 
 /**
  * Creates a request schema with Zod validation for simple body types.
@@ -39,10 +41,12 @@ export type KoriZodRequestSchema<
  * @template ZParams - Zod type for URL path parameters
  * @template ZHeaders - Zod type for HTTP headers
  * @template ZQueries - Zod type for query string parameters
+ * @template ZCookies - Zod type for HTTP cookies
  * @template ZBody - Zod type for request body
  * @param options.params - Zod schema for validating URL parameters
  * @param options.headers - Zod schema for validating HTTP headers
  * @param options.queries - Zod schema for validating query parameters
+ * @param options.cookies - Zod schema for validating HTTP cookies
  * @param options.body - Zod schema or configuration for request body
  * @returns Request schema with Zod validation
  *
@@ -59,16 +63,19 @@ export function zodRequestSchema<
   ZParams extends z.ZodType = never,
   ZHeaders extends z.ZodType = never,
   ZQueries extends z.ZodType = never,
+  ZCookies extends z.ZodType = never,
   ZBody extends z.ZodType = never,
 >(options: {
   params?: ZParams;
   headers?: ZHeaders;
   queries?: ZQueries;
+  cookies?: ZCookies;
   body?: ZBody;
 }): KoriZodRequestSchema<
   KoriZodSchema<ZParams>,
   KoriZodSchema<ZHeaders>,
   KoriZodSchema<ZQueries>,
+  KoriZodSchema<ZCookies>,
   KoriZodSchema<ZBody>
 >;
 
@@ -80,10 +87,12 @@ export function zodRequestSchema<
  * @template ZParams - Zod type for URL path parameters
  * @template ZHeaders - Zod type for HTTP headers
  * @template ZQueries - Zod type for query string parameters
+ * @template ZCookies - Zod type for HTTP cookies
  * @template ZBodyMapping - Content-type to Zod schema mapping
  * @param options.params - Zod schema for validating URL parameters
  * @param options.headers - Zod schema for validating HTTP headers
  * @param options.queries - Zod schema for validating query parameters
+ * @param options.cookies - Zod schema for validating HTTP cookies
  * @param options.body - Content-type mapping with different schemas
  * @returns Request schema with Zod validation
  *
@@ -104,16 +113,19 @@ export function zodRequestSchema<
   ZParams extends z.ZodType = never,
   ZHeaders extends z.ZodType = never,
   ZQueries extends z.ZodType = never,
+  ZCookies extends z.ZodType = never,
   ZBodyMapping extends Record<string, z.ZodType> = never,
 >(options: {
   params?: ZParams;
   headers?: ZHeaders;
   queries?: ZQueries;
+  cookies?: ZCookies;
   body?: KoriZodRequestSchemaContentBody<ZBodyMapping>;
 }): KoriZodRequestSchema<
   KoriZodSchema<ZParams>,
   KoriZodSchema<ZHeaders>,
   KoriZodSchema<ZQueries>,
+  KoriZodSchema<ZCookies>,
   never,
   KoriRequestSchemaZodToBodyMapping<ZBodyMapping>
 >;
@@ -122,23 +134,27 @@ export function zodRequestSchema<
   ZParams extends z.ZodType = never,
   ZHeaders extends z.ZodType = never,
   ZQueries extends z.ZodType = never,
+  ZCookies extends z.ZodType = never,
   ZBody extends z.ZodType = never,
   ZBodyMapping extends Record<string, z.ZodType> = never,
 >(options: {
   params?: ZParams;
   headers?: ZHeaders;
   queries?: ZQueries;
+  cookies?: ZCookies;
   body?: ZBody | KoriZodRequestSchemaContentBody<ZBodyMapping>;
 }): KoriZodRequestSchema<
   KoriZodSchema<ZParams>,
   KoriZodSchema<ZHeaders>,
   KoriZodSchema<ZQueries>,
+  KoriZodSchema<ZCookies>,
   KoriZodSchema<ZBody>,
   KoriRequestSchemaZodToBodyMapping<ZBodyMapping>
 > {
   const params = options.params ? createKoriZodSchema(options.params) : undefined;
   const headers = options.headers ? createKoriZodSchema(options.headers) : undefined;
   const queries = options.queries ? createKoriZodSchema(options.queries) : undefined;
+  const cookies = options.cookies ? createKoriZodSchema(options.cookies) : undefined;
 
   if (!options.body) {
     return createKoriRequestSchema({
@@ -146,6 +162,7 @@ export function zodRequestSchema<
       params,
       headers,
       queries,
+      cookies,
     });
   }
 
@@ -156,6 +173,7 @@ export function zodRequestSchema<
       params,
       headers,
       queries,
+      cookies,
       body: createKoriZodSchema(options.body),
     });
   }
@@ -166,6 +184,7 @@ export function zodRequestSchema<
     params,
     headers,
     queries,
+    cookies,
     body: {
       description: options.body.description,
       content: toKoriBodyMapping(options.body.content),

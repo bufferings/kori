@@ -195,4 +195,89 @@ describe('Request validation integration', () => {
       },
     });
   });
+
+  test('validates cookies with valid data', async () => {
+    const onRequestValidationFailure = vi.fn();
+
+    const app = createKori({
+      ...enableZodRequestValidation({ onRequestValidationFailure }),
+    }).get('/preferences', {
+      requestSchema: zodRequestSchema({
+        cookies: z.object({
+          sessionId: z.string().uuid(),
+          theme: z.enum(['light', 'dark']).default('light'),
+        }),
+      }),
+      handler: (ctx) => {
+        const { sessionId, theme } = ctx.req.validatedCookies();
+
+        return ctx.res.json({
+          success: true,
+          sessionId,
+          theme,
+        });
+      },
+    });
+    const { fetchHandler } = await app.start();
+
+    const response = await fetchHandler(
+      new Request('http://localhost/preferences', {
+        method: 'GET',
+        headers: {
+          cookie: 'sessionId=550e8400-e29b-41d4-a716-446655440000; theme=dark',
+        },
+      }),
+    );
+
+    expect(onRequestValidationFailure).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+
+    const body = await response.json();
+    expect(body).toEqual({
+      success: true,
+      sessionId: '550e8400-e29b-41d4-a716-446655440000',
+      theme: 'dark',
+    });
+  });
+
+  test('rejects invalid cookies', async () => {
+    const onRequestValidationFailure = vi.fn((ctx) => {
+      return ctx.res.badRequest({ message: 'Invalid cookies' });
+    });
+
+    const app = createKori({
+      ...enableZodRequestValidation({ onRequestValidationFailure }),
+    }).get('/preferences', {
+      requestSchema: zodRequestSchema({
+        cookies: z.object({
+          sessionId: z.string().uuid(),
+        }),
+      }),
+      handler: (ctx) => {
+        const { sessionId } = ctx.req.validatedCookies();
+        return ctx.res.json({ sessionId });
+      },
+    });
+    const { fetchHandler } = await app.start();
+
+    const response = await fetchHandler(
+      new Request('http://localhost/preferences', {
+        method: 'GET',
+        headers: {
+          cookie: 'sessionId=not-a-uuid',
+        },
+      }),
+    );
+
+    expect(onRequestValidationFailure).toHaveBeenCalled();
+    expect(response.status).toBe(400);
+
+    const body = await response.json();
+    expect(body).toEqual({
+      error: {
+        type: 'BAD_REQUEST',
+        message: 'Invalid cookies',
+      },
+    });
+  });
 });
