@@ -1,4 +1,9 @@
+[hooks]
+postinstall = "corepack enable"
+
+[settings]
+disable_tools = ["pnpm"]
+
 [tools]
 lefthook = "1.13.6"
 node = "20.19.5"
-pnpm = "10.18.2"

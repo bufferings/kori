@@ -14,14 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Extract Node.js version from mise.toml
+        id: mise-node
+        run: |
+          NODE_VERSION=$(grep 'node =' mise.toml | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install
