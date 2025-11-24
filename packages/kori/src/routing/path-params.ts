@@ -58,6 +58,9 @@ export type PathParams<Path extends string> = string extends Path
  * that returns parameters extracted from the specific path pattern.
  * Also allows access to parent path parameters through index signature.
  *
+ * Note: Parent path parameters are accessible but not autocompleted, and their
+ * type is `string | undefined` because child routes don't know parent path context at compile time.
+ *
  * @template Req - Base request type to extend
  * @template Path - URL path pattern with parameter placeholders
  *
