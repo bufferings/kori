@@ -1,5 +1,6 @@
 ---
 '@korix/kori': patch
+'@korix/openapi-plugin': patch
 '@korix/openapi-swagger-ui-plugin': patch
 ---
 
@@ -10,4 +11,5 @@
 - Remove unused `aborted` property from ResState
 - Fix defer and error handling in routes without hooks
 - Use `.get()` instead of `.route()` for Swagger UI routes (HEAD handled automatically)
+- Remove HEAD from toOpenApiMethod test (HEAD is no longer a RouteHttpMethod)
 
