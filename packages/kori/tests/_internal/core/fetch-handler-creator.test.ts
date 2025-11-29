@@ -4,6 +4,9 @@ import { createFetchHandler } from '../../../src/_internal/core/fetch-handler-cr
 import { createRouteRegistry } from '../../../src/_internal/core/route-registry.js';
 import { createKoriLoggerFactory } from '../../../src/logging/logger-factory.js';
 import { createInstanceLogger } from '../../../src/logging/logger-helpers.js';
+import { type KoriCompiledRouteMatcher } from '../../../src/route-matcher/route-matcher.js';
+
+type MatcherOptions = Parameters<KoriCompiledRouteMatcher>[0];
 
 describe('createFetchHandler', () => {
   test('returns Response for matched route (normal flow)', async () => {
@@ -14,7 +17,7 @@ describe('createFetchHandler', () => {
       handler: (ctx: any) => ctx.res.json({ ok: true, id: ctx.req.param('id'), env: ctx.env?.flag }),
     });
 
-    const compiledRouteMatcher = (_opts: unknown) => ({ routeId, pathParams: { id: '123' } });
+    const compiledRouteMatcher = (_opts: MatcherOptions) => ({ routeId, pathParams: { id: '123' } });
 
     const loggerFactory = createKoriLoggerFactory();
     const instanceLogger = createInstanceLogger(loggerFactory);
@@ -42,7 +45,7 @@ describe('createFetchHandler', () => {
 
   test('executes deferred callbacks in reverse order on close', async () => {
     const registry = createRouteRegistry();
-    const compiledRouteMatcher = (_opts: unknown) => undefined;
+    const compiledRouteMatcher = (_opts: MatcherOptions) => undefined;
 
     const loggerFactory = createKoriLoggerFactory();
     const instanceLogger = createInstanceLogger(loggerFactory);
@@ -85,7 +88,7 @@ describe('createFetchHandler', () => {
 
   test('uses onRouteNotFound when no route matches', async () => {
     const registry = createRouteRegistry();
-    const compiledRouteMatcher = (_opts: unknown) => undefined;
+    const compiledRouteMatcher = (_opts: MatcherOptions) => undefined;
 
     const loggerFactory = createKoriLoggerFactory();
     const instanceLogger = createInstanceLogger(loggerFactory);
@@ -111,7 +114,7 @@ describe('createFetchHandler', () => {
     const registry = createRouteRegistry();
     // Create a fake routeId that is not registered
     const fakeRouteId = Symbol('fake');
-    const compiledRouteMatcher = (_opts: unknown) => ({ routeId: fakeRouteId, pathParams: {} });
+    const compiledRouteMatcher = (_opts: MatcherOptions) => ({ routeId: fakeRouteId, pathParams: {} });
 
     const loggerFactory = createKoriLoggerFactory();
     const instanceLogger = createInstanceLogger(loggerFactory);
@@ -135,7 +138,7 @@ describe('createFetchHandler', () => {
 
   test('onClose handles errors from deferred callbacks gracefully', async () => {
     const registry = createRouteRegistry();
-    const compiledRouteMatcher = (_opts: unknown) => undefined;
+    const compiledRouteMatcher = (_opts: MatcherOptions) => undefined;
 
     const loggerFactory = createKoriLoggerFactory();
     const instanceLogger = createInstanceLogger(loggerFactory);

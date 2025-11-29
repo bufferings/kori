@@ -19,6 +19,14 @@ import { type KoriRouteRegistry } from './route-registry.js';
 type KoriOnStartHookAny = KoriOnStartHook<any, any>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+function stripBody(response: Response): Response {
+  return new Response(null, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}
+
 /**
  * Creates a fetch handler for processing HTTP requests.
  *
@@ -63,7 +71,7 @@ export function createFetchHandler({
       const routeMatch = compiledRouteMatcher({ request, methodOverride: isHead ? 'GET' : undefined });
       if (!routeMatch) {
         const notFound = await onRouteNotFound(request);
-        return isHead ? new Response(null, notFound) : notFound;
+        return isHead ? stripBody(notFound) : notFound;
       }
 
       const routeRecord = routeRegistry.get(routeMatch.routeId);
@@ -75,7 +83,7 @@ export function createFetchHandler({
           routeId: routeMatch.routeId,
         });
         const notFound = await onRouteNotFound(request);
-        return isHead ? new Response(null, notFound) : notFound;
+        return isHead ? stripBody(notFound) : notFound;
       }
 
       const req = createKoriRequest({
@@ -94,12 +102,7 @@ export function createFetchHandler({
       const composedHandler = routeRecord.handler as (ctx: typeof handlerCtx) => Promise<KoriResponse>;
       const res = await composedHandler(handlerCtx);
       const response = res.build();
-
-      if (isHead) {
-        return new Response(null, response);
-      }
-
-      return response;
+      return isHead ? stripBody(response) : response;
     };
 
     const onCloseImpl = async (): Promise<void> => {
