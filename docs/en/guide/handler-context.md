@@ -1,10 +1,10 @@
 # Handler Context
 
-The **Handler Context** manages request processing - accessing request data, building responses, and extending functionality per request. It's passed to every route handler and contains everything you need to process HTTP requests.
+The Handler Context manages request processing - accessing request data, building responses, and extending functionality per request. It's passed to every route handler and contains everything you need to process HTTP requests.
 
 ## What is Handler Context?
 
-The **KoriHandlerContext** is passed to every route handler and gives you access to request data, response builders, and the application environment:
+The KoriHandlerContext is passed to every route handler and gives you access to request data, response builders, and the application environment:
 
 ```typescript
 type KoriHandlerContext<Env, Req, Res> = {
@@ -23,14 +23,7 @@ type KoriHandlerContext<Env, Req, Res> = {
 };
 ```
 
-**Used for:**
-
-- Processing HTTP requests
-- Accessing request data
-- Building responses
-- Per-request logic
-
-Handler context supports request and response extensions for adding custom functionality.
+Use it for processing HTTP requests, accessing request data, building responses, and per-request logic. Handler context supports request and response extensions for adding custom functionality.
 
 ## Basic Usage
 
@@ -90,6 +83,13 @@ app.get('/users/:id/posts', async (ctx) => {
   const jsonData = await ctx.req.bodyJson();
   const textData = await ctx.req.bodyText();
   const formData = await ctx.req.bodyFormData();
+
+  // Validated data (when using requestSchema)
+  // const { ... } = ctx.req.validatedParams();
+  // const { ... } = ctx.req.validatedQueries();
+  // const { ... } = ctx.req.validatedHeaders();
+  // const { ... } = ctx.req.validatedCookies();
+  // const { ... } = ctx.req.validatedBody();
 
   return ctx.res.json({
     userId: id,

@@ -14,10 +14,11 @@ Your API is running at `http://localhost:3000`
 
 ## Basic API
 
-Create your first endpoint:
+Create your first endpoint and run it:
 
 ```typescript
 import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
 
 const app = createKori();
 
@@ -25,7 +26,34 @@ app.get('/hello', (ctx) => {
   return ctx.res.text('Hello, Kori!');
 });
 
-export { app };
+await startNodejsServer(app, { port: 3000 });
+```
+
+Your API is now running at `http://localhost:3000/hello`
+
+## Running the Server
+
+### Node.js Server
+
+The example above uses the Node.js server adapter. You can also configure hostname and other options:
+
+```typescript
+await startNodejsServer(app, {
+  port: 3000,
+  hostname: 'localhost',
+});
+```
+
+### Testing & Custom Environments
+
+For testing or custom deployments, you can use the `.start()` method to initialize the application and get a fetch handler:
+
+```typescript
+// Initialize the application
+const { fetchHandler } = await app.start();
+
+// Use the fetch handler directly (e.g., in tests)
+const response = await fetchHandler(new Request('http://localhost/hello'));
 ```
 
 ## Request & Response
@@ -81,8 +109,8 @@ app.log().info('Application will start');
 export { app };
 ```
 
-- **`app.log()`** - Application-level logger (outside of Kori context)
-- **`ctx.log()`** - Context-aware logger (inside Kori context: hooks and handlers)
+- `app.log()` - Application-level logger (outside of Kori context)
+- `ctx.log()` - Context-aware logger (inside Kori context: hooks and handlers)
 
 Sample log output:
 
@@ -206,9 +234,11 @@ Generate interactive API documentation from your validation schemas:
 
 ```typescript
 import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
 import {
   zodRequestSchema,
-  enableZodRequestValidation,
+  zodResponseSchema,
+  enableZodRequestAndResponseValidation,
 } from '@korix/zod-schema-adapter';
 import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
@@ -219,26 +249,28 @@ const CreateUserSchema = z.object({
   age: z.number().int().min(0).optional(),
 });
 
+const UserResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  age: z.number().optional(),
+  createdAt: z.string(),
+});
+
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableZodRequestAndResponseValidation(),
 })
-  // Generate OpenAPI specification from Zod schemas
   .applyPlugin(
     zodOpenApiPlugin({
       info: { title: 'My API', version: '1.0.0' },
     }),
   )
-  // Serve interactive documentation UI
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
-  responseSchema: zodResponseSchema({ default: z.any() }),
+  responseSchema: zodResponseSchema({ '201': UserResponseSchema }),
   handler: (ctx) => {
-    // Type-safe validated body access
     const { name, age } = ctx.req.validatedBody();
-
-    // Your business logic here (save to database, etc.)
 
     return ctx.res.status(201).json({
       id: '42',
@@ -249,7 +281,7 @@ app.post('/users', {
   },
 });
 
-export { app };
+await startNodejsServer(app, { port: 3000 });
 ```
 
 Visit `http://localhost:3000/docs` for interactive documentation!

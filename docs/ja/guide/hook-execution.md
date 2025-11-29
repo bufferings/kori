@@ -50,7 +50,7 @@ const app = createKori()
 
 主要な動作：
 
-- `defer`コールバックは**逆順**（LIFO）で実行
+- `defer`コールバックは逆順（LIFO）で実行
 - `onRequest`はレスポンスを返すことで処理を停止可能
 - フックはリクエスト到着時ではなく、ルート定義時にキャプチャされる
 
@@ -127,8 +127,8 @@ app.get('/protected', (ctx) => {
 
 エラーが発生すると、`onError`フックが通常の実行フローを置き換えます：
 
-**通常フロー**：`onRequest` → ルートハンドラー → `defer`コールバック
-**エラーフロー**：`onRequest` → エラー発生 → `onError`フック → `defer`コールバック
+- 通常フロー：`onRequest` → ルートハンドラー → `defer`コールバック
+- エラーフロー：`onRequest` → エラー発生 → `onError`フック → `defer`コールバック
 
 ```typescript
 const app = createKori()

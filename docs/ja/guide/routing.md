@@ -27,7 +27,7 @@ app.post('/users', async (ctx) => {
 
 // PUTルート
 app.put('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const body = await ctx.req.bodyJson();
   const user = await updateUser(id, body);
   return ctx.res.json({ user });
@@ -35,14 +35,14 @@ app.put('/users/:id', async (ctx) => {
 
 // DELETEルート
 app.delete('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   await deleteUser(id);
   return ctx.res.empty();
 });
 
 // PATCHルート
 app.patch('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const body = await ctx.req.bodyJson();
   const user = await partialUpdateUser(id, body);
   return ctx.res.json({ user });
@@ -58,15 +58,15 @@ Koriは、より良いIDE支援のためにコンパイル時にパスパラメ�
 ```typescript
 // 単一パラメータ - TypeScriptは{ id: string }を推論
 app.get('/users/:id', (ctx) => {
-  // ctx.req.pathParams()は{ id: string }として型付け
-  const { id } = ctx.req.pathParams(); // idはstring
+  // ctx.req.param('id')はstringとして型付け
+  const id = ctx.req.param('id');
   return ctx.res.json({ userId: id });
 });
 
 // 複数パラメータ - 自動的に推論
 app.get('/users/:userId/posts/:postId', (ctx) => {
-  // ctx.req.pathParams()は{ userId: string, postId: string }として型付け
-  const { userId, postId } = ctx.req.pathParams();
+  // ctx.req.params()は{ userId: string, postId: string }として型付け
+  const { userId, postId } = ctx.req.params();
   return ctx.res.json({
     userId, // string
     postId, // string
@@ -76,28 +76,49 @@ app.get('/users/:userId/posts/:postId', (ctx) => {
 
 // オプションパラメータ（?を使用）
 app.get('/search/:query/:page?', (ctx) => {
-  // ctx.req.pathParams()は{ query: string, page?: string }として型付け
-  const { query, page } = ctx.req.pathParams();
+  // ctx.req.params()は{ query: string, page?: string }として型付け
+  const { query, page } = ctx.req.params();
   const pageNumber = page ? parseInt(page) : 1;
   return ctx.res.json({ query, page: pageNumber });
 });
 
 // カスタム正規表現パターン
 app.get('/files/:id{[0-9]+}', (ctx) => {
-  // ctx.req.pathParams()は{ id: string }として型付け
-  const { id } = ctx.req.pathParams(); // idは数字のみにマッチ
+  // ctx.req.param('id')はstringとして型付け
+  const id = ctx.req.param('id'); // idは数字のみにマッチ
   return ctx.res.json({ fileId: id });
 });
 ```
 
 型推論は、コンパイル時にルート文字列を解析してパラメータ名を抽出することで動作し、タイプミスを防ぎ、IDE自動補完を改善します。
 
-**重要：** 型推論は、ルートパスを文字列リテラルとしてルートメソッドに直接渡す場合にのみ機能します。以下の場合は機能**しません**：
+型推論は、ルートパスを文字列リテラルとしてルートメソッドに直接渡す場合にのみ機能します。以下の場合は機能しません：
 
 - 変数で定義されたルート：`const path = '/users/:id'; app.get(path, ...)` - 推論なし
 - 親ルートからのパスパラメータ（`createChild`プレフィックスで定義）- これらは推論される型に含まれません
 
 ルートメソッド自体の文字列リテラルで直接定義されたパラメータのみが型安全になります。
+
+### 個別パラメータへのアクセス
+
+1つのパラメータだけが必要な場合は、`param(name)`を使用するとコードがすっきりします：
+
+```typescript
+app.get('/users/:id', (ctx) => {
+  // シンプルで直接的
+  const id = ctx.req.param('id');
+  return ctx.res.json({ userId: id });
+});
+```
+
+複数のパラメータの場合は、`params()`と分割代入を使用：
+
+```typescript
+app.get('/users/:userId/posts/:postId', (ctx) => {
+  const { userId, postId } = ctx.req.params();
+  return ctx.res.json({ userId, postId });
+});
+```
 
 ## ルートグループと子ルート
 
@@ -161,17 +182,17 @@ const adminRoutes = app.createChild({
 ルートは登録された順序でマッチします。より具体的なルートは、より一般的なものよりも前に定義する必要があります：
 
 ```typescript
-// ✅ 正しい：具体的なルートを最初に
+// 正しい：具体的なルートを最初に
 app.get('/users/me', (ctx) => {
   return ctx.res.json({ user: getCurrentUser(ctx) });
 });
 
 app.get('/users/:id', (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   return ctx.res.json({ user: getUserById(id) });
 });
 
-// ❌ 不正：これは決してマッチしない
+// 不正：これは決してマッチしない
 // app.get('/users/:id', handler);
 // app.get('/users/me', handler); // 決してマッチしない！
 ```

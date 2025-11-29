@@ -58,12 +58,12 @@ const app = createKori()
   .get('/users/:id', {
     requestSchema: zodRequestSchema({
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     }),
     responseSchema: zodResponseSchema({
       '200': z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         name: z.string(),
         email: z.string().email(),
       }),
@@ -159,8 +159,8 @@ import { z } from 'zod';
 app.get('/posts/:postId/comments/:commentId', {
   requestSchema: zodRequestSchema({
     params: z.object({
-      postId: z.string().uuid().meta({ description: 'Post UUID' }),
-      commentId: z.string().uuid().meta({ description: 'Comment UUID' }),
+      postId: z.uuid().meta({ description: 'Post UUID' }),
+      commentId: z.uuid().meta({ description: 'Comment UUID' }),
     }),
   }),
   handler: (ctx) => {
@@ -179,7 +179,7 @@ app.get('/users', {
     }),
   }),
   handler: (ctx) => {
-    const { page, limit, search } = ctx.req.validatedQuery();
+    const { page, limit, search } = ctx.req.validatedQueries();
     return ctx.res.json({ page, limit, search });
   },
 });
@@ -236,7 +236,7 @@ Use `.meta()` to add descriptions and examples to OpenAPI documentation:
 
 ```typescript
 const userSchema = z.object({
-  id: z.string().uuid().meta({ description: 'Unique user identifier' }),
+  id: z.uuid().meta({ description: 'Unique user identifier' }),
   name: z.string().min(1).meta({
     description: 'User full name',
     example: 'John Doe',

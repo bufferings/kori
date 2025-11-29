@@ -1,10 +1,10 @@
 # ハンドラーコンテキスト
 
-**ハンドラーコンテキスト**はリクエスト処理を管理します - リクエストデータへのアクセス、レスポンスの構築、リクエストごとの機能拡張を行います。すべてのルートハンドラーに渡され、HTTPリクエストの処理に必要なすべてが含まれています。
+ハンドラーコンテキストはリクエスト処理を管理します - リクエストデータへのアクセス、レスポンスの構築、リクエストごとの機能拡張を行います。すべてのルートハンドラーに渡され、HTTPリクエストの処理に必要なすべてが含まれています。
 
 ## ハンドラーコンテキストとは？
 
-**KoriHandlerContext**はすべてのルートハンドラーに渡され、リクエストデータ、レスポンスビルダー、アプリケーション環境へのアクセスを提供します：
+KoriHandlerContextはすべてのルートハンドラーに渡され、リクエストデータ、レスポンスビルダー、アプリケーション環境へのアクセスを提供します：
 
 ```typescript
 type KoriHandlerContext<Env, Req, Res> = {
@@ -23,14 +23,7 @@ type KoriHandlerContext<Env, Req, Res> = {
 };
 ```
 
-**用途：**
-
-- HTTPリクエストの処理
-- リクエストデータへのアクセス
-- レスポンスの構築
-- リクエストごとのロジック
-
-ハンドラーコンテキストは、カスタム機能を追加するためのリクエストとレスポンスの拡張をサポートしています。
+HTTPリクエストの処理、リクエストデータへのアクセス、レスポンスの構築、リクエストごとのロジックに使用します。ハンドラーコンテキストは、カスタム機能を追加するためのリクエストとレスポンスの拡張をサポートしています。
 
 ## 基本的な使用方法
 
@@ -42,7 +35,7 @@ app.get('/api/users/:id', async (ctx) => {
   // ctx.req - リクエストデータとメソッド
   // ctx.res - レスポンス構築メソッド
 
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   const user = await ctx.env.db.findUser(id);
 
   return ctx.res.json({ user });
@@ -72,10 +65,12 @@ app.get('/users', async (ctx) => {
 ```typescript
 app.get('/users/:id/posts', async (ctx) => {
   // パスパラメータ
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
 
-  // クエリパラメータ
-  const { limit, offset } = ctx.req.queryParams();
+  // クエリパラメータ（undefinedの可能性あり）
+  const queries = ctx.req.queries();
+  const limit = queries.limit ?? '10';
+  const offset = queries.offset ?? '0';
 
   // ヘッダー
   const authorization = ctx.req.header('authorization');

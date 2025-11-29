@@ -53,7 +53,7 @@ app.get('/users/:id', {
     '500': ErrorSchema,
   }),
   handler: (ctx) => {
-    const { id } = ctx.req.pathParams();
+    const id = ctx.req.param('id');
     const userId = Number(id);
 
     if (userId === 999) {

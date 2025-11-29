@@ -79,7 +79,7 @@ Koriは一貫したフィールドとタイムスタンプを持つ構造化ロ�
 app.get('/users/:id', (ctx) => {
   const logger = ctx.log();
 
-  logger.info('Fetching user', { userId: ctx.req.pathParams().id });
+  logger.info('Fetching user', { userId: ctx.req.param('id') });
 
   return ctx.res.json({ user: { id: '123', name: 'John' } });
 });
@@ -174,7 +174,7 @@ app.get('/profile', (ctx) => {
   // infoレベルが有効な場合のみ関数が呼ばれる
   logger.info('User profile accessed', () => {
     return {
-      userStats: calculateUserStatistics(ctx.req.pathParams().id),
+      userStats: calculateUserStatistics(ctx.req.param('id')),
       memoryUsage: process.memoryUsage(),
       timestamp: Date.now(),
     };

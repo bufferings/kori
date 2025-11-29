@@ -1,10 +1,10 @@
 # Instance Context
 
-The **Instance Context** manages your application's lifecycle - initialization, configuration, and shutdown. It's where you set up shared resources and configure your application environment.
+The Instance Context manages your application's lifecycle - initialization, configuration, and shutdown. It's where you set up shared resources and configure your application environment.
 
 ## What is Instance Context?
 
-The **KoriInstanceContext** handles application-wide concerns that happen once when your app starts up or shuts down:
+The KoriInstanceContext handles application-wide concerns that happen once when your app starts up or shuts down:
 
 ```typescript
 type KoriInstanceContext<Env extends KoriEnvironment> = {
@@ -20,11 +20,7 @@ type KoriInstanceContext<Env extends KoriEnvironment> = {
 };
 ```
 
-**Used for:**
-
-- Setting up database connections
-- Loading configuration
-- Initializing shared services
+Use it for setting up database connections, loading configuration, and initializing shared services.
 
 ## Context Extensions
 

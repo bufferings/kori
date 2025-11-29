@@ -20,6 +20,7 @@ import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import {
   zodRequestSchema,
+  zodResponseSchema,
   enableZodRequestValidation,
 } from '@korix/zod-schema-adapter';
 
@@ -66,6 +67,11 @@ const UserSchema = z.object({
   }),
 });
 
+const UserResponseSchema = z.object({
+  user: UserSchema,
+  message: z.string(),
+});
+
 // Add to your route
 app.post('/users', {
   pluginMeta: openApiMeta({
@@ -77,7 +83,7 @@ app.post('/users', {
     body: UserSchema,
   }),
   responseSchema: zodResponseSchema({
-    default: z.any(),
+    '201': UserResponseSchema,
   }),
   handler: (ctx) => {
     const user = ctx.req.validatedBody();
@@ -130,7 +136,11 @@ app.get('/products/:id', {
     }),
   }),
   responseSchema: zodResponseSchema({
-    default: z.any(),
+    '200': z.object({
+      id: z.number(),
+      name: z.string(),
+      price: z.number(),
+    }),
   }),
   handler: (ctx) => {
     const { id } = ctx.req.validatedParams();
@@ -366,9 +376,9 @@ app.post('/users', {
       email: z.string(),
     }),
   }),
-  handler: (ctx) => {
+  handler: async (ctx) => {
     // Handle request without automatic validation
-    const body = ctx.req.bodyJson(); // Returns unknown, not validated
+    const body = await ctx.req.bodyJson(); // Returns unknown, not validated
 
     // Your custom validation logic here
 

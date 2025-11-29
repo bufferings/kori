@@ -79,6 +79,10 @@ app.put('/users/:id', {
     headers: z.object({
       authorization: z.string().startsWith('Bearer '),
     }),
+    cookies: z.object({
+      sessionId: z.uuid(),
+      theme: z.enum(['light', 'dark']).optional(),
+    }),
     body: z.object({
       name: z.string().min(1).optional(),
       age: z.number().int().min(0).optional(),
@@ -89,6 +93,7 @@ app.put('/users/:id', {
     const { id } = ctx.req.validatedParams();
     const { notify, include } = ctx.req.validatedQueries();
     const { authorization } = ctx.req.validatedHeaders();
+    const { sessionId, theme } = ctx.req.validatedCookies();
     const updates = ctx.req.validatedBody();
 
     return ctx.res.json({
@@ -96,6 +101,7 @@ app.put('/users/:id', {
       updates,
       willNotify: notify ?? false,
       token: authorization,
+      session: { id: sessionId, theme },
     });
   },
 });
@@ -139,6 +145,42 @@ app.post('/users', {
       const user = userData.value;
       return ctx.res.json({ source: 'json', user });
     }
+  },
+});
+```
+
+## Body Parse Type
+
+When defining content types, you can explicitly control how the request body is parsed using the `parseType` option. This is useful for non-standard content types or when you want to force a specific parsing method.
+
+The available parse types are: `'json'`, `'form'`, `'text'`, `'binary'`, and `'auto'` (default).
+
+```typescript
+const WebhookSchema = z.object({
+  event: z.string(),
+  payload: z.record(z.unknown()),
+});
+
+app.post('/webhook', {
+  requestSchema: zodRequestSchema({
+    body: {
+      content: {
+        // Parse custom content type as JSON
+        'application/vnd.custom+json': {
+          schema: WebhookSchema,
+          parseType: 'json',
+        },
+        // Parse binary data
+        'application/octet-stream': {
+          schema: z.instanceof(ArrayBuffer),
+          parseType: 'binary',
+        },
+      },
+    },
+  }),
+  handler: (ctx) => {
+    const body = ctx.req.validatedBody();
+    // ...
   },
 });
 ```
