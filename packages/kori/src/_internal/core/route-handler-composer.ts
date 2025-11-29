@@ -57,7 +57,6 @@ function createHookExecutor<
       for (const hook of hooks.requestHooks) {
         const result = await hook(currentCtx);
         if (isKoriResponse(result)) {
-          // A request hook signaled to abort. The response is in `currentCtx.res`.
           return currentCtx.res;
         }
         if (result) {
@@ -65,8 +64,6 @@ function createHookExecutor<
         }
       }
 
-      // Execute the main handler, but its return value is only a signal.
-      // The actual response to be returned is always `currentCtx.res`.
       await mainHandler(currentCtx);
       return currentCtx.res;
     } catch (err) {
@@ -74,8 +71,6 @@ function createHookExecutor<
         try {
           const result = await hook(currentCtx, err);
           if (isKoriResponse(result)) {
-            // An error hook signaled that it handled the error.
-            // The response is in `currentCtx.res`.
             return currentCtx.res;
           }
         } catch (hookError) {
