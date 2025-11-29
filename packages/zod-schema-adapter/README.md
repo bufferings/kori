@@ -224,7 +224,7 @@ After validation, you can access the validated data using type-safe methods:
 handler: (ctx) => {
   const body = ctx.req.validatedBody(); // Validated request body
   const params = ctx.req.validatedParams(); // Validated path parameters
-  const query = ctx.req.validatedQuery(); // Validated query parameters
+  const queries = ctx.req.validatedQueries(); // Validated query parameters
   const headers = ctx.req.validatedHeaders(); // Validated headers
 
   // All values are fully typed based on your Zod schema
@@ -259,7 +259,7 @@ const app = createKori({
   ...enableZodResponseValidation({
     onResponseValidationFailure: (ctx, reason) => {
       ctx.log().error('Response validation failed', {
-        path: ctx.req.path(),
+        path: ctx.req.url().pathname,
         reason,
       });
       // Optionally send alerts, metrics, etc.

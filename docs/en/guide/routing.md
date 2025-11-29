@@ -92,12 +92,12 @@ app.get('/files/:id{[0-9]+}', (ctx) => {
 
 The type inference works by parsing the route string at compile time and extracting parameter names, helping prevent typos and improve IDE autocompletion.
 
-**Important:** Type inference only works when you pass the route path as a string literal directly to the route method. It does **not** work for:
+Note that type inference only works when you pass the route path as a string literal directly to the route method. It does not work for:
 
-- Routes defined with variables: `const path = '/users/:id'; app.get(path, ...)` - no inference
-- Path parameters from parent routes (defined in `createChild` prefix) - these are not included in the inferred type
+- Routes defined with variables: `const path = '/users/:id'; app.get(path, ...)`
+- Path parameters from parent routes (defined in `createChild` prefix)
 
-Only parameters defined directly in the string literal of the route method itself will be type-safe.
+These parameters can still be accessed at runtime, but without autocomplete and typed as `string | undefined`.
 
 ### Accessing Individual Parameters
 

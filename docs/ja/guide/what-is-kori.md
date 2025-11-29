@@ -7,6 +7,8 @@ Kori - 日本語で氷🧊を意味する - は、クールで型安全性ファ
 ## シンプルに始める
 
 ```typescript
+import { createKori } from '@korix/kori';
+
 const app = createKori();
 
 app.get('/', (ctx) => {
@@ -19,6 +21,8 @@ app.get('/', (ctx) => {
 完全な型安全性でアプリケーション環境を拡張：
 
 ```typescript
+import { createKori } from '@korix/kori';
+
 const app = createKori().onStart(async (ctx) => {
   const config = { apiVersion: 'v1' };
 
@@ -38,6 +42,10 @@ app.get('/status', (ctx) => {
 スキーマを一度定義すれば、バリデーションと型が自動的に取得：
 
 ```typescript
+import { createKori } from '@korix/kori';
+import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { z } from 'zod';
+
 const app = createKori({
   ...enableZodRequestValidation(),
 });
@@ -62,6 +70,12 @@ app.post('/users', {
 OpenAPIプラグインを使用すると、バリデーションスキーマがOpenAPIドキュメントになります：
 
 ```typescript
+import { createKori } from '@korix/kori';
+import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
+import { z } from 'zod';
+
 const app = createKori({
   ...enableZodRequestAndResponseValidation(),
 })

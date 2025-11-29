@@ -55,7 +55,7 @@ app.get('/greeting', (ctx) => {
 
 // With path parameter
 app.get('/greeting/:name', (ctx) => {
-  const { name } = ctx.req.pathParams();
+  const { name } = ctx.req.params();
   return ctx.res.json({ message: `Hello, ${name}!` });
 });
 ```
@@ -308,6 +308,7 @@ Now you can visit http://localhost:3000/docs for interactive API documentation.
 - [`@korix/kori`](./packages/kori) - Core framework
 - [`@korix/nodejs-server`](./packages/nodejs-server) - Node.js HTTP server adapter
 - [`@korix/zod-schema-adapter`](./packages/zod-schema-adapter) - Zod schema adapter for request and response validation
+- [`@korix/standard-schema-adapter`](./packages/standard-schema-adapter) - Standard Schema adapter for validation with other schema libraries
 - [`@korix/zod-openapi-plugin`](./packages/zod-openapi-plugin) - OpenAPI document generation from Zod schemas
 - [`@korix/openapi-swagger-ui-plugin`](./packages/openapi-swagger-ui-plugin) - Interactive API documentation with Swagger UI
 

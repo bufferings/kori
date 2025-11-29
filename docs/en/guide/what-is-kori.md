@@ -7,6 +7,8 @@ Start simple, then use type-safe features as you need them.
 ## Start Simple
 
 ```typescript
+import { createKori } from '@korix/kori';
+
 const app = createKori();
 
 app.get('/', (ctx) => {
@@ -19,6 +21,8 @@ app.get('/', (ctx) => {
 Extend your application environment with full type safety:
 
 ```typescript
+import { createKori } from '@korix/kori';
+
 const app = createKori().onStart(async (ctx) => {
   const config = { apiVersion: 'v1' };
 
@@ -38,6 +42,10 @@ app.get('/status', (ctx) => {
 Define schemas once, get validation and types automatically:
 
 ```typescript
+import { createKori } from '@korix/kori';
+import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { z } from 'zod';
+
 const app = createKori({
   ...enableZodRequestValidation(),
 });
@@ -62,6 +70,12 @@ app.post('/users', {
 With the OpenAPI plugin, your validation schemas become OpenAPI documentation:
 
 ```typescript
+import { createKori } from '@korix/kori';
+import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
+import { z } from 'zod';
+
 const app = createKori({
   ...enableZodRequestAndResponseValidation(),
 })

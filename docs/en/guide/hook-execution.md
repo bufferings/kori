@@ -50,7 +50,7 @@ Request hooks execute for every matching request.
 
 Key behaviors:
 
-- `defer` callbacks execute in **reverse order** (LIFO)
+- `defer` callbacks execute in reverse order (LIFO)
 - `onRequest` can stop processing by returning a response
 - Hooks are captured when you define routes, not when requests arrive
 
@@ -127,8 +127,8 @@ app.get('/protected', (ctx) => {
 
 When an error occurs, `onError` hooks replace the normal execution flow:
 
-**Normal flow**: `onRequest` → Route Handler → `defer` callbacks
-**Error flow**: `onRequest` → Error occurs → `onError` hooks → `defer` callbacks
+- Normal flow: `onRequest` → Route Handler → `defer` callbacks
+- Error flow: `onRequest` → Error occurs → `onError` hooks → `defer` callbacks
 
 ```typescript
 const app = createKori()

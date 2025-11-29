@@ -308,10 +308,10 @@ export function authPlugin<
 
 Plugin-specific loggers provide several advantages:
 
-- **Namespace isolation**: Logs are automatically prefixed with `plugin.{pluginName}`
-- **Better debugging**: Easy to filter logs by specific plugins
-- **Consistent formatting**: Inherits all bindings from the base logger
-- **Channel separation**: Plugin logs use dedicated channels for organization
+- Namespace isolation: Logs are automatically prefixed with `plugin.{pluginName}`
+- Better debugging: Easy to filter logs by specific plugins
+- Consistent formatting: Inherits all bindings from the base logger
+- Channel separation: Plugin logs use dedicated channels for organization
 
 ### Logger Output
 

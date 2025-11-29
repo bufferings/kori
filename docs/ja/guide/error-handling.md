@@ -8,7 +8,7 @@ Koriには、適切なHTTPステータスコードを設定してJSONボディ�
 
 ```typescript
 app.get('/users/:id', async (ctx) => {
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
 
   const user = await getUser(Number(id));
 

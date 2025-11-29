@@ -14,10 +14,11 @@ APIが`http://localhost:3000`で動作しています
 
 ## 基本的なAPI
 
-最初のエンドポイントを作成：
+最初のエンドポイントを作成して実行：
 
 ```typescript
 import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
 
 const app = createKori();
 
@@ -25,8 +26,10 @@ app.get('/hello', (ctx) => {
   return ctx.res.text('Hello, Kori!');
 });
 
-export { app };
+await startNodejsServer(app, { port: 3000 });
 ```
+
+APIが`http://localhost:3000/hello`で動作しています
 
 ## リクエスト＆レスポンス
 
@@ -39,7 +42,7 @@ const app = createKori();
 
 app.get('/users/:id', (ctx) => {
   // パスパラメータ
-  const { id } = ctx.req.pathParams();
+  const id = ctx.req.param('id');
   return ctx.res.json({
     id,
     name: `User ${id}`,
@@ -81,8 +84,8 @@ app.log().info('Application will start');
 export { app };
 ```
 
-- **`app.log()`** - アプリケーションレベルのロガー（Koriコンテキスト外）
-- **`ctx.log()`** - コンテキスト対応ロガー（Koriコンテキスト内：フックとハンドラー）
+- `app.log()` - アプリケーションレベルのロガー（Koriコンテキスト外）
+- `ctx.log()` - コンテキスト対応ロガー（Koriコンテキスト内：フックとハンドラー）
 
 サンプルログ出力：
 
@@ -206,10 +209,11 @@ export { app };
 
 ```typescript
 import { createKori } from '@korix/kori';
+import { startNodejsServer } from '@korix/nodejs-server';
 import {
   zodRequestSchema,
   zodResponseSchema,
-  enableZodRequestValidation,
+  enableZodRequestAndResponseValidation,
 } from '@korix/zod-schema-adapter';
 import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
@@ -220,26 +224,28 @@ const CreateUserSchema = z.object({
   age: z.number().int().min(0).optional(),
 });
 
+const UserResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  age: z.number().optional(),
+  createdAt: z.string(),
+});
+
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableZodRequestAndResponseValidation(),
 })
-  // ZodスキーマからOpenAPI仕様を生成
   .applyPlugin(
     zodOpenApiPlugin({
       info: { title: 'My API', version: '1.0.0' },
     }),
   )
-  // インタラクティブなドキュメントUIを提供
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
   requestSchema: zodRequestSchema({ body: CreateUserSchema }),
-  responseSchema: zodResponseSchema({ default: z.any() }),
+  responseSchema: zodResponseSchema({ '201': UserResponseSchema }),
   handler: (ctx) => {
-    // 型安全なバリデーション済みボディアクセス
     const { name, age } = ctx.req.validatedBody();
-
-    // ビジネスロジック（データベースへの保存など）
 
     return ctx.res.status(201).json({
       id: '42',
@@ -250,7 +256,7 @@ app.post('/users', {
   },
 });
 
-export { app };
+await startNodejsServer(app, { port: 3000 });
 ```
 
 `http://localhost:3000/docs`でインタラクティブなドキュメントをご覧ください！
