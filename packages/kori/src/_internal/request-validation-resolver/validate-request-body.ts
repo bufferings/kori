@@ -169,7 +169,7 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
  *
  * @param options.req - The Kori request object.
  * @param options.parseType - The type of parsing to perform.
- * @returns A result containing the parsed body, or a failure if parsing fails.
+ * @returns Promise resolving to a result containing the parsed body, or a failure if parsing fails.
  */
 async function parseRequestBody({
   req,
@@ -217,7 +217,7 @@ async function parseRequestBody({
  * @param options.validator - The request validator.
  * @param options.schema - The resolved schema to validate against.
  * @param options.body - The parsed request body to validate.
- * @returns A result containing the validated body, or a failure if validation fails.
+ * @returns Promise resolving to a result containing the validated body, or a failure if validation fails.
  */
 async function validateParsedBody({
   validator,
