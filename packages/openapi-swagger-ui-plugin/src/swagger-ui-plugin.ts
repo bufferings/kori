@@ -163,9 +163,7 @@ export function swaggerUiPlugin<
             },
           });
         })
-        .route({
-          method: ['GET', 'HEAD'],
-          path: normalizedPath || '/',
+        .get(normalizedPath || '/', {
           handler: (ctx) => {
             return ctx.res
               .setHeader(HttpResponseHeader.CACHE_CONTROL, 'no-cache, no-store, must-revalidate')
@@ -173,9 +171,7 @@ export function swaggerUiPlugin<
           },
           pluginMeta: openApiMeta({ exclude: true }),
         })
-        .route({
-          method: ['GET', 'HEAD'],
-          path: cssUrl,
+        .get(cssUrl, {
           handler: (ctx) => {
             return ctx.res
               .setHeader(HttpResponseHeader.CONTENT_TYPE, 'text/css; charset=utf-8')
@@ -184,9 +180,7 @@ export function swaggerUiPlugin<
           },
           pluginMeta: openApiMeta({ exclude: true }),
         })
-        .route({
-          method: ['GET', 'HEAD'],
-          path: bundleJsUrl,
+        .get(bundleJsUrl, {
           handler: (ctx) => {
             return ctx.res
               .setHeader(HttpResponseHeader.CONTENT_TYPE, 'application/javascript; charset=utf-8')
@@ -195,9 +189,7 @@ export function swaggerUiPlugin<
           },
           pluginMeta: openApiMeta({ exclude: true }),
         })
-        .route({
-          method: ['GET', 'HEAD'],
-          path: standalonePresetJsUrl,
+        .get(standalonePresetJsUrl, {
           handler: (ctx) => {
             return ctx.res
               .setHeader(HttpResponseHeader.CONTENT_TYPE, 'application/javascript; charset=utf-8')

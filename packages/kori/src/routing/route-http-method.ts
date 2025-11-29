@@ -5,6 +5,10 @@
  * Custom methods must be uppercase strings for HTTP specification compliance.
  * Method matching is case-insensitive during route resolution.
  *
+ * Note: HEAD requests are automatically handled by matching GET routes
+ * and returning the response without a body. HEAD cannot be registered
+ * explicitly as a route method.
+ *
  * @example
  * ```typescript
  * // Standard HTTP methods
@@ -15,15 +19,7 @@
  * app.route({ method: { custom: 'PURGE' }, path: '/cache', handler: purgeHandler });
  * ```
  */
-export type RouteHttpMethod =
-  | 'GET'
-  | 'POST'
-  | 'PUT'
-  | 'DELETE'
-  | 'PATCH'
-  | 'HEAD'
-  | 'OPTIONS'
-  | { custom: Uppercase<string> };
+export type RouteHttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | { custom: Uppercase<string> };
 
 /**
  * Normalizes a route HTTP method to its string representation.

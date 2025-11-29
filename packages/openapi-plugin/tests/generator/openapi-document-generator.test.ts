@@ -264,10 +264,6 @@ describe('createOpenApiDocumentGenerator', () => {
       expect(toOpenApiMethod('PATCH')).toBe('patch');
     });
 
-    test('converts HEAD to lowercase', () => {
-      expect(toOpenApiMethod('HEAD')).toBe('head');
-    });
-
     test('converts OPTIONS to lowercase', () => {
       expect(toOpenApiMethod('OPTIONS')).toBe('options');
     });

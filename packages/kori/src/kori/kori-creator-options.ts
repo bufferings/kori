@@ -62,7 +62,7 @@ export type CreateKoriOptions<
     KoriResponse,
     ResV
   >;
-  /** Custom handler for when no route matches the request */
+  /** Custom handler for requests that don't match any registered routes */
   onRouteNotFound?: (req: Request) => MaybePromise<Response>;
   /** Custom route matcher implementation (defaults to HonoRouteMatcher) */
   routeMatcher?: KoriRouteMatcher;

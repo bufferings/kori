@@ -49,7 +49,23 @@ app.patch('/users/:id', async (ctx) => {
 });
 ```
 
-Kori also supports `.head()` and `.options()` methods for handling HEAD and OPTIONS requests.
+Kori also supports the `.options()` method for handling OPTIONS requests.
+
+## HEAD Request Handling
+
+Kori automatically handles `HEAD` requests for any registered `GET` route. When a `HEAD` request is received, Kori processes it as a `GET` request but returns an empty body with the same headers.
+
+```typescript
+// Registering a GET route automatically supports HEAD
+app.get('/users', (ctx) => {
+  return ctx.res.json({ users: [] });
+});
+
+// GET /users -> 200 OK, Content-Type: application/json, Body: {"users": []}
+// HEAD /users -> 200 OK, Content-Type: application/json, Body: (empty)
+```
+
+You do not need to (and cannot) register `HEAD` routes explicitly. Kori handles this transparently to ensure specification compliance.
 
 ## Path Parameters
 

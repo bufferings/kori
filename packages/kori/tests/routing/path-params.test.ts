@@ -67,11 +67,28 @@ describe('WithPathParams request extension', () => {
     expectTypeOf<PathParamsReturn['anyKey']>().toEqualTypeOf<string | undefined>();
   });
 
-  test('param method returns typed value for known parameters', () => {
+  test('param method returns string for required parameters', () => {
     type ExtendedReq = WithPathParams<KoriRequest, '/users/:id'>;
+    type ParamMethod = ExtendedReq['param'];
+    const mockParam: ParamMethod = (() => '') as ParamMethod;
 
-    // param('id') returns string (known parameter)
-    expectTypeOf<ReturnType<ExtendedReq['param']>>().toEqualTypeOf<string | undefined>();
+    expectTypeOf(mockParam('id')).toEqualTypeOf<string>();
+  });
+
+  test('param method returns string | undefined for optional parameters', () => {
+    type ExtendedReq = WithPathParams<KoriRequest, '/api/:version?'>;
+    type ParamMethod = ExtendedReq['param'];
+    const mockParam: ParamMethod = (() => '') as ParamMethod;
+
+    expectTypeOf(mockParam('version')).toEqualTypeOf<string | undefined>();
+  });
+
+  test('param method returns string | undefined for unknown parameters', () => {
+    type ExtendedReq = WithPathParams<KoriRequest, '/users/:id'>;
+    type ParamMethod = ExtendedReq['param'];
+    const mockParam: ParamMethod = (() => '') as ParamMethod;
+
+    expectTypeOf(mockParam('unknownParam')).toEqualTypeOf<string | undefined>();
   });
 
   test('preserves other request methods', () => {
