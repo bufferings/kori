@@ -84,11 +84,48 @@ app.get('/users/:id/posts', async (ctx) => {
   const textData = await ctx.req.bodyText();
   const formData = await ctx.req.bodyFormData();
 
+  // 検証されたデータ（requestSchemaを使用する場合）
+  // const { ... } = ctx.req.validatedParams();
+  // const { ... } = ctx.req.validatedQueries();
+  // const { ... } = ctx.req.validatedHeaders();
+  // const { ... } = ctx.req.validatedCookies();
+  // const { ... } = ctx.req.validatedBody();
+
   return ctx.res.json({
     userId: id,
     query: { limit, offset },
     hasAuth: !!authorization,
   });
+});
+```
+
+### パスとクエリパラメータ
+
+便利なメソッドを使用してパラメータにアクセス：
+
+```typescript
+app.get('/users/:id', (ctx) => {
+  // 単一のパスパラメータ
+  const id = ctx.req.param('id');
+
+  // またはすべてのパスパラメータをオブジェクトとして取得
+  const params = ctx.req.params();
+
+  return ctx.res.json({ userId: id });
+});
+
+app.get('/search', (ctx) => {
+  // 単一のクエリパラメータ（undefinedの可能性あり）
+  const searchTerm = ctx.req.query('q') ?? '';
+
+  // すべてのクエリパラメータ
+  const allQueries = ctx.req.queries();
+  // { q: 'hello', page: '1', tags: ['a', 'b'] }
+
+  // 配列としてのクエリパラメータ（undefinedの可能性あり）
+  const tags = ctx.req.queryArray('tags') ?? [];
+
+  return ctx.res.json({ searchTerm, tags });
 });
 ```
 
