@@ -245,7 +245,7 @@ async function validateParsedBody({
  * @param options.validator - The request validator.
  * @param options.schema - The request body schema.
  * @param options.req - The Kori request object.
- * @returns A result containing the validated body, or a failure if validation fails.
+ * @returns Promise resolving to a result containing the validated body, or a failure if validation fails.
  *
  * @internal
  */

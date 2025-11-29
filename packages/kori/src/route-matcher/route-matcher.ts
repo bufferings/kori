@@ -14,7 +14,7 @@ export type KoriRouteId = symbol;
  *
  * @example
  * ```typescript
- * const match = matcher(request);
+ * const match = matcher({ request });
  * if (match) {
  *   // match.pathParams === { id: "123" }
  * }
