@@ -333,4 +333,94 @@ describe('resolveRequestValidator - Content body validation', () => {
       },
     });
   });
+
+  test('converts empty FormData to empty object', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'multipart/form-data': testSchemaForm,
+          },
+        },
+      }),
+    });
+
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
+
+    const formData = new FormData();
+
+    const mockReq = {
+      ...mockRequestBase,
+      mediaType: () => 'multipart/form-data',
+      bodyFormData: () => Promise.resolve(formData),
+    };
+
+    const result = await v(mockReq);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      expect.unreachable('for type narrowing');
+    }
+
+    expect(result.value.body).toEqual({
+      mediaType: 'multipart/form-data',
+      value: {
+        received: {},
+        __test_processed: 'by-form-validator',
+      },
+    });
+  });
+
+  test('converts FormData with File to object containing File', async () => {
+    const v = resolveRequestValidator({
+      validator: testRequestValidator,
+      schema: createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'multipart/form-data': testSchemaForm,
+          },
+        },
+      }),
+    });
+
+    expect(v).toBeDefined();
+    if (!v) {
+      expect.unreachable('for type narrowing');
+    }
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const formData = new FormData();
+    formData.append('name', 'Alice');
+    formData.append('file', file);
+
+    const mockReq = {
+      ...mockRequestBase,
+      mediaType: () => 'multipart/form-data',
+      bodyFormData: () => Promise.resolve(formData),
+    };
+
+    const result = await v(mockReq);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      expect.unreachable('for type narrowing');
+    }
+
+    expect(result.value.body).toMatchObject({
+      mediaType: 'multipart/form-data',
+      value: {
+        received: {
+          name: 'Alice',
+        },
+        __test_processed: 'by-form-validator',
+      },
+    });
+    const received = (result.value.body as { value: { received: Record<string, unknown> } }).value.received;
+    expect(received.file).toBeInstanceOf(File);
+    expect((received.file as File).name).toBe('test.txt');
+  });
 });
