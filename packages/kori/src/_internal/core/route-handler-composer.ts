@@ -271,9 +271,10 @@ type RouteOptions<
  * 3. User-provided handler
  * 4. Response validation
  * 5. Error hooks (if any step fails)
+ * 6. Deferred callbacks (always executed in finally block)
  *
- * For performance, if no hooks or validation are configured for a route,
- * the original handler is returned directly to avoid wrapper overhead.
+ * The wrapper is always applied to ensure defer callbacks and error handling
+ * work correctly, even when no hooks or validation are configured.
  *
  * @param options.instanceOptions - Instance-level configurations
  * @param options.routeOptions - Route-specific configurations
@@ -305,16 +306,6 @@ export function composeRouteHandler<
     validator: instanceOptions.responseValidator,
     schema: routeOptions.responseSchema,
   });
-
-  const hasHooks = instanceOptions.requestHooks.length > 0 || instanceOptions.errorHooks.length > 0;
-  const hasValidation = !!requestValidateFn || !!responseValidateFn;
-  if (!hasHooks && !hasValidation) {
-    // Optimization: If no hooks or validation are needed, return the original
-    // handler directly to avoid unnecessary async wrapper overhead on the hot path.
-    return routeOptions.handler as unknown as (
-      ctx: KoriHandlerContext<Env, WithPathParams<Req, Path>, Res>,
-    ) => Promise<KoriResponse>;
-  }
 
   const executeWithHooks = createHookExecutor<Env, Req, Res, Path>({
     requestHooks: instanceOptions.requestHooks,

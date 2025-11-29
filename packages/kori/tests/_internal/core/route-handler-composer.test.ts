@@ -182,6 +182,31 @@ describe('composeRouteHandler', () => {
   });
 
   describe('defer callbacks', () => {
+    test('executes in handler even without hooks or validation', async () => {
+      const order: string[] = [];
+      const handler = vi.fn((ctx: any) => {
+        order.push('handler');
+        ctx.defer(() => {
+          order.push('defer-1');
+        });
+        ctx.defer(() => {
+          order.push('defer-2');
+        });
+        return ctx.res.json({ ok: true });
+      });
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions(),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const ctx = createMockContext();
+      const res = await composed(ctx as any);
+
+      expect(res.getStatus()).toBe(200);
+      expect(order).toEqual(['handler', 'defer-2', 'defer-1']);
+    });
+
     test('executes in LIFO order', async () => {
       const order: string[] = [];
       const requestHook1 = vi.fn((ctx: any) => {
@@ -611,6 +636,28 @@ describe('composeRouteHandler', () => {
   });
 
   describe('error hooks', () => {
+    test('handles error and executes defer even without hooks or validation', async () => {
+      const order: string[] = [];
+      const handler = vi.fn((ctx: any) => {
+        order.push('handler');
+        ctx.defer(() => {
+          order.push('defer');
+        });
+        throw new Error('boom');
+      });
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions(),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const ctx = createMockContext();
+      const res = await composed(ctx as any);
+
+      expect(res.getStatus()).toBe(500);
+      expect(order).toEqual(['handler', 'defer']);
+    });
+
     test('stops early when error hook returns Response', async () => {
       const errorHook1 = vi.fn(() => undefined);
       const errorHook2 = vi.fn((ctx: any) => ctx.res.badRequest({ message: 'handled by hook2' }));
