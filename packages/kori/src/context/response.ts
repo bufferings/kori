@@ -505,7 +505,6 @@ type ResState = {
   bodyValue: unknown;
   built: boolean;
   req: KoriRequest;
-  aborted: boolean;
 };
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
@@ -961,7 +960,6 @@ export function createKoriResponse(req: KoriRequest): KoriResponse {
   obj.bodyValue = undefined;
   obj.built = false;
   obj.req = req;
-  obj.aborted = false;
 
   return obj as unknown as KoriResponse;
 }
