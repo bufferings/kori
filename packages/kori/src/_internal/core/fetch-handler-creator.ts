@@ -62,7 +62,8 @@ export function createFetchHandler({
       const isHead = request.method === 'HEAD';
       const routeMatch = compiledRouteMatcher({ request, methodOverride: isHead ? 'GET' : undefined });
       if (!routeMatch) {
-        return await onRouteNotFound(request);
+        const notFound = await onRouteNotFound(request);
+        return isHead ? new Response(null, notFound) : notFound;
       }
 
       const routeRecord = routeRegistry.get(routeMatch.routeId);
@@ -73,7 +74,8 @@ export function createFetchHandler({
           type: 'route-not-found',
           routeId: routeMatch.routeId,
         });
-        return await onRouteNotFound(request);
+        const notFound = await onRouteNotFound(request);
+        return isHead ? new Response(null, notFound) : notFound;
       }
 
       const req = createKoriRequest({

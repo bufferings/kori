@@ -788,7 +788,7 @@ const sharedMethods = {
 
   redirect(url: string, status: HttpStatusCode = HttpStatus.FOUND): KoriResponse {
     this.statusCode = status;
-    setHeaderInternal(this, 'location', url);
+    setHeaderInternal(this, HttpResponseHeader.LOCATION, url);
     setBodyEmptyInternal({ res: this });
     return this as unknown as KoriResponse;
   },

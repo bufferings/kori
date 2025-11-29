@@ -5,6 +5,10 @@
  * Custom methods must be uppercase strings for HTTP specification compliance.
  * Method matching is case-insensitive during route resolution.
  *
+ * Note: HEAD requests are automatically handled by matching GET routes
+ * and returning the response without a body. HEAD cannot be registered
+ * explicitly as a route method.
+ *
  * @example
  * ```typescript
  * // Standard HTTP methods
