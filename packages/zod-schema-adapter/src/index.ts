@@ -7,6 +7,7 @@ export {
   type KoriRequestSchemaZodToBodyMapping,
   type KoriZodRequestSchema,
   type KoriZodRequestSchemaContentBody,
+  type KoriZodRequestSchemaContentEntry,
   zodRequestSchema,
 } from './zod-request-schema/index.js';
 export {

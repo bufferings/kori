@@ -109,7 +109,7 @@ describe('createKoriRequestSchema', () => {
     expect(requestSchema.body).toBe(bodySchema);
 
     expectTypeOf<typeof requestSchema>().toExtend<
-      KoriRequestSchema<typeof testProvider, never, never, never, typeof bodySchema>
+      KoriRequestSchema<typeof testProvider, never, never, never, never, typeof bodySchema>
     >();
   });
 
@@ -135,7 +135,15 @@ describe('createKoriRequestSchema', () => {
     expect(requestSchema.body).toBe(contentBody);
 
     expectTypeOf<typeof requestSchema>().toExtend<
-      KoriRequestSchema<typeof testProvider, never, never, never, never, { 'application/json': typeof jsonSchema }>
+      KoriRequestSchema<
+        typeof testProvider,
+        never,
+        never,
+        never,
+        never,
+        never,
+        { 'application/json': typeof jsonSchema }
+      >
     >();
   });
 
@@ -174,6 +182,7 @@ describe('createKoriRequestSchema', () => {
         never,
         never,
         never,
+        never,
         {
           'application/json': typeof jsonSchema;
           'application/xml': typeof xmlSchema;
@@ -195,6 +204,10 @@ describe('createKoriRequestSchema', () => {
       provider: testProvider,
       definition: { type: 'queries' },
     });
+    const cookiesSchema = createKoriSchema({
+      provider: testProvider,
+      definition: { type: 'cookies' },
+    });
     const bodySchema = createKoriSchema({
       provider: testProvider,
       definition: { type: 'body' },
@@ -205,6 +218,7 @@ describe('createKoriRequestSchema', () => {
       params: paramsSchema,
       headers: headersSchema,
       queries: queriesSchema,
+      cookies: cookiesSchema,
       body: bodySchema,
     });
 
@@ -221,6 +235,7 @@ describe('createKoriRequestSchema', () => {
         typeof paramsSchema,
         typeof headersSchema,
         typeof queriesSchema,
+        typeof cookiesSchema,
         typeof bodySchema
       >
     >();

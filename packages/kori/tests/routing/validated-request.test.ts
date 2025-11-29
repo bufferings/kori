@@ -29,6 +29,10 @@ describe('ValidatedRequest', () => {
       provider: testProvider,
       definition: { type: 'object' },
     });
+    const cookiesSchema = createKoriSchema<typeof testProvider, { type: 'object' }, { sessionId: string }>({
+      provider: testProvider,
+      definition: { type: 'object' },
+    });
     const bodySchema = createKoriSchema<typeof testProvider, { type: 'object' }, { name: string; email: string }>({
       provider: testProvider,
       definition: { type: 'object' },
@@ -39,6 +43,7 @@ describe('ValidatedRequest', () => {
       params: paramsSchema,
       queries: queriesSchema,
       headers: headersSchema,
+      cookies: cookiesSchema,
       body: bodySchema,
     });
 
@@ -48,6 +53,7 @@ describe('ValidatedRequest', () => {
         validatedParams(): { id: string };
         validatedQueries(): { page: number };
         validatedHeaders(): { authorization: string };
+        validatedCookies(): { sessionId: string };
         validatedBody(): { name: string; email: string };
       }
     >();
@@ -69,6 +75,7 @@ describe('ValidatedRequest', () => {
         validatedParams(): never;
         validatedQueries(): never;
         validatedHeaders(): never;
+        validatedCookies(): never;
         validatedBody(): never;
       }
     >();

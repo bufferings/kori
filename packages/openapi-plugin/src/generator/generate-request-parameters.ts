@@ -28,7 +28,7 @@ function extractPathParameterNames(path: string): string[] {
  *
  * @param name - Parameter name
  * @param schemaObject - OpenAPI schema object for the parameter
- * @param parameterIn - Location of the parameter (path, query, or header)
+ * @param parameterIn - Location of the parameter (path, query, header, or cookie)
  * @param required - Whether the parameter is required
  * @returns OpenAPI ParameterObject
  */
@@ -40,7 +40,7 @@ function createParameterObject({
 }: {
   name: string;
   schemaObject: SchemaObject;
-  parameterIn: 'path' | 'query' | 'header';
+  parameterIn: 'path' | 'query' | 'header' | 'cookie';
   required: boolean;
 }): ParameterObject {
   const parameter: ParameterObject = {
@@ -81,7 +81,7 @@ function createParametersFromProperties({
   parameterIn,
 }: {
   schemaObject: SchemaObject | undefined;
-  parameterIn: 'path' | 'query' | 'header';
+  parameterIn: 'path' | 'query' | 'header' | 'cookie';
 }): ParameterObject[] {
   if (!schemaObject?.properties) {
     return [];
@@ -108,6 +108,7 @@ function createParametersFromProperties({
  * - Path parameters (from OpenAPI path pattern, enriched by schema.params if available)
  * - Query parameters (from schema.queries)
  * - Header parameters (from schema.headers)
+ * - Cookie parameters (from schema.cookies)
  *
  * Path parameters are automatically generated from the path pattern. If a params schema
  * is provided, it enriches the path parameters with additional details (description,
@@ -206,6 +207,21 @@ export function generateRequestParameters({
       ...createParametersFromProperties({
         schemaObject: headersSchemaObject,
         parameterIn: 'header',
+      }),
+    );
+  }
+
+  if (schema?.cookies) {
+    const cookiesSchemaObject = convertSchema({ schema: schema.cookies });
+    if (!cookiesSchemaObject) {
+      log.warn('Failed to convert cookies schema', {
+        provider: schema.cookies.provider,
+      });
+    }
+    parameters.push(
+      ...createParametersFromProperties({
+        schemaObject: cookiesSchemaObject,
+        parameterIn: 'cookie',
       }),
     );
   }

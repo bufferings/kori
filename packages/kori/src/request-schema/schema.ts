@@ -15,7 +15,7 @@ declare const PhantomProperty: unique symbol;
  * Schema definition that describes the structure of an HTTP request.
  *
  * Contains a provider string for runtime type checking and optional schemas
- * for different parts of the HTTP request (params, headers, queries, body).
+ * for different parts of the HTTP request (params, headers, queries, cookies, body).
  *
  * The request body supports two formats:
  * - Simple body: convenient format for application/json content
@@ -25,6 +25,7 @@ declare const PhantomProperty: unique symbol;
  * @template Params - Schema for URL path parameters
  * @template Headers - Schema for HTTP headers
  * @template Queries - Schema for query string parameters
+ * @template Cookies - Schema for HTTP cookies
  * @template Body - Schema for simple request body
  * @template BodyMapping - Record mapping media types to schema definitions
  *
@@ -36,6 +37,7 @@ declare const PhantomProperty: unique symbol;
  *   params: paramsSchema,
  *   headers: headersSchema,
  *   queries: queriesSchema,
+ *   cookies: cookiesSchema,
  *   body: userSchema
  * });
  * ```
@@ -60,6 +62,7 @@ export type KoriRequestSchema<
   Params extends KoriSchemaOf<Provider> = never,
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
+  Cookies extends KoriSchemaOf<Provider> = never,
   Body extends KoriSchemaOf<Provider> = never,
   BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 > = {
@@ -68,6 +71,7 @@ export type KoriRequestSchema<
   params?: Params;
   headers?: Headers;
   queries?: Queries;
+  cookies?: Cookies;
   body?: Body | KoriRequestSchemaContentBody<BodyMapping>;
   [PhantomProperty]?: { body: Body; bodyMapping: BodyMapping };
 };
@@ -77,6 +81,7 @@ export type KoriRequestSchema<
  */
 export type KoriRequestSchemaBase = KoriRequestSchema<
   string,
+  KoriSchemaBase,
   KoriSchemaBase,
   KoriSchemaBase,
   KoriSchemaBase,
@@ -105,6 +110,7 @@ export function isKoriRequestSchema(value: unknown): value is KoriRequestSchemaB
  * @template Params - Schema for URL path parameters
  * @template Headers - Schema for HTTP headers
  * @template Queries - Schema for query string parameters
+ * @template Cookies - Schema for HTTP cookies
  * @template Body - Schema for simple request body
  * @template BodyMapping - Record mapping media types to schema definitions
  *
@@ -112,6 +118,7 @@ export function isKoriRequestSchema(value: unknown): value is KoriRequestSchemaB
  * @param options.params - Schema for URL path parameters
  * @param options.headers - Schema for HTTP headers
  * @param options.queries - Schema for query string parameters
+ * @param options.cookies - Schema for HTTP cookies
  * @param options.body - Schema for request body (simple or content-type mapped)
  * @returns Kori request schema ready for type-safe validation
  *
@@ -131,14 +138,16 @@ export function createKoriRequestSchema<
   Params extends KoriSchemaOf<Provider> = never,
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
+  Cookies extends KoriSchemaOf<Provider> = never,
   Body extends KoriSchemaOf<Provider> = never,
 >(options: {
   provider: Provider;
   params?: Params;
   headers?: Headers;
   queries?: Queries;
+  cookies?: Cookies;
   body?: Body;
-}): KoriRequestSchema<Provider, Params, Headers, Queries, Body, never>;
+}): KoriRequestSchema<Provider, Params, Headers, Queries, Cookies, Body, never>;
 
 // Content Body overload
 export function createKoriRequestSchema<
@@ -146,14 +155,16 @@ export function createKoriRequestSchema<
   Params extends KoriSchemaOf<Provider> = never,
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
+  Cookies extends KoriSchemaOf<Provider> = never,
   BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 >(options: {
   provider: Provider;
   params?: Params;
   headers?: Headers;
   queries?: Queries;
+  cookies?: Cookies;
   body?: KoriRequestSchemaContentBody<BodyMapping>;
-}): KoriRequestSchema<Provider, Params, Headers, Queries, never, BodyMapping>;
+}): KoriRequestSchema<Provider, Params, Headers, Queries, Cookies, never, BodyMapping>;
 
 // Implementation
 export function createKoriRequestSchema<
@@ -161,6 +172,7 @@ export function createKoriRequestSchema<
   Params extends KoriSchemaOf<Provider> = never,
   Headers extends KoriSchemaOf<Provider> = never,
   Queries extends KoriSchemaOf<Provider> = never,
+  Cookies extends KoriSchemaOf<Provider> = never,
   Body extends KoriSchemaOf<Provider> = never,
   BodyMapping extends Record<string, KoriSchemaOf<Provider>> = never,
 >(options: {
@@ -168,15 +180,17 @@ export function createKoriRequestSchema<
   params?: Params;
   headers?: Headers;
   queries?: Queries;
+  cookies?: Cookies;
   body?: Body | KoriRequestSchemaContentBody<BodyMapping>;
-}): KoriRequestSchema<Provider, Params, Headers, Queries, Body, BodyMapping> {
-  const { provider, params, headers, queries, body } = options;
+}): KoriRequestSchema<Provider, Params, Headers, Queries, Cookies, Body, BodyMapping> {
+  const { provider, params, headers, queries, cookies, body } = options;
   return {
     koriKind: 'kori-request-schema',
     provider,
     params,
     headers,
     queries,
+    cookies,
     body,
   };
 }

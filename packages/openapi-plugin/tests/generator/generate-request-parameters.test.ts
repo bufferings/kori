@@ -257,6 +257,85 @@ describe('generateRequestParameters', () => {
       expect(result.filter((p) => p.in === 'query')).toHaveLength(2);
       expect(result.filter((p) => p.in === 'header')).toHaveLength(1);
     });
+
+    test('combines parameters including cookies', () => {
+      const paramsSchema = createTestSchema();
+      const queriesSchema = createTestSchema();
+      const headersSchema = createTestSchema();
+      const cookiesSchema = createTestSchema();
+
+      const result = generateRequestParameters({
+        path: '/users/{id}',
+        schema: createTestRequestSchema({
+          params: paramsSchema,
+          queries: queriesSchema,
+          headers: headersSchema,
+          cookies: cookiesSchema,
+        }),
+        convertSchema: ({ schema }) => {
+          if (schema === paramsSchema) {
+            return {
+              type: 'object',
+              properties: {
+                id: { type: 'string', description: 'User ID' },
+              },
+              required: ['id'],
+            } as SchemaObject;
+          }
+          if (schema === queriesSchema) {
+            return {
+              type: 'object',
+              properties: {
+                q: { type: 'string' },
+              },
+            } as SchemaObject;
+          }
+          if (schema === headersSchema) {
+            return {
+              type: 'object',
+              properties: {
+                'x-api-key': { type: 'string' },
+              },
+            } as SchemaObject;
+          }
+          if (schema === cookiesSchema) {
+            return {
+              type: 'object',
+              properties: {
+                sessionId: { type: 'string', description: 'Session ID' },
+                theme: { type: 'string' },
+              },
+              required: ['sessionId'],
+            } as SchemaObject;
+          }
+          return undefined;
+        },
+        log: createLoggerStub(),
+      });
+
+      expect(result).toHaveLength(5);
+      expect(result.filter((p) => p.in === 'path')).toHaveLength(1);
+      expect(result.filter((p) => p.in === 'query')).toHaveLength(1);
+      expect(result.filter((p) => p.in === 'header')).toHaveLength(1);
+      expect(result.filter((p) => p.in === 'cookie')).toHaveLength(2);
+
+      const sessionIdParam = result.find((p) => p.name === 'sessionId');
+      expect(sessionIdParam).toEqual({
+        name: 'sessionId',
+        in: 'cookie',
+        required: true,
+        description: 'Session ID',
+        schema: { type: 'string', description: 'Session ID' },
+      });
+
+      const themeParam = result.find((p) => p.name === 'theme');
+      expect(themeParam).toEqual({
+        name: 'theme',
+        in: 'cookie',
+        required: false,
+        schema: { type: 'string' },
+      });
+    });
   });
 
   describe('unsupported schemas', () => {

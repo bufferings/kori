@@ -135,4 +135,55 @@ describe('Request validation integration (Zod)', () => {
       },
     });
   });
+
+  test('validates content body with explicit parseType', async () => {
+    const onRequestValidationFailure = vi.fn();
+
+    const app = createKori({
+      ...enableStdRequestValidation({ onRequestValidationFailure }),
+    }).post('/raw', {
+      requestSchema: stdRequestSchema({
+        body: {
+          content: {
+            'application/json': {
+              schema: z.string(),
+              parseType: 'text',
+            },
+          },
+        },
+      }),
+      handler: (ctx) => {
+        const body = ctx.req.validatedBody();
+        if (body.mediaType === 'application/json') {
+          return ctx.res.json({
+            success: true,
+            rawBody: body.value,
+          });
+        } else {
+          expect.fail('Invalid media type');
+        }
+      },
+    });
+    const { fetchHandler } = await app.start();
+
+    const response = await fetchHandler(
+      new Request('http://localhost/raw', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: '{"name":"John"}',
+      }),
+    );
+
+    expect(onRequestValidationFailure).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+
+    const body = await response.json();
+    // parseType: 'text' means the body is parsed as string, not JSON object
+    expect(body).toEqual({
+      success: true,
+      rawBody: '{"name":"John"}',
+    });
+  });
 });

@@ -114,6 +114,62 @@ describe('generateRequestBody', () => {
       });
     });
 
+    test('generates request body with { schema, parseType } content entry', () => {
+      const result = generateRequestBody({
+        schema: createTestRequestSchema({
+          body: {
+            content: {
+              'application/json': {
+                schema: createTestSchema(),
+                parseType: 'text',
+              },
+            },
+          },
+        }),
+        convertSchema: () => ({ type: 'string' }),
+        log: createLoggerStub(),
+      });
+
+      expect(result).toEqual({
+        content: {
+          'application/json': {
+            schema: { type: 'string' },
+          },
+        },
+        required: true,
+      });
+    });
+
+    test('generates request body with mixed content entry formats', () => {
+      const result = generateRequestBody({
+        schema: createTestRequestSchema({
+          body: {
+            content: {
+              'application/json': createTestSchema(),
+              'text/plain': {
+                schema: createTestSchema(),
+                parseType: 'text',
+              },
+            },
+          },
+        }),
+        convertSchema: () => ({ type: 'string' }),
+        log: createLoggerStub(),
+      });
+
+      expect(result).toEqual({
+        content: {
+          'application/json': {
+            schema: { type: 'string' },
+          },
+          'text/plain': {
+            schema: { type: 'string' },
+          },
+        },
+        required: true,
+      });
+    });
+
     test('skips media types when conversion is not supported', () => {
       const result = generateRequestBody({
         schema: createTestRequestSchema({

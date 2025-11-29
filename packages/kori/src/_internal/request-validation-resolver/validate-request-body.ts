@@ -1,6 +1,11 @@
 import { type KoriRequest } from '../../context/index.js';
 import { MediaType } from '../../http/index.js';
-import { type KoriRequestSchemaBase, type KoriRequestSchemaContentBodyBase } from '../../request-schema/index.js';
+import {
+  type KoriRequestBodyParseType,
+  type KoriRequestSchemaBase,
+  type KoriRequestSchemaContentBodyBase,
+  type KoriRequestSchemaContentEntryBase,
+} from '../../request-schema/index.js';
 import { type RequestBodyValidationFailureBase } from '../../routing/index.js';
 import { isKoriSchema, type KoriSchemaBase } from '../../schema/index.js';
 import { fail, succeed, type KoriResult } from '../../util/index.js';
@@ -43,13 +48,37 @@ function findMatchingMediaType({
 
 const DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
+const DEFAULT_PARSE_TYPE = 'auto';
+
+/**
+ * Extracts schema and parseType from a content entry.
+ *
+ * @param entry - The content entry to extract from.
+ * @returns The schema and parseType (or 'auto' if not specified).
+ */
+function extractSchemaAndParseType(entry: KoriRequestSchemaContentEntryBase): {
+  schema: KoriSchemaBase;
+  parseType: KoriRequestBodyParseType;
+} {
+  if (isKoriSchema(entry)) {
+    return {
+      schema: entry,
+      parseType: 'auto',
+    };
+  }
+  return {
+    schema: entry.schema,
+    parseType: entry.parseType ?? DEFAULT_PARSE_TYPE,
+  };
+}
+
 /**
  * Resolves the appropriate schema to use for validating the request body based
  * on the Content-Type header and the defined request body schema.
  *
  * @param options.bodySchema - The request body schema definition.
  * @param options.requestMediaType - The media type from the request header.
- * @returns A result containing the resolved schema, or a failure if no match is found.
+ * @returns A result containing the resolved schema and parseType, or a failure if no match is found.
  */
 function resolveRequestBodySchema({
   bodySchema,
@@ -57,7 +86,10 @@ function resolveRequestBodySchema({
 }: {
   bodySchema: NonNullable<KoriRequestSchemaBase['body']>;
   requestMediaType: string;
-}): KoriResult<{ schema: KoriSchemaBase; mediaType?: string }, RequestBodyValidationFailureBase> {
+}): KoriResult<
+  { schema: KoriSchemaBase; parseType: KoriRequestBodyParseType; mediaType?: string },
+  RequestBodyValidationFailureBase
+> {
   if (isKoriSchema(bodySchema)) {
     // simple body
     if (requestMediaType !== DEFAULT_MEDIA_TYPE) {
@@ -69,7 +101,7 @@ function resolveRequestBodySchema({
         requestMediaType: requestMediaType,
       });
     }
-    return succeed({ schema: bodySchema });
+    return succeed({ schema: bodySchema, parseType: DEFAULT_PARSE_TYPE });
   } else {
     // content body
     const contentSchema = bodySchema.content;
@@ -90,14 +122,16 @@ function resolveRequestBodySchema({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const mediaTypeSchema = contentSchema[matchedMediaType]!;
-    return succeed({ schema: mediaTypeSchema, mediaType: matchedMediaType });
+    const contentEntry = contentSchema[matchedMediaType]!;
+    const { schema, parseType } = extractSchemaAndParseType(contentEntry);
+
+    return succeed({ schema, parseType, mediaType: matchedMediaType });
   }
 }
 
 type BodyParseType = 'json' | 'form' | 'text' | 'binary';
 
-function getBodyParseType(mediaType: string): BodyParseType {
+function getBodyParseTypeFromMediaType(mediaType: string): BodyParseType {
   if (mediaType === MediaType.APPLICATION_JSON || mediaType.endsWith('+json')) {
     return 'json';
   }
@@ -108,6 +142,25 @@ function getBodyParseType(mediaType: string): BodyParseType {
     return 'text';
   }
   return 'binary';
+}
+
+function formDataToObject(formData: FormData): Record<string, unknown> {
+  const obj: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+
+  formData.forEach((value, key) => {
+    if (key in obj) {
+      const existing = obj[key];
+      if (Array.isArray(existing)) {
+        existing.push(value);
+      } else {
+        obj[key] = [existing, value];
+      }
+    } else {
+      obj[key] = value;
+    }
+  });
+
+  return obj;
 }
 
 /**
@@ -133,7 +186,7 @@ async function parseRequestBody({
       }
       case 'form': {
         const formBody = await req.bodyFormData();
-        return succeed(formBody);
+        return succeed(formDataToObject(formBody));
       }
       case 'text': {
         const textBody = await req.bodyText();
@@ -223,10 +276,10 @@ export async function validateRequestBody<V extends KoriValidatorBase>({
     return resolveResult;
   }
 
-  const { schema: resolvedSchema, mediaType: resolvedMediaType } = resolveResult.value;
+  const { schema: resolvedSchema, parseType, mediaType: resolvedMediaType } = resolveResult.value;
 
-  const parseType = getBodyParseType(requestMediaType);
-  const parseResult = await parseRequestBody({ req, parseType });
+  const actualParseType = parseType === 'auto' ? getBodyParseTypeFromMediaType(requestMediaType) : parseType;
+  const parseResult = await parseRequestBody({ req, parseType: actualParseType });
   if (!parseResult.success) {
     return parseResult;
   }

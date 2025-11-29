@@ -8,6 +8,7 @@
 
 import { describe, expectTypeOf, test } from 'vitest';
 
+import { type KoriRequestSchemaContentBody } from '../../src/request-schema/index.js';
 import { createKoriSchema, isKoriSchema } from '../../src/schema/index.js';
 
 import { type InferRequestSchemaBodyOutput } from '../../src/request-schema/inference.js';
@@ -24,6 +25,7 @@ type TestRequestSchema<
   KoriSchema<typeof testProvider, never, never>,
   KoriSchema<typeof testProvider, never, never>,
   KoriSchema<typeof testProvider, never, never>,
+  KoriSchema<typeof testProvider, never, never>,
   Body,
   BodyMapping
 >;
@@ -33,13 +35,13 @@ function createTestRequestSchema<Body extends KoriSchemaOf<typeof testProvider>>
 }): TestRequestSchema<Body, never>;
 
 function createTestRequestSchema<BodyMapping extends Record<string, KoriSchemaOf<typeof testProvider>>>(options: {
-  body: { content: BodyMapping };
+  body: KoriRequestSchemaContentBody<BodyMapping>;
 }): TestRequestSchema<never, BodyMapping>;
 
 function createTestRequestSchema<
   Body extends KoriSchemaOf<typeof testProvider>,
   BodyMapping extends Record<string, KoriSchemaOf<typeof testProvider>>,
->(options: { body: Body | { content: BodyMapping } }): TestRequestSchema<Body, BodyMapping> {
+>(options: { body: Body | KoriRequestSchemaContentBody<BodyMapping> }): TestRequestSchema<Body, BodyMapping> {
   if (isKoriSchema(options.body)) {
     return createKoriRequestSchema({
       provider: testProvider,

@@ -7,6 +7,7 @@ export {
   type KoriRequestSchemaStdToBodyMapping,
   type KoriStdRequestSchema,
   type KoriStdRequestSchemaContentBody,
+  type KoriStdRequestSchemaContentEntry,
   stdRequestSchema,
 } from './std-request-schema/index.js';
 export {

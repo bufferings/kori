@@ -13,6 +13,7 @@ export type InferRequestSchemaProvider<S extends KoriRequestSchemaBase> =
     infer _Params,
     infer _Headers,
     infer _Queries,
+    infer _Cookies,
     infer _Body,
     infer _BodyMapping
   >
@@ -30,6 +31,7 @@ export type InferRequestSchemaParamsOutput<S extends KoriRequestSchemaBase> =
     infer Params,
     infer _Headers,
     infer _Queries,
+    infer _Cookies,
     infer _Body,
     infer _BodyMapping
   >
@@ -47,6 +49,7 @@ export type InferRequestSchemaHeadersOutput<S extends KoriRequestSchemaBase> =
     infer _Params,
     infer Headers,
     infer _Queries,
+    infer _Cookies,
     infer _Body,
     infer _BodyMapping
   >
@@ -64,10 +67,29 @@ export type InferRequestSchemaQueriesOutput<S extends KoriRequestSchemaBase> =
     infer _Params,
     infer _Headers,
     infer Queries,
+    infer _Cookies,
     infer _Body,
     infer _BodyMapping
   >
     ? InferSchemaOutput<Queries>
+    : never;
+
+/**
+ * Extracts the cookies output type from a request schema.
+ *
+ * @template S Request schema type
+ */
+export type InferRequestSchemaCookiesOutput<S extends KoriRequestSchemaBase> =
+  S extends KoriRequestSchema<
+    infer _Provider,
+    infer _Params,
+    infer _Headers,
+    infer _Queries,
+    infer Cookies,
+    infer _Body,
+    infer _BodyMapping
+  >
+    ? InferSchemaOutput<Cookies>
     : never;
 
 type IsNever<T> = [T] extends [never] ? true : false;
@@ -86,6 +108,7 @@ export type InferRequestSchemaBodyOutput<S extends KoriRequestSchemaBase> =
     infer _Params,
     infer _Headers,
     infer _Queries,
+    infer _Cookies,
     infer Body,
     infer BodyMapping
   >

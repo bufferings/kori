@@ -5,6 +5,7 @@ export type RequestValidationSuccess = {
   params: unknown;
   queries: unknown;
   headers: unknown;
+  cookies: unknown;
   body: unknown;
 };
 
@@ -69,6 +70,7 @@ export type RequestValidationFailure<FailureReason> = {
   params?: RequestFieldValidationFailure<FailureReason>;
   queries?: RequestFieldValidationFailure<FailureReason>;
   headers?: RequestFieldValidationFailure<FailureReason>;
+  cookies?: RequestFieldValidationFailure<FailureReason>;
   body?: RequestBodyValidationFailure<FailureReason>;
 };
 
