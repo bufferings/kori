@@ -171,6 +171,20 @@ app.delete('/users/:id', async (ctx) => {
   await ctx.env.db.deleteUser(ctx.req.param('id'));
   return ctx.res.status(204).empty();
 });
+
+// リダイレクトレスポンス
+app.get('/old-path', (ctx) => {
+  return ctx.res.redirect('/new-path'); // 302 Found (デフォルト)
+});
+
+app.get('/moved', (ctx) => {
+  return ctx.res.redirect('/permanent-location', 301); // 301 Moved Permanently
+});
+
+app.post('/form', async (ctx) => {
+  await processForm(ctx);
+  return ctx.res.redirect('/success', 303); // 303 See Other
+});
 ```
 
 ## コンテキストの拡張
