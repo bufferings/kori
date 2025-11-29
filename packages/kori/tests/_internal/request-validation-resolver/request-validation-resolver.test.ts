@@ -39,28 +39,19 @@ const testRequestValidator = createKoriValidator({
 
     switch (schemaType) {
       case 'params':
-        return succeed({ ...(value as any), __test_processed: 'by-params-validator' });
+        return succeed({ received: value, __test_processed: 'by-params-validator' } as any);
       case 'queries':
-        return succeed({ ...(value as any), __test_processed: 'by-queries-validator' });
+        return succeed({ received: value, __test_processed: 'by-queries-validator' } as any);
       case 'headers':
-        return succeed({ ...(value as any), __test_processed: 'by-headers-validator' });
+        return succeed({ received: value, __test_processed: 'by-headers-validator' } as any);
       case 'cookies':
-        return succeed({ ...(value as any), __test_processed: 'by-cookies-validator' });
+        return succeed({ received: value, __test_processed: 'by-cookies-validator' } as any);
       case 'body':
-        return succeed({ ...(value as any), __test_processed: 'by-body-validator' });
+        return succeed({ received: value, __test_processed: 'by-body-validator' } as any);
       default:
         return fail(`Unknown schema type: ${schemaType}`);
     }
   },
-});
-
-const testRequestSchema = createKoriRequestSchema({
-  provider: 'test-provider',
-  params: paramsSchema,
-  queries: queriesSchema,
-  headers: headersSchema,
-  cookies: cookiesSchema,
-  body: bodySchema,
 });
 
 const mockRequest = {
@@ -69,6 +60,7 @@ const mockRequest = {
   headers: () => ({ authorization: 'Bearer token' }),
   cookies: () => ({ sessionId: 'abc123' }),
   bodyJson: () => Promise.resolve({ name: 'test' }),
+  bodyText: () => Promise.resolve('{"name":"test"}'),
   mediaType: () => 'application/json',
 } as unknown as KoriRequest;
 
@@ -77,7 +69,10 @@ describe('resolveRequestValidator', () => {
     test('returns undefined when validator is not provided', () => {
       const result = resolveRequestValidator({
         validator: undefined,
-        schema: testRequestSchema,
+        schema: createKoriRequestSchema({
+          provider: 'test-provider',
+          params: paramsSchema,
+        }),
       });
 
       expect(result).toBeUndefined();
@@ -131,7 +126,7 @@ describe('resolveRequestValidator', () => {
       }
 
       expect(result.value).toEqual({
-        params: { id: '123', __test_processed: 'by-params-validator' },
+        params: { received: { id: '123' }, __test_processed: 'by-params-validator' },
         queries: undefined,
         headers: undefined,
         cookies: undefined,
@@ -142,7 +137,14 @@ describe('resolveRequestValidator', () => {
     test('validates request with all schemas defined', async () => {
       const v = resolveRequestValidator({
         validator: testRequestValidator,
-        schema: testRequestSchema,
+        schema: createKoriRequestSchema({
+          provider: 'test-provider',
+          params: paramsSchema,
+          queries: queriesSchema,
+          headers: headersSchema,
+          cookies: cookiesSchema,
+          body: bodySchema,
+        }),
       });
 
       expect(v).toBeDefined();
@@ -157,22 +159,20 @@ describe('resolveRequestValidator', () => {
       }
 
       expect(result.value).toEqual({
-        params: { id: '123', __test_processed: 'by-params-validator' },
-        queries: { page: '1', __test_processed: 'by-queries-validator' },
-        headers: { authorization: 'Bearer token', __test_processed: 'by-headers-validator' },
-        cookies: { sessionId: 'abc123', __test_processed: 'by-cookies-validator' },
-        body: { name: 'test', __test_processed: 'by-body-validator' },
+        params: { received: { id: '123' }, __test_processed: 'by-params-validator' },
+        queries: { received: { page: '1' }, __test_processed: 'by-queries-validator' },
+        headers: { received: { authorization: 'Bearer token' }, __test_processed: 'by-headers-validator' },
+        cookies: { received: { sessionId: 'abc123' }, __test_processed: 'by-cookies-validator' },
+        body: { received: { name: 'test' }, __test_processed: 'by-body-validator' },
       });
     });
 
     test('handles empty request schema with no validation', async () => {
-      const requestSchema = createKoriRequestSchema({
-        provider: 'test-provider',
-      });
-
       const v = resolveRequestValidator({
         validator: testRequestValidator,
-        schema: requestSchema,
+        schema: createKoriRequestSchema({
+          provider: 'test-provider',
+        }),
       });
 
       expect(v).toBeDefined();
@@ -213,15 +213,16 @@ describe('resolveRequestValidator', () => {
         },
       });
 
-      const requestSchema = createKoriRequestSchema({
-        provider: 'test-provider',
-        params: paramsSchema,
-        headers: headersSchema,
-      });
-
       const v = resolveRequestValidator({
         validator: failingValidator,
-        schema: requestSchema,
+        schema: createKoriRequestSchema({
+          provider: 'test-provider',
+          params: paramsSchema,
+          queries: queriesSchema,
+          headers: headersSchema,
+          cookies: cookiesSchema,
+          body: bodySchema,
+        }),
       });
 
       expect(v).toBeDefined();
@@ -257,15 +258,13 @@ describe('resolveRequestValidator', () => {
         },
       });
 
-      const requestSchema = createKoriRequestSchema({
-        provider: 'test-provider',
-        params: paramsSchema,
-        queries: queriesSchema,
-      });
-
       const v = resolveRequestValidator({
         validator: singleFailValidator,
-        schema: requestSchema,
+        schema: createKoriRequestSchema({
+          provider: 'test-provider',
+          params: paramsSchema,
+          queries: queriesSchema,
+        }),
       });
 
       expect(v).toBeDefined();
@@ -286,6 +285,164 @@ describe('resolveRequestValidator', () => {
       expect(result.reason.headers).toBeUndefined();
       expect(result.reason.cookies).toBeUndefined();
       expect(result.reason.body).toBeUndefined();
+    });
+  });
+
+  describe('parseType handling', () => {
+    const mockBinaryRequest = {
+      ...mockRequest,
+      mediaType: () => 'application/custom+binary',
+      bodyArrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+    } as unknown as KoriRequest;
+
+    test('supports explicit parseType: binary', async () => {
+      const requestSchema = createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'application/custom+binary': {
+              schema: bodySchema,
+              parseType: 'binary',
+            },
+          },
+        },
+      });
+
+      const v = resolveRequestValidator({
+        validator: testRequestValidator,
+        schema: requestSchema,
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockBinaryRequest);
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.value.body).toEqual({
+        mediaType: 'application/custom+binary',
+        value: {
+          received: expect.any(ArrayBuffer),
+          __test_processed: 'by-body-validator',
+        },
+      });
+    });
+
+    test('supports explicit parseType: auto (default)', async () => {
+      const jsonRequestSchema = createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'application/json': {
+              schema: bodySchema,
+              parseType: 'auto',
+            },
+          },
+        },
+      });
+
+      const v = resolveRequestValidator({
+        validator: testRequestValidator,
+        schema: jsonRequestSchema,
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockRequest);
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.value.body).toEqual({
+        mediaType: 'application/json',
+        value: {
+          received: { name: 'test' },
+          __test_processed: 'by-body-validator',
+        },
+      });
+    });
+
+    test('supports implicit parseType (auto)', async () => {
+      const jsonRequestSchema = createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'application/json': bodySchema, // Direct schema, implies auto
+          },
+        },
+      });
+
+      const v = resolveRequestValidator({
+        validator: testRequestValidator,
+        schema: jsonRequestSchema,
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockRequest);
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        expect.unreachable('for type narrowing');
+      }
+
+      expect(result.value.body).toEqual({
+        mediaType: 'application/json',
+        value: {
+          received: { name: 'test' },
+          __test_processed: 'by-body-validator',
+        },
+      });
+    });
+
+    test('supports explicit parseType: text overriding auto detection for JSON', async () => {
+      const textRequestSchema = createKoriRequestSchema({
+        provider: 'test-provider',
+        body: {
+          content: {
+            'application/json': {
+              schema: bodySchema,
+              parseType: 'text',
+            },
+          },
+        },
+      });
+
+      const v = resolveRequestValidator({
+        validator: testRequestValidator,
+        schema: textRequestSchema,
+      });
+
+      expect(v).toBeDefined();
+      if (!v) {
+        expect.unreachable('for type narrowing');
+      }
+
+      const result = await v(mockRequest);
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        expect.unreachable('for type narrowing');
+      }
+
+      // Verify that the body was parsed as text (string)
+      expect(result.value.body).toEqual({
+        mediaType: 'application/json',
+        value: {
+          received: '{"name":"test"}',
+          __test_processed: 'by-body-validator',
+        },
+      });
     });
   });
 });

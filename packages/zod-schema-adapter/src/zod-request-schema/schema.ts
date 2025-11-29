@@ -179,7 +179,14 @@ export function zodRequestSchema<
   }
 
   // content body
-  return createKoriRequestSchema({
+  return createKoriRequestSchema<
+    KoriZodSchemaProvider,
+    KoriZodSchema<ZParams>,
+    KoriZodSchema<ZHeaders>,
+    KoriZodSchema<ZQueries>,
+    KoriZodSchema<ZCookies>,
+    KoriRequestSchemaZodToBodyMapping<ZBodyMapping>
+  >({
     provider: ZOD_SCHEMA_PROVIDER,
     params,
     headers,

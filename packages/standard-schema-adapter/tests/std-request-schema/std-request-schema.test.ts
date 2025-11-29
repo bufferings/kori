@@ -1,9 +1,9 @@
-import { type KoriRequestSchema, type KoriSchemaBase } from '@korix/kori';
-import { describe, test, expect, expectTypeOf } from 'vitest';
+import { type KoriRequestSchema } from '@korix/kori';
+import { describe, expect, expectTypeOf, test } from 'vitest';
 import { z } from 'zod';
 
-import { stdRequestSchema, type KoriStdRequestSchemaContentBody } from '../../src/std-request-schema/index.js';
-import { STANDARD_SCHEMA_PROVIDER, type KoriStdSchema } from '../../src/std-schema/index.js';
+import { type KoriStdRequestSchemaContentBody, stdRequestSchema } from '../../src/std-request-schema/index.js';
+import { type KoriStdSchema, STANDARD_SCHEMA_PROVIDER } from '../../src/std-schema/index.js';
 
 describe('stdRequestSchema', () => {
   describe('simple body overload', () => {
@@ -21,12 +21,27 @@ describe('stdRequestSchema', () => {
       });
 
       expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
-      expect(result.params?.definition).toBe(paramsSchema);
-      expect(result.headers?.definition).toBe(headersSchema);
-      expect(result.queries?.definition).toBe(queriesSchema);
 
-      const body = result.body as KoriSchemaBase;
-      expect(body.definition).toBe(bodySchema);
+      expect(result.params).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: paramsSchema,
+      });
+      expect(result.headers).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: headersSchema,
+      });
+      expect(result.queries).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: queriesSchema,
+      });
+      expect(result.body).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: bodySchema,
+      });
     });
 
     test('creates schema with only params', () => {
@@ -37,7 +52,11 @@ describe('stdRequestSchema', () => {
       });
 
       expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
-      expect(result.params?.definition).toBe(paramsSchema);
+      expect(result.params).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: paramsSchema,
+      });
       expect(result.headers).toBeUndefined();
       expect(result.queries).toBeUndefined();
       expect(result.body).toBeUndefined();
@@ -52,7 +71,11 @@ describe('stdRequestSchema', () => {
 
       expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
       expect(result.params).toBeUndefined();
-      expect(result.headers?.definition).toBe(headersSchema);
+      expect(result.headers).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: headersSchema,
+      });
       expect(result.queries).toBeUndefined();
       expect(result.body).toBeUndefined();
     });
@@ -67,7 +90,11 @@ describe('stdRequestSchema', () => {
       expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
       expect(result.params).toBeUndefined();
       expect(result.headers).toBeUndefined();
-      expect(result.queries?.definition).toBe(queriesSchema);
+      expect(result.queries).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: queriesSchema,
+      });
       expect(result.body).toBeUndefined();
     });
 
@@ -82,12 +109,11 @@ describe('stdRequestSchema', () => {
       expect(result.params).toBeUndefined();
       expect(result.headers).toBeUndefined();
       expect(result.queries).toBeUndefined();
-      expect(result.body).toEqual(
-        expect.objectContaining({
-          provider: STANDARD_SCHEMA_PROVIDER,
-          definition: bodySchema,
-        }),
-      );
+      expect(result.body).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: bodySchema,
+      });
     });
 
     test('creates schema with empty options', () => {
@@ -119,48 +145,79 @@ describe('stdRequestSchema', () => {
       });
 
       expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
-      expect(result.params?.definition).toBe(paramsSchema);
+      expect(result.params).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: paramsSchema,
+      });
       expect(result.body).toEqual({
         description: 'Mixed content types',
         content: {
-          'application/json': expect.objectContaining({
+          'application/json': {
+            koriKind: 'kori-schema',
             provider: STANDARD_SCHEMA_PROVIDER,
             definition: jsonBodySchema,
-          }),
-          'multipart/form-data': expect.objectContaining({
+          },
+          'multipart/form-data': {
+            koriKind: 'kori-schema',
             provider: STANDARD_SCHEMA_PROVIDER,
             definition: formBodySchema,
-          }),
+          },
         },
       });
     });
 
-    test('handles empty content mapping', () => {
+    test('creates schema with { schema } form (no parseType)', () => {
+      const jsonSchema = z.object({ data: z.string() });
+
       const result = stdRequestSchema({
         body: {
-          content: {},
+          content: {
+            'application/json': {
+              schema: jsonSchema,
+            },
+          },
         },
       });
 
-      expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
-      expect(result.body).toMatchObject({
-        description: undefined,
-        content: {},
+      expect(result.body).toEqual({
+        content: {
+          'application/json': {
+            schema: {
+              koriKind: 'kori-schema',
+              provider: STANDARD_SCHEMA_PROVIDER,
+              definition: jsonSchema,
+            },
+          },
+        },
       });
     });
 
-    test('handles content with description only', () => {
+    test('creates schema with { schema, parseType } form', () => {
+      const binarySchema = z.instanceof(ArrayBuffer);
+
       const result = stdRequestSchema({
         body: {
-          description: 'Empty content',
-          content: {},
+          content: {
+            'application/octet-stream': {
+              schema: binarySchema,
+              parseType: 'binary',
+            },
+          },
         },
       });
 
-      expect(result.provider).toBe(STANDARD_SCHEMA_PROVIDER);
-      expect(result.body).toMatchObject({
-        description: 'Empty content',
-        content: {},
+      expect(result.body).toEqual({
+        content: {
+          'application/octet-stream': {
+            schema: {
+              koriKind: 'kori-schema',
+              provider: STANDARD_SCHEMA_PROVIDER,
+              definition: binarySchema,
+            },
+            parseType: 'binary',
+          },
+        },
       });
     });
   });
@@ -256,13 +313,16 @@ describe('stdRequestSchema', () => {
         body: nestedSchema,
       });
 
-      const body = result.body as KoriSchemaBase;
-      expect(body.definition).toBe(nestedSchema);
+      expect(result.body).toEqual({
+        koriKind: 'kori-schema',
+        provider: STANDARD_SCHEMA_PROVIDER,
+        definition: nestedSchema,
+      });
     });
   });
 
-  describe('type definitions', () => {
-    test('KoriStdRequestSchemaContentBody accepts content mapping', () => {
+  describe('KoriStdRequestSchemaContentBody', () => {
+    test('accepts direct schema with description', () => {
       const jsonSchema = z.object({ data: z.string() });
       const _contentBody = {
         description: 'Content body',
@@ -273,6 +333,83 @@ describe('stdRequestSchema', () => {
 
       expectTypeOf<typeof _contentBody>().toExtend<
         KoriStdRequestSchemaContentBody<{ 'application/json': typeof jsonSchema }>
+      >();
+    });
+
+    test('accepts direct schema without description', () => {
+      const jsonSchema = z.object({ data: z.string() });
+      const _contentBody = {
+        content: {
+          'application/json': jsonSchema,
+        },
+      };
+
+      expectTypeOf<typeof _contentBody>().toExtend<
+        KoriStdRequestSchemaContentBody<{ 'application/json': typeof jsonSchema }>
+      >();
+    });
+
+    test('accepts { schema } with description', () => {
+      const jsonSchema = z.object({ data: z.string() });
+      const _contentBody = {
+        description: 'JSON content',
+        content: {
+          'application/json': {
+            schema: jsonSchema,
+          },
+        },
+      };
+
+      expectTypeOf<typeof _contentBody>().toExtend<
+        KoriStdRequestSchemaContentBody<{ 'application/json': typeof jsonSchema }>
+      >();
+    });
+
+    test('accepts { schema } without description', () => {
+      const jsonSchema = z.object({ data: z.string() });
+      const _contentBody = {
+        content: {
+          'application/json': {
+            schema: jsonSchema,
+          },
+        },
+      };
+
+      expectTypeOf<typeof _contentBody>().toExtend<
+        KoriStdRequestSchemaContentBody<{ 'application/json': typeof jsonSchema }>
+      >();
+    });
+
+    test('accepts { schema, parseType } with description', () => {
+      const binarySchema = z.instanceof(ArrayBuffer);
+      const _contentBody = {
+        description: 'Binary content',
+        content: {
+          'application/octet-stream': {
+            schema: binarySchema,
+            parseType: 'binary' as const,
+          },
+        },
+      };
+
+      expectTypeOf<typeof _contentBody>().toExtend<
+        KoriStdRequestSchemaContentBody<{ 'application/octet-stream': typeof binarySchema }>
+      >();
+    });
+
+    test('accepts { schema, parseType } without description', () => {
+      const binarySchema = z.instanceof(ArrayBuffer);
+      const _contentBody = {
+        content: {
+          'application/octet-stream': {
+            schema: binarySchema,
+            parseType: 'binary' as const,
+          },
+        },
+      };
+
+      expectTypeOf<typeof _contentBody>().toExtend<
+        KoriStdRequestSchemaContentBody<{ 'application/octet-stream': typeof binarySchema }>
       >();
     });
   });

@@ -164,6 +164,57 @@ describe('Request validation integration', () => {
     });
   });
 
+  test('validates content body with explicit parseType', async () => {
+    const onRequestValidationFailure = vi.fn();
+
+    const app = createKori({
+      ...enableZodRequestValidation({ onRequestValidationFailure }),
+    }).post('/raw', {
+      requestSchema: zodRequestSchema({
+        body: {
+          content: {
+            'application/json': {
+              schema: z.string(),
+              parseType: 'text',
+            },
+          },
+        },
+      }),
+      handler: (ctx) => {
+        const body = ctx.req.validatedBody();
+        if (body.mediaType === 'application/json') {
+          return ctx.res.json({
+            success: true,
+            rawBody: body.value,
+          });
+        } else {
+          expect.fail('Invalid media type');
+        }
+      },
+    });
+    const { fetchHandler } = await app.start();
+
+    const response = await fetchHandler(
+      new Request('http://localhost/raw', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: '{"name":"John"}',
+      }),
+    );
+
+    expect(onRequestValidationFailure).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+
+    const body = await response.json();
+    // parseType: 'text' means the body is parsed as string, not JSON object
+    expect(body).toEqual({
+      success: true,
+      rawBody: '{"name":"John"}',
+    });
+  });
+
   test('uses default error handler when no custom handler provided', async () => {
     const app = createKori({
       ...enableZodRequestValidation(),
@@ -204,7 +255,7 @@ describe('Request validation integration', () => {
     }).get('/preferences', {
       requestSchema: zodRequestSchema({
         cookies: z.object({
-          sessionId: z.string().uuid(),
+          sessionId: z.uuid(),
           theme: z.enum(['light', 'dark']).default('light'),
         }),
       }),
@@ -250,7 +301,7 @@ describe('Request validation integration', () => {
     }).get('/preferences', {
       requestSchema: zodRequestSchema({
         cookies: z.object({
-          sessionId: z.string().uuid(),
+          sessionId: z.uuid(),
         }),
       }),
       handler: (ctx) => {

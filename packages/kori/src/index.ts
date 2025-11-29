@@ -63,10 +63,13 @@ export {
   type InferRequestSchemaProvider,
   type InferRequestSchemaQueriesOutput,
   isKoriRequestSchema,
+  type KoriRequestBodyParseType,
   type KoriRequestSchema,
   type KoriRequestSchemaBase,
   type KoriRequestSchemaContentBody,
   type KoriRequestSchemaContentBodyBase,
+  type KoriRequestSchemaContentEntry,
+  type KoriRequestSchemaContentEntryBase,
 } from './request-schema/index.js';
 export {
   createKoriResponseSchema,

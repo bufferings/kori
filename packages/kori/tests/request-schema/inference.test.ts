@@ -174,15 +174,22 @@ describe('InferRequestSchemaBodyOutput', () => {
     >();
   });
 
-  test('infers never for empty content mapping', () => {
+  test('infers content body output type with explicit parseType', () => {
     const _requestSchema = createKoriRequestSchema({
       provider: testProvider,
       body: {
-        content: {},
+        content: {
+          'application/json': {
+            schema: userSchema,
+            parseType: 'json',
+          },
+        },
       },
     });
 
-    // Should return never for empty content mapping
-    expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<never>();
+    expectTypeOf<InferRequestSchemaBodyOutput<typeof _requestSchema>>().toEqualTypeOf<{
+      mediaType: 'application/json';
+      value: { name: string; email: string };
+    }>();
   });
 });

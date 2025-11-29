@@ -1,4 +1,10 @@
-export { type KoriRequestSchemaContentBody, type KoriRequestSchemaContentBodyBase } from './body-content.js';
+export {
+  type KoriRequestBodyParseType,
+  type KoriRequestSchemaContentBody,
+  type KoriRequestSchemaContentBodyBase,
+  type KoriRequestSchemaContentEntry,
+  type KoriRequestSchemaContentEntryBase,
+} from './body-content.js';
 export {
   type InferRequestSchemaBodyOutput,
   type InferRequestSchemaCookiesOutput,

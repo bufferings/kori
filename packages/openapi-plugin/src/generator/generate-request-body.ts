@@ -75,7 +75,8 @@ export function generateRequestBody({
   // content body
   const content: Record<string, MediaTypeObject> = {};
   for (const [mediaType, bodySchema] of Object.entries(schema.body.content)) {
-    const schemaObject = convertSchema({ schema: bodySchema });
+    const actualSchema = isKoriSchema(bodySchema) ? bodySchema : bodySchema.schema;
+    const schemaObject = convertSchema({ schema: actualSchema });
     if (schemaObject) {
       content[mediaType] = createMediaTypeObject({ schemaObject });
     }

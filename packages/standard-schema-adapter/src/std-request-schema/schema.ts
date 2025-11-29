@@ -179,7 +179,14 @@ export function stdRequestSchema<
   }
 
   // content body
-  return createKoriRequestSchema({
+  return createKoriRequestSchema<
+    KoriStdSchemaProvider,
+    KoriStdSchema<StdParams>,
+    KoriStdSchema<StdHeaders>,
+    KoriStdSchema<StdQueries>,
+    KoriStdSchema<StdCookies>,
+    KoriRequestSchemaStdToBodyMapping<StdBodyMapping>
+  >({
     provider: STANDARD_SCHEMA_PROVIDER,
     params,
     headers,
