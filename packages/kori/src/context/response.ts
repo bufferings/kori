@@ -156,6 +156,17 @@ export type KoriResponse = {
   stream(body: ReadableStream): KoriResponse;
 
   /**
+   * Redirects to the specified URL.
+   *
+   * Defaults to 302 Found if no status code is provided.
+   *
+   * @param url - URL to redirect to
+   * @param status - HTTP redirect status code (default: 302)
+   * @returns The same response instance for method chaining
+   */
+  redirect(url: string, status?: HttpStatusCode): KoriResponse;
+
+  /**
    * Creates a 400 Bad Request error response.
    *
    * @param options - Error response options (message, code, details, and custom fields)
@@ -773,6 +784,13 @@ const sharedMethods = {
   },
   stream(body: ReadableStream): KoriResponse {
     setBodyStreamInternal({ res: this, body });
+    return this as unknown as KoriResponse;
+  },
+
+  redirect(url: string, status: HttpStatusCode = HttpStatus.FOUND): KoriResponse {
+    this.statusCode = status;
+    setHeaderInternal(this, 'location', url);
+    setBodyEmptyInternal({ res: this });
     return this as unknown as KoriResponse;
   },
 

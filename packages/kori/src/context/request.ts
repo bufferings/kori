@@ -211,6 +211,7 @@ export type KoriRequest = {
    * (e.g., text), it will be converted from the cached value.
    *
    * @returns Promise resolving to parsed JSON data
+   * @throws When the body stream cannot be read or the content is not valid JSON
    */
   bodyJson(): Promise<unknown>;
 
@@ -221,6 +222,7 @@ export type KoriRequest = {
    * it will be converted from the cached value.
    *
    * @returns Promise resolving to body text
+   * @throws When the body stream cannot be read
    */
   bodyText(): Promise<string>;
 
@@ -231,6 +233,7 @@ export type KoriRequest = {
    * it will be converted from the cached value.
    *
    * @returns Promise resolving to FormData object
+   * @throws When the body stream cannot be read or the content is not valid form data
    */
   bodyFormData(): Promise<FormData>;
 
@@ -241,6 +244,7 @@ export type KoriRequest = {
    * it will be converted from the cached value.
    *
    * @returns Promise resolving to ArrayBuffer
+   * @throws When the body stream cannot be read
    */
   bodyArrayBuffer(): Promise<ArrayBuffer>;
 

@@ -97,15 +97,16 @@ export type KoriHandlerContext<Env extends KoriEnvironment, Req extends KoriRequ
    * ```typescript
    * // Set response headers after handler execution
    * ctx.defer((ctx) => {
-   *   ctx.res.setHeader('x-request-id', ctx.req.requestId);
-   *   ctx.res.setHeader('x-response-time', `${Date.now() - ctx.req.startTime}ms`);
+   *   ctx.res.setHeader('x-request-method', ctx.req.method());
+   *   ctx.res.setHeader('x-request-path', ctx.req.url().pathname);
    * });
    *
-   * // Collect metrics and log completion
+   * // Log completion with response status
    * ctx.defer((ctx) => {
    *   ctx.log().info('Request completed', {
-   *     status: ctx.res.getStatus(),
-   *     duration: Date.now() - ctx.req.startTime
+   *     method: ctx.req.method(),
+   *     path: ctx.req.url().pathname,
+   *     status: ctx.res.getStatus()
    *   });
    * });
    * ```
