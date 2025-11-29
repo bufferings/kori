@@ -1,6 +1,6 @@
 {
   "name": "@korix/zod-schema-adapter",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Zod schema adapter for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
