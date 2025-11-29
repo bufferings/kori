@@ -15,15 +15,7 @@
  * app.route({ method: { custom: 'PURGE' }, path: '/cache', handler: purgeHandler });
  * ```
  */
-export type RouteHttpMethod =
-  | 'GET'
-  | 'POST'
-  | 'PUT'
-  | 'DELETE'
-  | 'PATCH'
-  | 'HEAD'
-  | 'OPTIONS'
-  | { custom: Uppercase<string> };
+export type RouteHttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | { custom: Uppercase<string> };
 
 /**
  * Normalizes a route HTTP method to its string representation.

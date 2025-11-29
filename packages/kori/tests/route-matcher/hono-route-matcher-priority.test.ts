@@ -19,7 +19,7 @@ describe('HonoRouteMatcher route priority and conflict resolution', () => {
     matcher.addRoute({ method: 'GET', path: '/same', routeId: second });
 
     const compiled = matcher.compile();
-    const match = compiled(createRequest('https://example.com/same', 'GET'));
+    const match = compiled({ request: createRequest('https://example.com/same', 'GET') });
 
     expect(match?.routeId).toBe(first);
   });
@@ -33,10 +33,10 @@ describe('HonoRouteMatcher route priority and conflict resolution', () => {
     matcher.addRoute({ method: 'GET', path: '/book/:slug', routeId: param });
     const compiled = matcher.compile();
 
-    const specificMatch = compiled(createRequest('https://example.com/book/a', 'GET'));
+    const specificMatch = compiled({ request: createRequest('https://example.com/book/a', 'GET') });
     expect(specificMatch?.routeId).toBe(specific);
 
-    const paramMatch = compiled(createRequest('https://example.com/book/b', 'GET'));
+    const paramMatch = compiled({ request: createRequest('https://example.com/book/b', 'GET') });
     expect(paramMatch?.routeId).toBe(param);
   });
 
@@ -49,10 +49,10 @@ describe('HonoRouteMatcher route priority and conflict resolution', () => {
     matcher.addRoute({ method: 'GET', path: '/book/a', routeId: specific });
     const compiled = matcher.compile();
 
-    const specificPathMatch = compiled(createRequest('https://example.com/book/a', 'GET'));
+    const specificPathMatch = compiled({ request: createRequest('https://example.com/book/a', 'GET') });
     expect(specificPathMatch?.routeId).toBe(param);
 
-    const paramPathMatch = compiled(createRequest('https://example.com/book/b', 'GET'));
+    const paramPathMatch = compiled({ request: createRequest('https://example.com/book/b', 'GET') });
     expect(paramPathMatch?.routeId).toBe(param);
   });
 });

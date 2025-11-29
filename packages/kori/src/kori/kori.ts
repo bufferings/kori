@@ -135,12 +135,6 @@ export type Kori<
    */
   patch: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
   /**
-   * Registers a HEAD route.
-   *
-   * @returns The Kori instance for method chaining
-   */
-  head: KoriRouteMethod<Env, Req, Res, ReqV, ResV>;
-  /**
    * Registers an OPTIONS route.
    *
    * @returns The Kori instance for method chaining

@@ -24,12 +24,12 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/users" exactly', () => {
-        const match = compiled(createRequest('https://example.com/users', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/users', 'GET') });
         expect(match?.routeId).toBe(id);
       });
 
       test('does not match "/users/"', () => {
-        const match = compiled(createRequest('https://example.com/users/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/users/', 'GET') });
         expect(match).toBeUndefined();
       });
     });
@@ -46,12 +46,12 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/users/" exactly', () => {
-        const match = compiled(createRequest('https://example.com/users/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/users/', 'GET') });
         expect(match?.routeId).toBe(id);
       });
 
       test('does not match "/users"', () => {
-        const match = compiled(createRequest('https://example.com/users', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/users', 'GET') });
         expect(match).toBeUndefined();
       });
     });
@@ -68,12 +68,12 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/" URL', () => {
-        const match = compiled(createRequest('https://example.com/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/', 'GET') });
         expect(match?.routeId).toBe(id);
       });
 
       test('matches "" URL (special case)', () => {
-        const match = compiled(createRequest('https://example.com', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com', 'GET') });
         expect(match?.routeId).toBe(id);
       });
     });
@@ -89,12 +89,12 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('does not match "/" URL', () => {
-        const match = compiled(createRequest('https://example.com/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/', 'GET') });
         expect(match).toBeUndefined();
       });
 
       test('does not match "" URL', () => {
-        const match = compiled(createRequest('https://example.com', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com', 'GET') });
         expect(match).toBeUndefined();
       });
     });
@@ -113,24 +113,24 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/api/v1" with parameter', () => {
-        const match = compiled(createRequest('https://example.com/api/v1', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/api/v1', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({ version: 'v1' });
       });
 
       test('does not match "/api/v1/" with trailing slash', () => {
-        const match = compiled(createRequest('https://example.com/api/v1/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/api/v1/', 'GET') });
         expect(match).toBeUndefined();
       });
 
       test('matches "/api" without parameter', () => {
-        const match = compiled(createRequest('https://example.com/api', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/api', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });
 
       test('does not match "/api/" with trailing slash', () => {
-        const match = compiled(createRequest('https://example.com/api/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/api/', 'GET') });
         expect(match).toBeUndefined();
       });
     });
@@ -147,24 +147,24 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/v1"', () => {
-        const match = compiled(createRequest('https://example.com/v1', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/v1', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({ version: 'v1' });
       });
 
       test('does not match "/v1/"', () => {
-        const match = compiled(createRequest('https://example.com/v1/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/v1/', 'GET') });
         expect(match).toBeUndefined();
       });
 
       test('matches "/"', () => {
-        const match = compiled(createRequest('https://example.com/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });
 
       test('matches ""', () => {
-        const match = compiled(createRequest('https://example.com', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });
@@ -182,24 +182,24 @@ describe('HonoRouteMatcher trailing slash behavior', () => {
       });
 
       test('matches "/v1" - caution: matches but parameter not extracted', () => {
-        const match = compiled(createRequest('https://example.com/v1', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/v1', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });
 
       test('does not match "/v1/"', () => {
-        const match = compiled(createRequest('https://example.com/v1/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/v1/', 'GET') });
         expect(match).toBeUndefined();
       });
 
       test('matches "/"', () => {
-        const match = compiled(createRequest('https://example.com/', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com/', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });
 
       test('matches ""', () => {
-        const match = compiled(createRequest('https://example.com', 'GET'));
+        const match = compiled({ request: createRequest('https://example.com', 'GET') });
         expect(match?.routeId).toBe(id);
         expect(match?.pathParams).toEqual({});
       });

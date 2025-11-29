@@ -299,17 +299,6 @@ function createKoriInternal<
       return _routeAlias('PATCH', path, handlerOrOptions, _kori.route);
     },
 
-    head<
-      Path extends string,
-      ReqS extends KoriRequestSchemaBase | undefined = undefined,
-      ResS extends KoriResponseSchemaBase | undefined = undefined,
-    >(
-      path: Path,
-      handlerOrOptions: KoriRouteMethodImplOptions<Env, Req, Res, Path, ReqV, ResV, ReqS, ResS>,
-    ): Kori<Env, Req, Res, ReqV, ResV> {
-      return _routeAlias('HEAD', path, handlerOrOptions, _kori.route);
-    },
-
     options<
       Path extends string,
       ReqS extends KoriRequestSchemaBase | undefined = undefined,

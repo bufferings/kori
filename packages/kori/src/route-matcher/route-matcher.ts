@@ -31,10 +31,14 @@ export type KoriRouteMatch = {
  * Path parameters in the returned match reflect the path template structure.
  * Method matching is case-insensitive.
  *
- * @param request - WHATWG Request to match
+ * @param options.request - WHATWG Request to match
+ * @param options.methodOverride - Optional method override to use for matching instead of request.method
  * @returns Matched route or undefined when no route matches
  */
-export type KoriCompiledRouteMatcher = (request: Request) => KoriRouteMatch | undefined;
+export type KoriCompiledRouteMatcher = (options: {
+  request: Request;
+  methodOverride?: string;
+}) => KoriRouteMatch | undefined;
 
 /**
  * Route matcher collects routes and produces a compiled matcher.

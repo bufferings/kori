@@ -72,8 +72,8 @@ export function createHonoRouteMatcher(): KoriRouteMatcher {
     },
 
     compile: (): KoriCompiledRouteMatcher => {
-      return (request: Request): KoriRouteMatch | undefined => {
-        const method = request.method.toUpperCase();
+      return ({ request, methodOverride }): KoriRouteMatch | undefined => {
+        const method = (methodOverride ?? request.method).toUpperCase();
         const path = getPath(request);
 
         const matched = router.match(method, path);

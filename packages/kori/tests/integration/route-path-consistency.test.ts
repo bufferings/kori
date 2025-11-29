@@ -23,7 +23,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/health'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/health') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({});
@@ -40,7 +40,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/users/123'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/users/123') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ id: '123' });
@@ -57,7 +57,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/teams/alpha/users/bob'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/teams/alpha/users/bob') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ team: 'alpha', user: 'bob' });
@@ -74,7 +74,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/files/deep/nested/file.txt'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/files/deep/nested/file.txt') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({});
@@ -91,11 +91,11 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
       const compiled = matcher.compile();
 
-      const withValue = compiled(createTestRequest('https://example.com/api/v1'))!;
+      const withValue = compiled({ request: createTestRequest('https://example.com/api/v1') })!;
       expect(withValue.routeId).toBe(id);
       expect(withValue.pathParams).toEqual({ version: 'v1' });
 
-      const withoutValue = compiled(createTestRequest('https://example.com/api'))!;
+      const withoutValue = compiled({ request: createTestRequest('https://example.com/api') })!;
       expect(withoutValue.routeId).toBe(id);
       expect(withoutValue.pathParams).toEqual({});
 
@@ -110,11 +110,11 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
       const compiled = matcher.compile();
 
-      const withSlug = compiled(createTestRequest('https://example.com/users/123/posts/hello'))!;
+      const withSlug = compiled({ request: createTestRequest('https://example.com/users/123/posts/hello') })!;
       expect(withSlug.routeId).toBe(id);
       expect(withSlug.pathParams).toEqual({ id: '123', slug: 'hello' });
 
-      const withoutSlug = compiled(createTestRequest('https://example.com/users/123/posts'))!;
+      const withoutSlug = compiled({ request: createTestRequest('https://example.com/users/123/posts') })!;
       expect(withoutSlug.routeId).toBe(id);
       expect(withoutSlug.pathParams).toEqual({ id: '123' });
 
@@ -129,11 +129,11 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
       const compiled = matcher.compile();
 
-      const withValue = compiled(createTestRequest('https://example.com/v1'))!;
+      const withValue = compiled({ request: createTestRequest('https://example.com/v1') })!;
       expect(withValue.routeId).toBe(id);
       expect(withValue.pathParams).toEqual({ version: 'v1' });
 
-      const withoutValue = compiled(createTestRequest('https://example.com'))!;
+      const withoutValue = compiled({ request: createTestRequest('https://example.com') })!;
       expect(withoutValue.routeId).toBe(id);
       expect(withoutValue.pathParams).toEqual({});
 
@@ -149,7 +149,7 @@ describe('Route path consistency between matcher and types', () => {
       const compiled = matcher.compile();
 
       // Test with parameter value - matches but parameter NOT extracted (Hono behavior)
-      const withValue = compiled(createTestRequest('https://example.com/v1'))!;
+      const withValue = compiled({ request: createTestRequest('https://example.com/v1') })!;
       expect(withValue.routeId).toBe(id);
       expect(withValue.pathParams).toEqual({}); // No leading slash = no parameter extraction
 
@@ -166,7 +166,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/posts/456'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/posts/456') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ id: '456' });
@@ -182,11 +182,11 @@ describe('Route path consistency between matcher and types', () => {
       const compiled = matcher.compile();
 
       // Test both cases for constraint + optional
-      const withValue = compiled(createTestRequest('https://example.com/posts/456'))!;
+      const withValue = compiled({ request: createTestRequest('https://example.com/posts/456') })!;
       expect(withValue.routeId).toBe(id);
       expect(withValue.pathParams).toEqual({ id: '456' });
 
-      const withoutValue = compiled(createTestRequest('https://example.com/posts'))!;
+      const withoutValue = compiled({ request: createTestRequest('https://example.com/posts') })!;
       expect(withoutValue.routeId).toBe(id);
       expect(withoutValue.pathParams).toEqual({});
 
@@ -201,7 +201,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/files/folder/image.png'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/files/folder/image.png') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ filename: 'folder/image.png' });
@@ -216,11 +216,11 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
       const compiled = matcher.compile();
 
-      const withFile = compiled(createTestRequest('https://example.com/files/folder/image.png'))!;
+      const withFile = compiled({ request: createTestRequest('https://example.com/files/folder/image.png') })!;
       expect(withFile.routeId).toBe(id);
       expect(withFile.pathParams).toEqual({ filename: 'folder/image.png' });
 
-      const withoutFile = compiled(createTestRequest('https://example.com/files'))!;
+      const withoutFile = compiled({ request: createTestRequest('https://example.com/files') })!;
       expect(withoutFile.routeId).toBe(id);
       expect(withoutFile.pathParams).toEqual({});
 
@@ -235,7 +235,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/users/789/posts/hello'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/users/789/posts/hello') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ id: '789', slug: 'hello' });
@@ -250,7 +250,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/api/v2/users/789'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/api/v2/users/789') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ version: 'v2', id: '789' });
@@ -265,7 +265,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/posts/20240101/hello'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/posts/20240101/hello') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ date: '20240101', title: 'hello' });
@@ -280,7 +280,7 @@ describe('Route path consistency between matcher and types', () => {
       matcher.addRoute({ method: 'GET', path, routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createTestRequest('https://example.com/files/folder/image.png'))!;
+      const match = compiled({ request: createTestRequest('https://example.com/files/folder/image.png') })!;
 
       expect(match.routeId).toBe(id);
       expect(match.pathParams).toEqual({ filename: 'folder/image.png' });

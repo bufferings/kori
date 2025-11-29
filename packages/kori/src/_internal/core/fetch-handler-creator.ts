@@ -59,7 +59,8 @@ export function createFetchHandler({
     }
 
     const fetchHandlerImpl = async (request: Request): Promise<Response> => {
-      const routeMatch = compiledRouteMatcher(request);
+      const isHead = request.method === 'HEAD';
+      const routeMatch = compiledRouteMatcher({ request, methodOverride: isHead ? 'GET' : undefined });
       if (!routeMatch) {
         return await onRouteNotFound(request);
       }
@@ -90,7 +91,13 @@ export function createFetchHandler({
 
       const composedHandler = routeRecord.handler as (ctx: typeof handlerCtx) => Promise<KoriResponse>;
       const res = await composedHandler(handlerCtx);
-      return res.build();
+      const response = res.build();
+
+      if (isHead) {
+        return new Response(null, response);
+      }
+
+      return response;
     };
 
     const onCloseImpl = async (): Promise<void> => {

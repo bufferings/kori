@@ -18,7 +18,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'GET', path: '/hello', routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/hello', 'GET'));
+      const match = compiled({ request: createRequest('https://example.com/hello', 'GET') });
 
       expect(match?.routeId).toBe(id);
     });
@@ -29,7 +29,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'GET', path: '/users/:id', routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/users/123', 'GET'));
+      const match = compiled({ request: createRequest('https://example.com/users/123', 'GET') });
 
       expect(match?.routeId).toBe(id);
       expect(match?.pathParams).toEqual({ id: '123' });
@@ -46,10 +46,10 @@ describe('HonoRouteMatcher basic behavior', () => {
 
       const compiled = matcher.compile();
 
-      const lowerMatch = compiled(createRequest('https://example.com/cases/lower', 'GET'));
+      const lowerMatch = compiled({ request: createRequest('https://example.com/cases/lower', 'GET') });
       expect(lowerMatch?.routeId).toBe(lowerId);
 
-      const upperMatch = compiled(createRequest('https://example.com/cases/upper', 'post'));
+      const upperMatch = compiled({ request: createRequest('https://example.com/cases/upper', 'post') });
       expect(upperMatch?.routeId).toBe(upperId);
     });
 
@@ -59,7 +59,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'PURGE', path: '/cache', routeId: id });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/cache', 'purge'));
+      const match = compiled({ request: createRequest('https://example.com/cache', 'purge') });
       expect(match?.routeId).toBe(id);
     });
 
@@ -71,8 +71,8 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'DELETE', path: '/post', routeId: delId });
 
       const compiled = matcher.compile();
-      const putMatch = compiled(createRequest('https://example.com/post', 'PUT'));
-      const deleteMatch = compiled(createRequest('https://example.com/post', 'DELETE'));
+      const putMatch = compiled({ request: createRequest('https://example.com/post', 'PUT') });
+      const deleteMatch = compiled({ request: createRequest('https://example.com/post', 'DELETE') });
       expect(putMatch?.routeId).toBe(putId);
       expect(deleteMatch?.routeId).toBe(delId);
     });
@@ -84,7 +84,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'GET', path: '/users', routeId: routeId('users') });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/posts', 'GET'));
+      const match = compiled({ request: createRequest('https://example.com/posts', 'GET') });
 
       expect(match).toBeUndefined();
     });
@@ -94,7 +94,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'GET', path: '/users', routeId: routeId('get-users') });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/users', 'POST'));
+      const match = compiled({ request: createRequest('https://example.com/users', 'POST') });
 
       expect(match).toBeUndefined();
     });
@@ -104,7 +104,7 @@ describe('HonoRouteMatcher basic behavior', () => {
       matcher.addRoute({ method: 'GET', path: '/post/:id{[0-9]+}', routeId: routeId('numeric') });
 
       const compiled = matcher.compile();
-      const match = compiled(createRequest('https://example.com/post/abc', 'GET'));
+      const match = compiled({ request: createRequest('https://example.com/post/abc', 'GET') });
 
       expect(match).toBeUndefined();
     });
