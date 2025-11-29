@@ -40,7 +40,7 @@ type MergePathParams<A extends Record<string, string | undefined>, B extends Rec
  * ```typescript
  * type UserParams = PathParams<'/users/:id'>; // { id: string }
  * type PostParams = PathParams<'/posts/:slug/comments/:commentId'>; // { slug: string; commentId: string }
- * type OptionalParams = PathParams<'/api/:version?'>; // { version: string }
+ * type OptionalParams = PathParams<'/api/:version?'>; // { version: string | undefined }
  * ```
  */
 export type PathParams<Path extends string> = string extends Path
@@ -82,7 +82,7 @@ export type PathParams<Path extends string> = string extends Path
  * ```
  */
 export type WithPathParams<Req extends KoriRequest, Path extends string> = Omit<Req, 'param' | 'params'> & {
-  param<K extends keyof PathParams<Path>>(name: K): string;
+  param<K extends keyof PathParams<Path>>(name: K): PathParams<Path>[K];
   param(name: string): string | undefined;
   params: () => PathParams<Path> & Record<string, string | undefined>;
 };

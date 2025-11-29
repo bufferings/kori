@@ -170,15 +170,15 @@ function createKoriInternal<
       return plugin.apply(_kori) as unknown as Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
     },
 
-    createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions: {
+    createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions?: {
       prefix?: string;
-      configure: (
+      configure?: (
         kori: Kori<Env, Req, Res, ReqV, ResV>,
       ) => KoriInternal<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
     }) {
       const child: KoriInternal<Env, Req, Res, ReqV, ResV> = createKoriInternal({
         shared: _shared,
-        prefix: joinPaths(_prefix, childOptions.prefix ?? ''),
+        prefix: joinPaths(_prefix, childOptions?.prefix ?? ''),
         requestValidator: _requestValidator,
         responseValidator: _responseValidator,
         onRequestValidationFailure: _instanceOnRequestValidationFailure,
@@ -188,9 +188,15 @@ function createKoriInternal<
           errorHooks: _errorHooks,
         },
       });
-      const configuredChild = childOptions.configure(child);
-      _children.push(configuredChild);
-      return configuredChild as unknown as Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
+
+      if (childOptions?.configure) {
+        const configuredChild = childOptions.configure(child);
+        _children.push(configuredChild);
+        return configuredChild as unknown as Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
+      }
+
+      _children.push(child);
+      return child as unknown as Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
     },
 
     route<

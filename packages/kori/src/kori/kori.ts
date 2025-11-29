@@ -90,11 +90,11 @@ export type Kori<
   /**
    * Creates a child instance with optional path prefix and configuration.
    *
-   * @returns The Kori instance for method chaining
+   * @returns The child Kori instance for method chaining
    */
   createChild<EnvExt extends object, ReqExt extends object, ResExt extends object>(childOptions?: {
-    configure: (kori: Kori<Env, Req, Res, ReqV, ResV>) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
     prefix?: string;
+    configure?: (kori: Kori<Env, Req, Res, ReqV, ResV>) => Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
   }): Kori<Env & EnvExt, Req & ReqExt, Res & ResExt, ReqV, ResV>;
 
   /**
