@@ -1,6 +1,6 @@
 {
   "name": "@korix/zod-openapi-plugin",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "OpenAPI plugin for Zod schemas in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
