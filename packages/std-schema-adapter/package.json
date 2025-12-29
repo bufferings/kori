@@ -1,6 +1,6 @@
 {
   "name": "@korix/std-schema-adapter",
-  "version": "0.3.6",
+  "version": "0.3.5",
   "description": "Standard Schema adapter for Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",

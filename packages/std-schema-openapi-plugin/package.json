@@ -1,6 +1,6 @@
 {
   "name": "@korix/std-schema-openapi-plugin",
-  "version": "0.3.6",
+  "version": "0.3.5",
   "description": "OpenAPI plugin for Standard JSON Schema in Kori framework",
   "type": "module",
   "author": "mitz (@bufferings)",
