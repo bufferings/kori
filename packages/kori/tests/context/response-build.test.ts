@@ -1,13 +1,10 @@
 import { describe, test, expect, expectTypeOf } from 'vitest';
 
-import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse, isKoriResponse, type KoriResponse } from '../../src/context/response.js';
-
-const mockReq = { header: () => undefined } as unknown as KoriRequest;
 
 describe('KoriResponse build contract', () => {
   test('build() returns a Response with status, headers, and body', async () => {
-    const res = createKoriResponse(mockReq).json({ ok: true });
+    const res = createKoriResponse().json({ ok: true });
 
     const response = res.build();
 
@@ -20,7 +17,7 @@ describe('KoriResponse build contract', () => {
   });
 
   test('build() can be called only once', () => {
-    const res = createKoriResponse(mockReq).json({ ok: true });
+    const res = createKoriResponse().json({ ok: true });
 
     const r1 = res.build();
 
@@ -31,33 +28,33 @@ describe('KoriResponse build contract', () => {
 
 describe('KoriResponse flags and type guard', () => {
   test('isReady/isStream reflect body kind', () => {
-    const r0 = createKoriResponse(mockReq);
+    const r0 = createKoriResponse();
     expect(r0.isReady()).toBe(false);
     expect(r0.isStream()).toBe(false);
 
-    const r1 = createKoriResponse(mockReq).json({ ok: true });
+    const r1 = createKoriResponse().json({ ok: true });
     expect(r1.isReady()).toBe(true);
     expect(r1.isStream()).toBe(false);
 
-    const r2 = createKoriResponse(mockReq).text('hi');
+    const r2 = createKoriResponse().text('hi');
     expect(r2.isReady()).toBe(true);
     expect(r2.isStream()).toBe(false);
 
-    const r3 = createKoriResponse(mockReq).html('<p>x</p>');
+    const r3 = createKoriResponse().html('<p>x</p>');
     expect(r3.isReady()).toBe(true);
     expect(r3.isStream()).toBe(false);
 
-    const r4 = createKoriResponse(mockReq).empty();
+    const r4 = createKoriResponse().empty();
     expect(r4.isReady()).toBe(true);
     expect(r4.isStream()).toBe(false);
 
-    const r5 = createKoriResponse(mockReq).stream(new ReadableStream());
+    const r5 = createKoriResponse().stream(new ReadableStream());
     expect(r5.isReady()).toBe(true);
     expect(r5.isStream()).toBe(true);
   });
 
   test('isKoriResponse type guard (runtime and type)', () => {
-    const res = createKoriResponse(mockReq);
+    const res = createKoriResponse();
     // runtime
     expect(isKoriResponse(res)).toBe(true);
     expect(isKoriResponse({})).toBe(false);

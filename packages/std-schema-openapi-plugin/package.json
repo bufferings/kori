@@ -1,0 +1,77 @@
+{
+  "name": "@korix/std-schema-openapi-plugin",
+  "version": "0.3.6",
+  "description": "OpenAPI plugin for Standard JSON Schema in Kori framework",
+  "type": "module",
+  "author": "mitz (@bufferings)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bufferings/kori"
+  },
+  "homepage": "https://github.com/bufferings/kori",
+  "bugs": "https://github.com/bufferings/kori/issues",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
+        },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "default": "./dist/index.cjs"
+        }
+      }
+    }
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo .turbo .tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "tsdown --tsconfig tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@korix/kori": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "@standard-schema/spec": "^1.1.0",
+    "openapi3-ts": "^4.4.0"
+  },
+  "devDependencies": {
+    "@korix/eslint-config": "workspace:*",
+    "@korix/kori": "workspace:*",
+    "@korix/openapi-plugin": "workspace:*",
+    "@standard-schema/spec": "1.1.0",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "openapi3-ts": "4.4.0",
+    "rimraf": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "zod": "4.2.0"
+  }
+}

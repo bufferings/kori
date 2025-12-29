@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { KoriValidationConfigError } from '../../src/error/index.js';
+import { KoriError } from '../../src/error/index.js';
 
 import { serializeError } from '../../src/logging/error-serializer.js';
 
@@ -79,19 +79,20 @@ describe('serializeError', () => {
       });
     });
 
-    test('should handle KoriValidationConfigError', () => {
-      const validationError = new KoriValidationConfigError('Invalid schema mapping', {
-        data: { provider: 'zod', reason: 'missing content type' },
+    test('should serialize KoriError with code and data properties', () => {
+      const error = new KoriError('Validation failed', {
+        code: 'VALIDATION_CONFIG_ERROR',
+        data: { provider: 'zod', field: 'body' },
       });
 
-      const result = serializeError(validationError);
+      const result = serializeError(error);
 
       expect(result).toEqual({
-        name: 'KoriValidationConfigError',
-        message: 'Invalid schema mapping',
+        name: 'KoriError',
+        message: 'Validation failed',
         stack: expect.any(String),
         code: 'VALIDATION_CONFIG_ERROR',
-        data: { provider: 'zod', reason: 'missing content type' },
+        data: { provider: 'zod', field: 'body' },
       });
     });
 
@@ -109,6 +110,42 @@ describe('serializeError', () => {
         data: 'important',
       });
       expect(result).not.toHaveProperty('helper');
+    });
+
+    test('should not include prototype chain properties', () => {
+      class ErrorWithPrototype extends Error {
+        public ownProp = 'own';
+      }
+      // Add enumerable property to prototype
+      Object.defineProperty(ErrorWithPrototype.prototype, 'protoProp', {
+        value: 'proto',
+        enumerable: true,
+      });
+
+      const error = new ErrorWithPrototype('test');
+      const result = serializeError(error) as Record<string, unknown>;
+
+      expect(result.ownProp).toBe('own');
+      expect(result).not.toHaveProperty('protoProp');
+    });
+
+    test('should return fallback when getter throws an error', () => {
+      const error = new Error('test');
+      // Add an enumerable getter that throws
+      Object.defineProperty(error, 'badGetter', {
+        enumerable: true,
+        get() {
+          throw new Error('getter exploded');
+        },
+      });
+
+      const result = serializeError(error) as Record<string, unknown>;
+
+      expect(result).toEqual({
+        type: 'serialization-error',
+        name: 'Error',
+        message: 'test',
+      });
     });
   });
 

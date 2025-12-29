@@ -1,5 +1,5 @@
 import { type KoriResponse } from '../../context/index.js';
-import { KoriValidationConfigError } from '../../error/index.js';
+import { KoriError, KoriErrorCode } from '../../error/index.js';
 import { type KoriResponseSchemaBase, type KoriResponseSchemaContentEntryBase } from '../../response-schema/index.js';
 import { type ResponseValidationFailureBase, type ResponseValidationSuccess } from '../../routing/index.js';
 import { type KoriSchemaBase } from '../../schema/index.js';
@@ -51,7 +51,7 @@ function resolveSchemaEntryByStatusCode({
  * @param options.validator - The response validator.
  * @param options.schema - The response schema.
  * @returns Validation function or undefined if validator/schema/responses not provided
- * @throws {KoriValidationConfigError} When validator and schema providers don't match
+ * @throws {KoriError} When validator and schema providers don't match (code: VALIDATION_CONFIG_ERROR)
  */
 export function resolveResponseValidator({
   validator,
@@ -67,8 +67,9 @@ export function resolveResponseValidator({
   const validatorProvider = validator.provider;
   const schemaProvider = schema.provider;
   if (validatorProvider !== schemaProvider) {
-    throw new KoriValidationConfigError(
+    throw new KoriError(
       `Provider mismatch: validator uses "${validatorProvider}" but schema uses "${schemaProvider}"`,
+      { code: KoriErrorCode.VALIDATION_CONFIG_ERROR },
     );
   }
 

@@ -1,8 +1,8 @@
 # @korix/zod-openapi-plugin
 
-OpenAPI 3.1 document generation plugin for Kori framework with Zod schema support.
+> **Deprecated**: Use [@korix/std-schema-openapi-plugin](../std-schema-openapi-plugin) instead. This package will be removed in a future release.
 
-This plugin is a convenience wrapper around [@korix/openapi-plugin](../openapi-plugin) that automatically configures Zod schema conversion for OpenAPI documentation.
+OpenAPI 3.1 document generation plugin for Kori framework with Zod schema support.
 
 ## Features
 
@@ -27,13 +27,13 @@ Option 1: Using @korix/zod-schema-adapter (recommended)
 npm install @korix/kori zod @korix/zod-schema-adapter @korix/zod-openapi-plugin
 ```
 
-Option 2: Using @korix/standard-schema-adapter
+Option 2: Using @korix/std-schema-adapter
 
 ```bash
-npm install @korix/kori @standard-schema/spec zod @korix/standard-schema-adapter @korix/zod-openapi-plugin
+npm install @korix/kori @standard-schema/spec zod @korix/std-schema-adapter @korix/zod-openapi-plugin
 ```
 
-Note: While @korix/standard-schema-adapter supports multiple validation libraries (Zod, Valibot, ArkType, etc.), this plugin only generates OpenAPI documentation from Zod schemas.
+Note: While @korix/std-schema-adapter supports multiple validation libraries (Zod, Valibot, ArkType, etc.), this plugin only generates OpenAPI documentation from Zod schemas.
 
 ## Quick Start
 

@@ -2,7 +2,7 @@
 
 OpenAPI 3.1 document generation plugin for Kori framework.
 
-> **Note**: This is the base plugin for OpenAPI document generation. For actual use, you'll need a validation library-specific plugin built on top of this (e.g., `@korix/zod-openapi-plugin` for Zod). This package provides the core OpenAPI generation functionality and schema converter interface.
+> **Note**: This is the base plugin for OpenAPI document generation. For actual use, you'll typically use `@korix/std-schema-openapi-plugin` which provides Standard JSON Schema support for Zod, Valibot, ArkType, and other schema libraries. This package provides the core OpenAPI generation functionality and schema converter interface.
 
 ## Features
 
@@ -127,11 +127,14 @@ Generates:
 
 ### Schema Enrichment
 
-Provide a `params` schema to add type information and descriptions (Zod example):
+Provide a `params` schema to add type information and descriptions:
 
 ```typescript
+import { stdRequestSchema } from '@korix/std-schema-adapter';
+import { z } from 'zod';
+
 app.get('/users/:id', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.uuid().meta({ description: 'User UUID' }),
     }),

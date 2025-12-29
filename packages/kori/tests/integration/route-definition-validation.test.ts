@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../src/context/index.js';
-import { KoriRouteDefinitionError } from '../../src/error/index.js';
+import { KoriError } from '../../src/error/index.js';
 import { createKori } from '../../src/kori/index.js';
 import { type KoriHandler } from '../../src/routing/index.js';
 
@@ -12,10 +12,14 @@ describe('Route definition validation', () => {
   describe('middle optional parameter detection', () => {
     test('throws error for single middle optional parameter', () => {
       const app = createKori();
-
-      expect(() => {
+      let caughtError: unknown;
+      try {
         app.get('/api/:version?/users/:id', mockHandler);
-      }).toThrow(KoriRouteDefinitionError);
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('ROUTE_DEFINITION_ERROR');
     });
 
     test('throws error with specific message for middle optional', () => {
@@ -28,29 +32,41 @@ describe('Route definition validation', () => {
 
     test('throws error for multiple middle optional parameters', () => {
       const app = createKori();
-
-      expect(() => {
+      let caughtError: unknown;
+      try {
         app.get('/:lang?/api/:version?/users/:id', mockHandler);
-      }).toThrow(KoriRouteDefinitionError);
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('ROUTE_DEFINITION_ERROR');
     });
 
     test('throws error for optional parameter with trailing slash', () => {
       const app = createKori();
-
-      expect(() => {
+      let caughtError: unknown;
+      try {
         app.get('/api/:version?/', mockHandler);
-      }).toThrow(KoriRouteDefinitionError);
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('ROUTE_DEFINITION_ERROR');
     });
 
     test('throws error for parent-child route combination creating middle optional', () => {
       const app = createKori();
-
-      expect(() => {
+      let caughtError: unknown;
+      try {
         app.createChild({
           prefix: '/api/:version?',
           configure: (child) => child.get('/users/:id', mockHandler),
         });
-      }).toThrow(KoriRouteDefinitionError);
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('ROUTE_DEFINITION_ERROR');
     });
   });
 

@@ -1,15 +1,25 @@
 # Request Validation
 
-Request validation is at the heart of Kori's type-safe development experience. Kori's extensible validation system provides type-safe, runtime validation with automatic type generation - no casting required. While Kori's architecture is designed to support different validation libraries, we officially provide first-class Zod integration, with additional support for Standard Schema.
+Request validation is at the heart of Kori's type-safe development experience. Kori's extensible validation system provides type-safe, runtime validation with automatic type generation - no casting required. Using Standard Schema, Kori supports multiple validation libraries including Zod, Valibot, and ArkType.
 
-This guide uses Zod for examples.
+This guide uses Zod for examples, but the same patterns work with any Standard Schema compliant library.
+
+## Supported Libraries
+
+| Library                        | Version |
+| ------------------------------ | ------- |
+| [Zod](https://zod.dev)         | 4.0+    |
+| [Valibot](https://valibot.dev) | 1.0+    |
+| [ArkType](https://arktype.io)  | 2.0+    |
+
+See [Standard Schema](https://standardschema.dev/) for the full list of compliant libraries.
 
 ## Setup
 
-Install the Zod integration packages:
+Install the Standard Schema integration packages:
 
 ```bash
-npm install @korix/zod-schema-adapter zod
+npm install @korix/std-schema-adapter @standard-schema/spec zod
 ```
 
 Set up your Kori application with validation:
@@ -17,13 +27,13 @@ Set up your Kori application with validation:
 ```typescript
 import { createKori } from '@korix/kori';
 import {
-  zodRequestSchema,
-  enableZodRequestValidation,
-} from '@korix/zod-schema-adapter';
+  stdRequestSchema,
+  enableStdRequestValidation,
+} from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 });
 ```
 
@@ -38,7 +48,7 @@ const UserSchema = z.object({
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserSchema,
   }),
   handler: (ctx) => {
@@ -65,7 +75,7 @@ Kori can validate every part of an HTTP request: path parameters, query paramete
 
 ```typescript
 app.put('/users/:id', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number),
     }),
@@ -124,7 +134,7 @@ const FormUserSchema = z.object({
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: {
       content: {
         'application/json': JsonUserSchema,
@@ -162,7 +172,7 @@ const WebhookSchema = z.object({
 });
 
 app.post('/webhook', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: {
       content: {
         // Parse custom content type as JSON
@@ -223,20 +233,20 @@ Handle validation errors for a specific route:
 
 ```typescript
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserCreateSchema,
   }),
   onRequestValidationFailure: (ctx, error) => {
-    // Access detailed Zod validation errors
+    // Access detailed validation errors
     if (
       error.body &&
       error.body.stage === 'validation' &&
       error.body.reason.type === 'Validation'
     ) {
-      const zodError = error.body.reason;
+      const validationError = error.body.reason;
       return ctx.res.badRequest({
         message: 'Validation failed',
-        details: zodError.issues.map((issue) => ({
+        details: validationError.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
           code: issue.code,
@@ -262,7 +272,7 @@ Set a global error handler for all routes:
 
 ```typescript
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
   onRequestValidationFailure: (ctx, error) => {
     // Global validation error handling
     ctx.log().warn('Validation failed', { error });

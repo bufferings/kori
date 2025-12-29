@@ -1,15 +1,25 @@
 # レスポンスバリデーション
 
-レスポンスバリデーションは、APIが定義されたスキーマに一致するデータを返すことを保証します。これにより、API利用者への型安全性を提供し、開発の早期段階でバグを発見できます。Koriのアーキテクチャは異なるバリデーションライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合を提供し、Standard Schemaもサポートしています。
+レスポンスバリデーションは、APIが定義されたスキーマに一致するデータを返すことを保証します。これにより、API利用者への型安全性を提供し、開発の早期段階でバグを発見できます。Standard Schemaを使用することで、KoriはZod、Valibot、ArkTypeなど複数のバリデーションライブラリをサポートします。
 
-このガイドではZodを例として使用します。
+このガイドではZodを例として使用しますが、Standard Schemaに準拠する他のライブラリでも同様のパターンが使えます。
+
+## 対応ライブラリ
+
+| ライブラリ                     | バージョン |
+| ------------------------------ | ---------- |
+| [Zod](https://zod.dev)         | 4.0+       |
+| [Valibot](https://valibot.dev) | 1.0+       |
+| [ArkType](https://arktype.io)  | 2.0+       |
+
+対応ライブラリの完全なリストは[Standard Schema](https://standardschema.dev/)を参照してください。
 
 ## セットアップ
 
-Zod統合パッケージをインストール：
+Standard Schema統合パッケージをインストール：
 
 ```bash
-npm install @korix/zod-schema-adapter zod
+npm install @korix/std-schema-adapter @standard-schema/spec zod
 ```
 
 レスポンスバリデーション付きのKoriアプリケーションをセットアップ：
@@ -17,13 +27,13 @@ npm install @korix/zod-schema-adapter zod
 ```typescript
 import { createKori } from '@korix/kori';
 import {
-  zodResponseSchema,
-  enableZodResponseValidation,
-} from '@korix/zod-schema-adapter';
+  stdResponseSchema,
+  enableStdResponseValidation,
+} from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodResponseValidation(),
+  ...enableStdResponseValidation(),
 });
 ```
 
@@ -47,7 +57,7 @@ const ErrorSchema = z.object({
 });
 
 app.get('/users/:id', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
     '404': ErrorSchema,
     '500': ErrorSchema,
@@ -82,7 +92,7 @@ app.get('/users/:id', {
 
 ```typescript
 app.post('/users', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     // 正確なステータスコード
     '201': UserSchema,
     '400': ErrorSchema,
@@ -112,7 +122,7 @@ const JsonErrorSchema = z.object({
 });
 
 app.get('/data', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
     '400': {
       content: {
@@ -149,7 +159,7 @@ app.get('/data', {
 
 ```typescript
 app.get('/users/:id', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
   }),
   onResponseValidationFailure: (ctx, error) => {
@@ -175,7 +185,7 @@ app.get('/users/:id', {
 
 ```typescript
 const app = createKori({
-  ...enableZodResponseValidation(),
+  ...enableStdResponseValidation(),
   onResponseValidationFailure: (ctx, error) => {
     // グローバルレスポンスバリデーションエラーハンドリング
     ctx.log().error('Response validation failed globally', { error });
@@ -201,7 +211,7 @@ const app = createKori({
 
 ```typescript
 app.get('/download', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.string(), // これはストリームに対してバリデーションされない
   }),
   handler: (ctx) => {

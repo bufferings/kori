@@ -98,11 +98,11 @@ export type SwaggerUiOptions = {
  * @example
  * ```typescript
  * import { createKori } from '@korix/kori';
- * import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+ * import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
  * import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
  *
  * const app = createKori()
- *   .applyPlugin(zodOpenApiPlugin({
+ *   .applyPlugin(stdSchemaOpenApiPlugin({
  *     info: { title: 'My API', version: '1.0.0' },
  *   }))
  *   .applyPlugin(swaggerUiPlugin({

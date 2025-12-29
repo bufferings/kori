@@ -1,35 +1,55 @@
 # OpenAPI統合
 
-スキーマからインタラクティブなAPIドキュメントを自動生成します。Koriの拡張可能なOpenAPIシステムは、ドキュメントをバリデーションスキーマと完璧に同期させます。Koriのアーキテクチャは異なるスキーマライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合をすぐに提供しています（Standard SchemaはOpenAPI生成では現在サポートされていません）。
+スキーマからインタラクティブなAPIドキュメントを自動生成します。Koriの拡張可能なOpenAPIシステムは、ドキュメントをバリデーションスキーマと完璧に同期させます。Standard JSON Schemaを使用することで、KoriはZod、Valibot、ArkTypeなど複数のスキーマライブラリをサポートします。
 
-このガイドではZodを例として使用します。
+このガイドではZodを例として使用しますが、Standard JSON Schemaに準拠する他のライブラリでも同様のパターンが使えます。
+
+## 生成されるOpenAPI
+
+- OpenAPIバージョン: 3.1.0
+- JSON Schemaバージョン: draft-2020-12
+
+## 対応ライブラリ
+
+| ライブラリ                     | バージョン | 備考                                   |
+| ------------------------------ | ---------- | -------------------------------------- |
+| [Zod](https://zod.dev)         | 4.2+       |                                        |
+| [ArkType](https://arktype.io)  | 2.1.28+    |                                        |
+| [Valibot](https://valibot.dev) | 1.2+       | `@valibot/to-json-schema` v1.5+ が必要 |
+
+対応ライブラリの完全なリストは[Standard JSON Schema](https://standardschema.dev/json-schema#what-schema-libraries-support-this-spec)を参照してください。
+
+> 注：OpenAPI生成は基本的なバリデーションよりも高いライブラリバージョンを必要とします。これは、後のリリースで安定化されたStandard JSON Schemaエクスポート機能に依存しているためです。
 
 ## セットアップ
 
-Zod OpenAPI統合プラグインをインストール：
+OpenAPI統合プラグインをインストール：
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
+npm install @korix/std-schema-openapi-plugin @korix/openapi-swagger-ui-plugin
 ```
 
 Koriアプリケーションに2つのプラグインを追加：
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import {
+  stdSchemaOpenApiPlugin,
+  openApiMeta,
+} from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import {
-  zodRequestSchema,
-  zodResponseSchema,
-  enableZodRequestValidation,
-} from '@korix/zod-schema-adapter';
+  stdRequestSchema,
+  stdResponseSchema,
+  enableStdRequestValidation,
+} from '@korix/std-schema-adapter';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 })
-  // ZodスキーマからOpenAPI仕様を生成
+  // スキーマからOpenAPI仕様を生成
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',
@@ -79,10 +99,10 @@ app.post('/users', {
     description: '新しいユーザーアカウントを作成',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserSchema,
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': UserResponseSchema,
   }),
   handler: (ctx) => {
@@ -108,7 +128,7 @@ app.get('/products/:id', {
     description: '詳細な商品情報を取得',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number).meta({
         description: '商品ID',
@@ -135,7 +155,7 @@ app.get('/products/:id', {
       }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       id: z.number(),
       name: z.string(),
@@ -157,7 +177,7 @@ app.get('/products/:id', {
 さまざまなレスポンスシナリオをドキュメント化：
 
 ```typescript
-import { zodResponseSchema } from '@korix/zod-schema-adapter';
+import { stdResponseSchema } from '@korix/std-schema-adapter';
 
 const ProductSchema = z.object({
   id: z.number(),
@@ -178,12 +198,12 @@ app.get('/products/:id', {
     summary: 'IDで商品を取得',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': ProductSchema,
     '404': ErrorSchema,
     '500': ErrorSchema,
@@ -242,7 +262,7 @@ app.post('/products', {
     tags: ['Products'],
     operationId: 'createProduct',
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: ProductCreateSchema,
     headers: z.object({
       'x-client-id': z.string().min(1).meta({
@@ -251,7 +271,7 @@ app.post('/products', {
       }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),
@@ -281,16 +301,14 @@ app.post('/products', {
 
 ## プラグイン設定
 
-### Zod OpenAPIプラグイン
+### Standard Schema OpenAPIプラグイン
 
-このガイドでは公式のZod統合に焦点を当てています。他のスキーマライブラリについては、基盤となる`@korix/openapi-plugin`を使用してカスタムスキーマコンバーターを実装できます。
-
-Zod OpenAPIプラグインは、ZodのネイティブAPIである`toJSONSchema()`メソッドを使用してZodスキーマをJSON Schema形式に変換します。つまり、生成されるOpenAPIドキュメントは、Zodの`toJSONSchema()`がサポートする機能とスキーマタイプに限定されます。詳細は[ZodのJSON Schemaドキュメント](https://zod.dev/json-schema?id=unrepresentable)を参照してください。
+Standard Schema OpenAPIプラグインは、Standard JSON Schema仕様を使用してスキーマをJSON Schema形式に変換します。これにより、Zod、Valibot、ArkTypeなど複数のスキーマライブラリをサポートできます。生成されるOpenAPIドキュメントは、選択したスキーマライブラリのJSON Schema機能に依存します。
 
 OpenAPI仕様を設定：
 
 ```typescript
-zodOpenApiPlugin({
+stdSchemaOpenApiPlugin({
   info: {
     title: 'My API',
     version: '1.0.0',
@@ -335,15 +353,18 @@ OpenAPIドキュメントは既存のバリデーションとシームレスに�
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import {
+  stdSchemaOpenApiPlugin,
+  openApiMeta,
+} from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, stdResponseSchema } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 // requestValidatorまたはresponseValidatorなし
 const app = createKori()
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',
@@ -363,13 +384,13 @@ app.post('/users', {
     summary: 'ユーザー作成',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string().meta({ description: 'ユーザー名' }),
       email: z.string().email().meta({ description: 'ユーザーメール' }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),

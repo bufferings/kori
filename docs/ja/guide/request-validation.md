@@ -1,15 +1,25 @@
 # リクエストバリデーション
 
-リクエストバリデーションはKoriの型安全な開発体験の中核です。Koriの拡張可能なバリデーションシステムは、自動型生成を伴う型安全なランタイムバリデーションを提供します - キャストは不要です。Koriのアーキテクチャは異なるバリデーションライブラリをサポートするよう設計されていますが、公式にはファーストクラスのZod統合を提供し、Standard Schemaもサポートしています。
+リクエストバリデーションはKoriの型安全な開発体験の中核です。Koriの拡張可能なバリデーションシステムは、自動型生成を伴う型安全なランタイムバリデーションを提供します - キャストは不要です。Standard Schemaを使用することで、KoriはZod、Valibot、ArkTypeなど複数のバリデーションライブラリをサポートします。
 
-このガイドではZodを例として使用します。
+このガイドではZodを例として使用しますが、Standard Schemaに準拠する他のライブラリでも同様のパターンが使えます。
+
+## 対応ライブラリ
+
+| ライブラリ                     | バージョン |
+| ------------------------------ | ---------- |
+| [Zod](https://zod.dev)         | 4.0+       |
+| [Valibot](https://valibot.dev) | 1.0+       |
+| [ArkType](https://arktype.io)  | 2.0+       |
+
+対応ライブラリの完全なリストは[Standard Schema](https://standardschema.dev/)を参照してください。
 
 ## セットアップ
 
-Zod統合パッケージをインストール：
+Standard Schema統合パッケージをインストール：
 
 ```bash
-npm install @korix/zod-schema-adapter zod
+npm install @korix/std-schema-adapter @standard-schema/spec zod
 ```
 
 バリデーション付きのKoriアプリケーションをセットアップ：
@@ -17,13 +27,13 @@ npm install @korix/zod-schema-adapter zod
 ```typescript
 import { createKori } from '@korix/kori';
 import {
-  zodRequestSchema,
-  enableZodRequestValidation,
-} from '@korix/zod-schema-adapter';
+  stdRequestSchema,
+  enableStdRequestValidation,
+} from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 });
 ```
 
@@ -38,7 +48,7 @@ const UserSchema = z.object({
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserSchema,
   }),
   handler: (ctx) => {
@@ -65,7 +75,7 @@ Koriは、HTTPリクエストのすべての部分をバリデーションでき
 
 ```typescript
 app.put('/users/:id', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number),
     }),
@@ -118,7 +128,7 @@ const FormUserSchema = z.object({
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: {
       content: {
         'application/json': JsonUserSchema,
@@ -181,20 +191,20 @@ Koriは複数のレベルのカスタマイゼーションでバリデーショ�
 
 ```typescript
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserCreateSchema,
   }),
   onRequestValidationFailure: (ctx, error) => {
-    // 詳細なZodバリデーションエラーにアクセス
+    // 詳細なバリデーションエラーにアクセス
     if (
       error.body &&
       error.body.stage === 'validation' &&
       error.body.reason.type === 'Validation'
     ) {
-      const zodError = error.body.reason;
+      const validationError = error.body.reason;
       return ctx.res.badRequest({
         message: 'Validation failed',
-        details: zodError.issues.map((issue) => ({
+        details: validationError.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
           code: issue.code,
@@ -220,7 +230,7 @@ app.post('/users', {
 
 ```typescript
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
   onRequestValidationFailure: (ctx, error) => {
     // グローバルバリデーションエラーハンドリング
     ctx.log().warn('Validation failed', { error });

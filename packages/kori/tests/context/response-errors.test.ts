@@ -1,13 +1,10 @@
 import { describe, test, expect } from 'vitest';
 
-import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse } from '../../src/context/response.js';
-
-const mockReq = { header: () => undefined } as unknown as KoriRequest;
 
 describe('KoriResponse error helpers contract', () => {
   test('badRequest returns 400 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).badRequest().build();
+    const response = createKoriResponse().badRequest().build();
 
     expect(response.status).toBe(400);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -18,7 +15,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('unauthorized returns 401 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).unauthorized().build();
+    const response = createKoriResponse().unauthorized().build();
 
     expect(response.status).toBe(401);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -29,7 +26,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('forbidden returns 403 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).forbidden().build();
+    const response = createKoriResponse().forbidden().build();
 
     expect(response.status).toBe(403);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -40,7 +37,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('notFound returns 404 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).notFound().build();
+    const response = createKoriResponse().notFound().build();
 
     expect(response.status).toBe(404);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -51,7 +48,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('methodNotAllowed returns 405 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).methodNotAllowed().build();
+    const response = createKoriResponse().methodNotAllowed().build();
 
     expect(response.status).toBe(405);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -62,7 +59,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('unsupportedMediaType returns 415 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).unsupportedMediaType().build();
+    const response = createKoriResponse().unsupportedMediaType().build();
 
     expect(response.status).toBe(415);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -73,7 +70,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('internalError returns 500 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).internalError().build();
+    const response = createKoriResponse().internalError().build();
 
     expect(response.status).toBe(500);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -84,7 +81,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('timeout returns 408 with JSON error and default message', async () => {
-    const response = createKoriResponse(mockReq).timeout().build();
+    const response = createKoriResponse().timeout().build();
 
     expect(response.status).toBe(408);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
@@ -95,7 +92,7 @@ describe('KoriResponse error helpers contract', () => {
   });
 
   test('custom fields are echoed in JSON body', async () => {
-    const response = createKoriResponse(mockReq)
+    const response = createKoriResponse()
       .badRequest({
         message: 'Invalid',
         field: 'email',

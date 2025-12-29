@@ -3,12 +3,12 @@ import { describe, expect, test } from 'vitest';
 import { KoriError } from '../../src/error/index.js';
 
 describe('KoriError', () => {
-  test('should create error with message only', () => {
-    const error = new KoriError('Something went wrong');
+  test('should create error with message and code', () => {
+    const error = new KoriError('Something went wrong', { code: 'SOMETHING_WENT_WRONG' });
 
     expect(error.message).toBe('Something went wrong');
     expect(error.name).toBe('KoriError');
-    expect(error.code).toBeUndefined();
+    expect(error.code).toBe('SOMETHING_WENT_WRONG');
     expect(error.data).toBeUndefined();
     expect(error.cause).toBeUndefined();
   });
@@ -31,7 +31,7 @@ describe('KoriError', () => {
   });
 
   test('should maintain proper inheritance chain', () => {
-    const error = new KoriError('test error');
+    const error = new KoriError('test error', { code: 'TEST_ERROR' });
 
     expect(error).toBeInstanceOf(Error);
   });

@@ -53,40 +53,6 @@ export default defineConfig({
             { text: 'OpenAPI Integration', link: '/en/guide/openapi' },
           ],
         },
-        // {
-        //   text: 'Core API',
-        //   collapsed: true,
-        //   items: [
-        //     { text: 'Kori', link: '/en/core/kori' },
-        //     { text: 'Instance Context', link: '/en/core/instance-context' },
-        //     { text: 'Handler Context', link: '/en/core/handler-context' },
-        //     { text: 'Request', link: '/en/core/request' },
-        //     { text: 'Response', link: '/en/core/response' },
-        //   ],
-        // },
-        // {
-        //   text: 'Extensions',
-        //   collapsed: true,
-        //   items: [
-        //     { text: 'Zod Schema', link: '/en/extensions/zod-schema' },
-        //     { text: 'Zod Validation', link: '/en/extensions/zod-validation' },
-        //     { text: 'Zod OpenAPI Plugin', link: '/en/extensions/zod-openapi-plugin' },
-        //     { text: 'CORS Plugin', link: '/en/extensions/cors-plugin' },
-        //     { text: 'Body Limit Plugin', link: '/en/extensions/body-limit-plugin' },
-        //     { text: 'Security Headers Plugin', link: '/en/extensions/security-headers-plugin' },
-        //     { text: 'File Plugin', link: '/en/extensions/file-plugin' },
-        //   ],
-        // },
-        // {
-        //   text: 'Examples',
-        //   collapsed: true,
-        //   items: [
-        //     { text: 'Basic Server', link: '/en/examples/basic-server' },
-        //     { text: 'REST API', link: '/en/examples/rest-api' },
-        //     { text: 'File Upload', link: '/en/examples/file-upload' },
-        //     { text: 'WebSocket', link: '/en/examples/websocket' },
-        //   ],
-        // },
       ],
       '/ja/': [
         {
@@ -115,40 +81,6 @@ export default defineConfig({
             { text: 'OpenAPI統合', link: '/ja/guide/openapi' },
           ],
         },
-        // {
-        //   text: 'コアAPI',
-        //   collapsed: true,
-        //   items: [
-        //     { text: 'Kori', link: '/ja/core/kori' },
-        //     { text: 'インスタンスコンテキスト', link: '/ja/core/instance-context' },
-        //     { text: 'ハンドラーコンテキスト', link: '/ja/core/handler-context' },
-        //     { text: 'リクエスト', link: '/ja/core/request' },
-        //     { text: 'レスポンス', link: '/ja/core/response' },
-        //   ],
-        // },
-        // {
-        //   text: '拡張機能',
-        //   collapsed: true,
-        //   items: [
-        //     { text: 'Zodスキーマ', link: '/ja/extensions/zod-schema' },
-        //     { text: 'Zodバリデーション', link: '/ja/extensions/zod-validation' },
-        //     { text: 'Zod OpenAPIプラグイン', link: '/ja/extensions/zod-openapi-plugin' },
-        //     { text: 'CORSプラグイン', link: '/ja/extensions/cors-plugin' },
-        //     { text: 'ボディ制限プラグイン', link: '/ja/extensions/body-limit-plugin' },
-        //     { text: 'セキュリティヘッダープラグイン', link: '/ja/extensions/security-headers-plugin' },
-        //     { text: 'ファイルプラグイン', link: '/ja/extensions/file-plugin' },
-        //   ],
-        // },
-        // {
-        //   text: '例',
-        //   collapsed: true,
-        //   items: [
-        //     { text: '基本的なサーバー', link: '/ja/examples/basic-server' },
-        //     { text: 'REST API', link: '/ja/examples/rest-api' },
-        //     { text: 'ファイルアップロード', link: '/ja/examples/file-upload' },
-        //     { text: 'WebSocket', link: '/ja/examples/websocket' },
-        //   ],
-        // },
       ],
     },
 
@@ -158,18 +90,12 @@ export default defineConfig({
         nav: [
           { text: 'Home', link: '/en/' },
           { text: 'Guide', link: '/en/guide/what-is-kori' },
-          // { text: 'Core', link: '/en/core/' },
-          // { text: 'Extensions', link: '/en/extensions/' },
-          // { text: 'Examples', link: '/en/examples/' },
         ],
       },
       ja: {
         nav: [
           { text: 'ホーム', link: '/ja/' },
           { text: 'ガイド', link: '/ja/guide/what-is-kori' },
-          // { text: 'コア', link: '/ja/core/' },
-          // { text: '拡張機能', link: '/ja/extensions/' },
-          // { text: '例', link: '/ja/examples/' },
         ],
       },
     },

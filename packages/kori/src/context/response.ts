@@ -1,4 +1,4 @@
-import { KoriCookieError, KoriResponseBuildError, KoriSetCookieHeaderError } from '../error/index.js';
+import { KoriError, KoriErrorCode } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -9,8 +9,6 @@ import {
   serializeCookie,
   deleteCookie,
 } from '../http/index.js';
-
-import { type KoriRequest } from './request.js';
 
 /**
  * Options for customizing error responses.
@@ -422,9 +420,12 @@ export type KoriResponse = {
   getStatus(): HttpStatusCode;
 
   /**
-   * Gets a copy of the response headers.
+   * Gets a copy of the response headers including default values.
    *
-   * @returns New Headers object with current response headers
+   * Default content-type is included based on body type (e.g., application/json
+   * for json(), text/plain for text()) even if not explicitly set.
+   *
+   * @returns New Headers object with response headers
    */
   getHeadersCopy(): Headers;
 
@@ -441,14 +442,20 @@ export type KoriResponse = {
   /**
    * Gets the content-type header value.
    *
-   * @returns content-type value or undefined if not set
+   * Returns the default content-type based on body type (e.g., application/json
+   * for json(), text/plain for text()) if not explicitly set.
+   *
+   * @returns content-type value or undefined if body type has no default
    */
   getContentType(): string | undefined;
 
   /**
    * Gets the media type from content-type header (without parameters).
    *
-   * @returns media type or undefined if content-type not set
+   * Returns the default media type based on body type if content-type
+   * is not explicitly set.
+   *
+   * @returns media type or undefined if body type has no default
    */
   getMediaType(): string | undefined;
 
@@ -504,13 +511,14 @@ type ResState = {
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
   built: boolean;
-  req: KoriRequest;
 };
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   const key = name.toLowerCase();
   if (key === HttpResponseHeader.SET_COOKIE) {
-    throw new KoriSetCookieHeaderError();
+    throw new KoriError('set-cookie must use setCookie/clearCookie', {
+      code: KoriErrorCode.SET_COOKIE_HEADER_ERROR,
+    });
   }
   res.headers.set(key, [value]);
 }
@@ -518,7 +526,9 @@ function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: s
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   const key = name.toLowerCase();
   if (key === HttpResponseHeader.SET_COOKIE) {
-    throw new KoriSetCookieHeaderError();
+    throw new KoriError('set-cookie must use setCookie/clearCookie', {
+      code: KoriErrorCode.SET_COOKIE_HEADER_ERROR,
+    });
   }
   const existing = res.headers.get(key) ?? [];
   existing.push(value);
@@ -539,7 +549,10 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
 function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
   const result = serializeCookie(name, value, options);
   if (!result.success) {
-    throw new KoriCookieError(result.reason);
+    throw new KoriError(`Cookie operation failed: ${result.reason.message}`, {
+      code: KoriErrorCode.COOKIE_ERROR,
+      data: { cookieFailure: result.reason },
+    });
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
@@ -547,7 +560,10 @@ function setCookieInternal(res: ResState, name: string, value: string, options?:
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
   const result = deleteCookie(name, options);
   if (!result.success) {
-    throw new KoriCookieError(result.reason);
+    throw new KoriError(`Cookie operation failed: ${result.reason.message}`, {
+      code: KoriErrorCode.COOKIE_ERROR,
+      data: { cookieFailure: result.reason },
+    });
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
@@ -876,7 +892,9 @@ const sharedMethods = {
 
   build(): Response {
     if (this.built) {
-      throw new KoriResponseBuildError('Response can only be built once.');
+      throw new KoriError('Response can only be built once.', {
+        code: KoriErrorCode.RESPONSE_BUILD_ERROR,
+      });
     }
     this.built = true;
 
@@ -887,7 +905,9 @@ const sharedMethods = {
           body = JSON.stringify(this.bodyValue);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          throw new KoriResponseBuildError(`Failed to serialize response body as JSON: ${message}`);
+          throw new KoriError(`Failed to serialize response body as JSON: ${message}`, {
+            code: KoriErrorCode.RESPONSE_BUILD_ERROR,
+          });
         }
         break;
       case 'text':
@@ -947,10 +967,9 @@ const sharedMethods = {
  *
  * @packageInternal Framework infrastructure for creating response objects
  *
- * @param req - Associated request object for context
  * @returns New KoriResponse instance
  */
-export function createKoriResponse(req: KoriRequest): KoriResponse {
+export function createKoriResponse(): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 
   obj.koriKind = 'kori-response';
@@ -959,7 +978,6 @@ export function createKoriResponse(req: KoriRequest): KoriResponse {
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
   obj.built = false;
-  obj.req = req;
 
   return obj as unknown as KoriResponse;
 }

@@ -6,13 +6,7 @@ export {
   type KoriRequest,
   type KoriResponse,
 } from './context/index.js';
-export {
-  KoriCookieError,
-  KoriError,
-  KoriResponseBuildError,
-  KoriSetCookieHeaderError,
-  KoriValidationConfigError,
-} from './error/index.js';
+export { KoriError, KoriErrorCode } from './error/index.js';
 export { type KoriFetchHandler, type KoriInitializedFetchHandler } from './fetch-handler/index.js';
 export {
   type KoriOnErrorHook,

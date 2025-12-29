@@ -1,8 +1,8 @@
 # @korix/zod-schema-adapter
 
-Zod schema adapter for request and response validation in the Kori framework.
+> **Deprecated**: Use [@korix/std-schema-adapter](../std-schema-adapter) instead. This package will be removed in a future release.
 
-This adapter provides full access to Zod's error types and is **recommended if you're only using Zod**. For projects using multiple validation libraries, see [@korix/standard-schema-adapter](../standard-schema-adapter).
+Zod schema adapter for request and response validation in the Kori framework.
 
 ## Features
 
@@ -268,23 +268,23 @@ const app = createKori({
 });
 ```
 
-## Difference from @korix/standard-schema-adapter
+## Difference from @korix/std-schema-adapter
 
 **When to use this adapter:**
 
-Use `@korix/zod-schema-adapter` if you're only using Zod and want:
+Use `@korix/zod-schema-adapter` only if you specifically need:
 
-- **Full Zod error types** - Access to `z.core.$ZodIssue[]` with all Zod-specific error information
-- Direct Zod integration for optimal type inference
+- **Full Zod error types** - Direct access to `z.core.$ZodIssue[]` with all Zod-specific error information
 - Zod-specific error handling in custom validation failure handlers
 
-**When to use standard-schema-adapter:**
+**When to use std-schema-adapter (recommended):**
 
-Use [@korix/standard-schema-adapter](../standard-schema-adapter) if you need:
+Use [@korix/std-schema-adapter](../std-schema-adapter) as the default choice because it:
 
-- Support for multiple validation libraries (Zod, Valibot, ArkType, etc.)
-- Library-agnostic validation setup
-- Standard Schema-compliant error types (`StandardSchemaV1.Issue[]`)
+- Supports multiple validation libraries (Zod, Valibot, ArkType, etc.)
+- Provides library-agnostic validation setup
+- Uses Standard Schema-compliant error types (`StandardSchemaV1.Issue[]`)
+- Offers better future-proofing and flexibility
 
 ## License
 

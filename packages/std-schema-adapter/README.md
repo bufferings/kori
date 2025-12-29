@@ -1,8 +1,18 @@
-# @korix/standard-schema-adapter
+# @korix/std-schema-adapter
 
 Standard Schema adapter for request and response validation in the Kori framework.
 
-This adapter enables validation using any library that conforms to the [@standard-schema/spec](https://github.com/standard-schema/standard-schema), including Zod, Valibot, ArkType, etc.
+This adapter enables validation using any library that conforms to the [@standard-schema/spec](https://github.com/standard-schema/standard-schema).
+
+## Supported Libraries
+
+| Library                        | Version |
+| ------------------------------ | ------- |
+| [Zod](https://zod.dev)         | 4.0+    |
+| [Valibot](https://valibot.dev) | 1.0+    |
+| [ArkType](https://arktype.io)  | 2.0+    |
+
+See [Standard Schema](https://standardschema.dev/) for the full list of compliant libraries.
 
 ## Features
 
@@ -15,7 +25,7 @@ This adapter enables validation using any library that conforms to the [@standar
 ## Installation
 
 ```bash
-npm install @korix/standard-schema-adapter @korix/kori @standard-schema/spec
+npm install @korix/std-schema-adapter @korix/kori @standard-schema/spec
 ```
 
 Then install your preferred validation library:
@@ -37,7 +47,7 @@ npm install arktype
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { enableStdRequestValidation, stdRequestSchema } from '@korix/standard-schema-adapter';
+import { enableStdRequestValidation, stdRequestSchema } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
@@ -61,7 +71,7 @@ const app = createKori({
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { enableStdResponseValidation, stdResponseSchema } from '@korix/standard-schema-adapter';
+import { enableStdResponseValidation, stdResponseSchema } from '@korix/std-schema-adapter';
 import * as v from 'valibot';
 
 const app = createKori({
@@ -91,11 +101,7 @@ const app = createKori({
 
 ```typescript
 import { createKori } from '@korix/kori';
-import {
-  enableStdRequestAndResponseValidation,
-  stdRequestSchema,
-  stdResponseSchema,
-} from '@korix/standard-schema-adapter';
+import { enableStdRequestAndResponseValidation, stdRequestSchema, stdResponseSchema } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
@@ -284,24 +290,6 @@ const app = createKori({
   }),
 });
 ```
-
-## Difference from @korix/zod-schema-adapter
-
-**When to use this adapter:**
-
-Use `@korix/standard-schema-adapter` if you need:
-
-- Support for multiple validation libraries (Zod, Valibot, ArkType, etc.)
-- Library-agnostic validation setup
-- Standard Schema-compliant error types (`StandardSchemaV1.Issue[]`)
-
-**When to use zod-schema-adapter:**
-
-Use [@korix/zod-schema-adapter](../zod-schema-adapter) if you're only using Zod and want:
-
-- **Full Zod error types** - Access to `z.core.$ZodIssue[]` with all Zod-specific error information
-- Direct Zod integration for optimal type inference
-- Zod-specific error handling in custom validation failure handlers
 
 ## License
 

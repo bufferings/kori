@@ -6,6 +6,7 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../../context/index.js';
+import { KoriError, KoriErrorCode } from '../../error/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../../hook/index.js';
 import { createKoriSystemLogger } from '../../logging/index.js';
 import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
@@ -57,6 +58,13 @@ function createHookExecutor<
       for (const hook of hooks.requestHooks) {
         const result = await hook(currentCtx);
         if (isKoriResponse(result)) {
+          if (result !== currentCtx.res) {
+            throw new KoriError(
+              'Hook must return ctx.res when returning a KoriResponse. ' +
+                'Use ctx.res.badRequest(), ctx.res.unauthorized(), etc.',
+              { code: KoriErrorCode.INVALID_RESPONSE_RETURN },
+            );
+          }
           return currentCtx.res;
         }
         if (result) {
@@ -64,13 +72,27 @@ function createHookExecutor<
         }
       }
 
-      await mainHandler(currentCtx);
+      const handlerResult = await mainHandler(currentCtx);
+      if (handlerResult !== currentCtx.res) {
+        throw new KoriError(
+          'Handler must return ctx.res when returning a KoriResponse. ' +
+            'Use ctx.res.json(), ctx.res.notFound(), etc.',
+          { code: KoriErrorCode.INVALID_RESPONSE_RETURN },
+        );
+      }
       return currentCtx.res;
     } catch (err) {
       for (const hook of hooks.errorHooks) {
         try {
           const result = await hook(currentCtx, err);
           if (isKoriResponse(result)) {
+            if (result !== currentCtx.res) {
+              throw new KoriError(
+                'Error hook must return ctx.res when returning a KoriResponse. ' +
+                  'Use ctx.res.badRequest(), ctx.res.internalError(), etc.',
+                { code: KoriErrorCode.INVALID_RESPONSE_RETURN },
+              );
+            }
             return currentCtx.res;
           }
         } catch (hookError) {

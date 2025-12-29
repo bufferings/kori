@@ -1,5 +1,5 @@
 import { type KoriRequest } from '../../context/index.js';
-import { KoriValidationConfigError } from '../../error/index.js';
+import { KoriError, KoriErrorCode } from '../../error/index.js';
 import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
 import { type RequestValidationFailureBase, type RequestValidationSuccess } from '../../routing/index.js';
 import { fail, succeed, type KoriResult } from '../../util/index.js';
@@ -22,7 +22,7 @@ import { validateRequestField } from './validate-request-field.js';
  * @param options.validator - The request validator.
  * @param options.schema - The request schema.
  * @returns A validation function if configured, otherwise `undefined`.
- * @throws {KoriValidationConfigError} If the validator and schema providers do not match.
+ * @throws {KoriError} If the validator and schema providers do not match (code: VALIDATION_CONFIG_ERROR).
  */
 export function resolveRequestValidator({
   validator,
@@ -38,8 +38,9 @@ export function resolveRequestValidator({
   const validatorProvider = validator.provider;
   const schemaProvider = schema.provider;
   if (validatorProvider !== schemaProvider) {
-    throw new KoriValidationConfigError(
+    throw new KoriError(
       `Provider mismatch: validator uses "${validatorProvider}" but schema uses "${schemaProvider}"`,
+      { code: KoriErrorCode.VALIDATION_CONFIG_ERROR },
     );
   }
 

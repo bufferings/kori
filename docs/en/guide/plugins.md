@@ -8,15 +8,15 @@ Apply plugins to your Kori application using the `applyPlugin()` method. This in
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { enableZodRequestValidation } from '@korix/zod-schema-adapter';
-import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { enableStdRequestValidation } from '@korix/std-schema-adapter';
+import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 })
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',
