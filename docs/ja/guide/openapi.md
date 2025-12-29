@@ -19,6 +19,8 @@
 
 対応ライブラリの完全なリストは[Standard JSON Schema](https://standardschema.dev/json-schema#what-schema-libraries-support-this-spec)を参照してください。
 
+> 注：OpenAPI生成は基本的なバリデーションよりも高いライブラリバージョンを必要とします。これは、後のリリースで安定化されたStandard JSON Schemaエクスポート機能に依存しているためです。
+
 ## セットアップ
 
 OpenAPI統合プラグインをインストール：

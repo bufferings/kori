@@ -19,6 +19,8 @@ This guide uses Zod for examples, but the same patterns work with any Standard J
 
 See [Standard JSON Schema](https://standardschema.dev/json-schema#what-schema-libraries-support-this-spec) for the full list of compliant libraries.
 
+> Note: OpenAPI generation requires higher library versions than basic validation because it depends on Standard JSON Schema export features that were stabilized in later releases.
+
 ## Setup
 
 Install the OpenAPI integration plugins:
