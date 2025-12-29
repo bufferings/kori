@@ -110,6 +110,42 @@ describe('serializeError', () => {
       });
       expect(result).not.toHaveProperty('helper');
     });
+
+    test('should not include prototype chain properties', () => {
+      class ErrorWithPrototype extends Error {
+        public ownProp = 'own';
+      }
+      // Add enumerable property to prototype
+      Object.defineProperty(ErrorWithPrototype.prototype, 'protoProp', {
+        value: 'proto',
+        enumerable: true,
+      });
+
+      const error = new ErrorWithPrototype('test');
+      const result = serializeError(error) as Record<string, unknown>;
+
+      expect(result.ownProp).toBe('own');
+      expect(result).not.toHaveProperty('protoProp');
+    });
+
+    test('should return fallback when getter throws an error', () => {
+      const error = new Error('test');
+      // Add an enumerable getter that throws
+      Object.defineProperty(error, 'badGetter', {
+        enumerable: true,
+        get() {
+          throw new Error('getter exploded');
+        },
+      });
+
+      const result = serializeError(error) as Record<string, unknown>;
+
+      expect(result).toEqual({
+        type: 'serialization-error',
+        name: 'Error',
+        message: 'test',
+      });
+    });
   });
 
   describe('Error cause chains (ES2022)', () => {

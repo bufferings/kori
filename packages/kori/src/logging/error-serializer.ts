@@ -37,11 +37,14 @@ function serializeErrorInstance(options: { error: Error; visited: Set<Error> }):
     }
   }
 
-  // Get all enumerable properties including custom ones
-  for (const key in error) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    const value = (error as any)[key];
-    if (typeof value !== 'function' && key !== 'cause') {
+  // Get own enumerable properties only (excludes prototype chain)
+  const errorRecord = error as unknown as Record<string, unknown>;
+  for (const key of Object.keys(error)) {
+    if (key === 'cause') {
+      continue;
+    }
+    const value = errorRecord[key];
+    if (typeof value !== 'function') {
       serialized[key] = value;
     }
   }
@@ -84,5 +87,13 @@ export function serializeError(error: unknown): unknown {
     return error;
   }
 
-  return serializeErrorInstance({ error, visited: new Set<Error>() });
+  try {
+    return serializeErrorInstance({ error, visited: new Set<Error>() });
+  } catch {
+    return {
+      type: 'serialization-error',
+      name: error.name,
+      message: error.message,
+    };
+  }
 }
