@@ -65,7 +65,7 @@
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/script": "workspace:*",
-    "@korix/zod-openapi-plugin": "workspace:*",
+    "@korix/std-schema-openapi-plugin": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",

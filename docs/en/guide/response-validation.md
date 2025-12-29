@@ -1,15 +1,25 @@
 # Response Validation
 
-Response validation ensures your API returns data that matches your defined schemas. This provides type safety for API consumers and helps catch bugs early in development. While Kori's architecture supports different validation libraries, we officially provide first-class Zod integration, with additional support for Standard Schema.
+Response validation ensures your API returns data that matches your defined schemas. This provides type safety for API consumers and helps catch bugs early in development. Using Standard Schema, Kori supports multiple validation libraries including Zod, Valibot, and ArkType.
 
-This guide uses Zod for examples.
+This guide uses Zod for examples, but the same patterns work with any Standard Schema compliant library.
+
+## Supported Libraries
+
+| Library                        | Version |
+| ------------------------------ | ------- |
+| [Zod](https://zod.dev)         | 4.0+    |
+| [Valibot](https://valibot.dev) | 1.0+    |
+| [ArkType](https://arktype.io)  | 2.0+    |
+
+See [Standard Schema](https://standardschema.dev/) for the full list of compliant libraries.
 
 ## Setup
 
-Install the Zod integration packages:
+Install the Standard Schema integration packages:
 
 ```bash
-npm install @korix/zod-schema-adapter zod
+npm install @korix/std-schema-adapter @standard-schema/spec zod
 ```
 
 Set up your Kori application with response validation:
@@ -17,13 +27,13 @@ Set up your Kori application with response validation:
 ```typescript
 import { createKori } from '@korix/kori';
 import {
-  zodResponseSchema,
-  enableZodResponseValidation,
-} from '@korix/zod-schema-adapter';
+  stdResponseSchema,
+  enableStdResponseValidation,
+} from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodResponseValidation(),
+  ...enableStdResponseValidation(),
 });
 ```
 
@@ -47,7 +57,7 @@ const ErrorSchema = z.object({
 });
 
 app.get('/users/:id', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
     '404': ErrorSchema,
     '500': ErrorSchema,
@@ -82,7 +92,7 @@ Response schemas support multiple status code patterns:
 
 ```typescript
 app.post('/users', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     // Exact status codes
     '201': UserSchema,
     '400': ErrorSchema,
@@ -112,7 +122,7 @@ const JsonErrorSchema = z.object({
 });
 
 app.get('/data', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
     '400': {
       content: {
@@ -149,7 +159,7 @@ You can provide custom response validation error handlers:
 
 ```typescript
 app.get('/users/:id', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': UserSchema,
   }),
   onResponseValidationFailure: (ctx, error) => {
@@ -175,7 +185,7 @@ app.get('/users/:id', {
 
 ```typescript
 const app = createKori({
-  ...enableZodResponseValidation(),
+  ...enableStdResponseValidation(),
   onResponseValidationFailure: (ctx, error) => {
     // Global response validation error handling
     ctx.log().error('Response validation failed globally', { error });
@@ -201,7 +211,7 @@ Response validation automatically skips validation for streaming responses, as t
 
 ```typescript
 app.get('/download', {
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.string(), // This won't be validated for streams
   }),
   handler: (ctx) => {

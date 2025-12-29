@@ -1,14 +1,14 @@
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
-import { describe, it, expect } from 'vitest';
+import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
+import { describe, test, expect } from 'vitest';
 
 import { swaggerUiPlugin } from '../src/index.js';
 
 describe('swaggerUiPlugin', () => {
-  it('should register routes for Swagger UI', () => {
+  test('registers routes for Swagger UI', () => {
     const app = createKori()
       .applyPlugin(
-        zodOpenApiPlugin({
+        stdSchemaOpenApiPlugin({
           info: { title: 'Test API', version: '1.0.0' },
         }),
       )
@@ -22,10 +22,10 @@ describe('swaggerUiPlugin', () => {
     expect(app).toBeDefined();
   });
 
-  it('should use default options when none provided', () => {
+  test('uses default options when none provided', () => {
     const app = createKori()
       .applyPlugin(
-        zodOpenApiPlugin({
+        stdSchemaOpenApiPlugin({
           info: { title: 'Test API', version: '1.0.0' },
         }),
       )

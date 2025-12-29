@@ -15,8 +15,8 @@
 import { createKori, HttpStatus } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { zodRequestSchema, zodResponseSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, stdResponseSchema, enableStdRequestValidation } from '@korix/std-schema-adapter';
+import { stdSchemaOpenApiPlugin, openApiMeta } from '@korix/std-schema-openapi-plugin';
 import { z } from 'zod';
 
 // ============================================================================
@@ -24,10 +24,10 @@ import { z } from 'zod';
 // ============================================================================
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 })
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'Kori Getting Started',
         version: '1.0.0',
@@ -54,12 +54,12 @@ app.get('/hello/:name', {
     description: 'Returns a personalized greeting',
     tags: ['Basics'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       name: z.string().min(1).meta({ description: 'Name to greet' }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       message: z.string().meta({ description: 'Greeting message' }),
       timestamp: z.string().meta({ description: 'ISO 8601 timestamp' }),
@@ -82,13 +82,13 @@ app.get('/search', {
     description: 'Demonstrates query parameter handling',
     tags: ['Basics'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     queries: z.object({
       q: z.string().min(1).meta({ description: 'Search query' }),
       limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).default(10),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       query: z.string().meta({ description: 'The search query' }),
       limit: z.number().meta({ description: 'Results limit' }),
@@ -123,10 +123,10 @@ app.post('/users', {
     description: 'Create a new user with validation',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserSchema,
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': UserSchema.extend({
       id: z.number().meta({ description: 'User ID' }),
       createdAt: z.string().meta({ description: 'Creation timestamp' }),
@@ -153,12 +153,12 @@ app.get('/users/:id', {
     description: 'Get user by ID',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().min(1).meta({ description: 'User ID' }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       id: z.string().meta({ description: 'User ID' }),
       name: z.string().meta({ description: 'User name' }),
@@ -186,7 +186,7 @@ app.get('/users', {
     description: 'Get all users',
     tags: ['Users'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       users: z
         .array(

@@ -134,21 +134,21 @@ importers:
       '@korix/openapi-swagger-ui-plugin':
         specifier: workspace:*
         version: link:../openapi-swagger-ui-plugin
-      '@korix/standard-schema-adapter':
+      '@korix/std-schema-adapter':
         specifier: workspace:*
-        version: link:../standard-schema-adapter
-      '@korix/zod-openapi-plugin':
+        version: link:../std-schema-adapter
+      '@korix/std-schema-openapi-plugin':
         specifier: workspace:*
-        version: link:../zod-openapi-plugin
-      '@korix/zod-schema-adapter':
-        specifier: workspace:*
-        version: link:../zod-schema-adapter
+        version: link:../std-schema-openapi-plugin
+      '@standard-schema/spec':
+        specifier: 1.1.0
+        version: 1.1.0
       openapi3-ts:
         specifier: 4.4.0
         version: 4.4.0
       zod:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.2.0
+        version: 4.2.0
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -288,9 +288,9 @@ importers:
       '@korix/script':
         specifier: workspace:*
         version: link:../script
-      '@korix/zod-openapi-plugin':
+      '@korix/std-schema-openapi-plugin':
         specifier: workspace:*
-        version: link:../zod-openapi-plugin
+        version: link:../std-schema-openapi-plugin
       '@types/node':
         specifier: 'catalog:'
         version: 22.12.0
@@ -341,7 +341,7 @@ importers:
         specifier: 'catalog:'
         version: 4.0.13(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.19.2)(yaml@2.8.0)
 
-  packages/standard-schema-adapter:
+  packages/std-schema-adapter:
     devDependencies:
       '@korix/eslint-config':
         specifier: workspace:*
@@ -377,8 +377,47 @@ importers:
         specifier: 'catalog:'
         version: 4.0.13(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.19.2)(yaml@2.8.0)
       zod:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.2.0
+        version: 4.2.0
+
+  packages/std-schema-openapi-plugin:
+    devDependencies:
+      '@korix/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@korix/kori':
+        specifier: workspace:*
+        version: link:../kori
+      '@korix/openapi-plugin':
+        specifier: workspace:*
+        version: link:../openapi-plugin
+      '@standard-schema/spec':
+        specifier: 1.1.0
+        version: 1.1.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.12.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.1(jiti@2.6.1)
+      openapi3-ts:
+        specifier: 4.4.0
+        version: 4.4.0
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.1.2
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.16.6(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.0.13(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.19.2)(yaml@2.8.0)
+      zod:
+        specifier: 4.2.0
+        version: 4.2.0
 
   packages/zod-openapi-plugin:
     devDependencies:
@@ -416,8 +455,8 @@ importers:
         specifier: 'catalog:'
         version: 4.0.13(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.19.2)(yaml@2.8.0)
       zod:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.2.0
+        version: 4.2.0
 
   packages/zod-schema-adapter:
     devDependencies:
@@ -446,8 +485,8 @@ importers:
         specifier: 'catalog:'
         version: 4.0.13(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.19.2)(yaml@2.8.0)
       zod:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.2.0
+        version: 4.2.0
 
 packages:
 
@@ -1545,6 +1584,9 @@ packages:
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
+
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -3455,8 +3497,8 @@ packages:
     resolution: {integrity: sha512-GQHQqAopRhwU8Kt1DDM8NjibDXHC8eoh1erhGAJPEyveY9qqVeXvVikNKrDz69sHowPMorbPUrH/mx8c50eiBQ==}
     engines: {node: '>=18'}
 
-  zod@4.0.0:
-    resolution: {integrity: sha512-9diLdTPc/L7w/5jI4C3gHYNiGHDV9IZYxo1e5LSD8cabi65WVTWWb+g2BGPEpUUCOxR4D+6O5B0AzyMdUAXwrw==}
+  zod@4.2.0:
+    resolution: {integrity: sha512-Bd5fw9wlIhtqCCxotZgdTOMwGm1a0u75wARVEY9HMs1X17trvA/lMi4+MGK5EUfYkXVTbX8UDiDKW4OgzHVUZw==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -4366,6 +4408,8 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
+  '@standard-schema/spec@1.1.0': {}
+
   '@tybys/wasm-util@0.10.1':
     dependencies:
       tslib: 2.8.1
@@ -4603,7 +4647,7 @@ snapshots:
 
   '@vitest/expect@4.0.13':
     dependencies:
-      '@standard-schema/spec': 1.0.0
+      '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.2
       '@vitest/spy': 4.0.13
       '@vitest/utils': 4.0.13
@@ -6362,6 +6406,6 @@ snapshots:
 
   yoctocolors@2.1.1: {}
 
-  zod@4.0.0: {}
+  zod@4.2.0: {}
 
   zwitch@2.0.4: {}

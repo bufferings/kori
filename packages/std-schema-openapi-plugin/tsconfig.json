@@ -4,5 +4,5 @@
     "rootDir": "."
   },
   "include": ["src/**/*", "tests/**/*"],
-  "references": [{ "path": "../kori" }, { "path": "../openapi-plugin" }, { "path": "../std-schema-openapi-plugin" }]
+  "references": [{ "path": "../kori" }, { "path": "../openapi-plugin" }]
 }

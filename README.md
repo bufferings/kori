@@ -6,8 +6,8 @@ A modern, type-safe web framework for TypeScript, built on [Hono](https://hono.d
 
 - Fast and lightweight routing powered by Hono's router
 - TypeScript type inference throughout your application
-- Request and response validation with Zod schemas
-- OpenAPI specification generation from Zod schemas
+- Request and response validation with Standard Schema (Zod, Valibot, ArkType, etc.)
+- OpenAPI specification generation from Standard JSON Schema
 - Extensible plugin architecture
 
 Kori also supports Standard Schema for validation with other schema libraries.
@@ -104,24 +104,30 @@ Server log output:
 
 ## With Request Validation
 
-Let's create a user API with request validation:
+Let's create a user API with request validation.
+
+Supported libraries ([Standard Schema](https://standardschema.dev/) compliant):
+
+- Zod 4.0+
+- Valibot 1.0+
+- ArkType 2.0+
 
 ```bash
-npm install @korix/zod-schema-adapter zod
+npm install @korix/std-schema-adapter @standard-schema/spec zod
 ```
 
 ```typescript
 import { createKori } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
-import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, enableStdRequestValidation } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string(),
       age: z.number(),
@@ -166,21 +172,21 @@ You can also add response schema validation to catch unexpected responses. By de
 ```typescript
 import { createKori } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
-import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, stdResponseSchema, enableStdRequestAndResponseValidation } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestAndResponseValidation(),
+  ...enableStdRequestAndResponseValidation(),
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string(),
       age: z.number(),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),
@@ -233,7 +239,7 @@ Server log output:
     "body": {
       "stage": "validation",
       "reason": {
-        "provider": "zod",
+        "provider": "standard-schema",
         "type": "Validation",
         "message": "Validation error",
         "issues": [
@@ -252,34 +258,40 @@ Server log output:
 
 ## And OpenAPI
 
-Generate OpenAPI documentation from your validation schemas:
+Generate OpenAPI 3.1.0 documentation from your validation schemas.
+
+Supported libraries ([Standard JSON Schema](https://standardschema.dev/json-schema) compliant):
+
+- Zod 4.2+
+- ArkType 2.1.28+
+- Valibot 1.2+ (requires `@valibot/to-json-schema` v1.5+)
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
+npm install @korix/std-schema-openapi-plugin @korix/openapi-swagger-ui-plugin
 ```
 
 ```typescript
 import { createKori } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
-import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, stdResponseSchema, enableStdRequestAndResponseValidation } from '@korix/std-schema-adapter';
+import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestAndResponseValidation(),
+  ...enableStdRequestAndResponseValidation(),
 })
-  .applyPlugin(zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }))
+  .applyPlugin(stdSchemaOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }))
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string(),
       age: z.number(),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),
@@ -307,9 +319,8 @@ Now you can visit http://localhost:3000/docs for interactive API documentation.
 
 - [`@korix/kori`](./packages/kori) - Core framework
 - [`@korix/nodejs-server`](./packages/nodejs-server) - Node.js HTTP server adapter
-- [`@korix/zod-schema-adapter`](./packages/zod-schema-adapter) - Zod schema adapter for request and response validation
-- [`@korix/standard-schema-adapter`](./packages/standard-schema-adapter) - Standard Schema adapter for validation with other schema libraries
-- [`@korix/zod-openapi-plugin`](./packages/zod-openapi-plugin) - OpenAPI document generation from Zod schemas
+- [`@korix/std-schema-adapter`](./packages/std-schema-adapter) - Standard Schema adapter for validation (Zod, Valibot, ArkType, etc.)
+- [`@korix/std-schema-openapi-plugin`](./packages/std-schema-openapi-plugin) - OpenAPI document generation from Standard JSON Schema
 - [`@korix/openapi-swagger-ui-plugin`](./packages/openapi-swagger-ui-plugin) - Interactive API documentation with Swagger UI
 
 [View all packages →](./packages)

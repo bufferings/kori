@@ -9,8 +9,7 @@
     { "path": "../nodejs-server" },
     { "path": "../openapi-plugin" },
     { "path": "../openapi-swagger-ui-plugin" },
-    { "path": "../standard-schema-adapter" },
-    { "path": "../zod-openapi-plugin" },
-    { "path": "../zod-schema-adapter" }
+    { "path": "../std-schema-adapter" },
+    { "path": "../std-schema-openapi-plugin" }
   ]
 }

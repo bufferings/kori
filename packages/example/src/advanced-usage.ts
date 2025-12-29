@@ -27,8 +27,8 @@ import {
 } from '@korix/kori';
 import { startNodejsServer } from '@korix/nodejs-server';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
-import { enableZodRequestAndResponseValidation, zodRequestSchema, zodResponseSchema } from '@korix/zod-schema-adapter';
+import { enableStdRequestAndResponseValidation, stdRequestSchema, stdResponseSchema } from '@korix/std-schema-adapter';
+import { stdSchemaOpenApiPlugin, openApiMeta } from '@korix/std-schema-openapi-plugin';
 import { z } from 'zod';
 
 // ============================================================================
@@ -123,7 +123,7 @@ const UserXmlSchema = z.object({
 // ============================================================================
 
 const app = createKori({
-  ...enableZodRequestAndResponseValidation(),
+  ...enableStdRequestAndResponseValidation(),
   loggerOptions: {
     level: 'info', // For lazy logging examples
   },
@@ -131,7 +131,7 @@ const app = createKori({
   .applyPlugin(requestIdPlugin())
   .applyPlugin(timingPlugin())
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'Kori Advanced Examples',
         version: '1.0.0',
@@ -184,14 +184,14 @@ app.post('/products', {
     description: 'Create a product with complex validation',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: ProductSchema,
     headers: z.object({
       'x-api-version': z.enum(['1.0', '2.0']).optional(),
       'x-client-id': z.string().min(1).meta({ description: 'Client identifier' }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': ProductSchema.extend({
       id: z.number().meta({ description: 'Product ID' }),
       createdAt: z.string().meta({ description: 'Creation timestamp' }),
@@ -226,7 +226,7 @@ app.get('/products/search', {
     description: 'Advanced product search with filtering',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     queries: z.object({
       q: z.string().min(1).meta({ description: 'Search query' }),
       category: z.enum(['electronics', 'books', 'clothing']).optional(),
@@ -243,7 +243,7 @@ app.get('/products/search', {
       order: z.enum(['asc', 'desc']).default('asc'),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       query: z.string().meta({ description: 'Search query' }),
       filters: z.object({
@@ -321,7 +321,7 @@ app.createChild({
           description: 'Get admin dashboard data (requires auth)',
           tags: ['Admin'],
         }),
-        responseSchema: zodResponseSchema({
+        responseSchema: stdResponseSchema({
           '200': z.any(),
           '401': z.any(),
         }),
@@ -342,13 +342,13 @@ app.createChild({
           description: 'Enable or disable maintenance mode',
           tags: ['Admin'],
         }),
-        requestSchema: zodRequestSchema({
+        requestSchema: stdRequestSchema({
           body: z.object({
             mode: z.enum(['enable', 'disable']),
             reason: z.string().optional(),
           }),
         }),
-        responseSchema: zodResponseSchema({
+        responseSchema: stdResponseSchema({
           '200': z.any(),
           '401': z.any(),
         }),
@@ -377,7 +377,7 @@ app.get('/health', {
     description: 'Detailed health information',
     tags: ['System'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
   }),
   handler: (ctx) =>
@@ -396,7 +396,7 @@ app.get('/error/:type', {
     description: 'Demonstrate different error types',
     tags: ['Demo'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '400': z.any(),
     '500': z.any(),
   }),
@@ -423,7 +423,7 @@ app.post('/validation-demo', {
     description: 'Demonstrates new validation error handling features',
     tags: ['Demo'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       age: z.number().int().min(0),
       preferences: z.object({
@@ -432,7 +432,7 @@ app.post('/validation-demo', {
       }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
     '400': z.any(),
   }),
@@ -480,8 +480,8 @@ app.post('/users/simple', {
     description: 'Create user with single media type',
     tags: ['Multi-Media'],
   }),
-  requestSchema: zodRequestSchema({ body: UserJsonSchema }),
-  responseSchema: zodResponseSchema({
+  requestSchema: stdRequestSchema({ body: UserJsonSchema }),
+  responseSchema: stdResponseSchema({
     '201': z.object({
       message: z.string().meta({ description: 'Success message' }),
     }),
@@ -501,7 +501,7 @@ app.post('/users/multi', {
     description: 'Create user with multiple media type support',
     tags: ['Multi-Media'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: {
       content: {
         'application/json': UserJsonSchema,
@@ -515,7 +515,7 @@ app.post('/users/multi', {
       },
     },
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.union([UserJsonSchema, UserFormSchema]),
     '400': z.object({
       message: z.string().meta({ description: 'Error message' }),
@@ -542,7 +542,7 @@ app.get('/users/:id/detailed', {
     description: 'Get user with multiple response media types',
     tags: ['Multi-Media'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': {
       description: 'User detail',
       content: {
@@ -608,7 +608,7 @@ app.post('/stream/upload', {
     description: 'Process file upload stream without loading into memory',
     tags: ['Streaming'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
     '400': z.any(),
     '500': z.any(),
@@ -704,14 +704,14 @@ app.post('/cookies/preferences', {
     description: 'Set multiple user preferences in cookies',
     tags: ['Cookies'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       theme: z.enum(['light', 'dark']),
       language: z.string(),
       timezone: z.string(),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
   }),
   handler: (ctx) => {
@@ -733,7 +733,7 @@ app.post('/cookies/secure-session', {
     description: 'Create session with secure cookies',
     tags: ['Cookies'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
   }),
   handler: (ctx) => {
@@ -756,7 +756,7 @@ app.get('/cookies/visit', {
     description: 'Track and increment visit count',
     tags: ['Cookies'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
   }),
   handler: (ctx) => {
@@ -791,7 +791,7 @@ app.get('/performance/lazy-logging', {
     description: 'Demonstrates lazy logging for performance optimization',
     tags: ['Performance'],
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.any(),
   }),
   handler: (ctx) => {

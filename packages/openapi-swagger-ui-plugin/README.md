@@ -12,12 +12,12 @@ npm install @korix/openapi-swagger-ui-plugin
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 
 const app = createKori()
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',

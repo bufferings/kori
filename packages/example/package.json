@@ -28,11 +28,11 @@
     "@korix/nodejs-server": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@korix/openapi-swagger-ui-plugin": "workspace:*",
-    "@korix/standard-schema-adapter": "workspace:*",
-    "@korix/zod-openapi-plugin": "workspace:*",
-    "@korix/zod-schema-adapter": "workspace:*",
+    "@korix/std-schema-adapter": "workspace:*",
+    "@korix/std-schema-openapi-plugin": "workspace:*",
+    "@standard-schema/spec": "1.1.0",
     "openapi3-ts": "4.4.0",
-    "zod": "4.0.0"
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",

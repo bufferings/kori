@@ -1,35 +1,53 @@
 # OpenAPI Integration
 
-Generate interactive API documentation automatically from your schemas. Kori's extensible OpenAPI system keeps your documentation perfectly synchronized with your validation schemas. While Kori's architecture is designed to support different schema libraries, we officially provide first-class Zod integration out of the box (Standard Schema is not currently supported for OpenAPI generation).
+Generate interactive API documentation automatically from your schemas. Kori's extensible OpenAPI system keeps your documentation perfectly synchronized with your validation schemas. Using Standard JSON Schema, Kori supports multiple schema libraries including Zod, Valibot, and ArkType.
 
-This guide uses Zod for examples.
+This guide uses Zod for examples, but the same patterns work with any Standard JSON Schema compliant library.
+
+## Generated OpenAPI
+
+- OpenAPI version: 3.1.0
+- JSON Schema version: draft-2020-12
+
+## Supported Libraries
+
+| Library                        | Version | Notes                                    |
+| ------------------------------ | ------- | ---------------------------------------- |
+| [Zod](https://zod.dev)         | 4.2+    |                                          |
+| [ArkType](https://arktype.io)  | 2.1.28+ |                                          |
+| [Valibot](https://valibot.dev) | 1.2+    | Requires `@valibot/to-json-schema` v1.5+ |
+
+See [Standard JSON Schema](https://standardschema.dev/json-schema#what-schema-libraries-support-this-spec) for the full list of compliant libraries.
 
 ## Setup
 
-Install the Zod OpenAPI integration plugins:
+Install the OpenAPI integration plugins:
 
 ```bash
-npm install @korix/zod-openapi-plugin @korix/openapi-swagger-ui-plugin
+npm install @korix/std-schema-openapi-plugin @korix/openapi-swagger-ui-plugin
 ```
 
 Add two plugins to your Kori application:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import {
+  stdSchemaOpenApiPlugin,
+  openApiMeta,
+} from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import {
-  zodRequestSchema,
-  zodResponseSchema,
-  enableZodRequestValidation,
-} from '@korix/zod-schema-adapter';
+  stdRequestSchema,
+  stdResponseSchema,
+  enableStdRequestValidation,
+} from '@korix/std-schema-adapter';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 })
-  // Generate OpenAPI specification from Zod schemas
+  // Generate OpenAPI specification from schemas
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',
@@ -79,10 +97,10 @@ app.post('/users', {
     description: 'Creates a new user account',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: UserSchema,
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': UserResponseSchema,
   }),
   handler: (ctx) => {
@@ -108,7 +126,7 @@ app.get('/products/:id', {
     description: 'Retrieve detailed product information',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number).meta({
         description: 'Product ID',
@@ -135,7 +153,7 @@ app.get('/products/:id', {
       }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': z.object({
       id: z.number(),
       name: z.string(),
@@ -157,7 +175,7 @@ app.get('/products/:id', {
 Document different response scenarios:
 
 ```typescript
-import { zodResponseSchema } from '@korix/zod-schema-adapter';
+import { stdResponseSchema } from '@korix/std-schema-adapter';
 
 const ProductSchema = z.object({
   id: z.number(),
@@ -178,12 +196,12 @@ app.get('/products/:id', {
     summary: 'Get product by ID',
     tags: ['Products'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     params: z.object({
       id: z.string().regex(/^\d+$/).transform(Number),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '200': ProductSchema,
     '404': ErrorSchema,
     '500': ErrorSchema,
@@ -242,7 +260,7 @@ app.post('/products', {
     tags: ['Products'],
     operationId: 'createProduct',
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: ProductCreateSchema,
     headers: z.object({
       'x-client-id': z.string().min(1).meta({
@@ -251,7 +269,7 @@ app.post('/products', {
       }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),
@@ -281,16 +299,14 @@ app.post('/products', {
 
 ## Plugin Configuration
 
-### Zod OpenAPI Plugin
+### Standard Schema OpenAPI Plugin
 
-This guide focuses on the official Zod integration. For other schema libraries, you can implement custom schema converters using the underlying `@korix/openapi-plugin`.
-
-The Zod OpenAPI plugin uses Zod's native `toJSONSchema()` method to convert Zod schemas to JSON Schema format. This means the generated OpenAPI documentation is limited to the features and schema types that Zod's `toJSONSchema()` supports. For details, see [Zod's JSON Schema documentation](https://zod.dev/json-schema?id=unrepresentable).
+The Standard Schema OpenAPI plugin uses the Standard JSON Schema specification to convert schemas to JSON Schema format. This allows support for multiple schema libraries including Zod, Valibot, and ArkType. The generated OpenAPI documentation depends on the JSON Schema capabilities of your chosen schema library.
 
 Configure the OpenAPI specification:
 
 ```typescript
-zodOpenApiPlugin({
+stdSchemaOpenApiPlugin({
   info: {
     title: 'My API',
     version: '1.0.0',
@@ -335,15 +351,18 @@ You can generate OpenAPI documentation without runtime validation. This is usefu
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodOpenApiPlugin, openApiMeta } from '@korix/zod-openapi-plugin';
+import {
+  stdSchemaOpenApiPlugin,
+  openApiMeta,
+} from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
-import { zodRequestSchema, zodResponseSchema } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, stdResponseSchema } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 // No requestValidator or responseValidator
 const app = createKori()
   .applyPlugin(
-    zodOpenApiPlugin({
+    stdSchemaOpenApiPlugin({
       info: {
         title: 'My API',
         version: '1.0.0',
@@ -363,13 +382,13 @@ app.post('/users', {
     summary: 'Create user',
     tags: ['Users'],
   }),
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string().meta({ description: 'User name' }),
       email: z.string().email().meta({ description: 'User email' }),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),

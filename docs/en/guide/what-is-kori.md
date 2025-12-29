@@ -43,15 +43,15 @@ Define schemas once, get validation and types automatically:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodRequestSchema, enableZodRequestValidation } from '@korix/zod-schema-adapter';
+import { stdRequestSchema, enableStdRequestValidation } from '@korix/std-schema-adapter';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestValidation(),
+  ...enableStdRequestValidation(),
 });
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string().min(1),
       age: z.number().int().min(0),
@@ -71,27 +71,27 @@ With the OpenAPI plugin, your validation schemas become OpenAPI documentation:
 
 ```typescript
 import { createKori } from '@korix/kori';
-import { zodRequestSchema, zodResponseSchema, enableZodRequestAndResponseValidation } from '@korix/zod-schema-adapter';
-import { zodOpenApiPlugin } from '@korix/zod-openapi-plugin';
+import { stdRequestSchema, stdResponseSchema, enableStdRequestAndResponseValidation } from '@korix/std-schema-adapter';
+import { stdSchemaOpenApiPlugin } from '@korix/std-schema-openapi-plugin';
 import { swaggerUiPlugin } from '@korix/openapi-swagger-ui-plugin';
 import { z } from 'zod';
 
 const app = createKori({
-  ...enableZodRequestAndResponseValidation(),
+  ...enableStdRequestAndResponseValidation(),
 })
   .applyPlugin(
-    zodOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }),
+    stdSchemaOpenApiPlugin({ info: { title: 'My API', version: '1.0.0' } }),
   )
   .applyPlugin(swaggerUiPlugin());
 
 app.post('/users', {
-  requestSchema: zodRequestSchema({
+  requestSchema: stdRequestSchema({
     body: z.object({
       name: z.string(),
       age: z.number(),
     }),
   }),
-  responseSchema: zodResponseSchema({
+  responseSchema: stdResponseSchema({
     '201': z.object({
       id: z.number(),
       name: z.string(),
