@@ -13,11 +13,11 @@ import { type KoriValidatorBase } from '../validator/index.js';
  * @template Req - Base request type
  * @template Res - Base response type
  * @template EnvExt - Environment extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no environment extensions).
  * @template ReqExt - Request extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no request extensions).
  * @template ResExt - Response extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no response extensions).
  * @template ReqV - Request validator type from the target Kori instance.
  *   Plugins typically do not modify validation types and preserve them as-is.
  * @template ResV - Response validator type from the target Kori instance.
@@ -62,11 +62,11 @@ export type KoriPlugin<
  * @template Req - Base request type
  * @template Res - Base response type
  * @template EnvExt - Environment extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no environment extensions).
  * @template ReqExt - Request extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no request extensions).
  * @template ResExt - Response extensions added by this plugin.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no response extensions).
  * @template ReqV - Request validator type from the target Kori instance.
  *   Plugins typically do not modify validation types and preserve them as-is.
  * @template ResV - Response validator type from the target Kori instance.

@@ -13,9 +13,9 @@ import { type MaybePromise } from '../util/index.js';
  * @template Req - Request type
  * @template Res - Response type
  * @template ReqExt - Additional request properties.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no request extensions).
  * @template ResExt - Additional response properties.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no response extensions).
  */
 export type KoriOnRequestHookReturn<
   Env extends KoriEnvironment,
@@ -41,9 +41,9 @@ export type KoriOnRequestHookReturn<
  * @template Req - Request type
  * @template Res - Response type
  * @template ReqExt - Additional request properties to be added.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no request extensions).
  * @template ResExt - Additional response properties to be added.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no response extensions).
  *
  * @param ctx - Handler context for accessing request, response, and utilities
  * @returns Extended context, early response, or void to continue processing

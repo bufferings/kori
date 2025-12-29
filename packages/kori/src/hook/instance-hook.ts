@@ -11,7 +11,7 @@ import { type MaybePromise } from '../util/index.js';
  *
  * @template Env - Current environment type
  * @template EnvExt - Additional environment properties to be added.
- *   Defaults to an empty object, which means no extensions.
+ *   Defaults to `object` (no environment extensions).
  *
  * @param ctx - Instance context for accessing environment and utilities
  * @returns Extended context with additional environment properties, or void
