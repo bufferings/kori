@@ -8,7 +8,15 @@ export type KoriInitializedFetchHandler = {
   /** Processes incoming HTTP requests and returns responses */
   fetchHandler: (request: Request) => Promise<Response>;
 
-  /** Performs cleanup operations when the handler is closed */
+  /**
+   * Performs cleanup operations when shutting down the application.
+   *
+   * Runs cleanup tasks registered during startup in reverse order
+   * (last registered, first executed). Call this when shutting down
+   * to properly release resources like database connections and file handles.
+   *
+   * @returns Promise that resolves when all cleanup is complete
+   */
   onClose: () => Promise<void>;
 };
 
