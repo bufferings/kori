@@ -32,6 +32,11 @@ export type KoriOnRequestHookReturn<
  * logging, request validation, and context extension. They can abort request
  * processing by returning a response or extend the context for downstream handlers.
  *
+ * When returning a KoriResponse to abort processing, you must return the response
+ * from ctx.res (e.g., ctx.res.unauthorized()). The framework uses ctx.res to build
+ * the final response, not the returned instance itself. This ensures all response
+ * modifications are captured correctly.
+ *
  * @template Env - Environment type
  * @template Req - Request type
  * @template Res - Response type
@@ -46,7 +51,7 @@ export type KoriOnRequestHookReturn<
  * @example
  * ```typescript
  * const authHook: KoriOnRequestHook<Env, Req, Res, { userId: string }> = async (ctx) => {
- *   const token = ctx.req.headers.get('authorization');
+ *   const token = ctx.req.header('authorization');
  *
  *   if (!token) {
  *     return ctx.res.unauthorized({ message: 'Authentication required' });
@@ -56,7 +61,7 @@ export type KoriOnRequestHookReturn<
  *
  *   // Log request with defer
  *   ctx.defer(() => {
- *     ctx.log().info('Request processed', { userId, path: ctx.req.url });
+ *     ctx.log().info('Request processed', { userId, path: ctx.req.url() });
  *   });
  *
  *   return ctx.withReq({ userId });
@@ -79,6 +84,11 @@ export type KoriOnRequestHook<
  * custom error responses or continue to the next error hook. If all hooks return
  * void, default error handling (500 Internal Server Error) will be used.
  *
+ * When returning a KoriResponse to handle an error, you must return the response
+ * from ctx.res (e.g., ctx.res.badRequest(), ctx.res.internalError()). The framework
+ * uses ctx.res to build the final response, not the returned instance itself. This
+ * ensures all response modifications are captured correctly.
+ *
  * @template Env - Environment type
  * @template Req - Request type
  * @template Res - Response type
@@ -93,8 +103,8 @@ export type KoriOnRequestHook<
  *   // Log error details
  *   ctx.log().error('Request error occurred', {
  *     error: err instanceof Error ? err.message : 'Unknown error',
- *     path: ctx.req.url,
- *     method: ctx.req.method
+ *     path: ctx.req.url(),
+ *     method: ctx.req.method()
  *   });
  *
  *   // Let the default error handler handle the error

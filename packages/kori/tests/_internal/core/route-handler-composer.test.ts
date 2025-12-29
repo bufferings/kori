@@ -179,6 +179,26 @@ describe('composeRouteHandler', () => {
       expect(requestHook3).not.toHaveBeenCalled();
       expect(handler).not.toHaveBeenCalled();
     });
+
+    test('returns 500 when request hook returns wrong KoriResponse instance', async () => {
+      const wrongReq = createKoriRequest({
+        rawRequest: new Request('http://example.com'),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      const wrongResponse = createKoriResponse(wrongReq);
+      const requestHook = vi.fn(() => wrongResponse.text('wrong'));
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions({ requestHooks: [requestHook] }),
+        routeOptions: createRouteOptions({ handler: vi.fn() }),
+      });
+
+      const ctx = createMockContext();
+      const res = await composed(ctx as any);
+
+      expect(res.getStatus()).toBe(500);
+    });
   });
 
   describe('defer callbacks', () => {
@@ -722,6 +742,29 @@ describe('composeRouteHandler', () => {
       expect(errorHook3).not.toHaveBeenCalled();
       expect(res.getStatus()).toBe(400);
       expect((res.getBody() as any).error.message).toBe('recovered by hook2');
+    });
+
+    test('returns 500 when error hook returns wrong KoriResponse instance', async () => {
+      const wrongReq = createKoriRequest({
+        rawRequest: new Request('http://example.com'),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      const wrongResponse = createKoriResponse(wrongReq);
+      const errorHook = vi.fn(() => wrongResponse.badRequest());
+      const handler = () => {
+        throw new Error('boom');
+      };
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions({ errorHooks: [errorHook] }),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const ctx = createMockContext();
+      const res = await composed(ctx as any);
+
+      expect(res.getStatus()).toBe(500);
     });
   });
 });

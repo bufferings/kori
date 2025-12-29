@@ -6,6 +6,7 @@ import {
   type KoriRequest,
   type KoriResponse,
 } from '../../context/index.js';
+import { KoriHookResponseError } from '../../error/index.js';
 import { type KoriOnRequestHook, type KoriOnErrorHook } from '../../hook/index.js';
 import { createKoriSystemLogger } from '../../logging/index.js';
 import { type KoriRequestSchemaBase } from '../../request-schema/index.js';
@@ -57,6 +58,12 @@ function createHookExecutor<
       for (const hook of hooks.requestHooks) {
         const result = await hook(currentCtx);
         if (isKoriResponse(result)) {
+          if (result !== currentCtx.res) {
+            throw new KoriHookResponseError(
+              'Hook must return ctx.res when returning a KoriResponse. ' +
+                'Use ctx.res.badRequest(), ctx.res.unauthorized(), etc.',
+            );
+          }
           return currentCtx.res;
         }
         if (result) {
@@ -71,6 +78,12 @@ function createHookExecutor<
         try {
           const result = await hook(currentCtx, err);
           if (isKoriResponse(result)) {
+            if (result !== currentCtx.res) {
+              throw new KoriHookResponseError(
+                'Error hook must return ctx.res when returning a KoriResponse. ' +
+                  'Use ctx.res.badRequest(), ctx.res.internalError(), etc.',
+              );
+            }
             return currentCtx.res;
           }
         } catch (hookError) {
