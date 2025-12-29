@@ -420,9 +420,12 @@ export type KoriResponse = {
   getStatus(): HttpStatusCode;
 
   /**
-   * Gets a copy of the response headers.
+   * Gets a copy of the response headers including default values.
    *
-   * @returns New Headers object with current response headers
+   * Default content-type is included based on body type (e.g., application/json
+   * for json(), text/plain for text()) even if not explicitly set.
+   *
+   * @returns New Headers object with response headers
    */
   getHeadersCopy(): Headers;
 
@@ -439,14 +442,20 @@ export type KoriResponse = {
   /**
    * Gets the content-type header value.
    *
-   * @returns content-type value or undefined if not set
+   * Returns the default content-type based on body type (e.g., application/json
+   * for json(), text/plain for text()) if not explicitly set.
+   *
+   * @returns content-type value or undefined if body type has no default
    */
   getContentType(): string | undefined;
 
   /**
    * Gets the media type from content-type header (without parameters).
    *
-   * @returns media type or undefined if content-type not set
+   * Returns the default media type based on body type if content-type
+   * is not explicitly set.
+   *
+   * @returns media type or undefined if body type has no default
    */
   getMediaType(): string | undefined;
 
