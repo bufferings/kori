@@ -150,6 +150,21 @@ describe('composeRouteHandler', () => {
       expect(res.getBody()).toEqual({ ok: true });
       expect(handler).toHaveBeenCalledTimes(1);
     });
+
+    test('returns 500 when handler returns wrong KoriResponse instance', async () => {
+      const wrongResponse = createKoriResponse();
+      const handler = vi.fn(() => wrongResponse.json({ wrong: true }));
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions(),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const ctx = createMockContext();
+      const res = await composed(ctx as any);
+
+      expect(res.getStatus()).toBe(500);
+    });
   });
 
   describe('request hooks', () => {

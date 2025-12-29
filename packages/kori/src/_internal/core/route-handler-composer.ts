@@ -71,7 +71,13 @@ function createHookExecutor<
         }
       }
 
-      await mainHandler(currentCtx);
+      const handlerResult = await mainHandler(currentCtx);
+      if (handlerResult !== currentCtx.res) {
+        throw new KoriHookResponseError(
+          'Handler must return ctx.res when returning a KoriResponse. ' +
+            'Use ctx.res.json(), ctx.res.notFound(), etc.',
+        );
+      }
       return currentCtx.res;
     } catch (err) {
       for (const hook of hooks.errorHooks) {
