@@ -220,18 +220,12 @@ export async function executeHandlerDeferredCallbacks(ctx: KoriHandlerContextBas
 
   // Execute in reverse order (LIFO)
   for (let i = deferStack.length - 1; i >= 0; i--) {
-    const callback = deferStack[i];
-    if (!callback) {
-      continue;
-    }
-
     try {
-      await callback(ctx);
+      await deferStack[i]?.(ctx);
     } catch (err) {
       const sys = createKoriSystemLogger({ baseLogger: getLoggerInternal(ctxState) });
       sys.error('Defer callback error:', {
         type: 'defer-callback',
-        callbackIndex: i,
         err: sys.serializeError(err),
       });
     }
