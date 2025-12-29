@@ -207,8 +207,7 @@ export type KoriRequest = {
   /**
    * Parses the request body as JSON.
    *
-   * The result is cached. If the body was already read in another format
-   * (e.g., text), it will be converted from the cached value.
+   * The result is cached for subsequent calls.
    *
    * @returns Promise resolving to parsed JSON data
    * @throws When the body stream cannot be read or the content is not valid JSON
@@ -218,8 +217,7 @@ export type KoriRequest = {
   /**
    * Reads the request body as text.
    *
-   * The result is cached. If the body was already read in another format,
-   * it will be converted from the cached value.
+   * The result is cached for subsequent calls.
    *
    * @returns Promise resolving to body text
    * @throws When the body stream cannot be read
@@ -229,8 +227,7 @@ export type KoriRequest = {
   /**
    * Parses the request body as FormData.
    *
-   * The result is cached. If the body was already read in another format,
-   * it will be converted from the cached value.
+   * The result is cached for subsequent calls.
    *
    * @returns Promise resolving to FormData object
    * @throws When the body stream cannot be read or the content is not valid form data
@@ -240,8 +237,7 @@ export type KoriRequest = {
   /**
    * Reads the request body as ArrayBuffer.
    *
-   * The result is cached. If the body was already read in another format,
-   * it will be converted from the cached value.
+   * The result is cached for subsequent calls.
    *
    * @returns Promise resolving to ArrayBuffer
    * @throws When the body stream cannot be read
@@ -266,9 +262,9 @@ export type KoriRequest = {
 /** Cache for parsed body data to avoid re-parsing */
 type BodyCache = {
   json?: Promise<unknown>;
-  text?: Promise<unknown>;
-  formData?: Promise<unknown>;
-  arrayBuffer?: Promise<unknown>;
+  text?: Promise<string>;
+  formData?: Promise<FormData>;
+  arrayBuffer?: Promise<ArrayBuffer>;
 };
 
 /** Internal state structure for request object */
@@ -436,30 +432,12 @@ function getCookieInternal(req: ReqState, name: string): string | undefined {
   return allCookies[name];
 }
 
-function cachedBody(req: ReqState, key: keyof BodyCache): Promise<unknown> {
-  const cachedValue = req.bodyCache[key];
-  if (cachedValue) {
-    return cachedValue;
+function cachedBody<K extends keyof BodyCache>(req: ReqState, key: K): NonNullable<BodyCache[K]> {
+  const cached = req.bodyCache[key];
+  if (cached) {
+    return cached;
   }
-
-  const keys = Object.keys(req.bodyCache) as (keyof BodyCache)[];
-  const sourceKey = keys.find((k) => k !== 'json');
-
-  if (sourceKey) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const bodyPromise = req.bodyCache[sourceKey]!.then<unknown>((body) => {
-      return new Response(body as BodyInit)[key]();
-    });
-    return (req.bodyCache[key] = bodyPromise);
-  }
-
-  if (key === 'json') {
-    req.bodyCache.text = req.rawRequest.text();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return (req.bodyCache.json = req.bodyCache.text.then((text) => JSON.parse(text as string)));
-  }
-
-  return (req.bodyCache[key] = req.rawRequest[key]());
+  return (req.bodyCache[key] = req.rawRequest[key]()) as NonNullable<BodyCache[K]>;
 }
 
 function getBodyJsonInternal(req: ReqState): Promise<unknown> {
@@ -467,15 +445,15 @@ function getBodyJsonInternal(req: ReqState): Promise<unknown> {
 }
 
 function getBodyTextInternal(req: ReqState): Promise<string> {
-  return cachedBody(req, 'text') as Promise<string>;
+  return cachedBody(req, 'text');
 }
 
 function getBodyFormDataInternal(req: ReqState): Promise<FormData> {
-  return cachedBody(req, 'formData') as Promise<FormData>;
+  return cachedBody(req, 'formData');
 }
 
 function getBodyArrayBufferInternal(req: ReqState): Promise<ArrayBuffer> {
-  return cachedBody(req, 'arrayBuffer') as Promise<ArrayBuffer>;
+  return cachedBody(req, 'arrayBuffer');
 }
 
 function getBodyStreamInternal(req: ReqState): ReadableStream<Uint8Array> | null {

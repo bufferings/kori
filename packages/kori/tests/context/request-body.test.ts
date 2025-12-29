@@ -45,7 +45,14 @@ describe('KoriRequest body contract', () => {
         expect.unreachable('stream should not be null');
       }
 
-      expect(stream2.locked).toBe(true);
+      let error: unknown;
+      try {
+        stream2.getReader();
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as Error).message).toBe('Invalid state: ReadableStream is locked');
     });
 
     test('consuming bodyStream() prevents other body methods from working', async () => {
@@ -65,11 +72,17 @@ describe('KoriRequest body contract', () => {
 
       await new Response(stream).text();
 
-      await expect(req.bodyJson()).rejects.toThrow();
-      await expect(req.bodyText()).rejects.toThrow();
+      let error: unknown;
+      try {
+        await req.bodyJson();
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as Error).message).toBe('Body is unusable: Body has already been read');
     });
 
-    test('calling bodyJson() first makes bodyStream() locked', async () => {
+    test('consuming cached body prevents bodyStream() from working', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
@@ -86,7 +99,14 @@ describe('KoriRequest body contract', () => {
         expect.unreachable('stream should not be null');
       }
 
-      expect(stream.locked).toBe(true);
+      let error: unknown;
+      try {
+        stream.getReader();
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as Error).message).toBe('Invalid state: ReadableStream is locked');
     });
   });
 
@@ -245,85 +265,27 @@ describe('KoriRequest body contract', () => {
     });
   });
 
-  describe('body method interoperability', () => {
-    test('bodyText then bodyJson and bodyArrayBuffer', async () => {
+  describe('body method format restriction', () => {
+    test('throws TypeError when reading body in different format', async () => {
       const req = createKoriRequest({
         rawRequest: new Request('http://x', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ a: 1 }),
+          body: 'hello',
         }),
         pathParams: {},
         pathTemplate: '/',
       });
 
-      await expect(req.bodyText()).resolves.toBe('{"a":1}');
-      await expect(req.bodyJson()).resolves.toEqual({ a: 1 });
-      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
-    });
+      await req.bodyText();
 
-    test('bodyJson then bodyText and bodyArrayBuffer', async () => {
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ x: 'hello' }),
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      await expect(req.bodyJson()).resolves.toEqual({ x: 'hello' });
-      await expect(req.bodyText()).resolves.toBe('{"x":"hello"}');
-      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
-    });
-
-    test('bodyFormData then bodyText and bodyArrayBuffer', async () => {
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: 'name=test&value=123',
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      const formData = await req.bodyFormData();
-      expect(formData.get('name')).toBe('test');
-
-      await expect(req.bodyText()).resolves.toBeDefined();
-      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
-    });
-
-    test('bodyArrayBuffer then bodyText', async () => {
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/octet-stream' },
-          body: 'binary data',
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      await expect(req.bodyArrayBuffer()).resolves.toBeDefined();
-      await expect(req.bodyText()).resolves.toBe('binary data');
-    });
-
-    test('bodyJson parse error then bodyText still works', async () => {
-      const req = createKoriRequest({
-        rawRequest: new Request('http://x', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: '{invalid json}',
-        }),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-
-      await expect(req.bodyJson()).rejects.toBeInstanceOf(SyntaxError);
-      await expect(req.bodyText()).resolves.toBe('{invalid json}');
+      let error: unknown;
+      try {
+        await req.bodyJson();
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as Error).message).toBe('Body is unusable: Body has already been read');
     });
   });
 });
