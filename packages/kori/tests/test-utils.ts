@@ -89,7 +89,7 @@ export function createTestHandlerContext(): {
     pathParams: {},
     pathTemplate: '/',
   });
-  const res = createKoriResponse(req);
+  const res = createKoriResponse();
   const ctx = createKoriHandlerContext({ env, req, res, loggerFactory });
 
   return { env, req, res, ctx, logger };

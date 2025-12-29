@@ -10,8 +10,6 @@ import {
   deleteCookie,
 } from '../http/index.js';
 
-import { type KoriRequest } from './request.js';
-
 /**
  * Options for customizing error responses.
  */
@@ -504,7 +502,6 @@ type ResState = {
   bodyKind: 'none' | 'json' | 'text' | 'html' | 'empty' | 'stream';
   bodyValue: unknown;
   built: boolean;
-  req: KoriRequest;
 };
 
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
@@ -947,10 +944,9 @@ const sharedMethods = {
  *
  * @packageInternal Framework infrastructure for creating response objects
  *
- * @param req - Associated request object for context
  * @returns New KoriResponse instance
  */
-export function createKoriResponse(req: KoriRequest): KoriResponse {
+export function createKoriResponse(): KoriResponse {
   const obj = Object.create(sharedMethods) as ResState;
 
   obj.koriKind = 'kori-response';
@@ -959,7 +955,6 @@ export function createKoriResponse(req: KoriRequest): KoriResponse {
   obj.bodyKind = 'none';
   obj.bodyValue = undefined;
   obj.built = false;
-  obj.req = req;
 
   return obj as unknown as KoriResponse;
 }

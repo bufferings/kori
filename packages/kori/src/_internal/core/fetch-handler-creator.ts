@@ -86,16 +86,14 @@ export function createFetchHandler({
         return isHead ? stripBody(notFound) : notFound;
       }
 
-      const req = createKoriRequest({
-        rawRequest: request,
-        pathParams: routeMatch.pathParams,
-        pathTemplate: routeRecord.path,
-      });
-
       const handlerCtx = createKoriHandlerContext({
         env: instanceCtx.env,
-        req,
-        res: createKoriResponse(req),
+        req: createKoriRequest({
+          rawRequest: request,
+          pathParams: routeMatch.pathParams,
+          pathTemplate: routeRecord.path,
+        }),
+        res: createKoriResponse(),
         loggerFactory,
       });
 

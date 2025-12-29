@@ -2,15 +2,12 @@ import { describe, test, expect } from 'vitest';
 
 import { KoriCookieError } from '../../src/error/index.js';
 
-import { type KoriRequest } from '../../src/context/request.js';
 import { createKoriResponse } from '../../src/context/response.js';
-
-const mockReq = { header: () => undefined } as unknown as KoriRequest;
 
 describe('KoriResponse cookies contract', () => {
   describe('setCookie()', () => {
     test('serializes attributes into Set-Cookie header', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.setCookie('id', 'abc', { path: '/', httpOnly: true, secure: true, sameSite: 'None' });
 
       const built = res.build();
@@ -26,7 +23,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('appends multiple cookies', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.setCookie('a', '1').setCookie('b', '2');
 
       const built = res.build();
@@ -40,7 +37,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('encodes value with encodeURIComponent', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.setCookie('msg', 'hello world');
       const built = res.build();
       const header = built.headers.get('set-cookie');
@@ -51,7 +48,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test("getHeader('set-cookie') aggregates multiple cookies before build", () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.setCookie('a', '1');
       res.setCookie('b', '2');
       const header = res.getHeader('set-cookie');
@@ -63,7 +60,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('throws KoriCookieError for invalid name with structured error', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('invalid name', 'x');
         expect.unreachable();
@@ -77,7 +74,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('enforces __Secure- prefix secure constraint with structured error', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('__Secure-token', 'x');
         expect.unreachable();
@@ -93,7 +90,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('enforces __Host- prefix path/domain/secure constraints with structured error', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       // missing secure
       try {
         res.setCookie('__Host-session', 'v', { path: '/' } as any);
@@ -136,7 +133,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('AGE_LIMIT_EXCEEDED when maxAge > 400 days', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('a', 'b', { maxAge: 34560001 });
         expect.unreachable();
@@ -148,7 +145,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('EXPIRES_LIMIT_EXCEEDED when expires > 400 days', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         const expires = new Date(Date.now() + 401 * 24 * 60 * 60 * 1000);
         res.setCookie('a', 'b', { expires });
@@ -161,7 +158,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('PARTITIONED_REQUIRES_SECURE when partitioned without secure', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('sid', 'v', { partitioned: true } as any);
         expect.unreachable();
@@ -173,7 +170,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('SAMESITE_NONE_REQUIRES_SECURE when SameSite=None without secure', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('sid', 'v', { sameSite: 'none' } as any);
         expect.unreachable();
@@ -185,7 +182,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('PARTITIONED_REQUIRES_SAMESITE_NONE when partitioned without SameSite=None', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.setCookie('sid', 'v', { partitioned: true, secure: true, sameSite: 'lax' } as any);
         expect.unreachable();
@@ -197,7 +194,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('SERIALIZE_ERROR when encodeURIComponent throws', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         // Unpaired high surrogate causes encodeURIComponent to throw
         res.setCookie('bad', '\uD800');
@@ -212,7 +209,7 @@ describe('KoriResponse cookies contract', () => {
 
   describe('clearCookie()', () => {
     test('serializes deletion with scope', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.clearCookie('sess', { path: '/' });
 
       const built = res.build();
@@ -227,7 +224,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('throws KoriCookieError for invalid name with structured error', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       try {
         res.clearCookie('invalid name');
         expect.unreachable();
@@ -240,7 +237,7 @@ describe('KoriResponse cookies contract', () => {
     });
 
     test('built response contains aggregated set-cookie header', () => {
-      const res = createKoriResponse(mockReq);
+      const res = createKoriResponse();
       res.setCookie('a', '1');
       res.setCookie('b', '2');
       const built = res.build();
@@ -254,7 +251,7 @@ describe('KoriResponse cookies contract', () => {
   });
 
   test('cookie names are case-sensitive (A vs a)', () => {
-    const res = createKoriResponse(mockReq);
+    const res = createKoriResponse();
     res.setCookie('A', '1');
     res.setCookie('a', '2');
 

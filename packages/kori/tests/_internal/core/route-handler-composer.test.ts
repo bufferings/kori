@@ -85,7 +85,8 @@ const testResponseSchema = createKoriResponseSchema({
 function createMockContext() {
   const loggerFactory = createKoriLoggerFactory();
   const req = createKoriRequest({ rawRequest: new Request('http://localhost/'), pathParams: {}, pathTemplate: '/' });
-  return createKoriHandlerContext({ env: {} as any, req, res: createKoriResponse(req), loggerFactory });
+  const res = createKoriResponse();
+  return createKoriHandlerContext({ env: {} as any, req, res, loggerFactory });
 }
 
 function createMockContextWithBody(body: any) {
@@ -96,14 +97,16 @@ function createMockContextWithBody(body: any) {
     body: JSON.stringify(body),
   });
   const req = createKoriRequest({ rawRequest: request, pathParams: {}, pathTemplate: '/' });
-  return createKoriHandlerContext({ env: {} as any, req, res: createKoriResponse(req), loggerFactory });
+  const res = createKoriResponse();
+  return createKoriHandlerContext({ env: {} as any, req, res, loggerFactory });
 }
 
 function createMockContextWithoutContentType() {
   const loggerFactory = createKoriLoggerFactory();
   const request = new Request('http://localhost/', { method: 'POST', body: 'some body' });
   const req = createKoriRequest({ rawRequest: request, pathParams: {}, pathTemplate: '/' });
-  return createKoriHandlerContext({ env: {} as any, req, res: createKoriResponse(req), loggerFactory });
+  const res = createKoriResponse();
+  return createKoriHandlerContext({ env: {} as any, req, res, loggerFactory });
 }
 
 function createInstanceOptions(overrides = {}) {
@@ -181,12 +184,7 @@ describe('composeRouteHandler', () => {
     });
 
     test('returns 500 when request hook returns wrong KoriResponse instance', async () => {
-      const wrongReq = createKoriRequest({
-        rawRequest: new Request('http://example.com'),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-      const wrongResponse = createKoriResponse(wrongReq);
+      const wrongResponse = createKoriResponse();
       const requestHook = vi.fn(() => wrongResponse.text('wrong'));
 
       const composed = composeRouteHandler({
@@ -745,12 +743,7 @@ describe('composeRouteHandler', () => {
     });
 
     test('returns 500 when error hook returns wrong KoriResponse instance', async () => {
-      const wrongReq = createKoriRequest({
-        rawRequest: new Request('http://example.com'),
-        pathParams: {},
-        pathTemplate: '/',
-      });
-      const wrongResponse = createKoriResponse(wrongReq);
+      const wrongResponse = createKoriResponse();
       const errorHook = vi.fn(() => wrongResponse.badRequest());
       const handler = () => {
         throw new Error('boom');
