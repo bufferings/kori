@@ -1,6 +1,7 @@
 import { describe, test, expect, vi } from 'vitest';
 
 import { createKoriHandlerContext, createKoriRequest, createKoriResponse } from '../../../src/context/index.js';
+import { KoriError } from '../../../src/error/index.js';
 import { createKoriRequestSchema } from '../../../src/request-schema/index.js';
 import { createKoriResponseSchema } from '../../../src/response-schema/index.js';
 import { createKoriSchema } from '../../../src/schema/index.js';
@@ -165,6 +166,29 @@ describe('composeRouteHandler', () => {
 
       expect(res.getStatus()).toBe(500);
     });
+
+    test('throws KoriError with INVALID_RESPONSE_RETURN code when handler returns wrong KoriResponse instance', async () => {
+      const wrongResponse = createKoriResponse();
+      const handler = vi.fn(() => wrongResponse.json({ wrong: true }));
+      let caughtError: unknown;
+
+      const errorHook = vi.fn((_ctx, err) => {
+        caughtError = err;
+        throw err;
+      });
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions({ errorHooks: [errorHook] }),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const ctx = createMockContext();
+      await composed(ctx as any);
+
+      expect(caughtError).toBeDefined();
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('INVALID_RESPONSE_RETURN');
+    });
   });
 
   describe('request hooks', () => {
@@ -211,6 +235,29 @@ describe('composeRouteHandler', () => {
       const res = await composed(ctx as any);
 
       expect(res.getStatus()).toBe(500);
+    });
+
+    test('throws KoriError with INVALID_RESPONSE_RETURN code when request hook returns wrong KoriResponse instance', async () => {
+      const wrongResponse = createKoriResponse();
+      const requestHook = vi.fn(() => wrongResponse.text('wrong'));
+      let caughtError: unknown;
+
+      const errorHook = vi.fn((_ctx, err) => {
+        caughtError = err;
+        throw err;
+      });
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions({ requestHooks: [requestHook], errorHooks: [errorHook] }),
+        routeOptions: createRouteOptions({ handler: vi.fn() }),
+      });
+
+      const ctx = createMockContext();
+      await composed(ctx as any);
+
+      expect(caughtError).toBeDefined();
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('INVALID_RESPONSE_RETURN');
     });
   });
 
@@ -773,6 +820,53 @@ describe('composeRouteHandler', () => {
       const res = await composed(ctx as any);
 
       expect(res.getStatus()).toBe(500);
+    });
+
+    test('throws KoriError with INVALID_RESPONSE_RETURN code when error hook returns wrong KoriResponse instance', async () => {
+      const wrongResponse = createKoriResponse();
+      let loggedErrorData: unknown;
+
+      const loggerFactory = createKoriLoggerFactory({
+        reporter: {
+          sinks: [
+            {
+              formatter: () => '',
+              write: (_formatted, entry) => {
+                if (entry.meta?.type === 'error-hook' && entry.meta?.err) {
+                  loggedErrorData = entry.meta.err;
+                }
+              },
+            },
+          ],
+        },
+      });
+
+      const errorHook = vi.fn((_ctx, _err) => {
+        return wrongResponse.badRequest();
+      });
+
+      const handler = () => {
+        throw new Error('boom');
+      };
+
+      const composed = composeRouteHandler({
+        instanceOptions: createInstanceOptions({ errorHooks: [errorHook] }),
+        routeOptions: createRouteOptions({ handler }),
+      });
+
+      const req = createKoriRequest({
+        rawRequest: new Request('http://localhost/'),
+        pathParams: {},
+        pathTemplate: '/',
+      });
+      const res = createKoriResponse();
+      const ctx = createKoriHandlerContext({ env: {} as any, req, res, loggerFactory });
+
+      await composed(ctx as any);
+
+      expect(loggedErrorData).toBeDefined();
+      expect(loggedErrorData).toHaveProperty('code', 'INVALID_RESPONSE_RETURN');
+      expect(loggedErrorData).toHaveProperty('name', 'KoriError');
     });
   });
 });

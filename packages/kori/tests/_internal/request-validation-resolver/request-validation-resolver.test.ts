@@ -97,7 +97,8 @@ describe('resolveRequestValidator', () => {
         });
       }).toThrow(
         expect.objectContaining({
-          name: 'KoriValidationConfigError',
+          name: 'KoriError',
+          code: 'VALIDATION_CONFIG_ERROR',
           message: 'Provider mismatch: validator uses "test-provider" but schema uses "different-provider"',
         }),
       );

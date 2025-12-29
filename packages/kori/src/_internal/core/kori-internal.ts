@@ -1,5 +1,5 @@
 import { type KoriEnvironment, type KoriRequest, type KoriResponse } from '../../context/index.js';
-import { KoriRouteDefinitionError } from '../../error/index.js';
+import { KoriError, KoriErrorCode } from '../../error/index.js';
 import { type KoriFetchHandler, type KoriInitializedFetchHandler } from '../../fetch-handler/index.js';
 import { type KoriOnErrorHook, type KoriOnRequestHook, type KoriOnStartHook } from '../../hook/index.js';
 import {
@@ -229,10 +229,10 @@ function createKoriInternal<
         const methodString = normalizeRouteHttpMethod(method);
 
         if (hasNonTrailingOptionalParam(combinedPath)) {
-          throw new KoriRouteDefinitionError(
-            'Kori does not support optional parameters ":param?" in the middle of paths.',
-            { method: methodString, path: combinedPath },
-          );
+          throw new KoriError('Kori does not support optional parameters ":param?" in the middle of paths.', {
+            code: KoriErrorCode.ROUTE_DEFINITION_ERROR,
+            data: { method: methodString, path: combinedPath },
+          });
         }
 
         const routeId = _shared.routeRegistry.register({

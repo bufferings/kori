@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { KoriValidationConfigError } from '../../src/error/index.js';
+import { KoriError } from '../../src/error/index.js';
 
 import { serializeError } from '../../src/logging/error-serializer.js';
 
@@ -79,19 +79,20 @@ describe('serializeError', () => {
       });
     });
 
-    test('should handle KoriValidationConfigError', () => {
-      const validationError = new KoriValidationConfigError('Invalid schema mapping', {
-        data: { provider: 'zod', reason: 'missing content type' },
+    test('should serialize KoriError with code and data properties', () => {
+      const error = new KoriError('Validation failed', {
+        code: 'VALIDATION_CONFIG_ERROR',
+        data: { provider: 'zod', field: 'body' },
       });
 
-      const result = serializeError(validationError);
+      const result = serializeError(error);
 
       expect(result).toEqual({
-        name: 'KoriValidationConfigError',
-        message: 'Invalid schema mapping',
+        name: 'KoriError',
+        message: 'Validation failed',
         stack: expect.any(String),
         code: 'VALIDATION_CONFIG_ERROR',
-        data: { provider: 'zod', reason: 'missing content type' },
+        data: { provider: 'zod', field: 'body' },
       });
     });
 

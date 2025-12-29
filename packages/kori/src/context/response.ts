@@ -1,4 +1,4 @@
-import { KoriCookieError, KoriResponseBuildError, KoriSetCookieHeaderError } from '../error/index.js';
+import { KoriError, KoriErrorCode } from '../error/index.js';
 import {
   HttpStatus,
   type HttpStatusCode,
@@ -516,7 +516,9 @@ type ResState = {
 function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   const key = name.toLowerCase();
   if (key === HttpResponseHeader.SET_COOKIE) {
-    throw new KoriSetCookieHeaderError();
+    throw new KoriError('set-cookie must use setCookie/clearCookie', {
+      code: KoriErrorCode.SET_COOKIE_HEADER_ERROR,
+    });
   }
   res.headers.set(key, [value]);
 }
@@ -524,7 +526,9 @@ function setHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: s
 function appendHeaderInternal(res: ResState, name: HttpResponseHeaderName, value: string): void {
   const key = name.toLowerCase();
   if (key === HttpResponseHeader.SET_COOKIE) {
-    throw new KoriSetCookieHeaderError();
+    throw new KoriError('set-cookie must use setCookie/clearCookie', {
+      code: KoriErrorCode.SET_COOKIE_HEADER_ERROR,
+    });
   }
   const existing = res.headers.get(key) ?? [];
   existing.push(value);
@@ -545,7 +549,10 @@ function removeHeaderInternal(res: ResState, name: HttpResponseHeaderName): void
 function setCookieInternal(res: ResState, name: string, value: string, options?: CookieOptions): void {
   const result = serializeCookie(name, value, options);
   if (!result.success) {
-    throw new KoriCookieError(result.reason);
+    throw new KoriError(`Cookie operation failed: ${result.reason.message}`, {
+      code: KoriErrorCode.COOKIE_ERROR,
+      data: { cookieFailure: result.reason },
+    });
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
@@ -553,7 +560,10 @@ function setCookieInternal(res: ResState, name: string, value: string, options?:
 function clearCookieInternal(res: ResState, name: string, options?: Pick<CookieOptions, 'path' | 'domain'>): void {
   const result = deleteCookie(name, options);
   if (!result.success) {
-    throw new KoriCookieError(result.reason);
+    throw new KoriError(`Cookie operation failed: ${result.reason.message}`, {
+      code: KoriErrorCode.COOKIE_ERROR,
+      data: { cookieFailure: result.reason },
+    });
   }
   appendSetCookieHeaderInternal(res, result.value);
 }
@@ -882,7 +892,9 @@ const sharedMethods = {
 
   build(): Response {
     if (this.built) {
-      throw new KoriResponseBuildError('Response can only be built once.');
+      throw new KoriError('Response can only be built once.', {
+        code: KoriErrorCode.RESPONSE_BUILD_ERROR,
+      });
     }
     this.built = true;
 
@@ -893,7 +905,9 @@ const sharedMethods = {
           body = JSON.stringify(this.bodyValue);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          throw new KoriResponseBuildError(`Failed to serialize response body as JSON: ${message}`);
+          throw new KoriError(`Failed to serialize response body as JSON: ${message}`, {
+            code: KoriErrorCode.RESPONSE_BUILD_ERROR,
+          });
         }
         break;
       case 'text':

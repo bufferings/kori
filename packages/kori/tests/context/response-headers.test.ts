@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { KoriSetCookieHeaderError } from '../../src/error/index.js';
+import { KoriError } from '../../src/error/index.js';
 
 import { createKoriResponse } from '../../src/context/response.js';
 
@@ -35,7 +35,14 @@ describe('KoriResponse headers contract', () => {
 
     test('guards: setHeader("set-cookie", ...) throws', () => {
       const res = createKoriResponse();
-      expect(() => res.setHeader('set-cookie', 'a=1')).toThrow(KoriSetCookieHeaderError);
+      let caughtError: unknown;
+      try {
+        res.setHeader('set-cookie', 'a=1');
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('SET_COOKIE_HEADER_ERROR');
     });
   });
 
@@ -60,7 +67,14 @@ describe('KoriResponse headers contract', () => {
 
     test('guards: appendHeader("set-cookie", ...) throws', () => {
       const res = createKoriResponse();
-      expect(() => res.appendHeader('set-cookie', 'a=1')).toThrow(KoriSetCookieHeaderError);
+      let caughtError: unknown;
+      try {
+        res.appendHeader('set-cookie', 'a=1');
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError).toBeInstanceOf(KoriError);
+      expect((caughtError as KoriError).code).toBe('SET_COOKIE_HEADER_ERROR');
     });
   });
 

@@ -1,8 +1,9 @@
 /**
  * Base error type for Kori.
  *
- * Carries an optional machine-readable code and arbitrary data for
- * diagnostics. Supports error cause chaining.
+ * Carries a machine-readable code and arbitrary data for diagnostics.
+ * Supports error cause chaining. Errors are identified by code rather
+ * than class type, following Fastify-style error handling.
  *
  * @example
  * ```typescript
@@ -18,19 +19,19 @@
  * ```
  */
 export class KoriError extends Error {
-  public code?: string;
+  public code: string;
   public data?: unknown;
 
   /**
    * Creates a KoriError.
    *
    * @param message - Human-readable error message
-   * @param options - Error details (defaults to empty object)
-   * @param options.code - Machine-readable error code
+   * @param options - Error details
+   * @param options.code - Machine-readable error code (required)
    * @param options.data - Arbitrary structured data for debugging
    * @param options.cause - Underlying error to preserve the cause chain
    */
-  constructor(message: string, options: { code?: string; data?: unknown; cause?: Error } = {}) {
+  constructor(message: string, options: { code: string; data?: unknown; cause?: Error }) {
     super(message);
     this.name = new.target.name;
     this.code = options.code;
