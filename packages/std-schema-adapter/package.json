@@ -70,6 +70,6 @@
     "typescript": "catalog:",
     "valibot": "^1.1.0",
     "vitest": "catalog:",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   }
 }
