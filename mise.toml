@@ -6,4 +6,4 @@ disable_tools = ["pnpm"]
 
 [tools]
 lefthook = "2.0.13"
-node = "20.19.6"
+node = "24.12.0"
