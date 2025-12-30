@@ -2,7 +2,7 @@
   "name": "kori-workspace",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "pnpm@10.26.1",
   "scripts": {
     "clean:root": "rimraf .turbo",
     "clean": "turbo run clean:root clean",
