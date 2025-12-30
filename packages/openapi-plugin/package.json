@@ -57,7 +57,7 @@
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
-    "openapi3-ts": "^4.4.0"
+    "openapi3-ts": "^4.5.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",

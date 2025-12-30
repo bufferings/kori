@@ -56,12 +56,12 @@
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*",
-    "@standard-schema/spec": "^1.0.0"
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
     "@korix/kori": "workspace:*",
-    "@standard-schema/spec": "1.0.0",
+    "@standard-schema/spec": "1.1.0",
     "@types/node": "catalog:",
     "arktype": "^2.1.22",
     "eslint": "catalog:",
