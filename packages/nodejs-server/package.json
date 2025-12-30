@@ -55,7 +55,7 @@
     "test:watch": "echo 'No unit tests' && exit 0"
   },
   "dependencies": {
-    "@hono/node-server": "1.19.6"
+    "@hono/node-server": "1.19.7"
   },
   "peerDependencies": {
     "@korix/kori": "workspace:*"

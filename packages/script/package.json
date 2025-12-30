@@ -38,8 +38,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "execa": "9.6.0",
-    "p-limit": "6.2.0"
+    "execa": "9.6.1",
+    "p-limit": "7.2.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",

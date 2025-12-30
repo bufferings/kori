@@ -58,7 +58,7 @@
     "@korix/kori": "workspace:*",
     "@korix/openapi-plugin": "workspace:*",
     "@standard-schema/spec": "^1.1.0",
-    "openapi3-ts": "^4.4.0"
+    "openapi3-ts": "^4.5.0"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
@@ -67,11 +67,11 @@
     "@standard-schema/spec": "1.1.0",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "openapi3-ts": "4.4.0",
+    "openapi3-ts": "4.5.0",
     "rimraf": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   }
 }
