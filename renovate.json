@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "7 days",
+  "osvVulnerabilityAlerts": true,
+  "packageRules": [
+    {
+      "description": "Security updates - no waiting",
+      "matchCategories": ["security"],
+      "minimumReleaseAge": "0 days",
+      "labels": ["security"],
+      "prPriority": 10
+    },
+    {
+      "description": "Group all devDependencies",
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "devDependencies"
+    },
+    {
+      "description": "Pin @types/node to Node 20.x",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<21.0.0"
+    },
+    {
+      "description": "Pin Node.js to 20.x in mise.toml",
+      "matchManagers": ["mise"],
+      "matchPackageNames": ["node"],
+      "allowedVersions": "<21.0.0"
+    },
+    {
+      "description": "TypeScript - manual major updates only",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
