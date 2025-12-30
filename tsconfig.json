@@ -10,8 +10,6 @@
     { "path": "./packages/openapi-swagger-ui-plugin" },
     { "path": "./packages/script" },
     { "path": "./packages/std-schema-adapter" },
-    { "path": "./packages/std-schema-openapi-plugin" },
-    { "path": "./packages/zod-openapi-plugin" },
-    { "path": "./packages/zod-schema-adapter" }
+    { "path": "./packages/std-schema-openapi-plugin" }
   ]
 }
