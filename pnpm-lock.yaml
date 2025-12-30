@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@types/node':
-      specifier: 22.12.0
-      version: 22.12.0
+      specifier: 20.19.27
+      version: 20.19.27
     eslint:
       specifier: 9.39.2
       version: 9.39.2
@@ -46,9 +46,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
-      lefthook:
-        specifier: 2.0.13
-        version: 2.0.13
       prettier:
         specifier: 3.7.4
         version: 3.7.4
@@ -100,7 +97,7 @@ importers:
         version: 6.11.3
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       '@typescript-eslint/rule-tester':
         specifier: 8.51.0
         version: 8.51.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -118,7 +115,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/example:
     dependencies:
@@ -155,7 +152,7 @@ importers:
         version: link:../eslint-config
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       cross-env:
         specifier: 10.1.0
         version: 10.1.0
@@ -176,7 +173,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/kori:
     dependencies:
@@ -189,7 +186,7 @@ importers:
         version: link:../eslint-config
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -204,7 +201,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/nodejs-server:
     dependencies:
@@ -220,7 +217,7 @@ importers:
         version: link:../kori
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -235,7 +232,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/openapi-plugin:
     devDependencies:
@@ -250,7 +247,7 @@ importers:
         version: link:../script
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -268,7 +265,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/openapi-swagger-ui-plugin:
     dependencies:
@@ -293,7 +290,7 @@ importers:
         version: link:../std-schema-openapi-plugin
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -308,7 +305,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/script:
     dependencies:
@@ -324,7 +321,7 @@ importers:
         version: link:../eslint-config
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -339,7 +336,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   packages/std-schema-adapter:
     devDependencies:
@@ -354,7 +351,7 @@ importers:
         version: 1.1.0
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       arktype:
         specifier: ^2.1.22
         version: 2.1.22
@@ -375,7 +372,7 @@ importers:
         version: 1.1.0(typescript@5.9.3)
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
       zod:
         specifier: 4.2.1
         version: 4.2.1
@@ -396,7 +393,7 @@ importers:
         version: 1.1.0
       '@types/node':
         specifier: 'catalog:'
-        version: 22.12.0
+        version: 20.19.27
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
@@ -414,7 +411,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+        version: 4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
       zod:
         specifier: 4.2.1
         version: 4.2.1
@@ -1462,8 +1459,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@22.12.0':
-    resolution: {integrity: sha512-Fll2FZ1riMjNmlmJOdAyY5pUbkftXslB5DgEzlIuNaiWhXd00FhWxVC/r4yV/4wBb9JfImTu+jiSvXTkJ7F/gA==}
+  '@types/node@20.19.27':
+    resolution: {integrity: sha512-N2clP5pJhB2YnZJ3PIHFk5RkygRX5WO/5f0WC08tp0wd+sv0rsJk3MqWn3CbNmT2J505a5336jaQj4ph1AdMug==}
 
   '@types/node@22.18.8':
     resolution: {integrity: sha512-pAZSHMiagDR7cARo/cch1f3rXy0AEXwsVsVH09FcyeJVAzCnGgmYis7P3JidtTUjyadhTeSo8TgRPswstghDaw==}
@@ -2432,60 +2429,6 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  lefthook-darwin-arm64@2.0.13:
-    resolution: {integrity: sha512-KbQqpNSNTugjtPzt97CNcy/XZy5asJ0+uSLoHc4ML8UCJdsXKYJGozJHNwAd0Xfci/rQlj82A7rPOuTdh0jY0Q==}
-    cpu: [arm64]
-    os: [darwin]
-
-  lefthook-darwin-x64@2.0.13:
-    resolution: {integrity: sha512-s/vI6sEE8/+rE6CONZzs59LxyuSc/KdU+/3adkNx+Q13R1+p/AvQNeszg3LAHzXmF3NqlxYf8jbj/z5vBzEpRw==}
-    cpu: [x64]
-    os: [darwin]
-
-  lefthook-freebsd-arm64@2.0.13:
-    resolution: {integrity: sha512-iQeJTU7Zl8EJlCMQxNZQpJFAQ9xl40pydUIv5SYnbJ4nqIr9ONuvrioNv6N2LtKP5aBl1nIWQQ9vMjgVyb3k+A==}
-    cpu: [arm64]
-    os: [freebsd]
-
-  lefthook-freebsd-x64@2.0.13:
-    resolution: {integrity: sha512-99cAXKRIzpq/u3obUXbOQJCHP+0ZkJbN3TF+1ZQZlRo3Y6+mPSCg9fh/oi6dgbtu4gTI5Ifz3o5p2KZzAIF9ZQ==}
-    cpu: [x64]
-    os: [freebsd]
-
-  lefthook-linux-arm64@2.0.13:
-    resolution: {integrity: sha512-RWarenY3kLy/DT4/8dY2bwDlYwlELRq9MIFq+FiMYmoBHES3ckWcLX2JMMlM49Y672paQc7MbneSrNUn/FQWhg==}
-    cpu: [arm64]
-    os: [linux]
-
-  lefthook-linux-x64@2.0.13:
-    resolution: {integrity: sha512-QZRcxXGf8Uj/75ITBqoBh0zWhJE7+uFoRxEHwBq0Qjv55Q4KcFm7FBN/IFQCSd14reY5pmY3kDaWVVy60cAGJA==}
-    cpu: [x64]
-    os: [linux]
-
-  lefthook-openbsd-arm64@2.0.13:
-    resolution: {integrity: sha512-LAuOWwnNmOlRE0RxKMOhIz5Kr9tXi0rCjzXtDARW9lvfAV6Br2wP+47q0rqQ8m/nVwBYoxfJ/RDunLbb86O1nA==}
-    cpu: [arm64]
-    os: [openbsd]
-
-  lefthook-openbsd-x64@2.0.13:
-    resolution: {integrity: sha512-n9TIN3QLncyxOHomiKKwzDFHKOCm5H28CVNAZFouKqDwEaUGCs5TJI88V85j4/CgmLVUU8uUn4ClVCxIWYG59w==}
-    cpu: [x64]
-    os: [openbsd]
-
-  lefthook-windows-arm64@2.0.13:
-    resolution: {integrity: sha512-sdSC4F9Di7y0t43Of9MOA5g/0CmvkM4juQ3sKfUhRcoygetLJn4PR2/pvuDOIaGf4mNMXBP5IrcKaeDON9HrcA==}
-    cpu: [arm64]
-    os: [win32]
-
-  lefthook-windows-x64@2.0.13:
-    resolution: {integrity: sha512-ccl1v7Fl10qYoghEtjXN+JC1x/y/zLM/NSHf3NFGeKEGBNd1P5d/j6w8zVmhfzi+ekS8whXrcNbRAkLdAqUrSw==}
-    cpu: [x64]
-    os: [win32]
-
-  lefthook@2.0.13:
-    resolution: {integrity: sha512-D39rCVl7/GpqakvhQvqz07SBpzUWTvWjXKnBZyIy8O6D+Lf9xD6tnbHtG5nWXd9iPvv1AKGQwL9R/e5rNtV6SQ==}
-    hasBin: true
-
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -3081,9 +3024,6 @@ packages:
 
   unconfig-core@7.4.2:
     resolution: {integrity: sha512-VgPCvLWugINbXvMQDf8Jh0mlbvNjNC6eSUziHsBCMpxR05OPrNrvDnyatdMjRgcHaaNsCqz+wjNXxNw1kRLHUg==}
-
-  undici-types@6.20.0:
-    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
@@ -4204,9 +4144,9 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.12.0':
+  '@types/node@20.19.27':
     dependencies:
-      undici-types: 6.20.0
+      undici-types: 6.21.0
 
   '@types/node@22.18.8':
     dependencies:
@@ -4397,13 +4337,13 @@ snapshots:
       chai: 6.2.1
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.16(vite@7.1.9(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0))':
+  '@vitest/mocker@4.0.16(vite@7.1.9(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.1.9(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+      vite: 7.1.9(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -5267,49 +5207,6 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  lefthook-darwin-arm64@2.0.13:
-    optional: true
-
-  lefthook-darwin-x64@2.0.13:
-    optional: true
-
-  lefthook-freebsd-arm64@2.0.13:
-    optional: true
-
-  lefthook-freebsd-x64@2.0.13:
-    optional: true
-
-  lefthook-linux-arm64@2.0.13:
-    optional: true
-
-  lefthook-linux-x64@2.0.13:
-    optional: true
-
-  lefthook-openbsd-arm64@2.0.13:
-    optional: true
-
-  lefthook-openbsd-x64@2.0.13:
-    optional: true
-
-  lefthook-windows-arm64@2.0.13:
-    optional: true
-
-  lefthook-windows-x64@2.0.13:
-    optional: true
-
-  lefthook@2.0.13:
-    optionalDependencies:
-      lefthook-darwin-arm64: 2.0.13
-      lefthook-darwin-x64: 2.0.13
-      lefthook-freebsd-arm64: 2.0.13
-      lefthook-freebsd-x64: 2.0.13
-      lefthook-linux-arm64: 2.0.13
-      lefthook-linux-x64: 2.0.13
-      lefthook-openbsd-arm64: 2.0.13
-      lefthook-openbsd-x64: 2.0.13
-      lefthook-windows-arm64: 2.0.13
-      lefthook-windows-x64: 2.0.13
-
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -5883,10 +5780,7 @@ snapshots:
       '@quansync/fs': 1.0.0
       quansync: 1.0.0
 
-  undici-types@6.20.0: {}
-
-  undici-types@6.21.0:
-    optional: true
+  undici-types@6.21.0: {}
 
   unicorn-magic@0.3.0: {}
 
@@ -5970,7 +5864,7 @@ snapshots:
       '@types/node': 22.18.8
       fsevents: 2.3.3
 
-  vite@7.1.9(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0):
+  vite@7.1.9(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0):
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -5979,7 +5873,7 @@ snapshots:
       rollup: 4.52.4
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 22.12.0
+      '@types/node': 20.19.27
       fsevents: 2.3.3
       jiti: 2.6.1
       tsx: 4.21.0
@@ -6034,10 +5928,10 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@4.0.16(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0):
+  vitest@4.0.16(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(vite@7.1.9(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0))
+      '@vitest/mocker': 4.0.16(vite@7.1.9(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16
@@ -6054,10 +5948,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.1.9(@types/node@22.12.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
+      vite: 7.1.9(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.12.0
+      '@types/node': 20.19.27
     transitivePeerDependencies:
       - jiti
       - less

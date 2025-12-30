@@ -26,7 +26,6 @@
     "@korix/eslint-config": "workspace:*",
     "@korix/script": "workspace:*",
     "eslint": "catalog:",
-    "lefthook": "2.0.13",
     "prettier": "3.7.4",
     "rimraf": "catalog:",
     "turbo": "2.7.2",
