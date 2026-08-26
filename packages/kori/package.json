@@ -55,7 +55,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "hono": "4.11.3"
+    "hono": "4.12.34"
   },
   "devDependencies": {
     "@korix/eslint-config": "workspace:*",
