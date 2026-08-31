@@ -57,14 +57,14 @@
   },
   "dependencies": {
     "@eslint/js": "9.39.2",
-    "@typescript-eslint/parser": "8.51.0",
-    "@typescript-eslint/types": "8.51.0",
-    "@typescript-eslint/utils": "8.51.0",
+    "@typescript-eslint/parser": "8.68.0",
+    "@typescript-eslint/types": "8.68.0",
+    "@typescript-eslint/utils": "8.68.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import-x": "4.16.1",
     "eslint-plugin-simple-import-sort": "12.1.1",
     "eslint-plugin-unused-imports": "4.3.0",
-    "typescript-eslint": "8.51.0"
+    "typescript-eslint": "8.68.0"
   },
   "peerDependencies": {
     "eslint": "^9.39.0",
