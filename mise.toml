@@ -5,5 +5,5 @@ postinstall = "corepack enable && lefthook install"
 disable_tools = ["pnpm"]
 
 [tools]
-lefthook = "2.0.13"
+lefthook = "2.1.12"
 node = "20.19.6"
