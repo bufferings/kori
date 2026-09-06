@@ -74,7 +74,7 @@
     "@types/eslint": "9.6.1",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/node": "catalog:",
-    "@typescript-eslint/rule-tester": "8.51.0",
+    "@typescript-eslint/rule-tester": "8.68.0",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "tsdown": "catalog:",
